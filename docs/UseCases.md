@@ -10,21 +10,25 @@ System administrator
 - None
 
 ## Flow
-1. Administrator provides name and slug
+1. Administrator provides name, slug and their PersonId
 2. System validates that slug is unique across all conventions
 3. System creates the convention
-4. System returns the new ConventionId
+4. System adds the registering person as a convention administrator (side effect)
+5. System returns the new ConventionId
 
 ## Business Rules
 - Slug must be unique across all conventions
 - Slug may only contain lowercase letters, digits and hyphens
 - Name must not be empty
+- The registering person must exist in the system
+- The registering person is automatically added as administrator with themselves as addedById
 
 ## Domain Events
 - None
 
 ## Acceptance Criteria
 - [ ] Convention is persisted with a valid ConventionId (Guid.CreateVersion7)
+- [ ] Registering person is added as administrator of the new convention
 - [ ] Duplicate slug returns a validation error
 - [ ] Invalid slug format returns a validation error
 - [ ] Command handler has a corresponding unit test
