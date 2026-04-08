@@ -1,0 +1,43 @@
+using ConventionSystem.Domain.Common;
+using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Registration.Enums;
+using ConventionSystem.Domain.Registration.Ids;
+
+namespace ConventionSystem.Domain.Registration.Entities;
+
+public sealed class TicketType : Entity<TicketTypeId>
+{
+    private readonly List<TicketPerk> _perks = [];
+
+    public EditionId EditionId { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public int Price { get; private set; }
+    public TicketTypeCategory Type { get; private set; }
+
+    public IReadOnlyList<TicketPerk> Perks => _perks.AsReadOnly();
+
+    private TicketType() { }
+
+    public TicketType(TicketTypeId id, EditionId editionId, string name, int price, TicketTypeCategory type)
+        : base(id)
+    {
+        EditionId = editionId;
+        Name = name;
+        Price = price;
+        Type = type;
+    }
+
+    public TicketPerk AddPerk(string description)
+    {
+        var perk = new TicketPerk(TicketPerkId.New(), description);
+        _perks.Add(perk);
+        return perk;
+    }
+
+    public void RemovePerk(TicketPerkId perkId)
+    {
+        var perk = _perks.FirstOrDefault(p => p.Id == perkId)
+            ?? throw new InvalidOperationException("Förmånen hittades inte.");
+        _perks.Remove(perk);
+    }
+}
