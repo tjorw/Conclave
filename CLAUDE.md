@@ -35,12 +35,12 @@ ConventionSystem.sln
 │   │   ├── Convention/
 │   │   ├── Event/
 │   │   ├── Registration/
-│   │   └── Volunteer/
+│   │   └── Staff/
 │   ├── ConventionSystem.Application/     # Use cases, commands, queries (CQRS)
 │   │   ├── Convention/
 │   │   ├── Event/
 │   │   ├── Registration/
-│   │   └── Volunteer/
+│   │   └── Staff/
 │   ├── ConventionSystem.Infrastructure/  # EF Core, repositories, identity, extern auth, e-post
 │   └── ConventionSystem.Api/             # Controllers, minimal API-endpoints, feed-endpoints
 └── tests/
@@ -63,7 +63,7 @@ Tre infrastrukturskikt:
 ```
 ① Presentation  – Controllers, minimal API, feed-endpoints
 ② Application   – Use cases, commands, queries (CQRS), validering
-③ Domain        – Convention | Event | Registration | Volunteer
+③ Domain        – Convention | Event | Registration | Staff
 ④ Infrastructure – EF Core, repositories, identity, extern auth, e-post
 ```
 
@@ -75,13 +75,13 @@ De fyra contexts kommunicerar via domain events och id-referenser – ingen dire
 
 - **Event** läser: `ConventionId`, `EditionId`, `CategoryId`, `VenueId` från Convention
 - **Registration** läser: `ConventionId`, `EditionId`, `PersonId` från Convention
-- **Volunteer** läser: `StationId` från Convention; `PersonId` från Registration
+- **Staff** läser: `StationId` från Convention; `PersonId` från Registration
 
 **Viktiga domain event-flöden:**
 - `EditionPublished` – startsignal för Event och Registration
 - `SessionDeactivated` / `EventCancelled` → avbokning av sessionsregistreringar
-- `VolunteerApplicationReceived` → notifiering till volontärkoordinator
-- `VolunteerShiftCancelled` → automatisk avbokning av tilldelningar
+- `StaffApplicationReceived` → notifiering till bemanningskoordinator
+- `ShiftCancelled` → automatisk avbokning av tilldelningar
 
 ## Domänkonventioner
 
@@ -109,12 +109,74 @@ OBS: `publishedVersionId` och `draftVersionId` är nullable FK:er med cirkulär 
 OBS: `SessionRequest` har ingen koppling till `Session` – kategoriansvarig äger schemat och behöver inte följa requests.
 
 ### Registration
-Aggregate roots: `VisitorRegistration`, `SessionRegistration`, `VolunteerApplication`, `Ticket`  
+Aggregate roots: `VisitorRegistration`, `SessionRegistration`, `StaffApplication`, `Ticket`  
 Entiteter: `Availability`, `StationPreference`, `TicketType`, `TicketPerk`  
 Domain service: `RegistrationRuleService` (validerar platser och biljetter)
 
-### Volunteer
-Aggregate root: `VolunteerShift`  
-Entiteter: `VolunteerAssignment`  
+### Staff
+Aggregate root: `Shift`  
+Entiteter: `StaffAssignment`  
 Value objects: `StaffingRequirement`, `TimeSlot`  
 Domain service: `AssignmentService` (kontrollerar överlapp – varning, blockerar inte)
+
+
+# Commit Strategy
+
+## General Rules
+- Never commit automatically. Always ask before committing.
+- Never commit partial or broken work.
+- Each commit should represent a complete, coherent unit of work.
+
+## When to Ask About Committing
+Ask the user "Ready to commit? Suggested message: [message]" when:
+- A complete use case is implemented (domain, application, infrastructure, API and tests)
+- A self-contained refactoring is complete
+- A structural change is complete (e.g. solution setup, folder structure)
+
+Do not ask about committing after:
+- Implementing only part of a use case
+- Adding a single class or file that is not yet usable
+- Making a change the user has not confirmed they are happy with
+
+## Commit Message Format
+Use conventional commits:
+
+```
+<type>(<scope>): <short description in English>
+
+[optional body in Swedish explaining why, not what]
+```
+
+**Types:**
+- `feat` – new functionality
+- `fix` – bug fix
+- `refactor` – restructuring without behaviour change
+- `test` – adding or updating tests
+- `docs` – documentation only
+- `chore` – tooling, dependencies, config
+
+**Scope** maps to bounded context or layer:
+- `convention`, `event`, `registration`, `staff`
+- `infrastructure`, `api`, `domain`
+
+**Examples:**
+```
+feat(convention): implement UC001 create convention
+feat(event): implement UC-EV003 submit event for review
+test(convention): add unit tests for Edition.Publish invariants
+refactor(domain): extract TimeSlot value object to shared kernel
+```
+
+## What Belongs in One Commit
+A use case commit should include:
+- Domain changes (aggregate methods, domain events, value objects)
+- Application layer (command, command handler, validator)
+- Infrastructure changes (EF Core configuration, migrations if applicable)
+- API endpoint
+- Unit tests for domain and application layer
+
+## What Should Never Be in One Commit
+- Multiple unrelated use cases
+- Commented-out code
+- Failing tests
+- TODO comments that refer to unimplemented required behaviour
