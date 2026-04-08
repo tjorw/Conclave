@@ -17,7 +17,10 @@ public sealed class CreateConventionHandler(IConventionRepository repository)
             command.Name,
             command.Slug);
 
-        await repository.AddAsync(convention, ct);
+        var registrant = convention.RegisterPerson(command.RegistrantName, command.RegistrantEmail);
+        convention.AddAdministrator(registrant.Id, registrant.Id);
+
+        await repository.CreateWithAdminAsync(convention, registrant, ct);
         return convention.Id.Value;
     }
 }

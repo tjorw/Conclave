@@ -11,7 +11,7 @@ public static class ConventionEndpoints
 
         group.MapPost("/", async (CreateConventionRequest request, ISender sender, CancellationToken ct) =>
         {
-            var id = await sender.Send(new CreateConventionCommand(request.Name, request.Slug), ct);
+            var id = await sender.Send(new CreateConventionCommand(request.Name, request.Slug, request.RegistrantName, request.RegistrantEmail), ct);
             return Results.Created($"/conventions/{id}", new { id });
         });
 
@@ -19,4 +19,4 @@ public static class ConventionEndpoints
     }
 }
 
-public record CreateConventionRequest(string Name, string Slug);
+public record CreateConventionRequest(string Name, string Slug, string RegistrantName, string RegistrantEmail);
