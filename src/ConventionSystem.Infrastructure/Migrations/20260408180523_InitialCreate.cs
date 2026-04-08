@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ConventionSystem.Infrastructure.Persistence.Migrations
+namespace ConventionSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -35,9 +35,9 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                     end_date = table.Column<DateOnly>(type: "date", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     organiser_registration_open = table.Column<bool>(type: "bit", nullable: false),
-                    volunteer_registration_open = table.Column<bool>(type: "bit", nullable: false),
+                    staff_registration_open = table.Column<bool>(type: "bit", nullable: false),
                     visitor_registration_open = table.Column<bool>(type: "bit", nullable: false),
-                    volunteer_coordinator_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    staff_coordinator_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     event_coordinator_id = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
@@ -74,6 +74,39 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_session_registrations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "shifts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newsequentialid()"),
+                    station_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    start_time = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    end_time = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    min_persons = table.Column<int>(type: "int", nullable: false),
+                    max_persons = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_shifts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "staff_applications",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newsequentialid()"),
+                    person_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    edition_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    interest_description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    created_at = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_staff_applications", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -124,39 +157,6 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_visitor_registrations", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "volunteer_applications",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newsequentialid()"),
-                    person_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    edition_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    interest_description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    created_at = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_volunteer_applications", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "volunteer_shifts",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newsequentialid()"),
-                    station_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    start_time = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    end_time = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    min_persons = table.Column<int>(type: "int", nullable: false),
-                    max_persons = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_volunteer_shifts", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -243,6 +243,67 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "staff_assignments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newsequentialid()"),
+                    person_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    assigned_by_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    assigned_at = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    ShiftId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_staff_assignments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_staff_assignments_shifts_ShiftId",
+                        column: x => x.ShiftId,
+                        principalTable: "shifts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "staff_application_availabilities",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newsequentialid()"),
+                    start = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    end = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StaffApplicationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_staff_application_availabilities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_staff_application_availabilities_staff_applications_StaffApplicationId",
+                        column: x => x.StaffApplicationId,
+                        principalTable: "staff_applications",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "staff_application_stations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newsequentialid()"),
+                    station_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StaffApplicationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_staff_application_stations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_staff_application_stations_staff_applications_StaffApplicationId",
+                        column: x => x.StaffApplicationId,
+                        principalTable: "staff_applications",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ticket_perks",
                 columns: table => new
                 {
@@ -257,67 +318,6 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                         name: "FK_ticket_perks_ticket_types_TicketTypeId",
                         column: x => x.TicketTypeId,
                         principalTable: "ticket_types",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "volunteer_application_availabilities",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newsequentialid()"),
-                    from = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    to = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    VolunteerApplicationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_volunteer_application_availabilities", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_volunteer_application_availabilities_volunteer_applications_VolunteerApplicationId",
-                        column: x => x.VolunteerApplicationId,
-                        principalTable: "volunteer_applications",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "volunteer_application_stations",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newsequentialid()"),
-                    station_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    VolunteerApplicationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_volunteer_application_stations", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_volunteer_application_stations_volunteer_applications_VolunteerApplicationId",
-                        column: x => x.VolunteerApplicationId,
-                        principalTable: "volunteer_applications",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "volunteer_assignments",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "newsequentialid()"),
-                    person_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    assigned_by_id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    assigned_at = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    VolunteerShiftId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_volunteer_assignments", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_volunteer_assignments_volunteer_shifts_VolunteerShiftId",
-                        column: x => x.VolunteerShiftId,
-                        principalTable: "volunteer_shifts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -484,6 +484,21 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                 column: "event_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_staff_application_availabilities_StaffApplicationId",
+                table: "staff_application_availabilities",
+                column: "StaffApplicationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_staff_application_stations_StaffApplicationId",
+                table: "staff_application_stations",
+                column: "StaffApplicationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_staff_assignments_ShiftId",
+                table: "staff_assignments",
+                column: "ShiftId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_stations_EditionId",
                 table: "stations",
                 column: "EditionId");
@@ -497,21 +512,6 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                 name: "IX_venues_EditionId",
                 table: "venues",
                 column: "EditionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_volunteer_application_availabilities_VolunteerApplicationId",
-                table: "volunteer_application_availabilities",
-                column: "VolunteerApplicationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_volunteer_application_stations_VolunteerApplicationId",
-                table: "volunteer_application_stations",
-                column: "VolunteerApplicationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_volunteer_assignments_VolunteerShiftId",
-                table: "volunteer_assignments",
-                column: "VolunteerShiftId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_co_organisers_events_EventId",
@@ -570,6 +570,15 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                 name: "sessions");
 
             migrationBuilder.DropTable(
+                name: "staff_application_availabilities");
+
+            migrationBuilder.DropTable(
+                name: "staff_application_stations");
+
+            migrationBuilder.DropTable(
+                name: "staff_assignments");
+
+            migrationBuilder.DropTable(
                 name: "stations");
 
             migrationBuilder.DropTable(
@@ -585,28 +594,19 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                 name: "visitor_registrations");
 
             migrationBuilder.DropTable(
-                name: "volunteer_application_availabilities");
-
-            migrationBuilder.DropTable(
-                name: "volunteer_application_stations");
-
-            migrationBuilder.DropTable(
-                name: "volunteer_assignments");
-
-            migrationBuilder.DropTable(
                 name: "conventions");
+
+            migrationBuilder.DropTable(
+                name: "staff_applications");
+
+            migrationBuilder.DropTable(
+                name: "shifts");
 
             migrationBuilder.DropTable(
                 name: "ticket_types");
 
             migrationBuilder.DropTable(
                 name: "editions");
-
-            migrationBuilder.DropTable(
-                name: "volunteer_applications");
-
-            migrationBuilder.DropTable(
-                name: "volunteer_shifts");
 
             migrationBuilder.DropTable(
                 name: "events");

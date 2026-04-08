@@ -1,30 +1,30 @@
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
-using ConventionSystem.Domain.Volunteer.Ids;
+using ConventionSystem.Domain.Staff.Ids;
 
-namespace ConventionSystem.Domain.Volunteer.Events;
+namespace ConventionSystem.Domain.Staff.Events;
 
-public record VolunteerShiftCancelled(
-    VolunteerShiftId ShiftId,
+public record ShiftCancelled(
+    ShiftId ShiftId,
     StationId StationId,
     PersonId PerformedById,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
 public record AssignmentConfirmed(
-    VolunteerAssignmentId AssignmentId,
-    VolunteerShiftId ShiftId,
+    StaffAssignmentId AssignmentId,
+    ShiftId ShiftId,
     PersonId PersonId,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
 public record AssignmentRejected(
-    VolunteerAssignmentId AssignmentId,
-    VolunteerShiftId ShiftId,
+    StaffAssignmentId AssignmentId,
+    ShiftId ShiftId,
     PersonId PersonId,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
 public record AssignmentCancelled(
-    VolunteerAssignmentId AssignmentId,
-    VolunteerShiftId ShiftId,
+    StaffAssignmentId AssignmentId,
+    ShiftId ShiftId,
     PersonId PersonId,
     PersonId PerformedById,
     DateTimeOffset OccurredAt) : IDomainEvent;

@@ -19,9 +19,9 @@ public sealed class Edition : AggregateRoot
     public DatePeriod Period { get; private set; } = null!;
     public EditionStatus Status { get; private set; }
     public bool OrganiserRegistrationOpen { get; private set; }
-    public bool VolunteerRegistrationOpen { get; private set; }
+    public bool StaffRegistrationOpen { get; private set; }
     public bool VisitorRegistrationOpen { get; private set; }
-    public PersonId? VolunteerCoordinatorId { get; private set; }
+    public PersonId? StaffCoordinatorId { get; private set; }
     public PersonId? EventCoordinatorId { get; private set; }
 
     public IReadOnlyList<Venue> Venues => _venues.AsReadOnly();
@@ -55,11 +55,11 @@ public sealed class Edition : AggregateRoot
         RaiseDomainEvent(new RegistrationOpened(Id, RegistrationType.Organiser, performedById, DateTimeOffset.UtcNow));
     }
 
-    public void OpenVolunteerRegistration(PersonId performedById)
+    public void OpenStaffRegistration(PersonId performedById)
     {
         EnsurePublished();
-        VolunteerRegistrationOpen = true;
-        RaiseDomainEvent(new RegistrationOpened(Id, RegistrationType.Volunteer, performedById, DateTimeOffset.UtcNow));
+        StaffRegistrationOpen = true;
+        RaiseDomainEvent(new RegistrationOpened(Id, RegistrationType.Staff, performedById, DateTimeOffset.UtcNow));
     }
 
     public void OpenVisitorRegistration(PersonId performedById)

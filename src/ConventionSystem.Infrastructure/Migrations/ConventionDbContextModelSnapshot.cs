@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ConventionSystem.Infrastructure.Persistence.Migrations
+namespace ConventionSystem.Infrastructure.Migrations
 {
     [DbContext(typeof(ConventionDbContext))]
     partial class ConventionDbContextModelSnapshot : ModelSnapshot
@@ -71,6 +71,14 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                         .HasColumnType("bit")
                         .HasColumnName("organiser_registration_open");
 
+                    b.Property<Guid?>("StaffCoordinatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("staff_coordinator_id");
+
+                    b.Property<bool>("StaffRegistrationOpen")
+                        .HasColumnType("bit")
+                        .HasColumnName("staff_registration_open");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -79,14 +87,6 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                     b.Property<bool>("VisitorRegistrationOpen")
                         .HasColumnType("bit")
                         .HasColumnName("visitor_registration_open");
-
-                    b.Property<Guid?>("VolunteerCoordinatorId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("volunteer_coordinator_id");
-
-                    b.Property<bool>("VolunteerRegistrationOpen")
-                        .HasColumnType("bit")
-                        .HasColumnName("volunteer_registration_open");
 
                     b.HasKey("Id");
 
@@ -482,6 +482,41 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                     b.ToTable("session_registrations", (string)null);
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.StaffApplication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("newsequentialid()");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("EditionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("edition_id");
+
+                    b.Property<string>("InterestDescription")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)")
+                        .HasColumnName("interest_description");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("person_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("staff_applications", (string)null);
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.Ticket", b =>
                 {
                     b.Property<Guid>("Id")
@@ -561,41 +596,6 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                     b.ToTable("visitor_registrations", (string)null);
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.VolunteerApplication", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newsequentialid()");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid>("EditionId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("edition_id");
-
-                    b.Property<string>("InterestDescription")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)")
-                        .HasColumnName("interest_description");
-
-                    b.Property<Guid>("PersonId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("person_id");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("volunteer_applications", (string)null);
-                });
-
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Entities.Availability", b =>
                 {
                     b.Property<Guid>("Id")
@@ -603,14 +603,14 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("newsequentialid()");
 
-                    b.Property<Guid>("VolunteerApplicationId")
+                    b.Property<Guid>("StaffApplicationId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("VolunteerApplicationId");
+                    b.HasIndex("StaffApplicationId");
 
-                    b.ToTable("volunteer_application_availabilities", (string)null);
+                    b.ToTable("staff_application_availabilities", (string)null);
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Entities.TicketPerk", b =>
@@ -664,7 +664,7 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                     b.ToTable("ticket_types", (string)null);
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Volunteer.Aggregates.VolunteerShift", b =>
+            modelBuilder.Entity("ConventionSystem.Domain.Staff.Aggregates.Shift", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -682,10 +682,10 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("volunteer_shifts", (string)null);
+                    b.ToTable("shifts", (string)null);
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Volunteer.Entities.VolunteerAssignment", b =>
+            modelBuilder.Entity("ConventionSystem.Domain.Staff.Entities.StaffAssignment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -704,19 +704,19 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("person_id");
 
+                    b.Property<Guid>("ShiftId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<Guid>("VolunteerShiftId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("VolunteerShiftId");
+                    b.HasIndex("ShiftId");
 
-                    b.ToTable("volunteer_assignments", (string)null);
+                    b.ToTable("staff_assignments", (string)null);
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Aggregates.Edition", b =>
@@ -866,7 +866,7 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.VolunteerApplication", b =>
+            modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.StaffApplication", b =>
                 {
                     b.OwnsMany("ConventionSystem.Domain.Registration.Entities.StationPreference", "StationPreferences", b1 =>
                         {
@@ -875,21 +875,21 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                                 .HasColumnType("uniqueidentifier")
                                 .HasDefaultValueSql("newsequentialid()");
 
+                            b1.Property<Guid>("StaffApplicationId")
+                                .HasColumnType("uniqueidentifier");
+
                             b1.Property<Guid>("StationId")
                                 .HasColumnType("uniqueidentifier")
                                 .HasColumnName("station_id");
 
-                            b1.Property<Guid>("VolunteerApplicationId")
-                                .HasColumnType("uniqueidentifier");
-
                             b1.HasKey("Id");
 
-                            b1.HasIndex("VolunteerApplicationId");
+                            b1.HasIndex("StaffApplicationId");
 
-                            b1.ToTable("volunteer_application_stations", (string)null);
+                            b1.ToTable("staff_application_stations", (string)null);
 
                             b1.WithOwner()
-                                .HasForeignKey("VolunteerApplicationId");
+                                .HasForeignKey("StaffApplicationId");
                         });
 
                     b.Navigation("StationPreferences");
@@ -897,9 +897,9 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Entities.Availability", b =>
                 {
-                    b.HasOne("ConventionSystem.Domain.Registration.Aggregates.VolunteerApplication", null)
+                    b.HasOne("ConventionSystem.Domain.Registration.Aggregates.StaffApplication", null)
                         .WithMany("Availabilities")
-                        .HasForeignKey("VolunteerApplicationId")
+                        .HasForeignKey("StaffApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -911,15 +911,15 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
 
                             b1.Property<DateTime>("End")
                                 .HasColumnType("datetime2")
-                                .HasColumnName("to");
+                                .HasColumnName("end");
 
                             b1.Property<DateTime>("Start")
                                 .HasColumnType("datetime2")
-                                .HasColumnName("from");
+                                .HasColumnName("start");
 
                             b1.HasKey("AvailabilityId");
 
-                            b1.ToTable("volunteer_application_availabilities");
+                            b1.ToTable("staff_application_availabilities");
 
                             b1.WithOwner()
                                 .HasForeignKey("AvailabilityId");
@@ -938,11 +938,11 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Volunteer.Aggregates.VolunteerShift", b =>
+            modelBuilder.Entity("ConventionSystem.Domain.Staff.Aggregates.Shift", b =>
                 {
-                    b.OwnsOne("ConventionSystem.Domain.Volunteer.ValueObjects.StaffingRequirement", "StaffingRequirement", b1 =>
+                    b.OwnsOne("ConventionSystem.Domain.Staff.ValueObjects.StaffingRequirement", "StaffingRequirement", b1 =>
                         {
-                            b1.Property<Guid>("VolunteerShiftId")
+                            b1.Property<Guid>("ShiftId")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("uniqueidentifier");
 
@@ -954,17 +954,17 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                                 .HasColumnType("int")
                                 .HasColumnName("min_persons");
 
-                            b1.HasKey("VolunteerShiftId");
+                            b1.HasKey("ShiftId");
 
-                            b1.ToTable("volunteer_shifts");
+                            b1.ToTable("shifts");
 
                             b1.WithOwner()
-                                .HasForeignKey("VolunteerShiftId");
+                                .HasForeignKey("ShiftId");
                         });
 
-                    b.OwnsOne("ConventionSystem.Domain.Volunteer.ValueObjects.TimeSlot", "TimeSlot", b1 =>
+                    b.OwnsOne("ConventionSystem.Domain.Staff.ValueObjects.TimeSlot", "TimeSlot", b1 =>
                         {
-                            b1.Property<Guid>("VolunteerShiftId")
+                            b1.Property<Guid>("ShiftId")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("uniqueidentifier");
 
@@ -976,12 +976,12 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                                 .HasColumnType("datetime2")
                                 .HasColumnName("start_time");
 
-                            b1.HasKey("VolunteerShiftId");
+                            b1.HasKey("ShiftId");
 
-                            b1.ToTable("volunteer_shifts");
+                            b1.ToTable("shifts");
 
                             b1.WithOwner()
-                                .HasForeignKey("VolunteerShiftId");
+                                .HasForeignKey("ShiftId");
                         });
 
                     b.Navigation("StaffingRequirement")
@@ -991,11 +991,11 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Volunteer.Entities.VolunteerAssignment", b =>
+            modelBuilder.Entity("ConventionSystem.Domain.Staff.Entities.StaffAssignment", b =>
                 {
-                    b.HasOne("ConventionSystem.Domain.Volunteer.Aggregates.VolunteerShift", null)
+                    b.HasOne("ConventionSystem.Domain.Staff.Aggregates.Shift", null)
                         .WithMany("Assignments")
-                        .HasForeignKey("VolunteerShiftId")
+                        .HasForeignKey("ShiftId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1030,7 +1030,7 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                     b.Navigation("SessionRequests");
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.VolunteerApplication", b =>
+            modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.StaffApplication", b =>
                 {
                     b.Navigation("Availabilities");
                 });
@@ -1040,7 +1040,7 @@ namespace ConventionSystem.Infrastructure.Persistence.Migrations
                     b.Navigation("Perks");
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Volunteer.Aggregates.VolunteerShift", b =>
+            modelBuilder.Entity("ConventionSystem.Domain.Staff.Aggregates.Shift", b =>
                 {
                     b.Navigation("Assignments");
                 });

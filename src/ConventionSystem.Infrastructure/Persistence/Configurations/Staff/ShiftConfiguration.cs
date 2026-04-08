@@ -1,22 +1,22 @@
 using ConventionSystem.Domain.Convention.Ids;
-using ConventionSystem.Domain.Volunteer.Aggregates;
-using ConventionSystem.Domain.Volunteer.Entities;
-using ConventionSystem.Domain.Volunteer.Enums;
-using ConventionSystem.Domain.Volunteer.Ids;
+using ConventionSystem.Domain.Staff.Aggregates;
+using ConventionSystem.Domain.Staff.Entities;
+using ConventionSystem.Domain.Staff.Enums;
+using ConventionSystem.Domain.Staff.Ids;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ConventionSystem.Infrastructure.Persistence.Configurations.Volunteer;
+namespace ConventionSystem.Infrastructure.Persistence.Configurations.Staff;
 
-public sealed class VolunteerShiftConfiguration : IEntityTypeConfiguration<VolunteerShift>
+public sealed class ShiftConfiguration : IEntityTypeConfiguration<Shift>
 {
-    public void Configure(EntityTypeBuilder<VolunteerShift> builder)
+    public void Configure(EntityTypeBuilder<Shift> builder)
     {
-        builder.ToTable("volunteer_shifts");
+        builder.ToTable("shifts");
 
         builder.HasKey(s => s.Id);
         builder.Property(s => s.Id)
-            .HasConversion(id => id.Value, value => new VolunteerShiftId(value))
+            .HasConversion(id => id.Value, value => new ShiftId(value))
             .HasDefaultValueSql("newsequentialid()");
 
         builder.Property(s => s.StationId)
@@ -41,7 +41,7 @@ public sealed class VolunteerShiftConfiguration : IEntityTypeConfiguration<Volun
 
         builder.HasMany(s => s.Assignments)
             .WithOne()
-            .HasForeignKey("VolunteerShiftId")
+            .HasForeignKey("ShiftId")
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
@@ -49,15 +49,15 @@ public sealed class VolunteerShiftConfiguration : IEntityTypeConfiguration<Volun
     }
 }
 
-public sealed class VolunteerAssignmentConfiguration : IEntityTypeConfiguration<VolunteerAssignment>
+public sealed class StaffAssignmentConfiguration : IEntityTypeConfiguration<StaffAssignment>
 {
-    public void Configure(EntityTypeBuilder<VolunteerAssignment> builder)
+    public void Configure(EntityTypeBuilder<StaffAssignment> builder)
     {
-        builder.ToTable("volunteer_assignments");
+        builder.ToTable("staff_assignments");
 
         builder.HasKey(a => a.Id);
         builder.Property(a => a.Id)
-            .HasConversion(id => id.Value, value => new VolunteerAssignmentId(value))
+            .HasConversion(id => id.Value, value => new StaffAssignmentId(value))
             .HasDefaultValueSql("newsequentialid()");
 
         builder.Property(a => a.PersonId)

@@ -8,15 +8,34 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ConventionSystem.Infrastructure.Persistence.Configurations.Registration;
 
-public sealed class VolunteerApplicationConfiguration : IEntityTypeConfiguration<VolunteerApplication>
+public sealed class AvailabilityConfiguration : IEntityTypeConfiguration<Availability>
 {
-    public void Configure(EntityTypeBuilder<VolunteerApplication> builder)
+    public void Configure(EntityTypeBuilder<Availability> builder)
     {
-        builder.ToTable("volunteer_applications");
+        builder.ToTable("staff_application_availabilities");
 
         builder.HasKey(a => a.Id);
         builder.Property(a => a.Id)
-            .HasConversion(id => id.Value, value => new VolunteerApplicationId(value))
+            .HasConversion(id => id.Value, value => new AvailabilityId(value))
+            .HasDefaultValueSql("newsequentialid()");
+
+        builder.OwnsOne(a => a.TimeSlot, ts =>
+        {
+            ts.Property(t => t.Start).HasColumnName("start").IsRequired();
+            ts.Property(t => t.End).HasColumnName("end").IsRequired();
+        });
+    }
+}
+
+public sealed class StaffApplicationConfiguration : IEntityTypeConfiguration<StaffApplication>
+{
+    public void Configure(EntityTypeBuilder<StaffApplication> builder)
+    {
+        builder.ToTable("staff_applications");
+
+        builder.HasKey(a => a.Id);
+        builder.Property(a => a.Id)
+            .HasConversion(id => id.Value, value => new StaffApplicationId(value))
             .HasDefaultValueSql("newsequentialid()");
 
         builder.Property(a => a.PersonId)
@@ -39,14 +58,14 @@ public sealed class VolunteerApplicationConfiguration : IEntityTypeConfiguration
 
         builder.HasMany(a => a.Availabilities)
             .WithOne()
-            .HasForeignKey("VolunteerApplicationId")
+            .HasForeignKey("StaffApplicationId")
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.OwnsMany(a => a.StationPreferences, sp =>
         {
-            sp.ToTable("volunteer_application_stations");
-            sp.WithOwner().HasForeignKey("VolunteerApplicationId");
+            sp.ToTable("staff_application_stations");
+            sp.WithOwner().HasForeignKey("StaffApplicationId");
             sp.Property<Guid>("Id").HasDefaultValueSql("newsequentialid()");
             sp.HasKey("Id");
             sp.Property(p => p.StationId)
@@ -55,24 +74,5 @@ public sealed class VolunteerApplicationConfiguration : IEntityTypeConfiguration
         });
 
         builder.Navigation(a => a.Availabilities).HasField("_availabilities");
-    }
-}
-
-public sealed class AvailabilityConfiguration : IEntityTypeConfiguration<Availability>
-{
-    public void Configure(EntityTypeBuilder<Availability> builder)
-    {
-        builder.ToTable("volunteer_application_availabilities");
-
-        builder.HasKey(a => a.Id);
-        builder.Property(a => a.Id)
-            .HasConversion(id => id.Value, value => new AvailabilityId(value))
-            .HasDefaultValueSql("newsequentialid()");
-
-        builder.OwnsOne(a => a.TimeSlot, ts =>
-        {
-            ts.Property(t => t.Start).HasColumnName("from").IsRequired();
-            ts.Property(t => t.End).HasColumnName("to").IsRequired();
-        });
     }
 }

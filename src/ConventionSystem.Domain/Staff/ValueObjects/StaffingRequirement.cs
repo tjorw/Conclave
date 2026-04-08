@@ -1,6 +1,6 @@
 using ConventionSystem.Domain.Common;
 
-namespace ConventionSystem.Domain.Volunteer.ValueObjects;
+namespace ConventionSystem.Domain.Staff.ValueObjects;
 
 public sealed class StaffingRequirement : ValueObject
 {

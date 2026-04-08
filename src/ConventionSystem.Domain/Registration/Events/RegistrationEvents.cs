@@ -17,8 +17,8 @@ public record SessionRegistrationCancelled(
     PersonId PersonId,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
-public record VolunteerApplicationReceived(
-    VolunteerApplicationId ApplicationId,
+public record StaffApplicationReceived(
+    StaffApplicationId ApplicationId,
     PersonId PersonId,
     EditionId EditionId,
     DateTimeOffset OccurredAt) : IDomainEvent;

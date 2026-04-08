@@ -1,7 +1,7 @@
 using ConventionSystem.Domain.Convention.Ids;
-using ConventionSystem.Domain.Volunteer.ValueObjects;
+using ConventionSystem.Domain.Staff.ValueObjects;
 
-namespace ConventionSystem.Domain.Volunteer.Services;
+namespace ConventionSystem.Domain.Staff.Services;
 
 public interface IAssignmentService
 {

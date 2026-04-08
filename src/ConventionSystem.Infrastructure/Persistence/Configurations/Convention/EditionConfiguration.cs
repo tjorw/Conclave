@@ -35,12 +35,12 @@ public sealed class EditionConfiguration : IEntityTypeConfiguration<Edition>
             .HasMaxLength(50);
 
         builder.Property(e => e.OrganiserRegistrationOpen).HasColumnName("organiser_registration_open");
-        builder.Property(e => e.VolunteerRegistrationOpen).HasColumnName("volunteer_registration_open");
+        builder.Property(e => e.StaffRegistrationOpen).HasColumnName("staff_registration_open");
         builder.Property(e => e.VisitorRegistrationOpen).HasColumnName("visitor_registration_open");
 
-        builder.Property(e => e.VolunteerCoordinatorId)
+        builder.Property(e => e.StaffCoordinatorId)
             .HasConversion(id => id!.Value.Value, value => (PersonId?)new PersonId(value))
-            .HasColumnName("volunteer_coordinator_id");
+            .HasColumnName("staff_coordinator_id");
 
         builder.Property(e => e.EventCoordinatorId)
             .HasConversion(id => id!.Value.Value, value => (PersonId?)new PersonId(value))

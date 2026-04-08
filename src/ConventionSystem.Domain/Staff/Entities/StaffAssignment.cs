@@ -1,46 +1,46 @@
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
-using ConventionSystem.Domain.Volunteer.Enums;
-using ConventionSystem.Domain.Volunteer.Ids;
+using ConventionSystem.Domain.Staff.Enums;
+using ConventionSystem.Domain.Staff.Ids;
 
-namespace ConventionSystem.Domain.Volunteer.Entities;
+namespace ConventionSystem.Domain.Staff.Entities;
 
-public sealed class VolunteerAssignment : Entity<VolunteerAssignmentId>
+public sealed class StaffAssignment : Entity<StaffAssignmentId>
 {
     public PersonId PersonId { get; private set; }
     public PersonId AssignedById { get; private set; }
-    public VolunteerAssignmentStatus Status { get; private set; }
+    public StaffAssignmentStatus Status { get; private set; }
     public DateTimeOffset AssignedAt { get; private set; }
 
-    private VolunteerAssignment() { }
+    private StaffAssignment() { }
 
-    internal VolunteerAssignment(VolunteerAssignmentId id, PersonId personId, PersonId assignedById)
+    internal StaffAssignment(StaffAssignmentId id, PersonId personId, PersonId assignedById)
         : base(id)
     {
         PersonId = personId;
         AssignedById = assignedById;
-        Status = VolunteerAssignmentStatus.Assigned;
+        Status = StaffAssignmentStatus.Assigned;
         AssignedAt = DateTimeOffset.UtcNow;
     }
 
     internal void Confirm()
     {
-        if (Status != VolunteerAssignmentStatus.Assigned)
+        if (Status != StaffAssignmentStatus.Assigned)
             throw new InvalidOperationException("Tilldelningen måste vara i tilldelat läge för att bekräftas.");
-        Status = VolunteerAssignmentStatus.Confirmed;
+        Status = StaffAssignmentStatus.Confirmed;
     }
 
     internal void Reject()
     {
-        if (Status != VolunteerAssignmentStatus.Assigned)
+        if (Status != StaffAssignmentStatus.Assigned)
             throw new InvalidOperationException("Tilldelningen måste vara i tilldelat läge för att avvisas.");
-        Status = VolunteerAssignmentStatus.Rejected;
+        Status = StaffAssignmentStatus.Rejected;
     }
 
     internal void Cancel()
     {
-        if (Status == VolunteerAssignmentStatus.Cancelled)
+        if (Status == StaffAssignmentStatus.Cancelled)
             throw new InvalidOperationException("Tilldelningen är redan avbokad.");
-        Status = VolunteerAssignmentStatus.Cancelled;
+        Status = StaffAssignmentStatus.Cancelled;
     }
 }

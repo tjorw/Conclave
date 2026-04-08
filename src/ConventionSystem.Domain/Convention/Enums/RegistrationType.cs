@@ -1,3 +1,3 @@
 namespace ConventionSystem.Domain.Convention.Enums;
 
-public enum RegistrationType { Organiser, Volunteer, Visitor }
+public enum RegistrationType { Organiser, Staff, Visitor }

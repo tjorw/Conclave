@@ -8,33 +8,33 @@ using ConventionSystem.Domain.Registration.ValueObjects;
 
 namespace ConventionSystem.Domain.Registration.Aggregates;
 
-public sealed class VolunteerApplication : AggregateRoot
+public sealed class StaffApplication : AggregateRoot
 {
     private readonly List<Availability> _availabilities = [];
     private readonly List<StationPreference> _stationPreferences = [];
 
-    public VolunteerApplicationId Id { get; private set; }
+    public StaffApplicationId Id { get; private set; }
     public PersonId PersonId { get; private set; }
     public EditionId EditionId { get; private set; }
     public string InterestDescription { get; private set; } = string.Empty;
-    public VolunteerApplicationStatus Status { get; private set; }
+    public StaffApplicationStatus Status { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
 
     public IReadOnlyList<Availability> Availabilities => _availabilities.AsReadOnly();
     public IReadOnlyList<StationPreference> StationPreferences => _stationPreferences.AsReadOnly();
 
-    private VolunteerApplication() { }
+    private StaffApplication() { }
 
-    public VolunteerApplication(VolunteerApplicationId id, PersonId personId, EditionId editionId, string interestDescription)
+    public StaffApplication(StaffApplicationId id, PersonId personId, EditionId editionId, string interestDescription)
     {
         Id = id;
         PersonId = personId;
         EditionId = editionId;
         InterestDescription = interestDescription;
-        Status = VolunteerApplicationStatus.Received;
+        Status = StaffApplicationStatus.Received;
         CreatedAt = DateTimeOffset.UtcNow;
 
-        RaiseDomainEvent(new VolunteerApplicationReceived(Id, PersonId, EditionId, DateTimeOffset.UtcNow));
+        RaiseDomainEvent(new StaffApplicationReceived(Id, PersonId, EditionId, DateTimeOffset.UtcNow));
     }
 
     public Availability AddAvailability(DateTime from, DateTime to)
