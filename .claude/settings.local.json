@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet new:*)",
+      "Bash(dotnet sln add:*)",
+      "Bash(dotnet add:*)",
+      "Bash(mkdir -p src/ConventionSystem.Domain/Convention src/ConventionSystem.Domain/Event src/ConventionSystem.Domain/Registration src/ConventionSystem.Domain/Volunteer src/ConventionSystem.Application/Convention src/ConventionSystem.Application/Event src/ConventionSystem.Application/Registration src/ConventionSystem.Application/Volunteer)",
+      "Bash(rm -f src/ConventionSystem.Domain/Class1.cs src/ConventionSystem.Application/Class1.cs src/ConventionSystem.Infrastructure/Class1.cs)",
+      "Bash(dotnet build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(gh repo:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(dotnet run:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5127/openapi/v1.json)"
+    ]
+  }
+}

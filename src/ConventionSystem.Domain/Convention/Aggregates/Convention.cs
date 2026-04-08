@@ -18,6 +18,11 @@ public sealed class Convention : AggregateRoot
 
     public Convention(ConventionId id, string name, string slug)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
+        if (!System.Text.RegularExpressions.Regex.IsMatch(slug, @"^[a-z0-9-]+$"))
+            throw new ArgumentException("Slug får bara innehålla gemener, siffror och bindestreck.", nameof(slug));
+
         Id = id;
         Name = name;
         Slug = slug;

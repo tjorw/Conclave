@@ -1,4 +1,5 @@
 using ConventionSystem.Application;
+using ConventionSystem.Api.Endpoints;
 using ConventionSystem.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,5 +16,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapConventionEndpoints();
 
 app.Run();

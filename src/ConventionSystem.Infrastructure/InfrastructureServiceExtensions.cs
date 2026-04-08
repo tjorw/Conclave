@@ -1,6 +1,8 @@
+using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Infrastructure.Dispatching;
 using ConventionSystem.Infrastructure.Persistence;
+using ConventionSystem.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +15,8 @@ public static class InfrastructureServiceExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddScoped<IConventionRepository, ConventionRepository>();
+
         services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
         services.AddScoped<EventDispatchInterceptor>();
 
