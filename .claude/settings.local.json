@@ -14,7 +14,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(dotnet ef migrations:*)",
       "Bash(dotnet run:*)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5127/openapi/v1.json)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5127/openapi/v1.json)",
+      "Bash(dotnet ef:*)"
     ]
   }
 }

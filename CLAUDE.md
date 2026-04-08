@@ -91,6 +91,7 @@ De fyra contexts kommunicerar via domain events och id-referenser – ingen dire
 - **Starka id-typer:** `ConventionId`, `PersonId`, `EditionId` etc. – wrappade `Guid`
 - **ID-generering:** `Guid.CreateVersion7()` (.NET 9) i applikationskod innan insert. EF Core konfigureras med `HasDefaultValueSql("newsequentialid()")` som fallback på databasnivå. Generera aldrig id i databasen.
 - **Monetära belopp:** `int` (ören) eller `decimal`
+- `DomainEventLog` – alla domain events serialiseras till JSON och sparas i `domain_event_log`-tabellen i samma transaktion som aggregatändringen, innan MediatR-dispatch
 
 ## Domänmodell – översikt
 

@@ -29,6 +29,9 @@ public sealed class ConventionDbContext(DbContextOptions<ConventionDbContext> op
     // Staff
     public DbSet<Shift> Shifts => Set<Shift>();
 
+    // Infrastructure
+    public DbSet<DomainEventLogEntry> DomainEventLog => Set<DomainEventLogEntry>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

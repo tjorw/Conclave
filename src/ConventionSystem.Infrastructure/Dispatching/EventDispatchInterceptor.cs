@@ -6,6 +6,25 @@ namespace ConventionSystem.Infrastructure.Dispatching;
 
 public sealed class EventDispatchInterceptor(IDomainEventDispatcher dispatcher) : SaveChangesInterceptor
 {
+    public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
+        DbContextEventData eventData,
+        InterceptionResult<int> result,
+        CancellationToken cancellationToken = default)
+    {
+        if (eventData.Context is ConventionDbContext context)
+        {
+            var events = context.ChangeTracker
+                .Entries<AggregateRoot>()
+                .SelectMany(e => e.Entity.DomainEvents)
+                .ToList();
+
+            foreach (var @event in events)
+                context.DomainEventLog.Add(DomainEventLogEntry.From(@event));
+        }
+
+        return await base.SavingChangesAsync(eventData, result, cancellationToken);
+    }
+
     public override async ValueTask<int> SavedChangesAsync(
         SaveChangesCompletedEventData eventData,
         int result,
