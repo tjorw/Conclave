@@ -25,7 +25,7 @@ System administrator
 - The registering person is automatically added as administrator
 
 ## Domain Events
-- None
+- Convention Created, Person Created, Admin Added
 
 ## Acceptance Criteria
 - [ ] Convention is persisted with a valid ConventionId (Guid.CreateVersion7)
@@ -107,7 +107,7 @@ Convention administrator
 - Administrator-created persons may not have an associated identity account initially
 
 ## Domain Events
-- None
+- Person Created and Person Updated
 
 ## Acceptance Criteria
 - [ ] Person is persisted and linked to correct ConventionId

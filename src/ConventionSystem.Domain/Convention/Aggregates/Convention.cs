@@ -1,5 +1,6 @@
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Entities;
+using ConventionSystem.Domain.Convention.Events;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 
@@ -26,10 +27,16 @@ public sealed class Convention : AggregateRoot
         Id = id;
         Name = name;
         Slug = slug;
+
+        RaiseDomainEvent(new ConventionCreated(Id, Name, Slug, DateTimeOffset.UtcNow));
     }
 
     public Person RegisterPerson(string name, string email, string? phone = null)
-        => new(PersonId.New(), Id, name, email, phone);
+    {
+        var person = new Person(PersonId.New(), Id, name, email, phone);
+        RaiseDomainEvent(new PersonRegistered(person.Id, Id, DateTimeOffset.UtcNow));
+        return person;
+    }
 
     public ConventionAdministrator AddAdministrator(PersonId personId, PersonId performedById)
     {
@@ -38,6 +45,7 @@ public sealed class Convention : AggregateRoot
 
         var admin = new ConventionAdministrator(personId, performedById);
         _administrators.Add(admin);
+        RaiseDomainEvent(new AdministratorAdded(Id, personId, performedById, DateTimeOffset.UtcNow));
         return admin;
     }
 
