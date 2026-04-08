@@ -40,7 +40,7 @@ System administrator
 # UC002 – Identify or Create Person During Registration Flow
 
 ## Summary
-When a person participates in any registration flow (visitor, volunteer or organiser), the system either identifies an existing person account or creates a new one. This is not a standalone operation – it always occurs as part of another flow (UC-VR001, UC-VOL001, UC-EV001).
+When a person participates in any registration flow (visitor, staff or organiser), the system either identifies an existing person account or creates a new one. This is not a standalone operation – it always occurs as part of another flow (UC-VR001, UC-ST001, UC-EV001).
 
 ## Actor
 Any user initiating a registration flow
@@ -166,7 +166,7 @@ Convention administrator
 - Performing user is an administrator of the convention
 
 ## Flow
-1. Administrator provides name, start date, end date, volunteer coordinator and event coordinator
+1. Administrator provides name, start date, end date, staff coordinator and event coordinator
 2. System validates date range (end must be after start)
 3. System creates the edition with status Draft
 4. System returns the new EditionId
@@ -174,8 +174,8 @@ Convention administrator
 ## Business Rules
 - End date must be after start date
 - Edition is created with status Draft
-- Volunteer coordinator and event coordinator must be persons belonging to the convention
-- An edition cannot be published without a volunteer coordinator and event coordinator assigned
+- Staff coordinator and event coordinator must be persons belonging to the convention
+- An edition cannot be published without a staff coordinator and event coordinator assigned
 
 ## Domain Events
 - None (edition created but not yet published)
@@ -198,7 +198,7 @@ Convention administrator
 
 ## Preconditions
 - Edition exists with status Draft
-- Edition has a volunteer coordinator assigned
+- Edition has a staff coordinator assigned
 - Edition has an event coordinator assigned
 
 ## Flow
@@ -209,7 +209,7 @@ Convention administrator
 
 ## Business Rules
 - Only a Draft edition can be published
-- Volunteer coordinator must be assigned
+- Staff coordinator must be assigned
 - Event coordinator must be assigned
 - Once published, the edition cannot revert to Draft
 
@@ -266,7 +266,7 @@ Convention administrator
 # UC007 – Open Registration
 
 ## Summary
-An administrator opens one of the three registration flows (organiser, volunteer, visitor) for an edition.
+An administrator opens one of the three registration flows (organiser, staff, visitor) for an edition.
 
 ## Actor
 Convention administrator
@@ -276,14 +276,14 @@ Convention administrator
 - The specific registration flow is not already open
 
 ## Flow
-1. Administrator specifies which registration type to open (Organiser | Volunteer | Visitor)
+1. Administrator specifies which registration type to open (Organiser | Staff | Visitor)
 2. System validates that the edition is published
 3. System marks the registration type as open
 4. System emits RegistrationOpened event
 
 ## Business Rules
 - Registration can only be opened on a Published edition
-- Each registration type (organiser, volunteer, visitor) is opened independently
+- Each registration type (organiser, staff, visitor) is opened independently
 - There are no ordering rules between the three types – any can be opened first
 - A registration type cannot be opened twice
 
