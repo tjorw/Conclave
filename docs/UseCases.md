@@ -181,10 +181,10 @@ Convention administrator
 - None (edition created but not yet published)
 
 ## Acceptance Criteria
-- [ ] Edition is persisted with status Draft and valid EditionId
-- [ ] Invalid date range returns a validation error
-- [ ] Coordinator not belonging to convention returns a validation error
-- [ ] Command handler has a corresponding unit test
+- [x] Edition is persisted with status Draft and valid EditionId
+- [x] Invalid date range returns a validation error
+- [x] Coordinator not belonging to convention returns a validation error
+- [x] Command handler has a corresponding unit test
 
 ---
 
