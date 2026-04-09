@@ -61,6 +61,8 @@ public sealed class Edition : AggregateRoot
     public void OpenOrganiserRegistration(PersonId performedById)
     {
         EnsurePublished();
+        if (OrganiserRegistrationOpen)
+            throw new InvalidOperationException("Arrangörsregistrering är redan öppen.");
         OrganiserRegistrationOpen = true;
         RaiseDomainEvent(new RegistrationOpened(Id, RegistrationType.Organiser, performedById, DateTimeOffset.UtcNow));
     }
@@ -68,6 +70,8 @@ public sealed class Edition : AggregateRoot
     public void OpenStaffRegistration(PersonId performedById)
     {
         EnsurePublished();
+        if (StaffRegistrationOpen)
+            throw new InvalidOperationException("Personalregistrering är redan öppen.");
         StaffRegistrationOpen = true;
         RaiseDomainEvent(new RegistrationOpened(Id, RegistrationType.Staff, performedById, DateTimeOffset.UtcNow));
     }
@@ -75,6 +79,8 @@ public sealed class Edition : AggregateRoot
     public void OpenVisitorRegistration(PersonId performedById)
     {
         EnsurePublished();
+        if (VisitorRegistrationOpen)
+            throw new InvalidOperationException("Besökarregistrering är redan öppen.");
         VisitorRegistrationOpen = true;
         RaiseDomainEvent(new RegistrationOpened(Id, RegistrationType.Visitor, performedById, DateTimeOffset.UtcNow));
     }

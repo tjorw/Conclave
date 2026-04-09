@@ -1,6 +1,8 @@
 using ConventionSystem.Application.Convention.Commands.CopyEditionStructure;
 using ConventionSystem.Application.Convention.Commands.CreateEdition;
+using ConventionSystem.Application.Convention.Commands.OpenRegistration;
 using ConventionSystem.Application.Convention.Commands.PublishEdition;
+using ConventionSystem.Domain.Convention.Enums;
 using MediatR;
 
 namespace ConventionSystem.Api.Endpoints;
@@ -37,12 +39,22 @@ public static class EditionEndpoints
                 return Results.NoContent();
             });
 
+        app.MapPost("/editions/{editionId:guid}/registrations/{type}/open",
+            async (Guid editionId, string type, OpenRegistrationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                if (!Enum.TryParse<RegistrationType>(type, ignoreCase: true, out var registrationType))
+                    return Results.BadRequest($"Okänd registreringstyp: {type}.");
+                await sender.Send(new OpenRegistrationCommand(editionId, registrationType, request.PerformedById), ct);
+                return Results.NoContent();
+            });
+
         return app;
     }
 }
 
 public record PublishEditionRequest(Guid PerformedById);
 public record CopyEditionStructureRequest(Guid SourceEditionId, Guid PerformedById);
+public record OpenRegistrationRequest(Guid PerformedById);
 
 public record CreateEditionRequest(
     string Name,

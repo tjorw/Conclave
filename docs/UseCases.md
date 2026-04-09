@@ -291,11 +291,11 @@ Convention administrator
 - `RegistrationOpened { editionId, type: RegistrationType, performedById, occurredAt }`
 
 ## Acceptance Criteria
-- [ ] Correct registration flag is set to true on the edition
-- [ ] RegistrationOpened domain event is raised with correct type
-- [ ] Opening registration on a Draft edition returns a validation error
-- [ ] Opening an already-open registration type returns a validation error
-- [ ] Command handler has a corresponding unit test
+- [x] Correct registration flag is set to true on the edition
+- [x] RegistrationOpened domain event is raised with correct type
+- [x] Opening registration on a Draft edition returns a validation error
+- [x] Opening an already-open registration type returns a validation error
+- [x] Command handler has a corresponding unit test
 
 ---
 
