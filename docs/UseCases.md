@@ -146,10 +146,10 @@ Convention administrator
 - None
 
 ## Acceptance Criteria
-- [ ] ConventionAdministrator record is persisted with addedById and addedAt
-- [ ] Adding a non-member of the convention returns a validation error
-- [ ] Adding an already-existing administrator is handled gracefully
-- [ ] Command handler has a corresponding unit test
+- [x] ConventionAdministrator record is persisted with addedById and addedAt
+- [x] Adding a non-member of the convention returns a validation error
+- [x] Adding an already-existing administrator is handled gracefully
+- [x] Command handler has a corresponding unit test
 
 ---
 
