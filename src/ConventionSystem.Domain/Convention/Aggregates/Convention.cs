@@ -38,6 +38,9 @@ public sealed class Convention : AggregateRoot
         return person;
     }
 
+    public bool IsAdministrator(PersonId personId)
+        => _administrators.Any(a => a.PersonId == personId);
+
     public ConventionAdministrator AddAdministrator(PersonId personId, PersonId performedById)
     {
         if (_administrators.Any(a => a.PersonId == personId))

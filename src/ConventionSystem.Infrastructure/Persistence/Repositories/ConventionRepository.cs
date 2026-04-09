@@ -21,5 +21,10 @@ public sealed class ConventionRepository(ConventionDbContext db) : IConventionRe
     }
 
     public Task<Domain.Convention.Aggregates.Convention?> GetByIdAsync(ConventionId id, CancellationToken ct = default)
-        => db.Conventions.FirstOrDefaultAsync(c => c.Id == id, ct);
+        => db.Conventions
+            .Include(c => c.Administrators)
+            .FirstOrDefaultAsync(c => c.Id == id, ct);
+
+    public Task SaveAsync(CancellationToken ct = default)
+        => db.SaveChangesAsync(ct);
 }
