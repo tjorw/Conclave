@@ -1,691 +1,1197 @@
-# UC001 – Create Convention
+# UC001 – Skapa konvention
 
-## Summary
-An administrator creates a new convention tenant in the system.
+## Sammanfattning
+En administratör skapar en ny konvention i systemet.
 
-## Actor
-System administrator
+## Aktör
+Systemadministratör
 
-## Preconditions
-- None
+## Förutsättningar
+- Inga
 
-## Flow
-1. Administrator provides convention name, slug, and their own name and email
-2. System validates that slug is unique across all conventions
-3. System creates the convention
-4. System creates a person account for the registering user within the new convention
-5. System adds that person as a convention administrator (with themselves as addedById)
-6. System returns the new ConventionId
+## Flöde
+1. Administratören anger konventionens namn, slug samt sitt eget namn och e-post
+2. Systemet validerar att slug är unikt bland alla konventioner
+3. Systemet skapar konventionen
+4. Systemet skapar ett personkonto för den registrerande användaren inom den nya konventionen
+5. Systemet lägger till den personen som konventionsadministratör (med sig själv som addedById)
+6. Systemet returnerar det nya ConventionId
 
-## Business Rules
-- Slug must be unique across all conventions
-- Slug may only contain lowercase letters, digits and hyphens
-- Name must not be empty
-- A person account is always scoped to a convention – the registering user's person is created as part of this flow
-- The registering person is automatically added as administrator
+## Affärsregler
+- Slug måste vara unikt bland alla konventioner
+- Slug får bara innehålla gemener, siffror och bindestreck
+- Namn får inte vara tomt
+- Ett personkonto är alltid kopplat till en konvention – den registrerande användarens person skapas som en del av detta flöde
+- Den registrerande personen läggs automatiskt till som administratör
 
-## Domain Events
+## Domänhändelser
 - Convention Created, Person Created, Admin Added
 
-## Acceptance Criteria
-- [x] Convention is persisted with a valid ConventionId (Guid.CreateVersion7)
-- [x] A person account is created and linked to the new convention
-- [x] That person is added as administrator of the new convention
-- [x] Duplicate slug returns a validation error
-- [x] Invalid slug format returns a validation error
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Konventionen sparas med ett giltigt ConventionId (Guid.CreateVersion7)
+- [x] Ett personkonto skapas och kopplas till den nya konventionen
+- [x] Den personen läggs till som administratör för konventionen
+- [x] Dubblett-slug returnerar ett valideringsfel
+- [x] Ogiltigt slug-format returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC002 – Identify or Create Person During Registration Flow
+# UC002 – Identifiera eller skapa person vid registreringsflöde
 
-## Summary
-When a person participates in any registration flow (visitor, staff or organiser), the system either identifies an existing person account or creates a new one. This is not a standalone operation – it always occurs as part of another flow (UC-VR001, UC-ST001, UC-EV001).
+## Sammanfattning
+När en person deltar i något registreringsflöde (besökare, staff eller arrangör) identifierar systemet ett befintligt personkonto eller skapar ett nytt. Detta är inte en fristående operation – den sker alltid som en del av ett annat flöde (UC-VR001, UC-SA001, UC-EV001).
 
-## Actor
-Any user initiating a registration flow
+## Aktör
+Valfri användare som startar ett registreringsflöde
 
-## Preconditions
-- Convention exists
-- User is authenticated via identity provider (email/password or social login)
+## Förutsättningar
+- Konventionen finns
+- Användaren är autentiserad via identitetsleverantör (e-post/lösenord eller social inloggning)
 
-## Flow
-1. User authenticates via identity provider
-2. System checks if a person account exists for this identity within the convention
-3a. If person exists: system links the session to the existing person account
-3b. If person does not exist: system creates a new person account linked to the convention and the authenticated identity
-4. Registration flow continues
+## Flöde
+1. Användaren autentiserar sig via identitetsleverantör
+2. Systemet kontrollerar om ett personkonto finns för denna identitet inom konventionen
+3a. Om personen finns: systemet kopplar sessionen till det befintliga personkontot
+3b. Om personen inte finns: systemet skapar ett nytt personkonto kopplat till konventionen och den autentiserade identiteten
+4. Registreringsflödet fortsätter
 
-## Business Rules
-- A person account is always scoped to a convention
-- The same physical person may have separate person accounts in different conventions
-- Person creation is a side effect of authentication – never a standalone operation for end users
-- Name and phone are collected as part of the registration flow if not already present on the person account
+## Affärsregler
+- Ett personkonto är alltid kopplat till en konvention
+- Samma fysiska person kan ha separata personkonton i olika konventioner
+- Personskapandet är en bieffekt av autentisering – aldrig en fristående operation för slutanvändare
+- Namn och telefon samlas in som en del av registreringsflödet om de inte redan finns på personkontot
 
-## Domain Events
-- None (person creation is infrastructural, not a domain event)
+## Domänhändelser
+- Inga (personskapandet är infrastrukturellt, inte en domänhändelse)
 
-## Acceptance Criteria
-- [ ] Existing person is identified correctly on re-login
-- [ ] New person account is created on first login to a convention
-- [ ] Person is linked to correct ConventionId
-- [ ] No duplicate person accounts are created for the same identity within a convention
-
----
-
-# UC002b – Manage Person Registry
-
-## Summary
-An administrator creates, updates or deactivates person accounts in the convention's person registry.
-
-## Actor
-Convention administrator
-
-## Preconditions
-- Convention exists
-- Performing user is an administrator of the convention
-
-## Flow – Create
-1. Administrator provides name, email and optionally phone
-2. System validates email is unique within the convention
-3. System creates person account
-4. System returns PersonId
-
-## Flow – Update
-1. Administrator provides PersonId and updated fields (name, email, phone)
-2. System validates email uniqueness if email is changed
-3. System updates the person account
-
-## Flow – Deactivate
-1. Administrator provides PersonId
-2. System marks person as inactive
-3. Inactive persons cannot initiate new registrations but existing data is preserved
-
-## Business Rules
-- Email must be unique per convention
-- Deactivation is soft – person data is never deleted
-- Administrator-created persons may not have an associated identity account initially
-
-## Domain Events
-- Person Created and Person Updated
-
-## Acceptance Criteria
-- [x] Person is persisted and linked to correct ConventionId
-- [x] Duplicate email returns a validation error
-- [x] Deactivated person cannot initiate new registrations
-- [x] Command handlers have corresponding unit tests
+## Acceptanskriterier
+- [ ] Befintlig person identifieras korrekt vid återinloggning
+- [ ] Nytt personkonto skapas vid första inloggning till en konvention
+- [ ] Person kopplas till korrekt ConventionId
+- [ ] Inga dubbla personkonton skapas för samma identitet inom en konvention
 
 ---
 
-# UC003 – Add Convention Administrator
+# UC002b – Hantera personregister
 
-## Summary
-An existing administrator grants administrator rights to a person within a convention.
+## Sammanfattning
+En administratör skapar, uppdaterar eller avaktiverar personkonton i konventionens personregister.
 
-## Actor
-Convention administrator
+## Aktör
+Konventionsadministratör
 
-## Preconditions
-- Convention exists
-- Person exists within the convention
-- Performing user is an administrator of the convention
+## Förutsättningar
+- Konventionen finns
+- Utföraren är administratör för konventionen
 
-## Flow
-1. Administrator searches for person by email within the convention
-2. System returns matching person
-3. Administrator confirms and grants admin rights to the person
-4. System validates that the person belongs to the convention
-5. System adds the person as administrator
-6. System records who performed the action and when
+## Flöde – Skapa
+1. Administratören anger namn, e-post och valfritt telefonnummer
+2. Systemet validerar att e-post är unikt inom konventionen
+3. Systemet skapar personkontot
+4. Systemet returnerar PersonId
 
-## Business Rules
-- Only existing administrators may add new administrators
-- A person may only be added as administrator once (idempotent or validation error)
+## Flöde – Uppdatera
+1. Administratören anger PersonId och uppdaterade fält (namn, e-post, telefon)
+2. Systemet validerar e-postunikthet om e-post ändras
+3. Systemet uppdaterar personkontot
 
-## Domain Events
-- None
+## Flöde – Avaktivera
+1. Administratören anger PersonId
+2. Systemet markerar personen som inaktiv
+3. Inaktiva personer kan inte initiera nya registreringar men befintlig data bevaras
 
-## Acceptance Criteria
-- [x] ConventionAdministrator record is persisted with addedById and addedAt
-- [x] Adding a non-member of the convention returns a validation error
-- [x] Adding an already-existing administrator is handled gracefully
-- [x] Command handler has a corresponding unit test
+## Affärsregler
+- E-post måste vara unikt per konvention
+- Avaktivering är mjuk – persondata raderas aldrig
+- Administratörsskapade personer har kanske inget kopplat identitetskonto initialt
 
----
+## Domänhändelser
+- Person Created och Person Updated
 
-# UC004 – Create Edition
-
-## Summary
-An administrator creates a new edition of a convention.
-
-## Actor
-Convention administrator
-
-## Preconditions
-- Convention exists
-- Performing user is an administrator of the convention
-
-## Flow
-1. Administrator provides name, start date, end date, staff coordinator and event coordinator
-2. System validates date range (end must be after start)
-3. System creates the edition with status Draft
-4. System returns the new EditionId
-
-## Business Rules
-- End date must be after start date
-- Edition is created with status Draft
-- Staff coordinator and event coordinator must be persons belonging to the convention
-- An edition cannot be published without a staff coordinator and event coordinator assigned
-
-## Domain Events
-- None (edition created but not yet published)
-
-## Acceptance Criteria
-- [x] Edition is persisted with status Draft and valid EditionId
-- [x] Invalid date range returns a validation error
-- [x] Coordinator not belonging to convention returns a validation error
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Person sparas och kopplas till korrekt ConventionId
+- [x] Dubblett-e-post returnerar ett valideringsfel
+- [x] Avaktiverad person kan inte initiera nya registreringar
+- [x] Kommandohanterarna har tillhörande enhetstester
 
 ---
 
-# UC005 – Publish Edition
+# UC003 – Lägg till konventionsadministratör
 
-## Summary
-An administrator publishes an edition, making it visible and enabling registration flows to be opened.
+## Sammanfattning
+En befintlig administratör ger administratörsrättigheter till en person inom en konvention.
 
-## Actor
-Convention administrator
+## Aktör
+Konventionsadministratör
 
-## Preconditions
-- Edition exists with status Draft
-- Edition has a staff coordinator assigned
-- Edition has an event coordinator assigned
+## Förutsättningar
+- Konventionen finns
+- Personen finns inom konventionen
+- Utföraren är administratör för konventionen
 
-## Flow
-1. Administrator triggers publish
-2. System validates all preconditions
-3. System transitions edition status to Published
-4. System emits EditionPublished event
+## Flöde
+1. Administratören söker upp person via e-post inom konventionen
+2. Systemet returnerar matchande person
+3. Administratören bekräftar och ger admin-rättigheter till personen
+4. Systemet validerar att personen tillhör konventionen
+5. Systemet lägger till personen som administratör
+6. Systemet registrerar vem som utförde åtgärden och när
 
-## Business Rules
-- Only a Draft edition can be published
-- Staff coordinator must be assigned
-- Event coordinator must be assigned
-- Once published, the edition cannot revert to Draft
+## Affärsregler
+- Bara befintliga administratörer kan lägga till nya administratörer
+- En person kan bara läggas till som administratör en gång (idempotent eller valideringsfel)
 
-## Domain Events
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [x] ConventionAdministrator-post sparas med addedById och addedAt
+- [x] Att lägga till en person som inte tillhör konventionen returnerar ett valideringsfel
+- [x] Att lägga till en redan befintlig administratör hanteras korrekt
+- [x] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC004 – Skapa upplaga
+
+## Sammanfattning
+En administratör skapar en ny upplaga av en konvention.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Konventionen finns
+- Utföraren är administratör för konventionen
+
+## Flöde
+1. Administratören anger namn, startdatum, slutdatum, bemanningskoordinator och arrangemangskoordinator
+2. Systemet validerar datumintervall (slutet måste vara efter starten)
+3. Systemet skapar upplagan med status Utkast
+4. Systemet returnerar det nya EditionId
+
+## Affärsregler
+- Slutdatum måste vara efter startdatum
+- Upplagan skapas med status Utkast
+- Bemanningskoordinator och arrangemangskoordinator måste vara personer som tillhör konventionen
+- En upplaga kan inte publiceras utan tilldelade koordinatorer
+
+## Domänhändelser
+- Inga (upplagan skapas men publiceras ännu inte)
+
+## Acceptanskriterier
+- [x] Upplagan sparas med status Utkast och giltigt EditionId
+- [x] Ogiltigt datumintervall returnerar ett valideringsfel
+- [x] Koordinator som inte tillhör konventionen returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC005 – Publicera upplaga
+
+## Sammanfattning
+En administratör publicerar en upplaga, vilket gör den synlig och möjliggör att registreringsflöden kan öppnas.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Upplagan finns med status Utkast
+- Upplagan har en bemanningskoordinator tilldelad
+- Upplagan har en arrangemangskoordinator tilldelad
+
+## Flöde
+1. Administratören utlöser publicering
+2. Systemet validerar alla förutsättningar
+3. Systemet ändrar upplagens status till Publicerad
+4. Systemet skickar EditionPublished-händelse
+
+## Affärsregler
+- Bara en Utkast-upplaga kan publiceras
+- Bemanningskoordinator måste vara tilldelad
+- Arrangemangskoordinator måste vara tilldelad
+- När en upplaga väl är publicerad kan den inte återgå till Utkast
+
+## Domänhändelser
 - `EditionPublished { editionId, performedById, occurredAt }`
 
-## Acceptance Criteria
-- [x] Edition status transitions to Published
-- [x] EditionPublished domain event is raised
-- [x] Publishing without coordinators returns a validation error
-- [x] Publishing an already-published edition returns a validation error
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Upplagens status övergår till Publicerad
+- [x] EditionPublished-händelse skickas
+- [x] Publicering utan koordinatorer returnerar ett valideringsfel
+- [x] Publicering av en redan publicerad upplaga returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC006 – Copy Structure from Previous Edition
+# UC006 – Kopiera struktur från föregående upplaga
 
-## Summary
-An administrator copies venues and stations from a previous edition to a new edition as a starting point.
+## Sammanfattning
+En administratör kopierar lokaler och stationer från en föregående upplaga till en ny upplaga som startpunkt.
 
-## Actor
-Convention administrator
+## Aktör
+Konventionsadministratör
 
-## Preconditions
-- Target edition exists with status Draft
-- Source edition exists and belongs to the same convention
-- Performing user is an administrator of the convention
+## Förutsättningar
+- Målupplagan finns med status Utkast
+- Källupplagan finns och tillhör samma konvention
+- Utföraren är administratör för konventionen
 
-## Flow
-1. Administrator provides source EditionId and target EditionId
-2. System copies all venues from source to target
-3. System copies all stations from source to target (station responsible is copied as a reference but may need to be re-assigned)
-4. System emits StructureCopiedFromEdition event
+## Flöde
+1. Administratören anger käll-EditionId och mål-EditionId
+2. Systemet kopierar alla lokaler från källan till målet
+3. Systemet kopierar alla funktionsområden och stationer från källan till målet
+4. Systemet skickar StructureCopiedFromEdition-händelse
 
-## Business Rules
-- Only a Draft edition can receive a copied structure
-- Source and target must belong to the same convention
-- Copying overwrites any existing venues and stations on the target edition
-- Categories are not copied – they are created separately per edition
+## Affärsregler
+- Bara en Utkast-upplaga kan ta emot en kopierad struktur
+- Källa och mål måste tillhöra samma konvention
+- Kopiering skriver över befintliga lokaler och stationer på målupplagan
+- Kategorier kopieras inte – de skapas separat per upplaga
 
-## Domain Events
-- `StructureCopiedFromEdition { targetId, sourceId, venueCount, stationCount, performedById, occurredAt }`
+## Domänhändelser
+- `StructureCopiedFromEdition { targetId, sourceId, venueCount, staffAreaCount, stationCount, performedById, occurredAt }`
 
-## Acceptance Criteria
-- [x] All venues from source are persisted on target with new ids
-- [x] All stations from source are persisted on target with new ids
-- [x] Copying to a Published edition returns a validation error
-- [x] Source and target from different conventions returns a validation error
-- [x] StructureCopiedFromEdition domain event is raised
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Alla lokaler från källan sparas på målet med nya id:n
+- [x] Alla stationer från källan sparas på målet med nya id:n
+- [x] Kopiering till en publicerad upplaga returnerar ett valideringsfel
+- [x] Källa och mål från olika konventioner returnerar ett valideringsfel
+- [x] StructureCopiedFromEdition-händelse skickas
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC007 – Open Registration
+# UC007 – Öppna registrering
 
-## Summary
-An administrator opens one of the three registration flows (organiser, staff, visitor) for an edition.
+## Sammanfattning
+En administratör öppnar ett av de tre registreringsflödena (arrangör, staff, besökare) för en upplaga.
 
-## Actor
-Convention administrator
+## Aktör
+Konventionsadministratör
 
-## Preconditions
-- Edition exists with status Published
-- The specific registration flow is not already open
+## Förutsättningar
+- Upplagan finns med status Publicerad
+- Det specifika registreringsflödet är inte redan öppet
 
-## Flow
-1. Administrator specifies which registration type to open (Organiser | Staff | Visitor)
-2. System validates that the edition is published
-3. System marks the registration type as open
-4. System emits RegistrationOpened event
+## Flöde
+1. Administratören anger vilket registreringsflöde som ska öppnas (Arrangör | Staff | Besökare)
+2. Systemet validerar att upplagan är publicerad
+3. Systemet markerar registreringstypen som öppen
+4. Systemet skickar RegistrationOpened-händelse
 
-## Business Rules
-- Registration can only be opened on a Published edition
-- Each registration type (organiser, staff, visitor) is opened independently
-- There are no ordering rules between the three types – any can be opened first
-- A registration type cannot be opened twice
+## Affärsregler
+- Registrering kan bara öppnas på en publicerad upplaga
+- Varje registreringstyp (arrangör, staff, besökare) öppnas oberoende av varandra
+- Det finns ingen ordningsregel mellan de tre typerna – vilken som helst kan öppnas först
+- En registreringstyp kan inte öppnas två gånger
 
-## Domain Events
+## Domänhändelser
 - `RegistrationOpened { editionId, type: RegistrationType, performedById, occurredAt }`
 
-## Acceptance Criteria
-- [x] Correct registration flag is set to true on the edition
-- [x] RegistrationOpened domain event is raised with correct type
-- [x] Opening registration on a Draft edition returns a validation error
-- [x] Opening an already-open registration type returns a validation error
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Rätt registreringsflagga sätts till true på upplagan
+- [x] RegistrationOpened-händelse skickas med korrekt typ
+- [x] Öppning av registrering på en Utkast-upplaga returnerar ett valideringsfel
+- [x] Öppning av en redan öppen registreringstyp returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC008 – Create Venue
+# UC008 – Skapa lokal
 
-## Summary
-An administrator creates a venue (physical room or space) for an edition.
+## Sammanfattning
+En administratör skapar en lokal (fysiskt rum eller utrymme) för en upplaga.
 
-## Actor
-Convention administrator
+## Aktör
+Konventionsadministratör
 
-## Preconditions
-- Edition exists
-- Performing user is an administrator of the convention
+## Förutsättningar
+- Upplagan finns
+- Utföraren är administratör för konventionen
 
-## Flow
-1. Administrator provides name and building
-2. System creates the venue linked to the edition
-3. System returns the new VenueId
+## Flöde
+1. Administratören anger namn och byggnad
+2. Systemet skapar lokalen kopplad till upplagan
+3. Systemet returnerar det nya VenueId
 
-## Business Rules
-- Name must not be empty
-- Venue is scoped to an edition
+## Affärsregler
+- Namn får inte vara tomt
+- Lokalen är kopplad till en upplaga
 
-## Domain Events
-- None
+## Domänhändelser
+- Inga
 
-## Acceptance Criteria
-- [x] Venue is persisted and linked to the correct EditionId
-- [x] Command handler has a corresponding unit test
-
----
-
-# UC009 – Create Station
-
-## Summary
-An administrator creates a volunteer station (e.g. reception, kitchen, cleaning) for an edition.
-
-## Actor
-Convention administrator
-
-## Preconditions
-- Edition exists
-- Responsible person exists and belongs to the convention
-
-## Flow
-1. Administrator provides name, description and responsible PersonId
-2. System creates the station linked to the edition
-3. System returns the new StationId
-
-## Business Rules
-- Name must not be empty
-- Responsible person must belong to the convention
-
-## Domain Events
-- None
-
-## Acceptance Criteria
-- [x] Station is persisted and linked to the correct EditionId
-- [x] Responsible person not belonging to convention returns a validation error
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Lokalen sparas och kopplas till korrekt EditionId
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC010 – Create Category
+# UC009 – Skapa station (ursprunglig, ersatt av UC009 reviderad)
 
-## Summary
-A convention administrator creates an event category (e.g. board games, roleplaying, auction) and assigns a responsible person.
+## Sammanfattning
+En administratör skapar en bemanningsstation (t.ex. reception, kök, städ) för en upplaga.
 
-## Actor
-Convention administrator
+## Aktör
+Konventionsadministratör
 
-## Preconditions
-- Edition exists
-- Responsible person exists and belongs to the convention
+## Förutsättningar
+- Upplagan finns
+- Ansvarig person finns och tillhör konventionen
 
-## Flow
-1. Administrator provides name, description and responsible PersonId
-2. System creates the category linked to the edition
-3. System returns the new CategoryId
+## Flöde
+1. Administratören anger namn, beskrivning och ansvarig PersonId
+2. Systemet skapar stationen kopplad till upplagan
+3. Systemet returnerar det nya StationId
 
-## Business Rules
-- Name must not be empty
-- Responsible person must belong to the convention
-- One person may be responsible for multiple categories
+## Affärsregler
+- Namn får inte vara tomt
+- Ansvarig person måste tillhöra konventionen
 
-## Domain Events
-- None
+## Domänhändelser
+- Inga
 
-## Acceptance Criteria
-- [x] Category is persisted and linked to the correct EditionId
-- [x] Responsible person not belonging to convention returns a validation error
-- [x] Command handler has a corresponding unit test
-
----
-
-# UC011 – Change Category Responsible
-
-## Summary
-A convention administrator reassigns the responsible person for a category.
-
-## Actor
-Convention administrator
-
-## Preconditions
-- Category exists
-- New responsible person exists and belongs to the convention
-
-## Flow
-1. Administrator provides CategoryId and new responsible PersonId
-2. System validates the new responsible person belongs to the convention
-3. System updates the responsible person on the category
-
-## Business Rules
-- New responsible person must belong to the convention
-
-## Domain Events
-- None
-
-## Acceptance Criteria
-- [x] Category responsible is updated
-- [x] New responsible not belonging to convention returns a validation error
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Stationen sparas och kopplas till korrekt EditionId
+- [x] Ansvarig person som inte tillhör konventionen returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC012 – Create Staff Area
+# UC010 – Skapa kategori
 
-## Summary
-A convention administrator creates a staff functional area (e.g. reception, kitchen, cleaning) under an edition and assigns a responsible person. The responsible person can administer all stations and shifts within the area.
+## Sammanfattning
+En konventionsadministratör skapar en arrangemangskategori (t.ex. brädspel, rollspel, auktion) och tilldelar en ansvarig person.
 
-## Actor
-Convention administrator
+## Aktör
+Konventionsadministratör
 
-## Preconditions
-- Edition exists
-- Responsible person exists and belongs to the convention
-- Performing user is an administrator of the convention
+## Förutsättningar
+- Upplagan finns
+- Ansvarig person finns och tillhör konventionen
 
-## Flow
-1. Administrator provides name, optional description and responsible PersonId
-2. System validates the responsible person belongs to the convention
-3. System creates the staff area linked to the edition
-4. System returns the new StaffAreaId
+## Flöde
+1. Administratören anger namn, beskrivning och ansvarig PersonId
+2. Systemet skapar kategorin kopplad till upplagan
+3. Systemet returnerar det nya CategoryId
 
-## Business Rules
-- Name must not be empty
-- Responsible person must belong to the convention
-- One person may be responsible for multiple staff areas
+## Affärsregler
+- Namn får inte vara tomt
+- Ansvarig person måste tillhöra konventionen
+- En person kan vara ansvarig för flera kategorier
 
-## Domain Events
-- None
+## Domänhändelser
+- Inga
 
-## Acceptance Criteria
-- [x] Staff area is persisted and linked to the correct EditionId
-- [x] Responsible person not belonging to convention returns a validation error
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Kategorin sparas och kopplas till korrekt EditionId
+- [x] Ansvarig person som inte tillhör konventionen returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC009 (revised) – Create Station
+# UC011 – Byt kategoriansvarig
 
-## Summary
-An administrator creates a station (e.g. "Reception desk A") under a staff area for an edition.
+## Sammanfattning
+En konventionsadministratör tilldelar om den ansvariga personen för en kategori.
 
-## Actor
-Convention administrator, Staff coordinator, or Staff area responsible
+## Aktör
+Konventionsadministratör
 
-## Preconditions
-- Edition exists
-- Staff area exists and belongs to the edition
-- Performing user is an administrator, staff coordinator, or responsible for the staff area
+## Förutsättningar
+- Kategorin finns
+- Den nya ansvariga personen finns och tillhör konventionen
 
-## Flow
-1. Administrator provides name, optional description and StaffAreaId
-2. System creates the station linked to the staff area
-3. System returns the new StationId
+## Flöde
+1. Administratören anger CategoryId och ny ansvarig PersonId
+2. Systemet validerar att den nya ansvariga personen tillhör konventionen
+3. Systemet uppdaterar ansvarig person på kategorin
 
-## Business Rules
-- Name must not be empty
-- Station is scoped to a staff area (and thereby an edition)
-- Station no longer has its own responsible person – the staff area responsible governs all stations in the area
+## Affärsregler
+- Ny ansvarig person måste tillhöra konventionen
 
-## Domain Events
-- None
+## Domänhändelser
+- Inga
 
-## Acceptance Criteria
-- [x] Station is persisted and linked to the correct StaffAreaId
-- [x] StaffAreaId not belonging to the edition returns a validation error
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Kategoriansvarig uppdateras
+- [x] Ny ansvarig som inte tillhör konventionen returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC-ST001 – Create Shift
+# UC012 – Skapa funktionsområde
 
-## Summary
-A staff coordinator or staff area responsible creates a shift (time slot with staffing requirements) for a station.
+## Sammanfattning
+En konventionsadministratör skapar ett bemanningsfunktionsområde (t.ex. reception, kök, städ) under en upplaga och tilldelar en ansvarig person. Den ansvarige kan administrera alla stationer och pass inom området.
 
-## Actor
-Convention administrator, Staff coordinator, or Staff area responsible
+## Aktör
+Konventionsadministratör
 
-## Preconditions
-- Station exists and belongs to the edition
-- Responsible person (shift lead) exists and belongs to the convention
-- Performing user is an administrator, staff coordinator, or responsible for the station's staff area
+## Förutsättningar
+- Upplagan finns
+- Ansvarig person finns och tillhör konventionen
+- Utföraren är administratör för konventionen
 
-## Flow
-1. Actor provides StationId, start time, end time, min persons, max persons, and shift lead PersonId
-2. System validates date range and staffing requirements
-3. System creates the shift with status Planned
-4. System returns the new ShiftId
+## Flöde
+1. Administratören anger namn, valfri beskrivning och ansvarig PersonId
+2. Systemet validerar att den ansvariga personen tillhör konventionen
+3. Systemet skapar funktionsområdet kopplat till upplagan
+4. Systemet returnerar det nya StaffAreaId
 
-## Business Rules
-- End time must be after start time
-- MaxPersons must be >= MinPersons
-- MinPersons must be >= 0
-- Shift lead can be any person belonging to the convention
-- Shift is created with status Planned
+## Affärsregler
+- Namn får inte vara tomt
+- Ansvarig person måste tillhöra konventionen
+- En person kan vara ansvarig för flera funktionsområden
 
-## Domain Events
-- None
+## Domänhändelser
+- Inga
 
-## Acceptance Criteria
-- [x] Shift is persisted with status Planned and correct StationId
-- [x] Invalid time range returns a validation error
-- [x] Invalid staffing requirement returns a validation error
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Funktionsområdet sparas och kopplas till korrekt EditionId
+- [x] Ansvarig person som inte tillhör konventionen returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC-ST002 – Assign Person to Shift
+# UC009 (reviderad) – Skapa station
 
-## Summary
-A staff coordinator or staff area responsible assigns a person to a shift. The primary scenario is assigning persons who have submitted a staff application, but any person in the convention can be assigned.
+## Sammanfattning
+En administratör skapar en station (t.ex. "Reception A") under ett funktionsområde för en upplaga.
 
-## Actor
-Convention administrator, Staff coordinator, or Staff area responsible
+## Aktör
+Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
 
-## Preconditions
-- Shift exists with status Planned
-- Person exists and belongs to the convention
+## Förutsättningar
+- Upplagan finns
+- Funktionsområdet finns och tillhör upplagan
+- Utföraren är administratör, bemanningskoordinator eller ansvarig för funktionsområdet
 
-## Flow
-1. Actor provides ShiftId and PersonId
-2. System validates the shift is not cancelled and has available capacity
-3. System checks for time overlap with the person's other shifts (warning only – does not block)
-4. System creates the assignment with status Assigned
-5. System returns the new StaffAssignmentId
+## Flöde
+1. Administratören anger namn, valfri beskrivning och StaffAreaId
+2. Systemet skapar stationen kopplad till funktionsområdet
+3. Systemet returnerar det nya StationId
 
-## Business Rules
-- Shift must not be cancelled
-- MaxPersons capacity must not be exceeded
-- A person cannot be assigned to the same shift twice
-- Time overlap with other shifts is a warning, not a hard block
-- Any person in the convention can be assigned (not limited to staff applicants)
+## Affärsregler
+- Namn får inte vara tomt
+- Station är kopplad till ett funktionsområde (och därigenom en upplaga)
+- Station har inte längre en egen ansvarig person – funktionsområdesansvarig styr alla stationer inom området
 
-## Domain Events
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [x] Stationen sparas och kopplas till korrekt StaffAreaId
+- [x] StaffAreaId som inte tillhör upplagan returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-ST001 – Skapa pass
+
+## Sammanfattning
+En bemanningskoordinator eller funktionsområdesansvarig skapar ett pass (tidslucka med bemanningskrav) för en station.
+
+## Aktör
+Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
+
+## Förutsättningar
+- Stationen finns och tillhör upplagan
+- Passansvarig person finns och tillhör konventionen
+- Utföraren är administratör, bemanningskoordinator eller ansvarig för stationens funktionsområde
+
+## Flöde
+1. Aktören anger StationId, starttid, sluttid, min antal, max antal och passansvarig PersonId
+2. Systemet validerar tidsintervall och bemanningskrav
+3. Systemet skapar passet med status Planerat
+4. Systemet returnerar det nya ShiftId
+
+## Affärsregler
+- Sluttid måste vara efter starttid
+- MaxPersons måste vara >= MinPersons
+- MinPersons måste vara >= 0
+- Passansvarig kan vara vilken person som helst som tillhör konventionen
+- Pass skapas med status Planerat
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [x] Passet sparas med status Planerat och korrekt StationId
+- [x] Ogiltigt tidsintervall returnerar ett valideringsfel
+- [x] Ogiltigt bemanningskrav returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-ST002 – Tilldela person till pass
+
+## Sammanfattning
+En bemanningskoordinator eller funktionsområdesansvarig tilldelar en person till ett pass. Det primära scenariot är att tilldela personer som skickat in en staffansökan, men vilken person som helst i konventionen kan tilldelas.
+
+## Aktör
+Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
+
+## Förutsättningar
+- Passet finns med status Planerat
+- Personen finns och tillhör konventionen
+
+## Flöde
+1. Aktören anger ShiftId och PersonId
+2. Systemet validerar att passet inte är inställt och har ledig kapacitet
+3. Systemet kontrollerar om personen har överlappande pass (varning, blockerar inte)
+4. Systemet skapar tilldelningen med status Tilldelad
+5. Systemet returnerar det nya StaffAssignmentId
+
+## Affärsregler
+- Passet får inte vara inställt
+- Maxkapaciteten får inte överskridas
+- En person kan inte tilldelas samma pass två gånger
+- Tidsöverlapp med andra pass är en varning, inte ett hårt stopp
+- Vilken person som helst i konventionen kan tilldelas (inte begränsat till staffsökande)
+
+## Domänhändelser
 - `PersonAssignedToShift { assignmentId, shiftId, personId, assignedById, occurredAt }`
 
-## Acceptance Criteria
-- [x] Assignment is persisted with status Assigned
-- [x] Assigning to a cancelled shift returns a validation error
-- [x] Assigning beyond max capacity returns a validation error
-- [x] Assigning the same person twice returns a validation error
-- [x] PersonAssignedToShift domain event is raised
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Tilldelningen sparas med status Tilldelad
+- [x] Tilldelning till ett inställt pass returnerar ett valideringsfel
+- [x] Tilldelning utöver maxkapacitet returnerar ett valideringsfel
+- [x] Tilldelning av samma person två gånger returnerar ett valideringsfel
+- [x] PersonAssignedToShift-händelse skickas
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC-ST003 – Confirm Assignment
+# UC-ST003 – Bekräfta tilldelning
 
-## Summary
-A staff coordinator or staff area responsible confirms a staff assignment.
+## Sammanfattning
+En bemanningskoordinator eller funktionsområdesansvarig bekräftar en bemanningstilldelning.
 
-## Actor
-Convention administrator, Staff coordinator, or Staff area responsible
+## Aktör
+Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
 
-## Preconditions
-- Assignment exists with status Assigned
+## Förutsättningar
+- Tilldelningen finns med status Tilldelad
 
-## Flow
-1. Actor provides StaffAssignmentId
-2. System transitions assignment status to Confirmed
-3. System emits AssignmentConfirmed event
+## Flöde
+1. Aktören anger StaffAssignmentId
+2. Systemet övergår tilldelningens status till Bekräftad
+3. Systemet skickar AssignmentConfirmed-händelse
 
-## Business Rules
-- Only an Assigned assignment can be confirmed
+## Affärsregler
+- Bara en Tilldelad tilldelning kan bekräftas
 
-## Domain Events
+## Domänhändelser
 - `AssignmentConfirmed { assignmentId, shiftId, personId, occurredAt }`
 
-## Acceptance Criteria
-- [x] Assignment status transitions to Confirmed
-- [x] AssignmentConfirmed domain event is raised
-- [x] Confirming a non-Assigned assignment returns a validation error
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Tilldelningens status övergår till Bekräftad
+- [x] AssignmentConfirmed-händelse skickas
+- [x] Bekräftelse av en icke-Tilldelad tilldelning returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC-ST004 – Reject Assignment
+# UC-ST004 – Neka tilldelning
 
-## Summary
-A staff coordinator or staff area responsible rejects a staff assignment.
+## Sammanfattning
+En bemanningskoordinator eller funktionsområdesansvarig nekar en bemanningstilldelning.
 
-## Actor
-Convention administrator, Staff coordinator, or Staff area responsible
+## Aktör
+Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
 
-## Preconditions
-- Assignment exists with status Assigned
+## Förutsättningar
+- Tilldelningen finns med status Tilldelad
 
-## Flow
-1. Actor provides StaffAssignmentId
-2. System transitions assignment status to Rejected
-3. System emits AssignmentRejected event
+## Flöde
+1. Aktören anger StaffAssignmentId
+2. Systemet övergår tilldelningens status till Nekad
+3. Systemet skickar AssignmentRejected-händelse
 
-## Business Rules
-- Only an Assigned assignment can be rejected
+## Affärsregler
+- Bara en Tilldelad tilldelning kan nekas
 
-## Domain Events
+## Domänhändelser
 - `AssignmentRejected { assignmentId, shiftId, personId, occurredAt }`
 
-## Acceptance Criteria
-- [x] Assignment status transitions to Rejected
-- [x] AssignmentRejected domain event is raised
-- [x] Rejecting a non-Assigned assignment returns a validation error
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Tilldelningens status övergår till Nekad
+- [x] AssignmentRejected-händelse skickas
+- [x] Nekande av en icke-Tilldelad tilldelning returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC-ST005 – Cancel Assignment
+# UC-ST005 – Avboka tilldelning
 
-## Summary
-A staff coordinator, staff area responsible, or the assigned person themselves cancels a staff assignment.
+## Sammanfattning
+En bemanningskoordinator, funktionsområdesansvarig eller den tilldelade personen själv avbokar en bemanningstilldelning.
 
-## Actor
-Convention administrator, Staff coordinator, Staff area responsible, or the assigned person
+## Aktör
+Konventionsadministratör, bemanningskoordinator, funktionsområdesansvarig eller den tilldelade personen
 
-## Preconditions
-- Assignment exists with status Assigned or Confirmed
+## Förutsättningar
+- Tilldelningen finns med status Tilldelad eller Bekräftad
 
-## Flow
-1. Actor provides StaffAssignmentId
-2. System validates that the actor is either authorized staff admin or the assigned person
-3. System transitions assignment status to Cancelled
-4. System emits AssignmentCancelled event
+## Flöde
+1. Aktören anger StaffAssignmentId
+2. Systemet validerar att aktören antingen är behörig bemanningsadmin eller den tilldelade personen
+3. Systemet övergår tilldelningens status till Avbokad
+4. Systemet skickar AssignmentCancelled-händelse
 
-## Business Rules
-- An Assigned or Confirmed assignment can be cancelled
-- A Rejected or already Cancelled assignment cannot be cancelled
-- The assigned person may cancel their own assignment
-- Administrators, staff coordinators, and staff area responsibles may cancel any assignment in their scope
+## Affärsregler
+- En Tilldelad eller Bekräftad tilldelning kan avbokas
+- En Nekad eller redan Avbokad tilldelning kan inte avbokas
+- Den tilldelade personen kan avboka sin egen tilldelning
+- Administratörer, bemanningskoordinatorer och funktionsområdesansvariga kan avboka valfri tilldelning inom sitt område
 
-## Domain Events
+## Domänhändelser
 - `AssignmentCancelled { assignmentId, shiftId, personId, performedById, occurredAt }`
 
-## Acceptance Criteria
-- [x] Assignment status transitions to Cancelled
-- [x] AssignmentCancelled domain event is raised
-- [x] Cancelling an already-cancelled or rejected assignment returns a validation error
-- [x] The assigned person can cancel their own assignment
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Tilldelningens status övergår till Avbokad
+- [x] AssignmentCancelled-händelse skickas
+- [x] Avbokning av en redan avbokad eller nekad tilldelning returnerar ett valideringsfel
+- [x] Den tilldelade personen kan avboka sin egen tilldelning
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC-ST006 – Cancel Shift
+# UC-ST006 – Ställ in pass
 
-## Summary
-A staff coordinator or staff area responsible cancels an entire shift. All active assignments are automatically cancelled via a domain event handler.
+## Sammanfattning
+En bemanningskoordinator eller funktionsområdesansvarig ställer in ett helt pass. Alla aktiva tilldelningar avbokas automatiskt via en domänhändelsehanterare.
 
-## Actor
-Convention administrator, Staff coordinator, or Staff area responsible
+## Aktör
+Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
 
-## Preconditions
-- Shift exists with status Planned
+## Förutsättningar
+- Passet finns med status Planerat
 
-## Flow
-1. Actor provides ShiftId
-2. System transitions shift status to Cancelled
-3. System emits ShiftCancelled event
-4. Domain event handler cancels all active assignments on the shift
+## Flöde
+1. Aktören anger ShiftId
+2. Systemet övergår passens status till Inställt
+3. Systemet skickar ShiftCancelled-händelse
+4. Domänhändelsehanterare avbokar alla aktiva tilldelningar på passet
 
-## Business Rules
-- Only a Planned shift can be cancelled
-- All Assigned and Confirmed assignments are cancelled as a side effect
+## Affärsregler
+- Bara ett Planerat pass kan ställas in
+- Alla Tilldelade och Bekräftade tilldelningar avbokas som bieffekt
 
-## Domain Events
+## Domänhändelser
 - `ShiftCancelled { shiftId, stationId, performedById, occurredAt }`
 
-## Acceptance Criteria
-- [x] Shift status transitions to Cancelled
-- [x] ShiftCancelled domain event is raised
-- [x] Cancelling an already-cancelled shift returns a validation error
-- [x] Command handler has a corresponding unit test
+## Acceptanskriterier
+- [x] Passens status övergår till Inställt
+- [x] ShiftCancelled-händelse skickas
+- [x] Inställning av ett redan inställt pass returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TK001 – Skapa biljetttyp
+
+## Sammanfattning
+En administratör skapar en biljetttyp för en upplaga (t.ex. "Helgbiljett", "Dagsbiljett", "Arrangörsbricka").
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Upplagan finns
+
+## Flöde
+1. Administratören anger namn, pris (i öre) och kategori (Besökare/Arrangör/Staff)
+2. Systemet skapar biljetttypen kopplad till upplagan
+3. Systemet returnerar det nya TicketTypeId
+
+## Affärsregler
+- Namn får inte vara tomt
+- Pris måste vara >= 0
+- Kategorin avgör vilket registreringsflöde som får använda biljetttypen
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Biljetttypen sparas och kopplas till korrekt EditionId
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-VR001 – Anmäl som besökare
+
+## Sammanfattning
+En besökare anmäler sig till en upplaga. Systemet skapar en väntande registrering och en reserverad biljett.
+
+## Aktör
+Besökare (autentiserad person)
+
+## Förutsättningar
+- Upplagan finns och har besöksregistrering öppen
+- Personen finns och tillhör konventionen
+- Biljetttypen finns, tillhör upplagan och har kategorin Besökare
+- Personen har inte redan en aktiv registrering för denna upplaga
+
+## Flöde
+1. Besökaren anger EditionId, PersonId och TicketTypeId
+2. Systemet validerar förutsättningarna
+3. Systemet skapar en VisitorRegistration med status VäntarPåBetalning
+4. Systemet skapar en Ticket med status Reserverad
+5. Systemet returnerar det nya VisitorRegistrationId
+
+## Affärsregler
+- Upplagan måste ha besöksregistrering öppen
+- En person kan inte ha mer än en aktiv (icke-avbokad) registrering per upplaga
+- Biljetttypen måste tillhöra samma upplaga och ha kategorin Besökare
+
+## Domänhändelser
+- Inga (betalningsbekräftelsen utlöser den meningsfulla händelsen)
+
+## Acceptanskriterier
+- [ ] VisitorRegistration sparas med status VäntarPåBetalning
+- [ ] Ticket sparas med status Reserverad och korrekt TicketTypeId
+- [ ] Registrering på en stängd upplaga returnerar ett valideringsfel
+- [ ] Dubblettregistrering (samma person + upplaga) returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-VR002 – Bekräfta besöksregistrerings betalning
+
+## Sammanfattning
+Efter en lyckad betalning bekräftar systemet besöksregistreringen och markerar biljetten som betald.
+
+## Aktör
+System (betalningsgateways webhook) eller konventionsadministratör
+
+## Förutsättningar
+- VisitorRegistration finns med status VäntarPåBetalning
+- Ticket finns med status Reserverad
+
+## Flöde
+1. Systemet anger VisitorRegistrationId och extern betalningsreferens
+2. Systemet anropar VisitorRegistration.ConfirmPayment(externalReferenceId)
+3. Systemet anropar Ticket.ConfirmPayment()
+4. Båda sparas
+
+## Affärsregler
+- Bara en VäntarPåBetalning-registrering kan bekräftas
+- Bara en Reserverad biljett kan bekräftas
+
+## Domänhändelser
+- `VisitorRegistrationConfirmed { registrationId, personId, editionId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] VisitorRegistrations status övergår till Bekräftad
+- [ ] Tickets status övergår till Betald
+- [ ] Bekräftelse av en redan bekräftad registrering returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-VR003 – Avboka besöksregistrering
+
+## Sammanfattning
+En besökare eller administratör avbokar en besöksregistrering och makulerar den tillhörande biljetten.
+
+## Aktör
+Besökare (egen registrering) eller konventionsadministratör
+
+## Förutsättningar
+- VisitorRegistration finns och är inte redan avbokad
+
+## Flöde
+1. Aktören anger VisitorRegistrationId och performedById
+2. Systemet anropar VisitorRegistration.Cancel()
+3. Systemet anropar Ticket.Revoke(performedById)
+4. Båda sparas
+
+## Affärsregler
+- En redan avbokad registrering kan inte avbokas igen
+- En makulerad biljett kan inte makuleras igen
+
+## Domänhändelser
+- `TicketRevoked { ticketId, personId, performedById, occurredAt }`
+
+## Acceptanskriterier
+- [ ] VisitorRegistrations status övergår till Avbokad
+- [ ] Tickets status övergår till Makulerad
+- [ ] Avbokning av en redan avbokad registrering returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TK002 – Utfärda biljett manuellt
+
+## Sammanfattning
+En administratör utfärdar manuellt en biljett till en person, exempelvis en fri biljett till en arrangör eller staffmedlem.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Upplagan finns
+- Biljetttypen finns och tillhör upplagan
+- Personen finns och tillhör konventionen
+
+## Flöde
+1. Administratören anger PersonId, EditionId, TicketTypeId och sin egen PersonId som assignedById
+2. Systemet skapar en Ticket med status Reserverad, kopplad till assignedById
+3. Systemet returnerar det nya TicketId
+
+## Affärsregler
+- Biljetttypen måste tillhöra samma upplaga
+- Personen måste tillhöra konventionen
+- Manuellt utfärdade biljetter följer samma livscykel (Reserverad → Betald → Uthämtad)
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Biljett sparas med status Reserverad och korrekt assignedById
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TK003 – Hämta ut biljett
+
+## Sammanfattning
+Personal vid entrén hämtar ut (validerar) en besökares biljett vid ankomst.
+
+## Aktör
+Konventionsstaff (ingång)
+
+## Förutsättningar
+- Biljett finns med status Betald
+
+## Flöde
+1. Personal anger TicketId och sin egen PersonId som performedById
+2. Systemet anropar Ticket.Collect(performedById)
+3. Systemet sparar den uppdaterade biljetten
+
+## Affärsregler
+- Bara en Betald biljett kan hämtas ut
+- CollectedById och CollectedAt registreras
+
+## Domänhändelser
+- `TicketCollected { ticketId, personId, performedById, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Biljettstatus övergår till Uthämtad
+- [ ] CollectedById och CollectedAt registreras
+- [ ] Uthämtning av en icke-Betald biljett returnerar ett valideringsfel
+- [ ] TicketCollected-händelse skickas
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TK004 – Makulera biljett
+
+## Sammanfattning
+En administratör makulerar en biljett, exempelvis vid återbetalning eller avstängning.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Biljett finns och är inte redan makulerad
+
+## Flöde
+1. Administratören anger TicketId och sin egen PersonId som performedById
+2. Systemet anropar Ticket.Revoke(performedById)
+3. Systemet sparar den uppdaterade biljetten
+
+## Affärsregler
+- En redan makulerad biljett kan inte makuleras igen
+
+## Domänhändelser
+- `TicketRevoked { ticketId, personId, performedById, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Biljettstatus övergår till Makulerad
+- [ ] TicketRevoked-händelse skickas
+- [ ] Makulering av en redan makulerad biljett returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-SA001 – Skicka in staffansökan
+
+## Sammanfattning
+En person skickar in en ansökan om att arbeta som staff vid en upplaga.
+
+## Aktör
+Valfri person som tillhör konventionen
+
+## Förutsättningar
+- Upplagan finns och har staffregistrering öppen
+- Personen finns och tillhör konventionen
+- Personen har inte redan en aktiv staffansökan för denna upplaga
+
+## Flöde
+1. Personen anger EditionId, PersonId och en intressebeskrivning
+2. Systemet validerar förutsättningarna
+3. Systemet skapar en StaffApplication med status Mottagen
+4. Systemet returnerar det nya StaffApplicationId
+
+## Affärsregler
+- Upplagan måste ha staffregistrering öppen
+- En person kan inte ha mer än en aktiv ansökan per upplaga
+- Intressebeskrivning får inte vara tom
+
+## Domänhändelser
+- `StaffApplicationReceived { applicationId, personId, editionId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] StaffApplication sparas med status Mottagen
+- [ ] StaffApplicationReceived-händelse skickas
+- [ ] Ansökan på en stängd upplaga returnerar ett valideringsfel
+- [ ] Dubblettansökan (samma person + upplaga) returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-SA002 – Lägg till tillgänglighet i staffansökan
+
+## Sammanfattning
+En sökande lägger till en tidslucka som anger när de kan arbeta.
+
+## Aktör
+Sökande (egen ansökan)
+
+## Förutsättningar
+- StaffApplication finns
+- Tidsintervallet är giltigt (slut efter start)
+
+## Flöde
+1. Sökande anger StaffApplicationId, starttid och sluttid
+2. Systemet anropar StaffApplication.AddAvailability(from, to)
+3. Systemet returnerar det nya AvailabilityId
+
+## Affärsregler
+- Sluttid måste vara efter starttid
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Tillgängligheten sparas och kopplas till staffansökan
+- [ ] Ogiltigt tidsintervall returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-SA003 – Ta bort tillgänglighet från staffansökan
+
+## Sammanfattning
+En sökande tar bort en tidigare tillagd tillgänglighets-tidslucka.
+
+## Aktör
+Sökande (egen ansökan)
+
+## Förutsättningar
+- StaffApplication finns
+- Tillgängligheten finns på ansökan
+
+## Flöde
+1. Sökande anger StaffApplicationId och AvailabilityId
+2. Systemet anropar StaffApplication.RemoveAvailability(availabilityId)
+
+## Affärsregler
+- Tillgängligheten måste tillhöra ansökan
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Tillgängligheten tas bort från staffansökan
+- [ ] Borttagning av en icke-existerande tillgänglighet returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-SA004 – Lägg till stationsönskemål i staffansökan
+
+## Sammanfattning
+En sökande uttrycker önskemål om att arbeta vid en specifik station.
+
+## Aktör
+Sökande (egen ansökan)
+
+## Förutsättningar
+- StaffApplication finns
+- Stationen finns och tillhör samma upplaga
+
+## Flöde
+1. Sökande anger StaffApplicationId och StationId
+2. Systemet anropar StaffApplication.AddStationPreference(stationId)
+
+## Affärsregler
+- En station kan bara förekomma en gång per ansökan
+- Stationen måste tillhöra samma upplaga som ansökan
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Stationsönskemål sparas på staffansökan
+- [ ] Tillägg av ett dubblettönskemål returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-SA005 – Ta bort stationsönskemål från staffansökan
+
+## Sammanfattning
+En sökande tar bort ett tidigare uttryckt stationsönskemål.
+
+## Aktör
+Sökande (egen ansökan)
+
+## Förutsättningar
+- StaffApplication finns
+- Stationsönskemålet finns på ansökan
+
+## Flöde
+1. Sökande anger StaffApplicationId och StationId
+2. Systemet anropar StaffApplication.RemoveStationPreference(stationId)
+
+## Affärsregler
+- Önskemålet måste finnas på ansökan
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Stationsönskemålet tas bort från staffansökan
+- [ ] Borttagning av ett icke-existerande önskemål returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-SA006 – Acceptera staffansökan
+
+## Sammanfattning
+En bemanningskoordinator accepterar en staffansökan och övergår den till status Bekräftad.
+
+## Aktör
+Konventionsadministratör eller bemanningskoordinator
+
+## Förutsättningar
+- StaffApplication finns med status Mottagen eller UnderGranskning
+
+## Flöde
+1. Bemanningskoordinatorn anger StaffApplicationId och performedById
+2. Systemet övergår StaffApplications status till Bekräftad
+
+## Affärsregler
+- Bara Mottagna eller UnderGranskning-ansökningar kan accepteras
+
+## Domänhändelser
+- `StaffApplicationAccepted { applicationId, personId, editionId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] StaffApplications status övergår till Bekräftad
+- [ ] StaffApplicationAccepted-händelse skickas
+- [ ] Accepterande av en redan bekräftad eller avslagen ansökan returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-SA007 – Avslå staffansökan
+
+## Sammanfattning
+En bemanningskoordinator avslår en staffansökan.
+
+## Aktör
+Konventionsadministratör eller bemanningskoordinator
+
+## Förutsättningar
+- StaffApplication finns med status Mottagen eller UnderGranskning
+
+## Flöde
+1. Bemanningskoordinatorn anger StaffApplicationId och performedById
+2. Systemet övergår StaffApplications status till Avslagen
+
+## Affärsregler
+- Bara Mottagna eller UnderGranskning-ansökningar kan avslås
+
+## Domänhändelser
+- `StaffApplicationRejected { applicationId, personId, editionId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] StaffApplications status övergår till Avslagen
+- [ ] StaffApplicationRejected-händelse skickas
+- [ ] Avslagande av en redan avslagen eller bekräftad ansökan returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-SR001 – Registrera för session
+
+## Sammanfattning
+En besökare med giltig biljett registrerar sig för en specifik session vid upplagan.
+
+## Aktör
+Besökare (autentiserad person med biljett)
+
+## Förutsättningar
+- Sessionen finns och har ledig kapacitet
+- Personen har en giltig Betald eller Uthämtad biljett för samma upplaga
+- Personen är inte redan registrerad för sessionen
+
+## Flöde
+1. Personen anger SessionId, PersonId och TicketId
+2. Systemet validerar platstillgänglighet via RegistrationRuleService
+3. Systemet validerar att biljetten är giltig för sessionens upplaga
+4. Systemet skapar SessionRegistration med status Bekräftad
+5. Systemet returnerar det nya SessionRegistrationId
+
+## Affärsregler
+- Sessionen måste ha ledig kapacitet (kontrolleras via kors-kontextfråga)
+- Biljetten måste vara Betald eller Uthämtad och tillhöra samma upplaga som sessionen
+- En person kan inte registrera sig för samma session två gånger
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] SessionRegistration sparas med status Bekräftad
+- [ ] Registrering när sessionen är full returnerar ett valideringsfel
+- [ ] Registrering med ogiltig biljett returnerar ett valideringsfel
+- [ ] Dubblettregistrering returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-SR002 – Avboka sessionsregistrering
+
+## Sammanfattning
+En besökare avbokar sin registrering för en session.
+
+## Aktör
+Besökare (egen registrering) eller konventionsadministratör
+
+## Förutsättningar
+- SessionRegistration finns och är inte redan avbokad
+
+## Flöde
+1. Aktören anger SessionRegistrationId
+2. Systemet anropar SessionRegistration.Cancel()
+3. Systemet sparar uppdateringen
+
+## Affärsregler
+- En redan avbokad registrering kan inte avbokas igen
+
+## Domänhändelser
+- `SessionRegistrationCancelled { registrationId, sessionId, personId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] SessionRegistrations status övergår till Avbokad
+- [ ] SessionRegistrationCancelled-händelse skickas
+- [ ] Avbokning av en redan avbokad registrering returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
