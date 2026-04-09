@@ -14,6 +14,8 @@ public sealed class Station : Entity<StationId>
     internal Station(StationId id, PersonId responsibleId, string name, string? description)
         : base(id)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
         ResponsibleId = responsibleId;
         Name = name;
         Description = description;
