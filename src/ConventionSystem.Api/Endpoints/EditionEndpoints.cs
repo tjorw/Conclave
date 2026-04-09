@@ -1,5 +1,6 @@
 using ConventionSystem.Application.Convention.Commands.CopyEditionStructure;
 using ConventionSystem.Application.Convention.Commands.CreateEdition;
+using ConventionSystem.Application.Convention.Commands.CreateVenue;
 using ConventionSystem.Application.Convention.Commands.OpenRegistration;
 using ConventionSystem.Application.Convention.Commands.PublishEdition;
 using ConventionSystem.Domain.Convention.Enums;
@@ -39,6 +40,14 @@ public static class EditionEndpoints
                 return Results.NoContent();
             });
 
+        app.MapPost("/editions/{editionId:guid}/venues",
+            async (Guid editionId, CreateVenueRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var id = await sender.Send(new CreateVenueCommand(
+                    editionId, request.Name, request.Building, request.Description, request.PerformedById), ct);
+                return Results.Created($"/venues/{id}", new { id });
+            });
+
         app.MapPost("/editions/{editionId:guid}/registrations/{type}/open",
             async (Guid editionId, string type, OpenRegistrationRequest request, ISender sender, CancellationToken ct) =>
             {
@@ -55,6 +64,7 @@ public static class EditionEndpoints
 public record PublishEditionRequest(Guid PerformedById);
 public record CopyEditionStructureRequest(Guid SourceEditionId, Guid PerformedById);
 public record OpenRegistrationRequest(Guid PerformedById);
+public record CreateVenueRequest(string Name, string Building, string? Description, Guid PerformedById);
 
 public record CreateEditionRequest(
     string Name,

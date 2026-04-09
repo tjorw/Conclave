@@ -324,8 +324,8 @@ Convention administrator
 - None
 
 ## Acceptance Criteria
-- [ ] Venue is persisted and linked to the correct EditionId
-- [ ] Command handler has a corresponding unit test
+- [x] Venue is persisted and linked to the correct EditionId
+- [x] Command handler has a corresponding unit test
 
 ---
 
