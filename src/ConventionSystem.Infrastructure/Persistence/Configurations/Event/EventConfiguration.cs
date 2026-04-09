@@ -84,6 +84,9 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
         builder.Navigation(e => e.Sessions).HasField("_sessions");
         builder.Navigation(e => e.CoOrganisers).HasField("_coOrganisers");
         builder.Navigation(e => e.Comments).HasField("_comments");
+
+        builder.HasIndex(e => e.EditionId).HasDatabaseName("IX_events_edition_id");
+        builder.HasIndex(e => e.CategoryId).HasDatabaseName("IX_events_category_id");
     }
 }
 
@@ -168,5 +171,7 @@ public sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
         builder.Property(s => s.Status)
             .HasConversion<string>()
             .HasMaxLength(50);
+
+        builder.HasIndex(s => s.VenueId).HasDatabaseName("IX_sessions_venue_id");
     }
 }

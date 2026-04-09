@@ -36,5 +36,8 @@ public sealed class SessionRegistrationConfiguration : IEntityTypeConfiguration<
             .HasMaxLength(50);
 
         builder.Property(r => r.CreatedAt).HasColumnName("created_at");
+
+        builder.HasIndex(r => r.SessionId).HasDatabaseName("IX_session_registrations_session_id");
+        builder.HasIndex(r => r.PersonId).HasDatabaseName("IX_session_registrations_person_id");
     }
 }

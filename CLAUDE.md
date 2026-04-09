@@ -210,6 +210,23 @@ builder.Property(p => p.Id)
     .HasDefaultValueSql("newsequentialid()");
 ```
 
+### Indexstrategi
+Varje tabell ska ha index på alla FK-kolumner som används i WHERE-filter. Index läggs alltid explicit i konfigurationsklassen med `HasDatabaseName` för tydliga namn.
+
+**Regler:**
+- Alla FK-kolumner indexeras – EF skapar bara automatiska index när `HasForeignKey` är konfigurerat, övriga måste läggas manuellt
+- Om en tabell alltid filtreras på två kolumner tillsammans (t.ex. `convention_id + Email`) används ett sammansatt index istället för två separata
+- Statuskolumner och boolean-flaggor indexeras **inte** – för låg selektivitet
+- Namnformat: `IX_{tabell}_{kolumn}` eller `IX_{tabell}_{kolumn1}_{kolumn2}`
+
+```csharp
+// Enkelt FK-index
+builder.HasIndex(e => e.ConventionId).HasDatabaseName("IX_editions_convention_id");
+
+// Sammansatt index – filtreras alltid på båda
+builder.HasIndex(p => new { p.ConventionId, p.Email }).HasDatabaseName("IX_persons_convention_id_email");
+```
+
 ### Repositories
 - `sealed class` med primär konstruktor som tar `ConventionDbContext`
 - Anropar `SaveChangesAsync` i slutet av varje skrivmetod – inget unit-of-work exponeras utåt

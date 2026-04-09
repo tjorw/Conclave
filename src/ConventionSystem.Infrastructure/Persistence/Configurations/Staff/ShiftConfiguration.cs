@@ -46,6 +46,8 @@ public sealed class ShiftConfiguration : IEntityTypeConfiguration<Shift>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Navigation(s => s.Assignments).HasField("_assignments");
+
+        builder.HasIndex(s => s.StationId).HasDatabaseName("IX_shifts_station_id");
     }
 }
 

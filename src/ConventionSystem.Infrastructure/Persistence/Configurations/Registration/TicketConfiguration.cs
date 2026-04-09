@@ -44,5 +44,9 @@ public sealed class TicketConfiguration : IEntityTypeConfiguration<Ticket>
 
         builder.Property(t => t.CollectedAt).HasColumnName("collected_at");
         builder.Property(t => t.CreatedAt).HasColumnName("created_at");
+
+        builder.HasIndex(t => t.EditionId).HasDatabaseName("IX_tickets_edition_id");
+        builder.HasIndex(t => t.PersonId).HasDatabaseName("IX_tickets_person_id");
+        builder.HasIndex(t => t.TicketTypeId).HasDatabaseName("IX_tickets_ticket_type_id");
     }
 }

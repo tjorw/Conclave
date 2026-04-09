@@ -36,6 +36,8 @@ public sealed class TicketTypeConfiguration : IEntityTypeConfiguration<TicketTyp
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Navigation(t => t.Perks).HasField("_perks");
+
+        builder.HasIndex(t => t.EditionId).HasDatabaseName("IX_ticket_types_edition_id");
     }
 }
 

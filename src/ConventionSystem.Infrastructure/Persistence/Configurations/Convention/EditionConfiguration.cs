@@ -53,6 +53,8 @@ public sealed class EditionConfiguration : IEntityTypeConfiguration<Edition>
         builder.Navigation(e => e.Venues).HasField("_venues");
         builder.Navigation(e => e.Stations).HasField("_stations");
         builder.Navigation(e => e.Categories).HasField("_categories");
+
+        builder.HasIndex(e => e.ConventionId).HasDatabaseName("IX_editions_convention_id");
     }
 }
 

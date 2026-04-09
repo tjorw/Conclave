@@ -74,5 +74,8 @@ public sealed class StaffApplicationConfiguration : IEntityTypeConfiguration<Sta
         });
 
         builder.Navigation(a => a.Availabilities).HasField("_availabilities");
+
+        builder.HasIndex(a => a.EditionId).HasDatabaseName("IX_staff_applications_edition_id");
+        builder.HasIndex(a => a.PersonId).HasDatabaseName("IX_staff_applications_person_id");
     }
 }

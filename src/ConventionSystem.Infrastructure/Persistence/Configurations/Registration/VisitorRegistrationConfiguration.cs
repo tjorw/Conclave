@@ -35,5 +35,8 @@ public sealed class VisitorRegistrationConfiguration : IEntityTypeConfiguration<
             .HasColumnName("payment_reference");
 
         builder.Property(r => r.CreatedAt).HasColumnName("created_at");
+
+        builder.HasIndex(r => r.EditionId).HasDatabaseName("IX_visitor_registrations_edition_id");
+        builder.HasIndex(r => r.PersonId).HasDatabaseName("IX_visitor_registrations_person_id");
     }
 }
