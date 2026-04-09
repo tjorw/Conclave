@@ -217,11 +217,11 @@ Convention administrator
 - `EditionPublished { editionId, performedById, occurredAt }`
 
 ## Acceptance Criteria
-- [ ] Edition status transitions to Published
-- [ ] EditionPublished domain event is raised
-- [ ] Publishing without coordinators returns a validation error
-- [ ] Publishing an already-published edition returns a validation error
-- [ ] Command handler has a corresponding unit test
+- [x] Edition status transitions to Published
+- [x] EditionPublished domain event is raised
+- [x] Publishing without coordinators returns a validation error
+- [x] Publishing an already-published edition returns a validation error
+- [x] Command handler has a corresponding unit test
 
 ---
 
