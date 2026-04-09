@@ -14,10 +14,12 @@ public sealed class Category : Entity<CategoryId>
     internal Category(CategoryId id, PersonId responsibleId, string name, string? description)
         : base(id)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
         ResponsibleId = responsibleId;
         Name = name;
         Description = description;
     }
 
-    public void ChangeResponsible(PersonId personId) => ResponsibleId = personId;
+    internal void ChangeResponsible(PersonId personId) => ResponsibleId = personId;
 }

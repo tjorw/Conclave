@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Convention.Commands.CopyEditionStructure;
+using ConventionSystem.Application.Convention.Commands.CreateCategory;
 using ConventionSystem.Application.Convention.Commands.CreateEdition;
 using ConventionSystem.Application.Convention.Commands.CreateStation;
 using ConventionSystem.Application.Convention.Commands.CreateVenue;
@@ -41,6 +42,14 @@ public static class EditionEndpoints
                 return Results.NoContent();
             });
 
+        app.MapPost("/editions/{editionId:guid}/categories",
+            async (Guid editionId, CreateCategoryRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var id = await sender.Send(new CreateCategoryCommand(
+                    editionId, request.Name, request.Description, request.ResponsibleId, request.PerformedById), ct);
+                return Results.Created($"/categories/{id}", new { id });
+            });
+
         app.MapPost("/editions/{editionId:guid}/stations",
             async (Guid editionId, CreateStationRequest request, ISender sender, CancellationToken ct) =>
             {
@@ -75,6 +84,7 @@ public record CopyEditionStructureRequest(Guid SourceEditionId, Guid PerformedBy
 public record OpenRegistrationRequest(Guid PerformedById);
 public record CreateVenueRequest(string Name, string Building, string? Description, Guid PerformedById);
 public record CreateStationRequest(string Name, string? Description, Guid ResponsibleId, Guid PerformedById);
+public record CreateCategoryRequest(string Name, string? Description, Guid ResponsibleId, Guid PerformedById);
 
 public record CreateEditionRequest(
     string Name,

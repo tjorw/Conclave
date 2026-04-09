@@ -386,9 +386,9 @@ Convention administrator
 - None
 
 ## Acceptance Criteria
-- [ ] Category is persisted and linked to the correct EditionId
-- [ ] Responsible person not belonging to convention returns a validation error
-- [ ] Command handler has a corresponding unit test
+- [x] Category is persisted and linked to the correct EditionId
+- [x] Responsible person not belonging to convention returns a validation error
+- [x] Command handler has a corresponding unit test
 
 ---
 
