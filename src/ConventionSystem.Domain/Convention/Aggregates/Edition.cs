@@ -30,12 +30,18 @@ public sealed class Edition : AggregateRoot
 
     private Edition() { }
 
-    internal Edition(EditionId id, ConventionId conventionId, string name, DatePeriod period)
+    internal Edition(EditionId id, ConventionId conventionId, string name, DatePeriod period,
+        PersonId staffCoordinatorId, PersonId eventCoordinatorId)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
+
         Id = id;
         ConventionId = conventionId;
         Name = name;
         Period = period;
+        StaffCoordinatorId = staffCoordinatorId;
+        EventCoordinatorId = eventCoordinatorId;
         Status = EditionStatus.Draft;
     }
 

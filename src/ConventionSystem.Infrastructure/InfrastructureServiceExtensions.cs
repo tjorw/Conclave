@@ -17,6 +17,7 @@ public static class InfrastructureServiceExtensions
     {
         services.AddScoped<IConventionRepository, ConventionRepository>();
         services.AddScoped<IPersonRepository, PersonRepository>();
+        services.AddScoped<IEditionRepository, EditionRepository>();
 
         services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
         services.AddScoped<EventDispatchInterceptor>();

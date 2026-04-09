@@ -77,6 +77,6 @@ public sealed class Convention : AggregateRoot
         RaiseDomainEvent(new PersonDeactivated(person.Id, Id, DateTimeOffset.UtcNow));
     }
 
-    public Edition CreateEdition(string name, DatePeriod period)
-        => new(EditionId.New(), Id, name, period);
+    public Edition CreateEdition(string name, DatePeriod period, PersonId staffCoordinatorId, PersonId eventCoordinatorId)
+        => new(EditionId.New(), Id, name, period, staffCoordinatorId, eventCoordinatorId);
 }
