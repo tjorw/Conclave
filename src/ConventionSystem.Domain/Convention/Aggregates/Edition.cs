@@ -49,6 +49,10 @@ public sealed class Edition : AggregateRoot
     {
         if (Status == EditionStatus.Published)
             throw new InvalidOperationException("Upplagan är redan publicerad.");
+        if (StaffCoordinatorId is null)
+            throw new InvalidOperationException("Upplagan måste ha en bemanningskoordinator innan den kan publiceras.");
+        if (EventCoordinatorId is null)
+            throw new InvalidOperationException("Upplagan måste ha en evenemangskoordinator innan den kan publiceras.");
 
         Status = EditionStatus.Published;
         RaiseDomainEvent(new EditionPublished(Id, performedById, DateTimeOffset.UtcNow));
