@@ -1195,3 +1195,380 @@ Besökare (egen registrering) eller konventionsadministratör
 - [x] SessionRegistrationCancelled-händelse skickas
 - [x] Avbokning av en redan avbokad registrering returnerar ett valideringsfel
 - [x] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# Event-kontexten
+
+---
+
+# UC-EV001 – Skicka in evenemang
+
+## Sammanfattning
+En arrangör skapar ett nytt evenemang för en upplaga. Systemet skapar aggregatet med ett tomt utkast och sätter arrangören som huvudarrangör.
+
+## Aktör
+Arrangör (person registrerad i konventionen)
+
+## Förutsättningar
+- Upplagan finns och är publicerad
+- Personen finns och tillhör konventionen
+- Kategorin finns på upplagan
+
+## Flöde
+1. Arrangören anger EditionId, CategoryId och sitt PersonId
+2. Systemet skapar ett Event-aggregat med status Utkast och ett tomt EventVersion-utkast
+3. Systemet returnerar det nya EventId
+
+## Affärsregler
+- Upplagan måste vara publicerad
+- Kategorin måste tillhöra upplagan
+
+## Domänhändelser
+- `EventCreated { eventId, editionId, categoryId, leadOrganiserId, occurredAt }` *(läggs till under implementation)*
+
+## Acceptanskriterier
+- [ ] Event sparas med status Utkast och korrekt kategori och arrangör
+- [ ] Ett tomt EventVersion-utkast skapas automatiskt
+- [ ] Skapande på en opublicerad upplaga returnerar ett valideringsfel
+- [ ] Skapande med okänd kategori returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EV002 – Redigera evenemangsutkast
+
+## Sammanfattning
+Arrangören uppdaterar titel, beskrivning och registreringstyp på utkastversionen av evenemanget.
+
+## Aktör
+Huvudarrangör eller medarrangör
+
+## Förutsättningar
+- Evenemanget finns och har status Utkast
+- Utföraren är huvud- eller medarrangör
+
+## Flöde
+1. Arrangören anger EventId, titel, beskrivning, registreringstyp (och eventuella drop-in-regler)
+2. Systemet anropar `GetDraftVersion()` och uppdaterar fälten
+3. Systemet sparar ändringen
+
+## Affärsregler
+- Redigering är bara möjlig när evenemanget är i Utkast-läge
+- Titel och beskrivning får inte vara tomma
+- DropInRules krävs om registreringstyp är DropIn eller Combined
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Titel, beskrivning och registreringstyp uppdateras på utkastet
+- [ ] Redigering av ett evenemang i granskning eller publicerat returnerar ett valideringsfel
+- [ ] Tom titel returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EV003 – Lägg till sessionönskemål
+
+## Sammanfattning
+Arrangören lägger till ett önskemål om sessionstid och format i utkastet – en önskelista som kategoriansvarig kan (men inte måste) följa vid schemaläggningen.
+
+## Aktör
+Huvudarrangör eller medarrangör
+
+## Förutsättningar
+- Evenemanget finns och har status Utkast
+
+## Flöde
+1. Arrangören anger EventId, beskrivning, önskad duration (minuter), antal platser och starttyp
+2. Systemet lägger till ett SessionRequest på utkastversionen
+3. Systemet returnerar det nya SessionRequestId
+
+## Affärsregler
+- SessionRequest kan bara läggas till på en Utkast-version
+- Duration måste vara > 0
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] SessionRequest sparas på utkastversionen med korrekt data
+- [ ] Tillägg på en icke-Utkast-version returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EV004 – Ta bort sessionönskemål
+
+## Sammanfattning
+Arrangören tar bort ett sessionönskemål från utkastet.
+
+## Aktör
+Huvudarrangör eller medarrangör
+
+## Förutsättningar
+- Evenemanget finns och har status Utkast
+- SessionRequest med angivet id finns på utkastet
+
+## Flöde
+1. Arrangören anger EventId och SessionRequestId
+2. Systemet tar bort önskemålet från utkastversionen
+3. Systemet sparar ändringen
+
+## Affärsregler
+- Borttagning är bara möjlig på en Utkast-version
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] SessionRequest tas bort från utkastet
+- [ ] Borttagning av ett icke-existerande önskemål returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EV005 – Lägg till medarrangör
+
+## Sammanfattning
+Huvudarrangören lägger till en annan person som medarrangör för evenemanget.
+
+## Aktör
+Huvudarrangör
+
+## Förutsättningar
+- Evenemanget finns
+- Personen finns och tillhör konventionen
+- Utföraren är huvudarrangör
+
+## Flöde
+1. Huvudarrangören anger EventId och PersonId för medarrangören
+2. Systemet lägger till personen som CoOrganiser
+3. Systemet sparar ändringen
+
+## Affärsregler
+- Samma person kan inte läggas till som medarrangör två gånger
+- Personen måste tillhöra konventionen
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] CoOrganiser sparas på evenemanget
+- [ ] Dublettillägg returnerar ett valideringsfel
+- [ ] Tillägg av person från annan konvention returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EV006 – Skicka in för granskning
+
+## Sammanfattning
+Huvudarrangören skickar in evenemangets utkast för granskning av kategoriansvarig.
+
+## Aktör
+Huvudarrangör
+
+## Förutsättningar
+- Evenemanget finns och har status Utkast
+- Utkastversionen har titel och beskrivning
+
+## Flöde
+1. Huvudarrangören anger EventId
+2. Systemet anropar `SubmitForReview()` – versionen övergår till UnderReview, evenemanget till UnderReview
+3. Systemet sparar ändringen
+
+## Affärsregler
+- Bara ett Utkast-evenemang kan skickas in för granskning
+- Titel och beskrivning måste vara ifyllda
+
+## Domänhändelser
+- `EventSubmittedForReview { eventId, versionId, occurredAt }` *(läggs till under implementation)*
+
+## Acceptanskriterier
+- [ ] Evenemangsstatus övergår till UnderReview
+- [ ] Utkastversionen övergår till UnderReview
+- [ ] Inskickning utan titel returnerar ett valideringsfel
+- [ ] Inskickning av ett redan granskat evenemang returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EV007 – Godkänn evenemangsversion
+
+## Sammanfattning
+Kategoriansvarig godkänner den inskickade versionen. Evenemanget publiceras och den godkända versionen blir publik.
+
+## Aktör
+Kategoriansvarig
+
+## Förutsättningar
+- Evenemanget finns och har status UnderReview
+- Utföraren är kategoriansvarig för evenemangskategorin
+
+## Flöde
+1. Kategoriansvarig anger EventId
+2. Systemet anropar `ApproveVersion(responsibleId)`
+3. Versionen får status Approved, PublishedVersionId sätts, DraftVersionId nollställs
+4. Evenemangets status övergår till Published
+5. Systemet sparar ändringen
+
+## Affärsregler
+- Bara ett UnderReview-evenemang kan godkännas
+- Utföraren måste vara kategoriansvarig för kategorin
+
+## Domänhändelser
+- `VersionApproved { eventId, versionId, responsibleId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Evenemangsstatus övergår till Published
+- [ ] PublishedVersionId sätts, DraftVersionId nollställs
+- [ ] Godkännande av ett icke-granskat evenemang returnerar ett valideringsfel
+- [ ] Obehörig utförare returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EV008 – Avvisa evenemangsversion
+
+## Sammanfattning
+Kategoriansvarig avvisar den inskickade versionen med en kommentar. Systemet skapar ett nytt utkast med kopierat innehåll så arrangören kan revidera och skicka in igen.
+
+## Aktör
+Kategoriansvarig
+
+## Förutsättningar
+- Evenemanget finns och har status UnderReview
+- Utföraren är kategoriansvarig för evenemangskategorin
+
+## Flöde
+1. Kategoriansvarig anger EventId och en kommentar
+2. Systemet anropar `RejectVersion(responsibleId, comment)`
+3. Den aktuella versionen får status Rejected, kommentaren sparas
+4. Ett nytt utkast skapas med kopierat innehåll från den avvisade versionen
+5. Evenemangets status återgår till Draft
+6. Systemet sparar ändringen
+
+## Affärsregler
+- Bara ett UnderReview-evenemang kan avvisas
+- Kommentar måste anges
+- Utföraren måste vara kategoriansvarig
+
+## Domänhändelser
+- `VersionRejected { eventId, versionId, responsibleId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Evenemangsstatus återgår till Draft
+- [ ] Den avvisade versionen får status Rejected
+- [ ] Ett nytt utkast med kopierat innehåll skapas
+- [ ] Kommentaren sparas kopplad till den avvisade versionen
+- [ ] Avvisning utan kommentar returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EV009 – Schemalägg session
+
+## Sammanfattning
+Kategoriansvarig skapar en session för ett publicerat evenemang – tilldelar lokal, tidslucka och antal platser. Sessionönskemålen från arrangören är vägledande men inte bindande.
+
+## Aktör
+Kategoriansvarig
+
+## Förutsättningar
+- Evenemanget finns och har status Published
+- Lokalen finns på upplagan
+- Utföraren är kategoriansvarig för evenemangskategorin
+
+## Flöde
+1. Kategoriansvarig anger EventId, VenueId, start- och sluttid, maxplatser och starttyp
+2. Systemet anropar `CreateSession(venueId, timeSlot, maxSeats, startType)`
+3. Sessionen sparas med status Aktiv
+4. Systemet returnerar det nya SessionId
+
+## Affärsregler
+- Schemaläggning kräver publicerat evenemang
+- Sluttid måste vara efter starttid
+- MaxSeats måste vara > 0
+- Lokalen måste tillhöra upplagan
+
+## Domänhändelser
+- `SessionCreated { eventId, sessionId, venueId, occurredAt }` *(läggs till under implementation)*
+
+## Acceptanskriterier
+- [ ] Session sparas med status Aktiv och korrekt tidslucka och lokal
+- [ ] Schemaläggning på ett icke-publicerat evenemang returnerar ett valideringsfel
+- [ ] Ogiltig tidslucka (slut ≤ start) returnerar ett valideringsfel
+- [ ] Lokal som inte tillhör upplagan returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EV010 – Inaktivera session
+
+## Sammanfattning
+Kategoriansvarig inaktiverar en session, t.ex. om lokalen inte längre är tillgänglig. Aktiva sessionsregistreringar avbokas via domänhändelse.
+
+## Aktör
+Kategoriansvarig eller konventionsadministratör
+
+## Förutsättningar
+- Evenemanget finns
+- Sessionen finns och är aktiv
+- Utföraren är kategoriansvarig eller admin
+
+## Flöde
+1. Utföraren anger EventId och SessionId
+2. Systemet anropar `DeactivateSession(sessionId, performedById)`
+3. Sessionen får status Inaktiv
+4. SessionDeactivated-händelse publiceras (används av Registration för att avboka registreringar)
+5. Systemet sparar ändringen
+
+## Affärsregler
+- En redan inaktiv session kan inte inaktiveras igen
+- Utföraren måste vara kategoriansvarig eller admin
+
+## Domänhändelser
+- `SessionDeactivated { sessionId, eventId, performedById, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Sessionsstatus övergår till Inaktiv
+- [ ] SessionDeactivated-händelse skickas
+- [ ] Inaktivering av en redan inaktiv session returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EV011 – Ställ in evenemang
+
+## Sammanfattning
+Kategoriansvarig eller administratör ställer in ett evenemang i sin helhet. EventCancelled-händelsen triggar avbokning av alla sessionsregistreringar.
+
+## Aktör
+Kategoriansvarig eller konventionsadministratör
+
+## Förutsättningar
+- Evenemanget finns och är inte redan inställt
+- Utföraren är kategoriansvarig eller admin
+
+## Flöde
+1. Utföraren anger EventId
+2. Systemet anropar `CancelEvent(responsibleId)`
+3. Evenemangets status övergår till Cancelled
+4. EventCancelled-händelse publiceras
+5. Systemet sparar ändringen
+
+## Affärsregler
+- Ett redan inställt evenemang kan inte ställas in igen
+- Utföraren måste vara kategoriansvarig eller admin
+
+## Domänhändelser
+- `EventCancelled { eventId, responsibleId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Evenemangsstatus övergår till Cancelled
+- [ ] EventCancelled-händelse skickas
+- [ ] Inställning av ett redan inställt evenemang returnerar ett valideringsfel
+- [ ] Obehörig utförare returnerar ett valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
