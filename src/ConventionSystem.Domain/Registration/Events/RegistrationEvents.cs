@@ -23,6 +23,20 @@ public record StaffApplicationReceived(
     EditionId EditionId,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
+public record StaffApplicationAccepted(
+    StaffApplicationId ApplicationId,
+    PersonId PersonId,
+    EditionId EditionId,
+    PersonId PerformedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record StaffApplicationRejected(
+    StaffApplicationId ApplicationId,
+    PersonId PersonId,
+    EditionId EditionId,
+    PersonId PerformedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public record TicketCollected(
     TicketId TicketId,
     PersonId PersonId,

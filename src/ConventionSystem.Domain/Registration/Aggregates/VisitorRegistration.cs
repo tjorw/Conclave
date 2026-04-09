@@ -11,17 +11,19 @@ public sealed class VisitorRegistration : AggregateRoot
     public VisitorRegistrationId Id { get; private set; }
     public PersonId PersonId { get; private set; }
     public EditionId EditionId { get; private set; }
+    public TicketId TicketId { get; private set; }
     public VisitorRegistrationStatus Status { get; private set; }
     public string? PaymentReference { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
 
     private VisitorRegistration() { }
 
-    public VisitorRegistration(VisitorRegistrationId id, PersonId personId, EditionId editionId)
+    public VisitorRegistration(VisitorRegistrationId id, PersonId personId, EditionId editionId, TicketId ticketId)
     {
         Id = id;
         PersonId = personId;
         EditionId = editionId;
+        TicketId = ticketId;
         Status = VisitorRegistrationStatus.PendingPayment;
         CreatedAt = DateTimeOffset.UtcNow;
     }

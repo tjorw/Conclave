@@ -26,6 +26,10 @@ public sealed class VisitorRegistrationConfiguration : IEntityTypeConfiguration<
             .HasConversion(id => id.Value, value => new EditionId(value))
             .HasColumnName("edition_id");
 
+        builder.Property(r => r.TicketId)
+            .HasConversion(id => id.Value, value => new TicketId(value))
+            .HasColumnName("ticket_id");
+
         builder.Property(r => r.Status)
             .HasConversion<string>()
             .HasMaxLength(50);

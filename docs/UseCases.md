@@ -717,8 +717,8 @@ Konventionsadministratör
 - Inga
 
 ## Acceptanskriterier
-- [ ] Biljetttypen sparas och kopplas till korrekt EditionId
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Biljetttypen sparas och kopplas till korrekt EditionId
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -752,11 +752,11 @@ Besökare (autentiserad person)
 - Inga (betalningsbekräftelsen utlöser den meningsfulla händelsen)
 
 ## Acceptanskriterier
-- [ ] VisitorRegistration sparas med status VäntarPåBetalning
-- [ ] Ticket sparas med status Reserverad och korrekt TicketTypeId
-- [ ] Registrering på en stängd upplaga returnerar ett valideringsfel
-- [ ] Dubblettregistrering (samma person + upplaga) returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] VisitorRegistration sparas med status VäntarPåBetalning
+- [x] Ticket sparas med status Reserverad och korrekt TicketTypeId
+- [x] Registrering på en stängd upplaga returnerar ett valideringsfel
+- [x] Dubblettregistrering (samma person + upplaga) returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -786,10 +786,10 @@ System (betalningsgateways webhook) eller konventionsadministratör
 - `VisitorRegistrationConfirmed { registrationId, personId, editionId, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] VisitorRegistrations status övergår till Bekräftad
-- [ ] Tickets status övergår till Betald
-- [ ] Bekräftelse av en redan bekräftad registrering returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] VisitorRegistrations status övergår till Bekräftad
+- [x] Tickets status övergår till Betald
+- [x] Bekräftelse av en redan bekräftad registrering returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -818,10 +818,10 @@ Besökare (egen registrering) eller konventionsadministratör
 - `TicketRevoked { ticketId, personId, performedById, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] VisitorRegistrations status övergår till Avbokad
-- [ ] Tickets status övergår till Makulerad
-- [ ] Avbokning av en redan avbokad registrering returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] VisitorRegistrations status övergår till Avbokad
+- [x] Tickets status övergår till Makulerad
+- [x] Avbokning av en redan avbokad registrering returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -852,8 +852,8 @@ Konventionsadministratör
 - Inga
 
 ## Acceptanskriterier
-- [ ] Biljett sparas med status Reserverad och korrekt assignedById
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Biljett sparas med status Reserverad och korrekt assignedById
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -881,11 +881,11 @@ Konventionsstaff (ingång)
 - `TicketCollected { ticketId, personId, performedById, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Biljettstatus övergår till Uthämtad
-- [ ] CollectedById och CollectedAt registreras
-- [ ] Uthämtning av en icke-Betald biljett returnerar ett valideringsfel
-- [ ] TicketCollected-händelse skickas
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Biljettstatus övergår till Uthämtad
+- [x] CollectedById och CollectedAt registreras
+- [x] Uthämtning av en icke-Betald biljett returnerar ett valideringsfel
+- [x] TicketCollected-händelse skickas
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -912,10 +912,10 @@ Konventionsadministratör
 - `TicketRevoked { ticketId, personId, performedById, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Biljettstatus övergår till Makulerad
-- [ ] TicketRevoked-händelse skickas
-- [ ] Makulering av en redan makulerad biljett returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Biljettstatus övergår till Makulerad
+- [x] TicketRevoked-händelse skickas
+- [x] Makulering av en redan makulerad biljett returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -947,11 +947,11 @@ Valfri person som tillhör konventionen
 - `StaffApplicationReceived { applicationId, personId, editionId, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] StaffApplication sparas med status Mottagen
-- [ ] StaffApplicationReceived-händelse skickas
-- [ ] Ansökan på en stängd upplaga returnerar ett valideringsfel
-- [ ] Dubblettansökan (samma person + upplaga) returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] StaffApplication sparas med status Mottagen
+- [x] StaffApplicationReceived-händelse skickas
+- [x] Ansökan på en stängd upplaga returnerar ett valideringsfel
+- [x] Dubblettansökan (samma person + upplaga) returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -979,9 +979,9 @@ Sökande (egen ansökan)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Tillgängligheten sparas och kopplas till staffansökan
-- [ ] Ogiltigt tidsintervall returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Tillgängligheten sparas och kopplas till staffansökan
+- [x] Ogiltigt tidsintervall returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1008,9 +1008,9 @@ Sökande (egen ansökan)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Tillgängligheten tas bort från staffansökan
-- [ ] Borttagning av en icke-existerande tillgänglighet returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Tillgängligheten tas bort från staffansökan
+- [x] Borttagning av en icke-existerande tillgänglighet returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1038,9 +1038,9 @@ Sökande (egen ansökan)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Stationsönskemål sparas på staffansökan
-- [ ] Tillägg av ett dubblettönskemål returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Stationsönskemål sparas på staffansökan
+- [x] Tillägg av ett dubblettönskemål returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1067,9 +1067,9 @@ Sökande (egen ansökan)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Stationsönskemålet tas bort från staffansökan
-- [ ] Borttagning av ett icke-existerande önskemål returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Stationsönskemålet tas bort från staffansökan
+- [x] Borttagning av ett icke-existerande önskemål returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1095,10 +1095,10 @@ Konventionsadministratör eller bemanningskoordinator
 - `StaffApplicationAccepted { applicationId, personId, editionId, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] StaffApplications status övergår till Bekräftad
-- [ ] StaffApplicationAccepted-händelse skickas
-- [ ] Accepterande av en redan bekräftad eller avslagen ansökan returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] StaffApplications status övergår till Bekräftad
+- [x] StaffApplicationAccepted-händelse skickas
+- [x] Accepterande av en redan bekräftad eller avslagen ansökan returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1124,10 +1124,10 @@ Konventionsadministratör eller bemanningskoordinator
 - `StaffApplicationRejected { applicationId, personId, editionId, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] StaffApplications status övergår till Avslagen
-- [ ] StaffApplicationRejected-händelse skickas
-- [ ] Avslagande av en redan avslagen eller bekräftad ansökan returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] StaffApplications status övergår till Avslagen
+- [x] StaffApplicationRejected-händelse skickas
+- [x] Avslagande av en redan avslagen eller bekräftad ansökan returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1160,11 +1160,11 @@ Besökare (autentiserad person med biljett)
 - Inga
 
 ## Acceptanskriterier
-- [ ] SessionRegistration sparas med status Bekräftad
-- [ ] Registrering när sessionen är full returnerar ett valideringsfel
-- [ ] Registrering med ogiltig biljett returnerar ett valideringsfel
-- [ ] Dubblettregistrering returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] SessionRegistration sparas med status Bekräftad
+- [x] Registrering när sessionen är full returnerar ett valideringsfel
+- [x] Registrering med ogiltig biljett returnerar ett valideringsfel
+- [x] Dubblettregistrering returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1191,7 +1191,7 @@ Besökare (egen registrering) eller konventionsadministratör
 - `SessionRegistrationCancelled { registrationId, sessionId, personId, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] SessionRegistrations status övergår till Avbokad
-- [ ] SessionRegistrationCancelled-händelse skickas
-- [ ] Avbokning av en redan avbokad registrering returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] SessionRegistrations status övergår till Avbokad
+- [x] SessionRegistrationCancelled-händelse skickas
+- [x] Avbokning av en redan avbokad registrering returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest

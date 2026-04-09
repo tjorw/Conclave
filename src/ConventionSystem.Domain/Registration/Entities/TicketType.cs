@@ -5,10 +5,11 @@ using ConventionSystem.Domain.Registration.Ids;
 
 namespace ConventionSystem.Domain.Registration.Entities;
 
-public sealed class TicketType : Entity<TicketTypeId>
+public sealed class TicketType : AggregateRoot
 {
     private readonly List<TicketPerk> _perks = [];
 
+    public TicketTypeId Id { get; private set; }
     public EditionId EditionId { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public int Price { get; private set; }
@@ -19,8 +20,13 @@ public sealed class TicketType : Entity<TicketTypeId>
     private TicketType() { }
 
     public TicketType(TicketTypeId id, EditionId editionId, string name, int price, TicketTypeCategory type)
-        : base(id)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
+        if (price < 0)
+            throw new ArgumentException("Pris får inte vara negativt.", nameof(price));
+
+        Id = id;
         EditionId = editionId;
         Name = name;
         Price = price;

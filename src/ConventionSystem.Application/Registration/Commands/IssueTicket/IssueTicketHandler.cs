@@ -1,0 +1,48 @@
+using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Registration.Abstractions;
+using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Registration.Aggregates;
+using ConventionSystem.Domain.Registration.Ids;
+using MediatR;
+
+namespace ConventionSystem.Application.Registration.Commands.IssueTicket;
+
+public sealed class IssueTicketHandler(
+    ITicketRepository ticketRepository,
+    ITicketTypeRepository ticketTypeRepository,
+    IEditionRepository editionRepository,
+    IConventionRepository conventionRepository,
+    IPersonRepository personRepository)
+    : IRequestHandler<IssueTicketCommand, Guid>
+{
+    public async Task<Guid> Handle(IssueTicketCommand command, CancellationToken ct)
+    {
+        var personId = new PersonId(command.PersonId);
+        var editionId = new EditionId(command.EditionId);
+        var ticketTypeId = new TicketTypeId(command.TicketTypeId);
+        var performedById = new PersonId(command.PerformedById);
+
+        var edition = await editionRepository.GetByIdAsync(editionId, ct)
+            ?? throw new InvalidOperationException($"Upplagan '{command.EditionId}' hittades inte.");
+
+        var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
+            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+
+        if (!convention.IsAdministrator(performedById))
+            throw new InvalidOperationException("Utföraren har inte behörighet att utfärda biljetter.");
+
+        var person = await personRepository.GetByIdAsync(personId, ct)
+            ?? throw new InvalidOperationException($"Person '{command.PersonId}' hittades inte.");
+        if (person.ConventionId != edition.ConventionId)
+            throw new InvalidOperationException("Personen tillhör inte denna konvention.");
+
+        var ticketType = await ticketTypeRepository.GetByIdAsync(ticketTypeId, ct)
+            ?? throw new InvalidOperationException($"Biljetttypen '{command.TicketTypeId}' hittades inte.");
+        if (ticketType.EditionId != editionId)
+            throw new InvalidOperationException("Biljetttypen tillhör inte denna upplaga.");
+
+        var ticket = new Ticket(TicketId.New(), ticketTypeId, personId, editionId, performedById);
+        await ticketRepository.AddAndSaveAsync(ticket, ct);
+        return ticket.Id.Value;
+    }
+}

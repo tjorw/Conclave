@@ -21,5 +21,6 @@ app.MapConventionEndpoints();
 app.MapPersonEndpoints();
 app.MapEditionEndpoints();
 app.MapShiftEndpoints();
+app.MapRegistrationEndpoints();
 
 app.Run();

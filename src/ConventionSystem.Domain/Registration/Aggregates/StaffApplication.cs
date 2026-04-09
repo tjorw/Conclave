@@ -27,6 +27,9 @@ public sealed class StaffApplication : AggregateRoot
 
     public StaffApplication(StaffApplicationId id, PersonId personId, EditionId editionId, string interestDescription)
     {
+        if (string.IsNullOrWhiteSpace(interestDescription))
+            throw new ArgumentException("Intressebeskrivning får inte vara tom.", nameof(interestDescription));
+
         Id = id;
         PersonId = personId;
         EditionId = editionId;
@@ -66,5 +69,23 @@ public sealed class StaffApplication : AggregateRoot
         var preference = _stationPreferences.FirstOrDefault(s => s.StationId == stationId)
             ?? throw new InvalidOperationException("Stationsönskemålet hittades inte.");
         _stationPreferences.Remove(preference);
+    }
+
+    public void Accept(PersonId performedById)
+    {
+        if (Status != StaffApplicationStatus.Received && Status != StaffApplicationStatus.UnderReview)
+            throw new InvalidOperationException("Bara mottagna eller granskade ansökningar kan accepteras.");
+
+        Status = StaffApplicationStatus.Confirmed;
+        RaiseDomainEvent(new StaffApplicationAccepted(Id, PersonId, EditionId, performedById, DateTimeOffset.UtcNow));
+    }
+
+    public void Reject(PersonId performedById)
+    {
+        if (Status != StaffApplicationStatus.Received && Status != StaffApplicationStatus.UnderReview)
+            throw new InvalidOperationException("Bara mottagna eller granskade ansökningar kan avslås.");
+
+        Status = StaffApplicationStatus.Rejected;
+        RaiseDomainEvent(new StaffApplicationRejected(Id, PersonId, EditionId, performedById, DateTimeOffset.UtcNow));
     }
 }

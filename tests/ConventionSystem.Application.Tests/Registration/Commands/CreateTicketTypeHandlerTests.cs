@@ -1,0 +1,80 @@
+using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Registration.Abstractions;
+using ConventionSystem.Application.Registration.Commands.CreateTicketType;
+using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Convention.ValueObjects;
+using ConventionSystem.Domain.Registration.Enums;
+using NSubstitute;
+
+namespace ConventionSystem.Application.Tests.Registration.Commands;
+
+public class CreateTicketTypeHandlerTests
+{
+    private readonly ITicketTypeRepository _ticketTypeRepo = Substitute.For<ITicketTypeRepository>();
+    private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
+    private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly CreateTicketTypeHandler _handler;
+
+    public CreateTicketTypeHandlerTests()
+    {
+        _handler = new CreateTicketTypeHandler(_ticketTypeRepo, _editionRepo, _conventionRepo);
+    }
+
+    private (Domain.Convention.Aggregates.Convention convention,
+             Domain.Convention.Entities.Person admin,
+             Domain.Convention.Aggregates.Edition edition) Setup()
+    {
+        var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
+        var admin = convention.RegisterPerson("Admin", "admin@example.com");
+        convention.AddAdministrator(admin.Id, admin.Id);
+        var staff = convention.CreatePerson("Staff", "staff@example.com");
+        var evt = convention.CreatePerson("Event", "event@example.com");
+        var period = new DatePeriod(new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3));
+        var edition = convention.CreateEdition("Konvent 2027", period, staff.Id, evt.Id);
+
+        _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
+        _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
+
+        return (convention, admin, edition);
+    }
+
+    [Fact]
+    public async Task Handle_ValidCommand_ReturnsTicketTypeId()
+    {
+        var (_, admin, edition) = Setup();
+
+        var id = await _handler.Handle(new CreateTicketTypeCommand(edition.Id.Value, "Helgbiljett", 15000, TicketTypeCategory.Visitor, admin.Id.Value), default);
+
+        Assert.NotEqual(Guid.Empty, id);
+    }
+
+    [Fact]
+    public async Task Handle_ValidCommand_CallsAddAndSave()
+    {
+        var (_, admin, edition) = Setup();
+
+        await _handler.Handle(new CreateTicketTypeCommand(edition.Id.Value, "Helgbiljett", 15000, TicketTypeCategory.Visitor, admin.Id.Value), default);
+
+        await _ticketTypeRepo.Received(1).AddAndSaveAsync(Arg.Any<Domain.Registration.Entities.TicketType>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_EditionNotFound_Throws()
+    {
+        _editionRepo.GetByIdAsync(Arg.Any<EditionId>(), Arg.Any<CancellationToken>())
+            .Returns((Domain.Convention.Aggregates.Edition?)null);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(new CreateTicketTypeCommand(Guid.NewGuid(), "Biljett", 0, TicketTypeCategory.Visitor, Guid.NewGuid()), default));
+    }
+
+    [Fact]
+    public async Task Handle_PerformerNotAdmin_Throws()
+    {
+        var (convention, _, edition) = Setup();
+        var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(new CreateTicketTypeCommand(edition.Id.Value, "Biljett", 0, TicketTypeCategory.Visitor, nonAdmin.Id.Value), default));
+    }
+}
