@@ -416,6 +416,6 @@ Convention administrator
 - None
 
 ## Acceptance Criteria
-- [ ] Category responsible is updated
-- [ ] New responsible not belonging to convention returns a validation error
-- [ ] Command handler has a corresponding unit test
+- [x] Category responsible is updated
+- [x] New responsible not belonging to convention returns a validation error
+- [x] Command handler has a corresponding unit test

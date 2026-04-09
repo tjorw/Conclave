@@ -106,6 +106,13 @@ public sealed class Edition : AggregateRoot
         return category;
     }
 
+    public void ChangeCategoryResponsible(CategoryId categoryId, PersonId newResponsibleId)
+    {
+        var category = _categories.FirstOrDefault(c => c.Id == categoryId)
+            ?? throw new InvalidOperationException($"Kategorin hittades inte på denna upplaga.");
+        category.ChangeResponsible(newResponsibleId);
+    }
+
     /// <summary>
     /// Kopierar lokaler och stationer från en källupplaga.
     /// Anropas av applikationslagret som ansvarar för att hämta källupplagets data.
