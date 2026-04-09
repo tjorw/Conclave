@@ -9,6 +9,7 @@ public sealed class Person : Entity<PersonId>
     public string Name { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;
     public string? Phone { get; private set; }
+    public bool IsActive { get; private set; } = true;
 
     private Person() { }
 
@@ -20,4 +21,13 @@ public sealed class Person : Entity<PersonId>
         Email = email;
         Phone = phone;
     }
+
+    internal void Update(string name, string email, string? phone)
+    {
+        Name = name;
+        Email = email;
+        Phone = phone;
+    }
+
+    internal void Deactivate() => IsActive = false;
 }

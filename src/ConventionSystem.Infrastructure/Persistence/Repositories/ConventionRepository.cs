@@ -1,5 +1,6 @@
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Entities;
+using ConventionSystem.Domain.Convention.Ids;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConventionSystem.Infrastructure.Persistence.Repositories;
@@ -18,4 +19,7 @@ public sealed class ConventionRepository(ConventionDbContext db) : IConventionRe
         await db.Persons.AddAsync(admin, ct);
         await db.SaveChangesAsync(ct);
     }
+
+    public Task<Domain.Convention.Aggregates.Convention?> GetByIdAsync(ConventionId id, CancellationToken ct = default)
+        => db.Conventions.FirstOrDefaultAsync(c => c.Id == id, ct);
 }

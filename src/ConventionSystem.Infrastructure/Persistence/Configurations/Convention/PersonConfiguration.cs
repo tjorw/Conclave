@@ -23,5 +23,6 @@ public sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(p => p.Name).HasMaxLength(200).IsRequired();
         builder.Property(p => p.Email).HasMaxLength(320).IsRequired();
         builder.Property(p => p.Phone).HasMaxLength(30);
+        builder.Property(p => p.IsActive).HasColumnName("is_active").HasDefaultValue(true);
     }
 }

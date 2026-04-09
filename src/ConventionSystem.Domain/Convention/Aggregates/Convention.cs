@@ -49,6 +49,31 @@ public sealed class Convention : AggregateRoot
         return admin;
     }
 
+    public Person CreatePerson(string name, string email, string? phone = null)
+    {
+        var person = new Person(PersonId.New(), Id, name, email, phone);
+        RaiseDomainEvent(new PersonCreated(person.Id, Id, DateTimeOffset.UtcNow));
+        return person;
+    }
+
+    public void UpdatePersonDetails(Person person, string name, string email, string? phone)
+    {
+        if (person.ConventionId != Id)
+            throw new InvalidOperationException("Personen tillhör inte denna konvention.");
+        person.Update(name, email, phone);
+        RaiseDomainEvent(new PersonUpdated(person.Id, Id, DateTimeOffset.UtcNow));
+    }
+
+    public void DeactivatePerson(Person person)
+    {
+        if (person.ConventionId != Id)
+            throw new InvalidOperationException("Personen tillhör inte denna konvention.");
+        if (!person.IsActive)
+            throw new InvalidOperationException("Personen är redan inaktiverad.");
+        person.Deactivate();
+        RaiseDomainEvent(new PersonDeactivated(person.Id, Id, DateTimeOffset.UtcNow));
+    }
+
     public Edition CreateEdition(string name, DatePeriod period)
         => new(EditionId.New(), Id, name, period);
 }

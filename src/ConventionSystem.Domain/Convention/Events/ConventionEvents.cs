@@ -15,6 +15,21 @@ public record PersonRegistered(
     ConventionId ConventionId,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
+public record PersonCreated(
+    PersonId PersonId,
+    ConventionId ConventionId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record PersonUpdated(
+    PersonId PersonId,
+    ConventionId ConventionId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record PersonDeactivated(
+    PersonId PersonId,
+    ConventionId ConventionId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public record AdministratorAdded(
     ConventionId ConventionId,
     PersonId PersonId,

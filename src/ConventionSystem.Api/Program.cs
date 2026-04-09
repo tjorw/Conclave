@@ -18,5 +18,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapConventionEndpoints();
+app.MapPersonEndpoints();
 
 app.Run();
