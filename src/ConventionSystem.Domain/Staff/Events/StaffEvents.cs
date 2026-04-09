@@ -4,6 +4,13 @@ using ConventionSystem.Domain.Staff.Ids;
 
 namespace ConventionSystem.Domain.Staff.Events;
 
+public record PersonAssignedToShift(
+    StaffAssignmentId AssignmentId,
+    ShiftId ShiftId,
+    PersonId PersonId,
+    PersonId AssignedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public record ShiftCancelled(
     ShiftId ShiftId,
     StationId StationId,

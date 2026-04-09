@@ -419,3 +419,273 @@ Convention administrator
 - [x] Category responsible is updated
 - [x] New responsible not belonging to convention returns a validation error
 - [x] Command handler has a corresponding unit test
+
+---
+
+# UC012 – Create Staff Area
+
+## Summary
+A convention administrator creates a staff functional area (e.g. reception, kitchen, cleaning) under an edition and assigns a responsible person. The responsible person can administer all stations and shifts within the area.
+
+## Actor
+Convention administrator
+
+## Preconditions
+- Edition exists
+- Responsible person exists and belongs to the convention
+- Performing user is an administrator of the convention
+
+## Flow
+1. Administrator provides name, optional description and responsible PersonId
+2. System validates the responsible person belongs to the convention
+3. System creates the staff area linked to the edition
+4. System returns the new StaffAreaId
+
+## Business Rules
+- Name must not be empty
+- Responsible person must belong to the convention
+- One person may be responsible for multiple staff areas
+
+## Domain Events
+- None
+
+## Acceptance Criteria
+- [x] Staff area is persisted and linked to the correct EditionId
+- [x] Responsible person not belonging to convention returns a validation error
+- [x] Command handler has a corresponding unit test
+
+---
+
+# UC009 (revised) – Create Station
+
+## Summary
+An administrator creates a station (e.g. "Reception desk A") under a staff area for an edition.
+
+## Actor
+Convention administrator, Staff coordinator, or Staff area responsible
+
+## Preconditions
+- Edition exists
+- Staff area exists and belongs to the edition
+- Performing user is an administrator, staff coordinator, or responsible for the staff area
+
+## Flow
+1. Administrator provides name, optional description and StaffAreaId
+2. System creates the station linked to the staff area
+3. System returns the new StationId
+
+## Business Rules
+- Name must not be empty
+- Station is scoped to a staff area (and thereby an edition)
+- Station no longer has its own responsible person – the staff area responsible governs all stations in the area
+
+## Domain Events
+- None
+
+## Acceptance Criteria
+- [x] Station is persisted and linked to the correct StaffAreaId
+- [x] StaffAreaId not belonging to the edition returns a validation error
+- [x] Command handler has a corresponding unit test
+
+---
+
+# UC-ST001 – Create Shift
+
+## Summary
+A staff coordinator or staff area responsible creates a shift (time slot with staffing requirements) for a station.
+
+## Actor
+Convention administrator, Staff coordinator, or Staff area responsible
+
+## Preconditions
+- Station exists and belongs to the edition
+- Responsible person (shift lead) exists and belongs to the convention
+- Performing user is an administrator, staff coordinator, or responsible for the station's staff area
+
+## Flow
+1. Actor provides StationId, start time, end time, min persons, max persons, and shift lead PersonId
+2. System validates date range and staffing requirements
+3. System creates the shift with status Planned
+4. System returns the new ShiftId
+
+## Business Rules
+- End time must be after start time
+- MaxPersons must be >= MinPersons
+- MinPersons must be >= 0
+- Shift lead can be any person belonging to the convention
+- Shift is created with status Planned
+
+## Domain Events
+- None
+
+## Acceptance Criteria
+- [x] Shift is persisted with status Planned and correct StationId
+- [x] Invalid time range returns a validation error
+- [x] Invalid staffing requirement returns a validation error
+- [x] Command handler has a corresponding unit test
+
+---
+
+# UC-ST002 – Assign Person to Shift
+
+## Summary
+A staff coordinator or staff area responsible assigns a person to a shift. The primary scenario is assigning persons who have submitted a staff application, but any person in the convention can be assigned.
+
+## Actor
+Convention administrator, Staff coordinator, or Staff area responsible
+
+## Preconditions
+- Shift exists with status Planned
+- Person exists and belongs to the convention
+
+## Flow
+1. Actor provides ShiftId and PersonId
+2. System validates the shift is not cancelled and has available capacity
+3. System checks for time overlap with the person's other shifts (warning only – does not block)
+4. System creates the assignment with status Assigned
+5. System returns the new StaffAssignmentId
+
+## Business Rules
+- Shift must not be cancelled
+- MaxPersons capacity must not be exceeded
+- A person cannot be assigned to the same shift twice
+- Time overlap with other shifts is a warning, not a hard block
+- Any person in the convention can be assigned (not limited to staff applicants)
+
+## Domain Events
+- `PersonAssignedToShift { assignmentId, shiftId, personId, assignedById, occurredAt }`
+
+## Acceptance Criteria
+- [x] Assignment is persisted with status Assigned
+- [x] Assigning to a cancelled shift returns a validation error
+- [x] Assigning beyond max capacity returns a validation error
+- [x] Assigning the same person twice returns a validation error
+- [x] PersonAssignedToShift domain event is raised
+- [x] Command handler has a corresponding unit test
+
+---
+
+# UC-ST003 – Confirm Assignment
+
+## Summary
+A staff coordinator or staff area responsible confirms a staff assignment.
+
+## Actor
+Convention administrator, Staff coordinator, or Staff area responsible
+
+## Preconditions
+- Assignment exists with status Assigned
+
+## Flow
+1. Actor provides StaffAssignmentId
+2. System transitions assignment status to Confirmed
+3. System emits AssignmentConfirmed event
+
+## Business Rules
+- Only an Assigned assignment can be confirmed
+
+## Domain Events
+- `AssignmentConfirmed { assignmentId, shiftId, personId, occurredAt }`
+
+## Acceptance Criteria
+- [x] Assignment status transitions to Confirmed
+- [x] AssignmentConfirmed domain event is raised
+- [x] Confirming a non-Assigned assignment returns a validation error
+- [x] Command handler has a corresponding unit test
+
+---
+
+# UC-ST004 – Reject Assignment
+
+## Summary
+A staff coordinator or staff area responsible rejects a staff assignment.
+
+## Actor
+Convention administrator, Staff coordinator, or Staff area responsible
+
+## Preconditions
+- Assignment exists with status Assigned
+
+## Flow
+1. Actor provides StaffAssignmentId
+2. System transitions assignment status to Rejected
+3. System emits AssignmentRejected event
+
+## Business Rules
+- Only an Assigned assignment can be rejected
+
+## Domain Events
+- `AssignmentRejected { assignmentId, shiftId, personId, occurredAt }`
+
+## Acceptance Criteria
+- [x] Assignment status transitions to Rejected
+- [x] AssignmentRejected domain event is raised
+- [x] Rejecting a non-Assigned assignment returns a validation error
+- [x] Command handler has a corresponding unit test
+
+---
+
+# UC-ST005 – Cancel Assignment
+
+## Summary
+A staff coordinator, staff area responsible, or the assigned person themselves cancels a staff assignment.
+
+## Actor
+Convention administrator, Staff coordinator, Staff area responsible, or the assigned person
+
+## Preconditions
+- Assignment exists with status Assigned or Confirmed
+
+## Flow
+1. Actor provides StaffAssignmentId
+2. System validates that the actor is either authorized staff admin or the assigned person
+3. System transitions assignment status to Cancelled
+4. System emits AssignmentCancelled event
+
+## Business Rules
+- An Assigned or Confirmed assignment can be cancelled
+- A Rejected or already Cancelled assignment cannot be cancelled
+- The assigned person may cancel their own assignment
+- Administrators, staff coordinators, and staff area responsibles may cancel any assignment in their scope
+
+## Domain Events
+- `AssignmentCancelled { assignmentId, shiftId, personId, performedById, occurredAt }`
+
+## Acceptance Criteria
+- [x] Assignment status transitions to Cancelled
+- [x] AssignmentCancelled domain event is raised
+- [x] Cancelling an already-cancelled or rejected assignment returns a validation error
+- [x] The assigned person can cancel their own assignment
+- [x] Command handler has a corresponding unit test
+
+---
+
+# UC-ST006 – Cancel Shift
+
+## Summary
+A staff coordinator or staff area responsible cancels an entire shift. All active assignments are automatically cancelled via a domain event handler.
+
+## Actor
+Convention administrator, Staff coordinator, or Staff area responsible
+
+## Preconditions
+- Shift exists with status Planned
+
+## Flow
+1. Actor provides ShiftId
+2. System transitions shift status to Cancelled
+3. System emits ShiftCancelled event
+4. Domain event handler cancels all active assignments on the shift
+
+## Business Rules
+- Only a Planned shift can be cancelled
+- All Assigned and Confirmed assignments are cancelled as a side effect
+
+## Domain Events
+- `ShiftCancelled { shiftId, stationId, performedById, occurredAt }`
+
+## Acceptance Criteria
+- [x] Shift status transitions to Cancelled
+- [x] ShiftCancelled domain event is raised
+- [x] Cancelling an already-cancelled shift returns a validation error
+- [x] Command handler has a corresponding unit test

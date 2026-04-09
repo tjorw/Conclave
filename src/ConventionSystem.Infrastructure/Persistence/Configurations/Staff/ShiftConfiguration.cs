@@ -23,6 +23,10 @@ public sealed class ShiftConfiguration : IEntityTypeConfiguration<Shift>
             .HasConversion(id => id.Value, value => new StationId(value))
             .HasColumnName("station_id");
 
+        builder.Property(s => s.ResponsibleId)
+            .HasConversion(id => id.Value, value => new PersonId(value))
+            .HasColumnName("responsible_id");
+
         builder.OwnsOne(s => s.TimeSlot, ts =>
         {
             ts.Property(t => t.Start).HasColumnName("start_time").IsRequired();

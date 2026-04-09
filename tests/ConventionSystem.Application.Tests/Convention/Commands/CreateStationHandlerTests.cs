@@ -10,17 +10,16 @@ public class CreateStationHandlerTests
 {
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
-    private readonly IPersonRepository _personRepo = Substitute.For<IPersonRepository>();
     private readonly CreateStationHandler _handler;
 
     public CreateStationHandlerTests()
     {
-        _handler = new CreateStationHandler(_editionRepo, _conventionRepo, _personRepo);
+        _handler = new CreateStationHandler(_editionRepo, _conventionRepo);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
              Domain.Convention.Entities.Person admin,
-             Domain.Convention.Entities.Person responsible,
+             Domain.Convention.Entities.StaffArea staffArea,
              Domain.Convention.Aggregates.Edition edition) Setup()
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
@@ -29,34 +28,34 @@ public class CreateStationHandlerTests
 
         var staff = convention.CreatePerson("Staff", "staff@example.com");
         var evt = convention.CreatePerson("Event", "event@example.com");
-        var responsible = convention.CreatePerson("Ansvarig", "ansvarig@example.com");
+        var areaResponsible = convention.CreatePerson("Områdesansvarig", "area@example.com");
         var period = new DatePeriod(new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3));
         var edition = convention.CreateEdition("Konvent 2027", period, staff.Id, evt.Id);
+        var staffArea = edition.CreateStaffArea("Reception", areaResponsible.Id);
 
-        _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
+        _editionRepo.GetByIdWithStaffAreasAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
-        _personRepo.GetByIdAsync(responsible.Id, Arg.Any<CancellationToken>()).Returns(responsible);
 
-        return (convention, admin, responsible, edition);
+        return (convention, admin, staffArea, edition);
     }
 
     [Fact]
     public async Task Handle_ValidCommand_AddsStationToEdition()
     {
-        var (_, admin, responsible, edition) = Setup();
+        var (_, admin, staffArea, edition) = Setup();
 
-        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Reception", null, responsible.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Reception A", null, staffArea.Id.Value, admin.Id.Value), default);
 
         Assert.Single(edition.Stations);
-        Assert.Equal("Reception", edition.Stations[0].Name);
+        Assert.Equal("Reception A", edition.Stations[0].Name);
     }
 
     [Fact]
     public async Task Handle_ValidCommand_ReturnsStationId()
     {
-        var (_, admin, responsible, edition) = Setup();
+        var (_, admin, staffArea, edition) = Setup();
 
-        var id = await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Reception", null, responsible.Id.Value, admin.Id.Value), default);
+        var id = await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Reception A", null, staffArea.Id.Value, admin.Id.Value), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -64,9 +63,9 @@ public class CreateStationHandlerTests
     [Fact]
     public async Task Handle_ValidCommand_CallsSave()
     {
-        var (_, admin, responsible, edition) = Setup();
+        var (_, admin, staffArea, edition) = Setup();
 
-        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Reception", null, responsible.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Reception A", null, staffArea.Id.Value, admin.Id.Value), default);
 
         await _editionRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -74,7 +73,7 @@ public class CreateStationHandlerTests
     [Fact]
     public async Task Handle_EditionNotFound_Throws()
     {
-        _editionRepo.GetByIdAsync(Arg.Any<EditionId>(), Arg.Any<CancellationToken>())
+        _editionRepo.GetByIdWithStaffAreasAsync(Arg.Any<EditionId>(), Arg.Any<CancellationToken>())
             .Returns((Domain.Convention.Aggregates.Edition?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
@@ -82,25 +81,43 @@ public class CreateStationHandlerTests
     }
 
     [Fact]
-    public async Task Handle_PerformerNotAdministrator_Throws()
+    public async Task Handle_PerformerNotAuthorized_Throws()
     {
-        var (convention, _, responsible, edition) = Setup();
+        var (convention, _, staffArea, edition) = Setup();
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, responsible.Id.Value, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, staffArea.Id.Value, nonAdmin.Id.Value), default));
     }
 
     [Fact]
-    public async Task Handle_ResponsibleFromOtherConvention_Throws()
+    public async Task Handle_StaffCoordinatorCanCreate()
+    {
+        var (convention, _, staffArea, edition) = Setup();
+
+        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, staffArea.Id.Value, edition.StaffCoordinatorId!.Value.Value), default);
+
+        Assert.Single(edition.Stations);
+    }
+
+    [Fact]
+    public async Task Handle_StaffAreaResponsibleCanCreate()
+    {
+        var (_, _, staffArea, edition) = Setup();
+
+        var areaResponsible = edition.StaffAreas[0].ResponsibleId;
+        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, staffArea.Id.Value, areaResponsible.Value), default);
+
+        Assert.Single(edition.Stations);
+    }
+
+    [Fact]
+    public async Task Handle_StaffAreaNotOnEdition_Throws()
     {
         var (_, admin, _, edition) = Setup();
-
-        var otherConvention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Other Con", "other-con");
-        var outsider = otherConvention.CreatePerson("Outsider", "outsider@example.com");
-        _personRepo.GetByIdAsync(outsider.Id, Arg.Any<CancellationToken>()).Returns(outsider);
+        var unknownAreaId = Guid.NewGuid();
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, outsider.Id.Value, admin.Id.Value), default));
+            () => _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, unknownAreaId, admin.Id.Value), default));
     }
 }

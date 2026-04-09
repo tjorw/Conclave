@@ -14,6 +14,7 @@ public sealed class Shift : AggregateRoot
 
     public ShiftId Id { get; private set; }
     public StationId StationId { get; private set; }
+    public PersonId ResponsibleId { get; private set; }
     public TimeSlot TimeSlot { get; private set; } = null!;
     public StaffingRequirement StaffingRequirement { get; private set; } = null!;
     public ShiftStatus Status { get; private set; }
@@ -22,10 +23,11 @@ public sealed class Shift : AggregateRoot
 
     private Shift() { }
 
-    public Shift(ShiftId id, StationId stationId, TimeSlot timeSlot, StaffingRequirement staffingRequirement)
+    public Shift(ShiftId id, StationId stationId, PersonId responsibleId, TimeSlot timeSlot, StaffingRequirement staffingRequirement)
     {
         Id = id;
         StationId = stationId;
+        ResponsibleId = responsibleId;
         TimeSlot = timeSlot;
         StaffingRequirement = staffingRequirement;
         Status = ShiftStatus.Planned;
@@ -45,6 +47,7 @@ public sealed class Shift : AggregateRoot
 
         var assignment = new StaffAssignment(StaffAssignmentId.New(), personId, assignedById);
         _assignments.Add(assignment);
+        RaiseDomainEvent(new PersonAssignedToShift(assignment.Id, Id, personId, assignedById, DateTimeOffset.UtcNow));
         return assignment;
     }
 
@@ -71,8 +74,8 @@ public sealed class Shift : AggregateRoot
 
     public void Cancel(PersonId performedById)
     {
-        if (Status == ShiftStatus.Cancelled)
-            throw new InvalidOperationException("Passet är redan inställt.");
+        if (Status != ShiftStatus.Planned)
+            throw new InvalidOperationException("Bara planerade pass kan ställas in.");
 
         Status = ShiftStatus.Cancelled;
         RaiseDomainEvent(new ShiftCancelled(Id, StationId, performedById, DateTimeOffset.UtcNow));

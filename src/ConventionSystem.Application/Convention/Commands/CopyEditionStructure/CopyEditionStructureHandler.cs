@@ -30,7 +30,7 @@ public sealed class CopyEditionStructureHandler(
         if (source.ConventionId != target.ConventionId)
             throw new InvalidOperationException("Käll- och målupplaga tillhör inte samma konvention.");
 
-        target.CopyStructure(source.Id, source.Venues, source.Stations, performedById);
+        target.CopyStructure(source.Id, source.Venues, source.StaffAreas, source.Stations, performedById);
         await editionRepository.SaveAsync(ct);
     }
 }

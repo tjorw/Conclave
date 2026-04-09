@@ -1,6 +1,5 @@
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CopyEditionStructure;
-using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using NSubstitute;
@@ -29,11 +28,13 @@ public class CopyEditionStructureHandlerTests
 
         var staff = convention.CreatePerson("Staff", "staff@example.com");
         var evt = convention.CreatePerson("Event", "event@example.com");
+        var areaResponsible = convention.CreatePerson("Områdesansvarig", "area@example.com");
 
         var period1 = new DatePeriod(new DateOnly(2026, 3, 1), new DateOnly(2026, 3, 3));
         var source = convention.CreateEdition("Konvent 2026", period1, staff.Id, evt.Id);
         source.CreateVenue("Stora salen", "Huvudbyggnad");
-        source.CreateStation("Reception", staff.Id);
+        var staffArea = source.CreateStaffArea("Reception", areaResponsible.Id);
+        source.CreateStation("Reception A", staffArea.Id);
 
         var period2 = new DatePeriod(new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3));
         var target = convention.CreateEdition("Konvent 2027", period2, staff.Id, evt.Id);
@@ -53,6 +54,7 @@ public class CopyEditionStructureHandlerTests
         await _handler.Handle(new CopyEditionStructureCommand(target.Id.Value, source.Id.Value, admin.Id.Value), default);
 
         Assert.Single(target.Venues);
+        Assert.Single(target.StaffAreas);
         Assert.Single(target.Stations);
     }
 
@@ -89,7 +91,7 @@ public class CopyEditionStructureHandlerTests
     [Fact]
     public async Task Handle_SourceFromDifferentConvention_Throws()
     {
-        var (_, admin, source, target) = Setup();
+        var (_, admin, _, target) = Setup();
 
         var otherConvention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Other Con", "other-con");
         var otherStaff = otherConvention.CreatePerson("Staff2", "staff2@example.com");

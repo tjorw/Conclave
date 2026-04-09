@@ -51,6 +51,7 @@ public record StructureCopiedFromEdition(
     EditionId TargetId,
     EditionId SourceId,
     int VenueCount,
+    int StaffAreaCount,
     int StationCount,
     PersonId PerformedById,
     DateTimeOffset OccurredAt) : IDomainEvent;

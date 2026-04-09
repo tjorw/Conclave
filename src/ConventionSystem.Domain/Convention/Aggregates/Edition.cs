@@ -10,6 +10,7 @@ namespace ConventionSystem.Domain.Convention.Aggregates;
 public sealed class Edition : AggregateRoot
 {
     private readonly List<Venue> _venues = [];
+    private readonly List<StaffArea> _staffAreas = [];
     private readonly List<Station> _stations = [];
     private readonly List<Category> _categories = [];
 
@@ -25,6 +26,7 @@ public sealed class Edition : AggregateRoot
     public PersonId? EventCoordinatorId { get; private set; }
 
     public IReadOnlyList<Venue> Venues => _venues.AsReadOnly();
+    public IReadOnlyList<StaffArea> StaffAreas => _staffAreas.AsReadOnly();
     public IReadOnlyList<Station> Stations => _stations.AsReadOnly();
     public IReadOnlyList<Category> Categories => _categories.AsReadOnly();
 
@@ -92,9 +94,18 @@ public sealed class Edition : AggregateRoot
         return venue;
     }
 
-    public Station CreateStation(string name, PersonId responsibleId, string? description = null)
+    public StaffArea CreateStaffArea(string name, PersonId responsibleId, string? description = null)
     {
-        var station = new Station(StationId.New(), responsibleId, name, description);
+        var staffArea = new StaffArea(StaffAreaId.New(), name, description, responsibleId);
+        _staffAreas.Add(staffArea);
+        return staffArea;
+    }
+
+    public Station CreateStation(string name, StaffAreaId staffAreaId, string? description = null)
+    {
+        if (!_staffAreas.Any(sa => sa.Id == staffAreaId))
+            throw new InvalidOperationException("Funktionsområdet hittades inte på denna upplaga.");
+        var station = new Station(StationId.New(), staffAreaId, name, description);
         _stations.Add(station);
         return station;
     }
@@ -113,27 +124,51 @@ public sealed class Edition : AggregateRoot
         category.ChangeResponsible(newResponsibleId);
     }
 
+    public bool IsStaffAreaResponsible(StaffAreaId staffAreaId, PersonId personId)
+        => _staffAreas.Any(sa => sa.Id == staffAreaId && sa.ResponsibleId == personId);
+
+    public bool IsStaffAreaResponsibleForStation(StationId stationId, PersonId personId)
+    {
+        var station = _stations.FirstOrDefault(s => s.Id == stationId);
+        return station is not null && IsStaffAreaResponsible(station.StaffAreaId, personId);
+    }
+
+    public bool IsStaffCoordinator(PersonId personId)
+        => StaffCoordinatorId == personId;
+
     /// <summary>
-    /// Kopierar lokaler och stationer från en källupplaga.
+    /// Kopierar lokaler, funktionsområden och stationer från en källupplaga.
     /// Anropas av applikationslagret som ansvarar för att hämta källupplagets data.
     /// </summary>
     public void CopyStructure(EditionId sourceEditionId, IReadOnlyList<Venue> sourceVenues,
-        IReadOnlyList<Station> sourceStations, PersonId performedById)
+        IReadOnlyList<StaffArea> sourceStaffAreas, IReadOnlyList<Station> sourceStations, PersonId performedById)
     {
         if (Status != EditionStatus.Draft)
             throw new InvalidOperationException("Kan bara kopiera struktur till en upplaga med status Utkast.");
 
         _venues.Clear();
+        _staffAreas.Clear();
         _stations.Clear();
 
         foreach (var v in sourceVenues)
             _venues.Add(new Venue(VenueId.New(), v.Name, v.Building, v.Description));
 
+        var staffAreaIdMap = new Dictionary<StaffAreaId, StaffAreaId>();
+        foreach (var sa in sourceStaffAreas)
+        {
+            var newId = StaffAreaId.New();
+            staffAreaIdMap[sa.Id] = newId;
+            _staffAreas.Add(new StaffArea(newId, sa.Name, sa.Description, sa.ResponsibleId));
+        }
+
         foreach (var s in sourceStations)
-            _stations.Add(new Station(StationId.New(), s.ResponsibleId, s.Name, s.Description));
+        {
+            var mappedAreaId = staffAreaIdMap.GetValueOrDefault(s.StaffAreaId, s.StaffAreaId);
+            _stations.Add(new Station(StationId.New(), mappedAreaId, s.Name, s.Description));
+        }
 
         RaiseDomainEvent(new StructureCopiedFromEdition(
-            Id, sourceEditionId, sourceVenues.Count, sourceStations.Count, performedById, DateTimeOffset.UtcNow));
+            Id, sourceEditionId, sourceVenues.Count, sourceStaffAreas.Count, sourceStations.Count, performedById, DateTimeOffset.UtcNow));
     }
 
     private void EnsurePublished()

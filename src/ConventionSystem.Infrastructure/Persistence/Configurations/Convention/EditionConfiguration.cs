@@ -47,10 +47,12 @@ public sealed class EditionConfiguration : IEntityTypeConfiguration<Edition>
             .HasColumnName("event_coordinator_id");
 
         builder.HasMany(e => e.Venues).WithOne().HasForeignKey("EditionId").IsRequired();
+        builder.HasMany(e => e.StaffAreas).WithOne().HasForeignKey("EditionId").IsRequired();
         builder.HasMany(e => e.Stations).WithOne().HasForeignKey("EditionId").IsRequired();
         builder.HasMany(e => e.Categories).WithOne().HasForeignKey("EditionId").IsRequired();
 
         builder.Navigation(e => e.Venues).HasField("_venues");
+        builder.Navigation(e => e.StaffAreas).HasField("_staffAreas");
         builder.Navigation(e => e.Stations).HasField("_stations");
         builder.Navigation(e => e.Categories).HasField("_categories");
 
@@ -75,6 +77,28 @@ public sealed class VenueConfiguration : IEntityTypeConfiguration<Venue>
     }
 }
 
+public sealed class StaffAreaConfiguration : IEntityTypeConfiguration<StaffArea>
+{
+    public void Configure(EntityTypeBuilder<StaffArea> builder)
+    {
+        builder.ToTable("staff_areas");
+
+        builder.HasKey(sa => sa.Id);
+        builder.Property(sa => sa.Id)
+            .HasConversion(id => id.Value, value => new StaffAreaId(value))
+            .HasDefaultValueSql("newsequentialid()");
+
+        builder.Property(sa => sa.ResponsibleId)
+            .HasConversion(id => id.Value, value => new PersonId(value))
+            .HasColumnName("responsible_id");
+
+        builder.Property(sa => sa.Name).HasMaxLength(200).IsRequired();
+        builder.Property(sa => sa.Description).HasMaxLength(1000);
+
+        builder.HasIndex("EditionId").HasDatabaseName("IX_staff_areas_edition_id");
+    }
+}
+
 public sealed class StationConfiguration : IEntityTypeConfiguration<Station>
 {
     public void Configure(EntityTypeBuilder<Station> builder)
@@ -86,12 +110,15 @@ public sealed class StationConfiguration : IEntityTypeConfiguration<Station>
             .HasConversion(id => id.Value, value => new StationId(value))
             .HasDefaultValueSql("newsequentialid()");
 
-        builder.Property(s => s.ResponsibleId)
-            .HasConversion(id => id.Value, value => new PersonId(value))
-            .HasColumnName("responsible_id");
+        builder.Property(s => s.StaffAreaId)
+            .HasConversion(id => id.Value, value => new StaffAreaId(value))
+            .HasColumnName("staff_area_id");
 
         builder.Property(s => s.Name).HasMaxLength(200).IsRequired();
         builder.Property(s => s.Description).HasMaxLength(1000);
+
+        builder.HasIndex("EditionId").HasDatabaseName("IX_stations_edition_id");
+        builder.HasIndex(s => s.StaffAreaId).HasDatabaseName("IX_stations_staff_area_id");
     }
 }
 

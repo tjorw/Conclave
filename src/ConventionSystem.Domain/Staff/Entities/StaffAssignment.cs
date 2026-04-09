@@ -41,6 +41,8 @@ public sealed class StaffAssignment : Entity<StaffAssignmentId>
     {
         if (Status == StaffAssignmentStatus.Cancelled)
             throw new InvalidOperationException("Tilldelningen är redan avbokad.");
+        if (Status == StaffAssignmentStatus.Rejected)
+            throw new InvalidOperationException("En avvisad tilldelning kan inte avbokas.");
         Status = StaffAssignmentStatus.Cancelled;
     }
 }

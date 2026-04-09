@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Infrastructure.Dispatching;
 using ConventionSystem.Infrastructure.Persistence;
@@ -18,6 +19,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IConventionRepository, ConventionRepository>();
         services.AddScoped<IPersonRepository, PersonRepository>();
         services.AddScoped<IEditionRepository, EditionRepository>();
+        services.AddScoped<IShiftRepository, ShiftRepository>();
 
         services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
         services.AddScoped<EventDispatchInterceptor>();

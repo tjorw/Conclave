@@ -20,5 +20,6 @@ app.UseHttpsRedirection();
 app.MapConventionEndpoints();
 app.MapPersonEndpoints();
 app.MapEditionEndpoints();
+app.MapShiftEndpoints();
 
 app.Run();

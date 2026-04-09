@@ -3,21 +3,23 @@ using ConventionSystem.Domain.Convention.Ids;
 
 namespace ConventionSystem.Domain.Convention.Entities;
 
-public sealed class Station : Entity<StationId>
+public sealed class StaffArea : Entity<StaffAreaId>
 {
-    public StaffAreaId StaffAreaId { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
+    public PersonId ResponsibleId { get; private set; }
 
-    private Station() { }
+    private StaffArea() { }
 
-    internal Station(StationId id, StaffAreaId staffAreaId, string name, string? description)
+    internal StaffArea(StaffAreaId id, string name, string? description, PersonId responsibleId)
         : base(id)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
-        StaffAreaId = staffAreaId;
         Name = name;
         Description = description;
+        ResponsibleId = responsibleId;
     }
+
+    internal void ChangeResponsible(PersonId personId) => ResponsibleId = personId;
 }

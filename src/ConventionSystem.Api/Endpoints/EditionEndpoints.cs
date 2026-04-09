@@ -2,6 +2,7 @@ using ConventionSystem.Application.Convention.Commands.ChangeCategoryResponsible
 using ConventionSystem.Application.Convention.Commands.CopyEditionStructure;
 using ConventionSystem.Application.Convention.Commands.CreateCategory;
 using ConventionSystem.Application.Convention.Commands.CreateEdition;
+using ConventionSystem.Application.Convention.Commands.CreateStaffArea;
 using ConventionSystem.Application.Convention.Commands.CreateStation;
 using ConventionSystem.Application.Convention.Commands.CreateVenue;
 using ConventionSystem.Application.Convention.Commands.OpenRegistration;
@@ -58,11 +59,19 @@ public static class EditionEndpoints
                 return Results.Created($"/categories/{id}", new { id });
             });
 
+        app.MapPost("/editions/{editionId:guid}/staff-areas",
+            async (Guid editionId, CreateStaffAreaRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var id = await sender.Send(new CreateStaffAreaCommand(
+                    editionId, request.Name, request.Description, request.ResponsibleId, request.PerformedById), ct);
+                return Results.Created($"/staff-areas/{id}", new { id });
+            });
+
         app.MapPost("/editions/{editionId:guid}/stations",
             async (Guid editionId, CreateStationRequest request, ISender sender, CancellationToken ct) =>
             {
                 var id = await sender.Send(new CreateStationCommand(
-                    editionId, request.Name, request.Description, request.ResponsibleId, request.PerformedById), ct);
+                    editionId, request.Name, request.Description, request.StaffAreaId, request.PerformedById), ct);
                 return Results.Created($"/stations/{id}", new { id });
             });
 
@@ -91,7 +100,8 @@ public record PublishEditionRequest(Guid PerformedById);
 public record CopyEditionStructureRequest(Guid SourceEditionId, Guid PerformedById);
 public record OpenRegistrationRequest(Guid PerformedById);
 public record CreateVenueRequest(string Name, string Building, string? Description, Guid PerformedById);
-public record CreateStationRequest(string Name, string? Description, Guid ResponsibleId, Guid PerformedById);
+public record CreateStaffAreaRequest(string Name, string? Description, Guid ResponsibleId, Guid PerformedById);
+public record CreateStationRequest(string Name, string? Description, Guid StaffAreaId, Guid PerformedById);
 public record CreateCategoryRequest(string Name, string? Description, Guid ResponsibleId, Guid PerformedById);
 public record ChangeCategoryResponsibleRequest(Guid NewResponsibleId, Guid PerformedById);
 
