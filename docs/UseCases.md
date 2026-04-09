@@ -254,12 +254,12 @@ Convention administrator
 - `StructureCopiedFromEdition { targetId, sourceId, venueCount, stationCount, performedById, occurredAt }`
 
 ## Acceptance Criteria
-- [ ] All venues from source are persisted on target with new ids
-- [ ] All stations from source are persisted on target with new ids
-- [ ] Copying to a Published edition returns a validation error
-- [ ] Source and target from different conventions returns a validation error
-- [ ] StructureCopiedFromEdition domain event is raised
-- [ ] Command handler has a corresponding unit test
+- [x] All venues from source are persisted on target with new ids
+- [x] All stations from source are persisted on target with new ids
+- [x] Copying to a Published edition returns a validation error
+- [x] Source and target from different conventions returns a validation error
+- [x] StructureCopiedFromEdition domain event is raised
+- [x] Command handler has a corresponding unit test
 
 ---
 

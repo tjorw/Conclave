@@ -107,6 +107,12 @@ public sealed class Edition : AggregateRoot
     public void CopyStructure(EditionId sourceEditionId, IReadOnlyList<Venue> sourceVenues,
         IReadOnlyList<Station> sourceStations, PersonId performedById)
     {
+        if (Status != EditionStatus.Draft)
+            throw new InvalidOperationException("Kan bara kopiera struktur till en upplaga med status Utkast.");
+
+        _venues.Clear();
+        _stations.Clear();
+
         foreach (var v in sourceVenues)
             _venues.Add(new Venue(VenueId.New(), v.Name, v.Building, v.Description));
 

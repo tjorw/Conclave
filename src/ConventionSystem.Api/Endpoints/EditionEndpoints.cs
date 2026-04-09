@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Convention.Commands.CopyEditionStructure;
 using ConventionSystem.Application.Convention.Commands.CreateEdition;
 using ConventionSystem.Application.Convention.Commands.PublishEdition;
 using MediatR;
@@ -29,11 +30,19 @@ public static class EditionEndpoints
                 return Results.NoContent();
             });
 
+        app.MapPost("/editions/{editionId:guid}/copy-structure",
+            async (Guid editionId, CopyEditionStructureRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new CopyEditionStructureCommand(editionId, request.SourceEditionId, request.PerformedById), ct);
+                return Results.NoContent();
+            });
+
         return app;
     }
 }
 
 public record PublishEditionRequest(Guid PerformedById);
+public record CopyEditionStructureRequest(Guid SourceEditionId, Guid PerformedById);
 
 public record CreateEditionRequest(
     string Name,
