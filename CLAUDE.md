@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Den här filen styr hur Claude Code arbetar i det här projektet.
 
 ## Språkkonvention
 
@@ -242,46 +242,46 @@ var evt = convention.DomainEvents.OfType<PersonDeactivated>().Single();
 - Aggregat skapas direkt (ingen mock) – domänlogiken är riktig, bara persistensen mockas
 - En testklass per handler
 
-# Commit Strategy
+# Commit-strategi
 
-## General Rules
-- Never commit automatically. Always ask before committing.
-- Never commit partial or broken work.
-- Each commit should represent a complete, coherent unit of work.
+## Grundregler
+- Committa aldrig automatiskt. Fråga alltid användaren först.
+- Committa aldrig halvfärdigt eller trasigt arbete.
+- Varje commit ska representera en komplett, sammanhängande enhet.
 
-## When to Ask About Committing
-Ask the user "Ready to commit? Suggested message: [message]" when:
-- A complete use case is implemented (domain, application, infrastructure, API and tests)
-- A self-contained refactoring is complete
-- A structural change is complete (e.g. solution setup, folder structure)
+## När ska vi fråga om commit
+Fråga "Redo att committa? Förslag: [meddelande]" när:
+- Ett komplett use case är implementerat (domän, applikation, infrastruktur, API och tester)
+- En fristående refaktorering är klar
+- En strukturell förändring är klar (t.ex. lösningsuppsättning, mappstruktur)
 
-Do not ask about committing after:
-- Implementing only part of a use case
-- Adding a single class or file that is not yet usable
-- Making a change the user has not confirmed they are happy with
+Fråga inte om commit efter:
+- Att bara en del av ett use case är implementerat
+- Att en enskild klass eller fil lagts till som ännu inte är användbar
+- En förändring som användaren inte bekräftat är godkänd
 
-## Commit Message Format
-Use conventional commits:
+## Format på commit-meddelanden
+Använd conventional commits:
 
 ```
-<type>(<scope>): <short description in English>
+<type>(<scope>): <kort beskrivning på engelska>
 
-[optional body in Swedish explaining why, not what]
+[valfri brödtext på svenska som förklarar varför, inte vad]
 ```
 
-**Types:**
-- `feat` – new functionality
-- `fix` – bug fix
-- `refactor` – restructuring without behaviour change
-- `test` – adding or updating tests
-- `docs` – documentation only
-- `chore` – tooling, dependencies, config
+**Typer:**
+- `feat` – ny funktionalitet
+- `fix` – buggfix
+- `refactor` – omstrukturering utan beteendeförändring
+- `test` – lägger till eller uppdaterar tester
+- `docs` – endast dokumentation
+- `chore` – verktyg, beroenden, konfiguration
 
-**Scope** maps to bounded context or layer:
+**Scope** motsvarar bounded context eller lager:
 - `convention`, `event`, `registration`, `staff`
 - `infrastructure`, `api`, `domain`
 
-**Examples:**
+**Exempel:**
 ```
 feat(convention): implement UC001 create convention
 feat(event): implement UC-EV003 submit event for review
@@ -289,16 +289,17 @@ test(convention): add unit tests for Edition.Publish invariants
 refactor(domain): extract TimeSlot value object to shared kernel
 ```
 
-## What Belongs in One Commit
-A use case commit should include:
-- Domain changes (aggregate methods, domain events, value objects)
-- Application layer (command, command handler, validator)
-- Infrastructure changes (EF Core configuration, migrations if applicable)
-- API endpoint
-- Unit tests for domain and application layer
+## Vad som hör till en commit
+En use case-commit ska innehålla:
+- Domänändringar (aggregatmetoder, domain events, value objects)
+- Applikationslagret (command, command handler, validator)
+- Infrastrukturförändringar (EF Core-konfiguration, migrationer om tillämpligt)
+- API-endpoint
+- Enhetstester för domän- och applikationslagret
+- Acceptanskriterier i `docs/UseCases.md` markerade som klara (`[ ]` → `[x]`)
 
-## What Should Never Be in One Commit
-- Multiple unrelated use cases
-- Commented-out code
-- Failing tests
-- TODO comments that refer to unimplemented required behaviour
+## Vad som aldrig ska vara i en commit
+- Flera orelaterade use cases
+- Utkommenterad kod
+- Trasiga tester
+- TODO-kommentarer som pekar på oimplementerat obligatoriskt beteende

@@ -28,12 +28,12 @@ System administrator
 - Convention Created, Person Created, Admin Added
 
 ## Acceptance Criteria
-- [ ] Convention is persisted with a valid ConventionId (Guid.CreateVersion7)
-- [ ] A person account is created and linked to the new convention
-- [ ] That person is added as administrator of the new convention
-- [ ] Duplicate slug returns a validation error
-- [ ] Invalid slug format returns a validation error
-- [ ] Command handler has a corresponding unit test
+- [x] Convention is persisted with a valid ConventionId (Guid.CreateVersion7)
+- [x] A person account is created and linked to the new convention
+- [x] That person is added as administrator of the new convention
+- [x] Duplicate slug returns a validation error
+- [x] Invalid slug format returns a validation error
+- [x] Command handler has a corresponding unit test
 
 ---
 
@@ -110,10 +110,10 @@ Convention administrator
 - Person Created and Person Updated
 
 ## Acceptance Criteria
-- [ ] Person is persisted and linked to correct ConventionId
-- [ ] Duplicate email returns a validation error
-- [ ] Deactivated person cannot initiate new registrations
-- [ ] Command handlers have corresponding unit tests
+- [x] Person is persisted and linked to correct ConventionId
+- [x] Duplicate email returns a validation error
+- [x] Deactivated person cannot initiate new registrations
+- [x] Command handlers have corresponding unit tests
 
 ---
 
