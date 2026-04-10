@@ -1,5 +1,6 @@
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Ids;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,12 @@ public sealed class SessionRegistrationRepository(ConventionDbContext db) : ISes
 {
     public Task<SessionRegistration?> GetByIdAsync(SessionRegistrationId id, CancellationToken ct = default)
         => db.SessionRegistrations.FirstOrDefaultAsync(r => r.Id == id, ct);
+
+    public async Task<IReadOnlyList<SessionRegistration>> GetAllConfirmedBySessionIdAsync(SessionId sessionId, CancellationToken ct = default)
+        => await db.SessionRegistrations
+            .Where(r => r.SessionId == sessionId
+                     && r.Status == Domain.Registration.Enums.SessionRegistrationStatus.Confirmed)
+            .ToListAsync(ct);
 
     public Task<bool> HasRegistrationAsync(PersonId personId, SessionRegistrationId sessionId, CancellationToken ct = default)
         => db.SessionRegistrations.AnyAsync(
