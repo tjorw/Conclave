@@ -27,28 +27,28 @@ public static class EditionEndpoints
                     request.StaffCoordinatorId,
                     request.EventCoordinatorId), ct);
                 return Results.Created($"/editions/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         app.MapPost("/editions/{editionId:guid}/publish",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new PublishEditionCommand(editionId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         app.MapPost("/editions/{editionId:guid}/copy-structure",
             async (Guid editionId, CopyEditionStructureRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new CopyEditionStructureCommand(editionId, request.SourceEditionId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         app.MapPut("/editions/{editionId:guid}/categories/{categoryId:guid}",
             async (Guid editionId, Guid categoryId, ChangeCategoryResponsibleRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new ChangeCategoryResponsibleCommand(editionId, categoryId, request.NewResponsibleId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         app.MapPost("/editions/{editionId:guid}/categories",
             async (Guid editionId, CreateCategoryRequest request, ISender sender, CancellationToken ct) =>
@@ -56,7 +56,7 @@ public static class EditionEndpoints
                 var id = await sender.Send(new CreateCategoryCommand(
                     editionId, request.Name, request.Description, request.ResponsibleId), ct);
                 return Results.Created($"/categories/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         app.MapPost("/editions/{editionId:guid}/staff-areas",
             async (Guid editionId, CreateStaffAreaRequest request, ISender sender, CancellationToken ct) =>
@@ -64,7 +64,7 @@ public static class EditionEndpoints
                 var id = await sender.Send(new CreateStaffAreaCommand(
                     editionId, request.Name, request.Description, request.ResponsibleId), ct);
                 return Results.Created($"/staff-areas/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         app.MapPost("/editions/{editionId:guid}/stations",
             async (Guid editionId, CreateStationRequest request, ISender sender, CancellationToken ct) =>
@@ -72,7 +72,7 @@ public static class EditionEndpoints
                 var id = await sender.Send(new CreateStationCommand(
                     editionId, request.Name, request.Description, request.StaffAreaId), ct);
                 return Results.Created($"/stations/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         app.MapPost("/editions/{editionId:guid}/venues",
             async (Guid editionId, CreateVenueRequest request, ISender sender, CancellationToken ct) =>
@@ -80,7 +80,7 @@ public static class EditionEndpoints
                 var id = await sender.Send(new CreateVenueCommand(
                     editionId, request.Name, request.Building, request.Description), ct);
                 return Results.Created($"/venues/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         app.MapPost("/editions/{editionId:guid}/registrations/{type}/open",
             async (Guid editionId, string type, ISender sender, CancellationToken ct) =>
@@ -89,7 +89,7 @@ public static class EditionEndpoints
                     return Results.BadRequest($"Okänd registreringstyp: {type}.");
                 await sender.Send(new OpenRegistrationCommand(editionId, registrationType), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         return app;
     }

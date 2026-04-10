@@ -37,7 +37,7 @@ public static class EventEndpoints
                 var id = await sender.Send(
                     new CreateEventCommand(editionId, request.CategoryId, request.LeadOrganiserId, request.ConventionId), ct);
                 return Results.Created($"/events/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         // UC-EV002 – Redigera evenemangsutkast
         app.MapPut("/events/{eventId:guid}/draft",
@@ -47,7 +47,7 @@ public static class EventEndpoints
                     new EditEventDraftCommand(eventId, request.Title, request.Description,
                         request.RegistrationType, request.DropInRules), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-EV003 – Lägg till sessionönskemål
         app.MapPost("/events/{eventId:guid}/draft/session-requests",
@@ -57,7 +57,7 @@ public static class EventEndpoints
                     new AddSessionRequestCommand(eventId, request.Description,
                         request.DurationMinutes, request.Seats, request.StartType), ct);
                 return Results.Created($"/session-requests/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         // UC-EV004 – Ta bort sessionönskemål
         app.MapDelete("/events/{eventId:guid}/draft/session-requests/{requestId:guid}",
@@ -65,7 +65,7 @@ public static class EventEndpoints
             {
                 await sender.Send(new RemoveSessionRequestCommand(eventId, requestId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-EV005 – Lägg till medarrangör
         app.MapPost("/events/{eventId:guid}/co-organisers",
@@ -73,7 +73,7 @@ public static class EventEndpoints
             {
                 await sender.Send(new AddCoOrganiserCommand(eventId, request.PersonId, request.ConventionId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-EV006 – Skicka in för granskning
         app.MapPost("/events/{eventId:guid}/submit",
@@ -81,7 +81,7 @@ public static class EventEndpoints
             {
                 await sender.Send(new SubmitForReviewCommand(eventId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-EV007 – Godkänn evenemangsversion
         app.MapPost("/events/{eventId:guid}/approve",
@@ -89,7 +89,7 @@ public static class EventEndpoints
             {
                 await sender.Send(new ApproveVersionCommand(eventId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-EV008 – Avvisa evenemangsversion
         app.MapPost("/events/{eventId:guid}/reject",
@@ -97,7 +97,7 @@ public static class EventEndpoints
             {
                 await sender.Send(new RejectVersionCommand(eventId, request.Comment), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-EV009 – Schemalägg session
         app.MapPost("/events/{eventId:guid}/sessions",
@@ -107,7 +107,7 @@ public static class EventEndpoints
                     new ScheduleSessionCommand(eventId, request.VenueId, request.StartTime, request.EndTime,
                         request.MaxSeats, request.StartType), ct);
                 return Results.Created($"/sessions/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         // UC-EV010 – Inaktivera session
         app.MapPost("/events/{eventId:guid}/sessions/{sessionId:guid}/deactivate",
@@ -115,7 +115,7 @@ public static class EventEndpoints
             {
                 await sender.Send(new DeactivateSessionCommand(eventId, sessionId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-EV011 – Ställ in evenemang
         app.MapPost("/events/{eventId:guid}/cancel",
@@ -123,7 +123,7 @@ public static class EventEndpoints
             {
                 await sender.Send(new CancelEventCommand(eventId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         return app;
     }

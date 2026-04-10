@@ -17,7 +17,7 @@ public static class ConventionEndpoints
         {
             var id = await sender.Send(new CreateConventionCommand(request.Name, request.Slug, request.RegistrantName, request.RegistrantEmail), ct);
             return Results.Created($"/conventions/{id}", new { id });
-        });
+        }).RequireAuthorization();
 
         group.MapGet("/{conventionId:guid}", async (Guid conventionId, ISender sender, CancellationToken ct) =>
         {
@@ -33,7 +33,7 @@ public static class ConventionEndpoints
             {
                 await sender.Send(new AddAdministratorCommand(conventionId, request.PersonId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         var editions = app.MapGroup("/editions");
 

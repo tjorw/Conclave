@@ -5,6 +5,7 @@ using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Registration.Services;
 using ConventionSystem.Infrastructure.Dispatching;
+using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.Persistence;
 using ConventionSystem.Infrastructure.Persistence.Repositories;
 using ConventionSystem.Infrastructure.Registration;
@@ -43,6 +44,18 @@ public static class InfrastructureServiceExtensions
                 .UseSqlServer(configuration.GetConnectionString("ConventionDb"))
                 .AddInterceptors(interceptor);
         });
+
+        services.AddDbContext<ApplicationIdentityDbContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("IdentityDb")));
+
+        services.AddIdentityCore<ApplicationUser>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+            })
+            .AddEntityFrameworkStores<ApplicationIdentityDbContext>();
 
         return services;
     }

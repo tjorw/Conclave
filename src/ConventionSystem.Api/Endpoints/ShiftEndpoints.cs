@@ -31,42 +31,42 @@ public static class ShiftEndpoints
                     stationId, request.ResponsibleId, request.StartTime, request.EndTime,
                     request.MinPersons, request.MaxPersons), ct);
                 return Results.Created($"/shifts/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         app.MapPost("/shifts/{shiftId:guid}/assignments",
             async (Guid shiftId, AssignPersonRequest request, ISender sender, CancellationToken ct) =>
             {
                 var id = await sender.Send(new AssignPersonToShiftCommand(shiftId, request.PersonId), ct);
                 return Results.Created($"/assignments/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         app.MapPost("/shifts/{shiftId:guid}/assignments/{assignmentId:guid}/confirm",
             async (Guid shiftId, Guid assignmentId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new ConfirmAssignmentCommand(shiftId, assignmentId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         app.MapPost("/shifts/{shiftId:guid}/assignments/{assignmentId:guid}/reject",
             async (Guid shiftId, Guid assignmentId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new RejectAssignmentCommand(shiftId, assignmentId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         app.MapDelete("/shifts/{shiftId:guid}/assignments/{assignmentId:guid}",
             async (Guid shiftId, Guid assignmentId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new CancelAssignmentCommand(shiftId, assignmentId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         app.MapPost("/shifts/{shiftId:guid}/cancel",
             async (Guid shiftId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new CancelShiftCommand(shiftId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         return app;
     }

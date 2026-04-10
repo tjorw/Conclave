@@ -29,7 +29,7 @@ public static class RegistrationEndpoints
             {
                 var id = await sender.Send(new CreateTicketTypeCommand(editionId, request.Name, request.Price, request.Category), ct);
                 return Results.Created($"/ticket-types/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         // UC-VR001: Anmäl som besökare
         app.MapPost("/editions/{editionId:guid}/visitor-registrations",
@@ -37,7 +37,7 @@ public static class RegistrationEndpoints
             {
                 var id = await sender.Send(new SubmitVisitorRegistrationCommand(editionId, request.PersonId, request.TicketTypeId), ct);
                 return Results.Created($"/visitor-registrations/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         // UC-VR002: Bekräfta betalning
         app.MapPost("/visitor-registrations/{registrationId:guid}/confirm-payment",
@@ -45,7 +45,7 @@ public static class RegistrationEndpoints
             {
                 await sender.Send(new ConfirmVisitorRegistrationPaymentCommand(registrationId, request.ExternalReference), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-VR003: Avboka registrering
         app.MapDelete("/visitor-registrations/{registrationId:guid}",
@@ -53,7 +53,7 @@ public static class RegistrationEndpoints
             {
                 await sender.Send(new CancelVisitorRegistrationCommand(registrationId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-TK002: Utfärda biljett manuellt
         app.MapPost("/editions/{editionId:guid}/tickets",
@@ -61,7 +61,7 @@ public static class RegistrationEndpoints
             {
                 var id = await sender.Send(new IssueTicketCommand(request.PersonId, editionId, request.TicketTypeId), ct);
                 return Results.Created($"/tickets/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         // UC-TK003: Hämta ut biljett
         app.MapPost("/tickets/{ticketId:guid}/collect",
@@ -69,7 +69,7 @@ public static class RegistrationEndpoints
             {
                 await sender.Send(new CollectTicketCommand(ticketId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-TK004: Makulera biljett
         app.MapDelete("/tickets/{ticketId:guid}",
@@ -77,7 +77,7 @@ public static class RegistrationEndpoints
             {
                 await sender.Send(new RevokeTicketCommand(ticketId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-SA001: Skicka in staffansökan
         app.MapPost("/editions/{editionId:guid}/staff-applications",
@@ -85,7 +85,7 @@ public static class RegistrationEndpoints
             {
                 var id = await sender.Send(new SubmitStaffApplicationCommand(editionId, request.PersonId, request.InterestDescription), ct);
                 return Results.Created($"/staff-applications/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         // UC-SA002: Lägg till tillgänglighet
         app.MapPost("/staff-applications/{applicationId:guid}/availabilities",
@@ -93,7 +93,7 @@ public static class RegistrationEndpoints
             {
                 var id = await sender.Send(new AddAvailabilityCommand(applicationId, request.From, request.To), ct);
                 return Results.Created($"/staff-applications/{applicationId}/availabilities/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         // UC-SA003: Ta bort tillgänglighet
         app.MapDelete("/staff-applications/{applicationId:guid}/availabilities/{availabilityId:guid}",
@@ -101,7 +101,7 @@ public static class RegistrationEndpoints
             {
                 await sender.Send(new RemoveAvailabilityCommand(applicationId, availabilityId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-SA004: Lägg till stationsönskemål
         app.MapPost("/staff-applications/{applicationId:guid}/station-preferences",
@@ -109,7 +109,7 @@ public static class RegistrationEndpoints
             {
                 await sender.Send(new AddStationPreferenceCommand(applicationId, request.StationId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-SA005: Ta bort stationsönskemål
         app.MapDelete("/staff-applications/{applicationId:guid}/station-preferences/{stationId:guid}",
@@ -117,7 +117,7 @@ public static class RegistrationEndpoints
             {
                 await sender.Send(new RemoveStationPreferenceCommand(applicationId, stationId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-SA006: Acceptera staffansökan
         app.MapPost("/staff-applications/{applicationId:guid}/accept",
@@ -125,7 +125,7 @@ public static class RegistrationEndpoints
             {
                 await sender.Send(new AcceptStaffApplicationCommand(applicationId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-SA007: Avslå staffansökan
         app.MapPost("/staff-applications/{applicationId:guid}/reject",
@@ -133,7 +133,7 @@ public static class RegistrationEndpoints
             {
                 await sender.Send(new RejectStaffApplicationCommand(applicationId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         // UC-SR001: Registrera för session
         app.MapPost("/sessions/{sessionId:guid}/registrations",
@@ -141,7 +141,7 @@ public static class RegistrationEndpoints
             {
                 var id = await sender.Send(new RegisterForSessionCommand(sessionId, request.PersonId, request.TicketId), ct);
                 return Results.Created($"/session-registrations/{id}", new { id });
-            });
+            }).RequireAuthorization();
 
         // UC-SR002: Avboka sessionsregistrering
         app.MapDelete("/session-registrations/{registrationId:guid}",
@@ -149,7 +149,7 @@ public static class RegistrationEndpoints
             {
                 await sender.Send(new CancelSessionRegistrationCommand(registrationId), ct);
                 return Results.NoContent();
-            });
+            }).RequireAuthorization();
 
         return app;
     }
