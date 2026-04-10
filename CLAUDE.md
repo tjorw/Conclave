@@ -93,32 +93,14 @@ De fyra contexts kommunicerar via domain events och id-referenser – ingen dire
 - **Monetära belopp:** `int` (ören) eller `decimal`
 - `DomainEventLog` – alla domain events serialiseras till JSON och sparas i `domain_event_log`-tabellen i samma transaktion som aggregatändringen, innan MediatR-dispatch
 
-## Domänmodell – översikt
+## Domänmodell
 
-### Convention
-Aggregate roots: `Convention`, `Edition`  
-Entiteter: `Person`, `ConventionAdministrator`, `Venue`, `Station`, `Category`  
-Value objects: `DatePeriod`  
-Invariant: Edition måste vara `Published` innan någon registrering kan öppnas.
+Se `README.md` för en komplett översikt av aggregate roots, entiteter och value objects per bounded context.
 
-### Event
-Aggregate root: `Event`  
-Entiteter: `EventVersion`, `Session`, `SessionRequest`, `CoOrganiser`, `EventComment`  
-Value objects: `TimeSlot`  
-OBS: `publishedVersionId` och `draftVersionId` är nullable FK:er med cirkulär referens – hantera med nullable i EF Core och korrekt migreringsordning.  
-OBS: `SessionRequest` har ingen koppling till `Session` – kategoriansvarig äger schemat och behöver inte följa requests.
-
-### Registration
-Aggregate roots: `VisitorRegistration`, `SessionRegistration`, `StaffApplication`, `Ticket`  
-Entiteter: `Availability`, `StationPreference`, `TicketType`, `TicketPerk`  
-Domain service: `RegistrationRuleService` (validerar platser och biljetter)
-
-### Staff
-Aggregate root: `Shift`  
-Entiteter: `StaffAssignment`  
-Value objects: `StaffingRequirement`, `TimeSlot`  
-Domain service: `AssignmentService` (kontrollerar överlapp – varning, blockerar inte)
-
+**Viktiga implementationsdetaljer:**
+- `Event.publishedVersionId` och `draftVersionId` är nullable FK:er med cirkulär referens mot `EventVersion` – konfigurera med `IsRequired(false)` och `OnDelete(DeleteBehavior.NoAction)` i EF Core
+- `SessionRequest` har ingen koppling till `Session` – kategoriansvarig äger schemat och behöver inte följa requests
+- `AssignmentService` varnar vid överlappande pass men blockerar inte – ingen invariant i domänen
 
 # Kodkonventioner
 
@@ -314,6 +296,7 @@ En use case-commit ska innehålla:
 - API-endpoint
 - Enhetstester för domän- och applikationslagret
 - Acceptanskriterier i `docs/UseCases.md` markerade som klara (`[ ]` → `[x]`)
+- `README.md` uppdaterad om domänmodellen har förändrats (nya aggregat, entiteter, value objects eller viktiga regler)
 
 ## Vad som aldrig ska vara i en commit
 - Flera orelaterade use cases
