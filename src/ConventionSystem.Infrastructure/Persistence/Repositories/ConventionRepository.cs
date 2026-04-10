@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Convention.Queries;
 using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Convention.Ids;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,12 @@ public sealed class ConventionRepository(ConventionDbContext db) : IConventionRe
         => db.Conventions
             .Include(c => c.Administrators)
             .FirstOrDefaultAsync(c => c.Id == id, ct);
+
+    public Task<ConventionDto?> GetProjectedByIdAsync(ConventionId id, CancellationToken ct = default)
+        => db.Conventions
+            .Where(c => c.Id == id)
+            .Select(c => new ConventionDto(c.Id.Value, c.Name, c.Slug))
+            .FirstOrDefaultAsync(ct);
 
     public Task SaveAsync(CancellationToken ct = default)
         => db.SaveChangesAsync(ct);

@@ -4,6 +4,8 @@ using ConventionSystem.Application.Staff.Commands.CancelShift;
 using ConventionSystem.Application.Staff.Commands.ConfirmAssignment;
 using ConventionSystem.Application.Staff.Commands.CreateShift;
 using ConventionSystem.Application.Staff.Commands.RejectAssignment;
+using ConventionSystem.Application.Staff.Queries.GetShift;
+using ConventionSystem.Application.Staff.Queries.ListShifts;
 using MediatR;
 
 namespace ConventionSystem.Api.Endpoints;
@@ -12,6 +14,16 @@ public static class ShiftEndpoints
 {
     public static IEndpointRouteBuilder MapShiftEndpoints(this IEndpointRouteBuilder app)
     {
+        app.MapGet("/stations/{stationId:guid}/shifts",
+            async (Guid stationId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListShiftsQuery(stationId), ct)));
+
+        app.MapGet("/shifts/{shiftId:guid}", async (Guid shiftId, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetShiftQuery(shiftId), ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        });
+
         app.MapPost("/stations/{stationId:guid}/shifts",
             async (Guid stationId, CreateShiftRequest request, ISender sender, CancellationToken ct) =>
             {

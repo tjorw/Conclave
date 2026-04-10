@@ -1,5 +1,8 @@
 using ConventionSystem.Application.Convention.Commands.AddAdministrator;
 using ConventionSystem.Application.Convention.Commands.CreateConvention;
+using ConventionSystem.Application.Convention.Queries.GetConvention;
+using ConventionSystem.Application.Convention.Queries.GetEdition;
+using ConventionSystem.Application.Convention.Queries.ListEditions;
 using MediatR;
 
 namespace ConventionSystem.Api.Endpoints;
@@ -16,12 +19,29 @@ public static class ConventionEndpoints
             return Results.Created($"/conventions/{id}", new { id });
         });
 
+        group.MapGet("/{conventionId:guid}", async (Guid conventionId, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetConventionQuery(conventionId), ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        });
+
+        group.MapGet("/{conventionId:guid}/editions", async (Guid conventionId, ISender sender, CancellationToken ct) =>
+            Results.Ok(await sender.Send(new ListEditionsQuery(conventionId), ct)));
+
         group.MapPost("/{conventionId:guid}/administrators",
             async (Guid conventionId, AddAdministratorRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new AddAdministratorCommand(conventionId, request.PersonId, request.PerformedById), ct);
                 return Results.NoContent();
             });
+
+        var editions = app.MapGroup("/editions");
+
+        editions.MapGet("/{editionId:guid}", async (Guid editionId, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetEditionQuery(editionId), ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        });
 
         return app;
     }

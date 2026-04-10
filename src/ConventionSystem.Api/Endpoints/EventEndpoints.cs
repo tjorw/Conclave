@@ -9,6 +9,8 @@ using ConventionSystem.Application.Event.Commands.RejectVersion;
 using ConventionSystem.Application.Event.Commands.RemoveSessionRequest;
 using ConventionSystem.Application.Event.Commands.ScheduleSession;
 using ConventionSystem.Application.Event.Commands.SubmitForReview;
+using ConventionSystem.Application.Event.Queries.GetEvent;
+using ConventionSystem.Application.Event.Queries.ListEvents;
 using ConventionSystem.Domain.Event.Enums;
 using MediatR;
 
@@ -18,6 +20,16 @@ public static class EventEndpoints
 {
     public static IEndpointRouteBuilder MapEventEndpoints(this IEndpointRouteBuilder app)
     {
+        app.MapGet("/editions/{editionId:guid}/events",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListEventsQuery(editionId), ct)));
+
+        app.MapGet("/events/{eventId:guid}", async (Guid eventId, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetEventQuery(eventId), ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        });
+
         // UC-EV001 – Skicka in evenemang
         app.MapPost("/editions/{editionId:guid}/events",
             async (Guid editionId, CreateEventRequest request, ISender sender, CancellationToken ct) =>

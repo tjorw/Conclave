@@ -1,5 +1,8 @@
 using ConventionSystem.Application.Staff.Abstractions;
+using ConventionSystem.Application.Staff.Queries;
+using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Staff.Aggregates;
+using ConventionSystem.Domain.Staff.Enums;
 using ConventionSystem.Domain.Staff.Ids;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +23,50 @@ public sealed class ShiftRepository(ConventionDbContext db) : IShiftRepository
         => db.Shifts
             .Include(s => s.Assignments)
             .FirstOrDefaultAsync(s => s.Id == id, ct);
+
+    public async Task<IReadOnlyList<ShiftSummaryDto>> ListByStationIdAsync(StationId id, CancellationToken ct = default)
+    {
+        var shifts = await db.Shifts
+            .Include(s => s.Assignments)
+            .Where(s => s.StationId == id)
+            .ToListAsync(ct);
+
+        return shifts.Select(s => new ShiftSummaryDto(
+            s.Id.Value,
+            s.StationId.Value,
+            s.ResponsibleId.Value,
+            s.TimeSlot.Start,
+            s.TimeSlot.End,
+            s.StaffingRequirement.MinPersons,
+            s.StaffingRequirement.MaxPersons,
+            s.Assignments.Count(a => a.Status is not (StaffAssignmentStatus.Cancelled or StaffAssignmentStatus.Rejected)),
+            s.Status.ToString())).ToList();
+    }
+
+    public async Task<ShiftDto?> GetProjectedByIdAsync(ShiftId id, CancellationToken ct = default)
+    {
+        var shift = await db.Shifts
+            .Include(s => s.Assignments)
+            .FirstOrDefaultAsync(s => s.Id == id, ct);
+
+        if (shift is null) return null;
+
+        return new ShiftDto(
+            shift.Id.Value,
+            shift.StationId.Value,
+            shift.ResponsibleId.Value,
+            shift.TimeSlot.Start,
+            shift.TimeSlot.End,
+            shift.StaffingRequirement.MinPersons,
+            shift.StaffingRequirement.MaxPersons,
+            shift.Status.ToString(),
+            shift.Assignments.Select(a => new StaffAssignmentDto(
+                a.Id.Value,
+                a.PersonId.Value,
+                a.AssignedById.Value,
+                a.Status.ToString(),
+                a.AssignedAt)).ToList());
+    }
 
     public Task SaveAsync(CancellationToken ct = default)
         => db.SaveChangesAsync(ct);

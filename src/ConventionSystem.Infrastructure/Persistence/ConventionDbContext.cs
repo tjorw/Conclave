@@ -16,6 +16,7 @@ public sealed class ConventionDbContext(DbContextOptions<ConventionDbContext> op
     public DbSet<Edition> Editions => Set<Edition>();
     public DbSet<Person> Persons => Set<Person>();
     public DbSet<StaffArea> StaffAreas => Set<StaffArea>();
+    public DbSet<Category> Categories => Set<Category>();
 
     // Event
     public DbSet<DomainEvent> Events => Set<DomainEvent>();
