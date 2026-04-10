@@ -6,5 +6,4 @@ public sealed record CreateVenueCommand(
     Guid EditionId,
     string Name,
     string Building,
-    string? Description,
-    Guid PerformedById) : IRequest<Guid>;
+    string? Description) : IRequest<Guid>;

@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -10,14 +11,15 @@ public sealed class AssignPersonToShiftHandler(
     IShiftRepository shiftRepository,
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
-    IPersonRepository personRepository)
+    IPersonRepository personRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<AssignPersonToShiftCommand, Guid>
 {
     public async Task<Guid> Handle(AssignPersonToShiftCommand command, CancellationToken ct)
     {
         var shiftId = new ShiftId(command.ShiftId);
         var personId = new PersonId(command.PersonId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var shift = await shiftRepository.GetByIdWithAssignmentsAsync(shiftId, ct)
             ?? throw new InvalidOperationException($"Pass '{command.ShiftId}' hittades inte.");

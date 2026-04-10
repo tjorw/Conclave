@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.OpenRegistration;
 using ConventionSystem.Domain.Convention.Enums;
@@ -11,11 +12,12 @@ public class OpenRegistrationHandlerTests
 {
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly OpenRegistrationHandler _handler;
 
     public OpenRegistrationHandlerTests()
     {
-        _handler = new OpenRegistrationHandler(_editionRepo, _conventionRepo);
+        _handler = new OpenRegistrationHandler(_editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -45,8 +47,9 @@ public class OpenRegistrationHandlerTests
     public async Task Handle_ValidCommand_SetsCorrectFlag(RegistrationType type)
     {
         var (_, admin, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new OpenRegistrationCommand(edition.Id.Value, type, admin.Id.Value), default);
+        await _handler.Handle(new OpenRegistrationCommand(edition.Id.Value, type), default);
 
         if (type == RegistrationType.Organiser) Assert.True(edition.OrganiserRegistrationOpen);
         else if (type == RegistrationType.Staff) Assert.True(edition.StaffRegistrationOpen);
@@ -57,8 +60,9 @@ public class OpenRegistrationHandlerTests
     public async Task Handle_ValidCommand_CallsSave()
     {
         var (_, admin, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new OpenRegistrationCommand(edition.Id.Value, RegistrationType.Staff, admin.Id.Value), default);
+        await _handler.Handle(new OpenRegistrationCommand(edition.Id.Value, RegistrationType.Staff), default);
 
         await _editionRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -70,7 +74,7 @@ public class OpenRegistrationHandlerTests
             .Returns((Domain.Convention.Aggregates.Edition?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new OpenRegistrationCommand(Guid.NewGuid(), RegistrationType.Staff, Guid.NewGuid()), default));
+            () => _handler.Handle(new OpenRegistrationCommand(Guid.NewGuid(), RegistrationType.Staff), default));
     }
 
     [Fact]
@@ -78,9 +82,10 @@ public class OpenRegistrationHandlerTests
     {
         var (convention, _, edition) = Setup();
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new OpenRegistrationCommand(edition.Id.Value, RegistrationType.Staff, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new OpenRegistrationCommand(edition.Id.Value, RegistrationType.Staff), default));
     }
 
     [Fact]
@@ -88,8 +93,9 @@ public class OpenRegistrationHandlerTests
     {
         var (_, admin, edition) = Setup();
         edition.OpenVisitorRegistration(admin.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new OpenRegistrationCommand(edition.Id.Value, RegistrationType.Visitor, admin.Id.Value), default));
+            () => _handler.Handle(new OpenRegistrationCommand(edition.Id.Value, RegistrationType.Visitor), default));
     }
 }

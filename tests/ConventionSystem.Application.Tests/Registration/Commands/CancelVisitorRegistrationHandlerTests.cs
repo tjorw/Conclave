@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.CancelVisitorRegistration;
 using ConventionSystem.Domain.Convention.Ids;
@@ -11,11 +12,12 @@ public class CancelVisitorRegistrationHandlerTests
 {
     private readonly IVisitorRegistrationRepository _registrationRepo = Substitute.For<IVisitorRegistrationRepository>();
     private readonly ITicketRepository _ticketRepo = Substitute.For<ITicketRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly CancelVisitorRegistrationHandler _handler;
 
     public CancelVisitorRegistrationHandlerTests()
     {
-        _handler = new CancelVisitorRegistrationHandler(_registrationRepo, _ticketRepo);
+        _handler = new CancelVisitorRegistrationHandler(_registrationRepo, _ticketRepo, _currentUser);
     }
 
     private (VisitorRegistration registration, Ticket ticket) Setup()
@@ -35,7 +37,7 @@ public class CancelVisitorRegistrationHandlerTests
     {
         var (registration, ticket) = Setup();
 
-        await _handler.Handle(new CancelVisitorRegistrationCommand(registration.Id.Value, Guid.NewGuid()), default);
+        await _handler.Handle(new CancelVisitorRegistrationCommand(registration.Id.Value), default);
 
         Assert.Equal(Domain.Registration.Enums.VisitorRegistrationStatus.Cancelled, registration.Status);
         Assert.Equal(Domain.Registration.Enums.TicketStatus.Revoked, ticket.Status);
@@ -46,7 +48,7 @@ public class CancelVisitorRegistrationHandlerTests
     {
         var (registration, _) = Setup();
 
-        await _handler.Handle(new CancelVisitorRegistrationCommand(registration.Id.Value, Guid.NewGuid()), default);
+        await _handler.Handle(new CancelVisitorRegistrationCommand(registration.Id.Value), default);
 
         await _registrationRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -58,6 +60,6 @@ public class CancelVisitorRegistrationHandlerTests
             .Returns((VisitorRegistration?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CancelVisitorRegistrationCommand(Guid.NewGuid(), Guid.NewGuid()), default));
+            () => _handler.Handle(new CancelVisitorRegistrationCommand(Guid.NewGuid()), default));
     }
 }

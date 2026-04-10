@@ -1,7 +1,7 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.RejectVersion;
-using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Event.Enums;
@@ -16,11 +16,12 @@ public class RejectVersionHandlerTests
     private readonly IEventRepository _eventRepo = Substitute.For<IEventRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly RejectVersionHandler _handler;
 
     public RejectVersionHandlerTests()
     {
-        _handler = new RejectVersionHandler(_eventRepo, _editionRepo, _conventionRepo);
+        _handler = new RejectVersionHandler(_eventRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person responsible,
@@ -54,8 +55,9 @@ public class RejectVersionHandlerTests
     public async Task Handle_ValidCommand_EventReturnsToDraft()
     {
         var (_, responsible, _, ev) = Setup();
+        _currentUser.PersonId.Returns(responsible.Id);
 
-        await _handler.Handle(new RejectVersionCommand(ev.Id.Value, responsible.Id.Value, "Behöver förbättras."), default);
+        await _handler.Handle(new RejectVersionCommand(ev.Id.Value, "Behöver förbättras."), default);
 
         Assert.Equal(EventStatus.Draft, ev.Status);
     }
@@ -64,9 +66,10 @@ public class RejectVersionHandlerTests
     public async Task Handle_ValidCommand_NewDraftIsCreated()
     {
         var (_, responsible, _, ev) = Setup();
+        _currentUser.PersonId.Returns(responsible.Id);
         var versionCountBefore = ev.Versions.Count;
 
-        await _handler.Handle(new RejectVersionCommand(ev.Id.Value, responsible.Id.Value, "Behöver förbättras."), default);
+        await _handler.Handle(new RejectVersionCommand(ev.Id.Value, "Behöver förbättras."), default);
 
         Assert.Equal(versionCountBefore + 1, ev.Versions.Count);
     }
@@ -76,8 +79,9 @@ public class RejectVersionHandlerTests
     {
         var (_, responsible, _, ev) = Setup();
         ev.ClearDomainEvents();
+        _currentUser.PersonId.Returns(responsible.Id);
 
-        await _handler.Handle(new RejectVersionCommand(ev.Id.Value, responsible.Id.Value, "Kommentar."), default);
+        await _handler.Handle(new RejectVersionCommand(ev.Id.Value, "Kommentar."), default);
 
         Assert.Single(ev.DomainEvents.OfType<VersionRejected>());
     }
@@ -86,9 +90,10 @@ public class RejectVersionHandlerTests
     public async Task Handle_EmptyComment_Throws()
     {
         var (_, responsible, _, ev) = Setup();
+        _currentUser.PersonId.Returns(responsible.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _handler.Handle(new RejectVersionCommand(ev.Id.Value, responsible.Id.Value, "  "), default));
+            _handler.Handle(new RejectVersionCommand(ev.Id.Value, "  "), default));
     }
 
     [Fact]
@@ -96,8 +101,9 @@ public class RejectVersionHandlerTests
     {
         var (convention, _, _, ev) = Setup();
         var outsider = convention.CreatePerson("Utomstående", "other@example.com");
+        _currentUser.PersonId.Returns(outsider.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _handler.Handle(new RejectVersionCommand(ev.Id.Value, outsider.Id.Value, "Kommentar."), default));
+            _handler.Handle(new RejectVersionCommand(ev.Id.Value, "Kommentar."), default));
     }
 }

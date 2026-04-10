@@ -1,7 +1,7 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.ApproveVersion;
-using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Event.Enums;
@@ -16,11 +16,12 @@ public class ApproveVersionHandlerTests
     private readonly IEventRepository _eventRepo = Substitute.For<IEventRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly ApproveVersionHandler _handler;
 
     public ApproveVersionHandlerTests()
     {
-        _handler = new ApproveVersionHandler(_eventRepo, _editionRepo, _conventionRepo);
+        _handler = new ApproveVersionHandler(_eventRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person categoryResponsible,
@@ -54,8 +55,9 @@ public class ApproveVersionHandlerTests
     public async Task Handle_CategoryResponsible_EventBecomesPublished()
     {
         var (_, responsible, _, ev) = Setup();
+        _currentUser.PersonId.Returns(responsible.Id);
 
-        await _handler.Handle(new ApproveVersionCommand(ev.Id.Value, responsible.Id.Value), default);
+        await _handler.Handle(new ApproveVersionCommand(ev.Id.Value), default);
 
         Assert.Equal(EventStatus.Published, ev.Status);
     }
@@ -65,8 +67,9 @@ public class ApproveVersionHandlerTests
     {
         var (_, responsible, _, ev) = Setup();
         var draftId = ev.DraftVersionId;
+        _currentUser.PersonId.Returns(responsible.Id);
 
-        await _handler.Handle(new ApproveVersionCommand(ev.Id.Value, responsible.Id.Value), default);
+        await _handler.Handle(new ApproveVersionCommand(ev.Id.Value), default);
 
         Assert.Equal(draftId, ev.PublishedVersionId);
         Assert.Null(ev.DraftVersionId);
@@ -77,8 +80,9 @@ public class ApproveVersionHandlerTests
     {
         var (_, responsible, _, ev) = Setup();
         ev.ClearDomainEvents();
+        _currentUser.PersonId.Returns(responsible.Id);
 
-        await _handler.Handle(new ApproveVersionCommand(ev.Id.Value, responsible.Id.Value), default);
+        await _handler.Handle(new ApproveVersionCommand(ev.Id.Value), default);
 
         Assert.Single(ev.DomainEvents.OfType<VersionApproved>());
     }
@@ -89,9 +93,10 @@ public class ApproveVersionHandlerTests
         var (_, responsible, _, ev) = Setup();
         ev.ApproveVersion(responsible.Id);
         _eventRepo.GetByIdWithDraftVersionAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _currentUser.PersonId.Returns(responsible.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _handler.Handle(new ApproveVersionCommand(ev.Id.Value, responsible.Id.Value), default));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(new ApproveVersionCommand(ev.Id.Value), default));
     }
 
     [Fact]
@@ -99,8 +104,9 @@ public class ApproveVersionHandlerTests
     {
         var (convention, _, _, ev) = Setup();
         var outsider = convention.CreatePerson("Utomstående", "other@example.com");
+        _currentUser.PersonId.Returns(outsider.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _handler.Handle(new ApproveVersionCommand(ev.Id.Value, outsider.Id.Value), default));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(new ApproveVersionCommand(ev.Id.Value), default));
     }
 }

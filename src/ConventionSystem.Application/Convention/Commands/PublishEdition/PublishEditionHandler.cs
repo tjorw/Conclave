@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using MediatR;
@@ -6,7 +7,8 @@ namespace ConventionSystem.Application.Convention.Commands.PublishEdition;
 
 public sealed class PublishEditionHandler(
     IEditionRepository editionRepository,
-    IConventionRepository conventionRepository)
+    IConventionRepository conventionRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<PublishEditionCommand>
 {
     public async Task Handle(PublishEditionCommand command, CancellationToken ct)
@@ -17,7 +19,7 @@ public sealed class PublishEditionHandler(
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
             ?? throw new InvalidOperationException("Konventionen hittades inte.");
 
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
         if (!convention.IsAdministrator(performedById))
             throw new InvalidOperationException("Utföraren är inte administratör för denna konvention.");
 

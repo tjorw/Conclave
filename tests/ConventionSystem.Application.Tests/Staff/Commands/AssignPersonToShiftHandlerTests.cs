@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Staff.Commands.AssignPersonToShift;
@@ -16,11 +17,13 @@ public class AssignPersonToShiftHandlerTests
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
     private readonly IPersonRepository _personRepo = Substitute.For<IPersonRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly AssignPersonToShiftHandler _handler;
 
     public AssignPersonToShiftHandlerTests()
     {
-        _handler = new AssignPersonToShiftHandler(_shiftRepo, _editionRepo, _conventionRepo, _personRepo);
+        _handler = new AssignPersonToShiftHandler(_shiftRepo, _editionRepo, _conventionRepo, _personRepo,
+            _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -57,8 +60,9 @@ public class AssignPersonToShiftHandlerTests
     public async Task Handle_ValidCommand_ReturnsAssignmentId()
     {
         var (_, admin, person, _, shift) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        var id = await _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, person.Id.Value, admin.Id.Value), default);
+        var id = await _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, person.Id.Value), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -67,8 +71,9 @@ public class AssignPersonToShiftHandlerTests
     public async Task Handle_ValidCommand_CallsSave()
     {
         var (_, admin, person, _, shift) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, person.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, person.Id.Value), default);
 
         await _shiftRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -80,7 +85,7 @@ public class AssignPersonToShiftHandlerTests
             .Returns((Shift?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new AssignPersonToShiftCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()), default));
+            () => _handler.Handle(new AssignPersonToShiftCommand(Guid.NewGuid(), Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -88,18 +93,20 @@ public class AssignPersonToShiftHandlerTests
     {
         var (convention, _, person, _, shift) = Setup();
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, person.Id.Value, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, person.Id.Value), default));
     }
 
     [Fact]
     public async Task Handle_StaffCoordinatorCanAssign()
     {
         var (_, _, person, edition, shift) = Setup();
-        var staffCoordId = edition.StaffCoordinatorId!.Value.Value;
+        var staffCoordId = edition.StaffCoordinatorId!.Value;
+        _currentUser.PersonId.Returns(staffCoordId);
 
-        var id = await _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, person.Id.Value, staffCoordId), default);
+        var id = await _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, person.Id.Value), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -108,9 +115,10 @@ public class AssignPersonToShiftHandlerTests
     public async Task Handle_StaffAreaResponsibleCanAssign()
     {
         var (_, _, person, edition, shift) = Setup();
-        var areaResponsibleId = edition.StaffAreas[0].ResponsibleId.Value;
+        var areaResponsibleId = edition.StaffAreas[0].ResponsibleId;
+        _currentUser.PersonId.Returns(areaResponsibleId);
 
-        var id = await _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, person.Id.Value, areaResponsibleId), default);
+        var id = await _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, person.Id.Value), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -122,8 +130,9 @@ public class AssignPersonToShiftHandlerTests
         var otherConvention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Other Con", "other-con");
         var outsider = otherConvention.CreatePerson("Outsider", "outsider@example.com");
         _personRepo.GetByIdAsync(outsider.Id, Arg.Any<CancellationToken>()).Returns(outsider);
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, outsider.Id.Value, admin.Id.Value), default));
+            () => _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, outsider.Id.Value), default));
     }
 }

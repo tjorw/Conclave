@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.ChangeCategoryResponsible;
 using ConventionSystem.Domain.Convention.Ids;
@@ -11,11 +12,12 @@ public class ChangeCategoryResponsibleHandlerTests
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
     private readonly IPersonRepository _personRepo = Substitute.For<IPersonRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly ChangeCategoryResponsibleHandler _handler;
 
     public ChangeCategoryResponsibleHandlerTests()
     {
-        _handler = new ChangeCategoryResponsibleHandler(_editionRepo, _conventionRepo, _personRepo);
+        _handler = new ChangeCategoryResponsibleHandler(_editionRepo, _conventionRepo, _personRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -48,9 +50,10 @@ public class ChangeCategoryResponsibleHandlerTests
     public async Task Handle_ValidCommand_UpdatesCategoryResponsible()
     {
         var (_, admin, newResponsible, edition, category) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new ChangeCategoryResponsibleCommand(
-            edition.Id.Value, category.Id.Value, newResponsible.Id.Value, admin.Id.Value), default);
+            edition.Id.Value, category.Id.Value, newResponsible.Id.Value), default);
 
         Assert.Equal(newResponsible.Id, category.ResponsibleId);
     }
@@ -59,9 +62,10 @@ public class ChangeCategoryResponsibleHandlerTests
     public async Task Handle_ValidCommand_CallsSave()
     {
         var (_, admin, newResponsible, edition, category) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new ChangeCategoryResponsibleCommand(
-            edition.Id.Value, category.Id.Value, newResponsible.Id.Value, admin.Id.Value), default);
+            edition.Id.Value, category.Id.Value, newResponsible.Id.Value), default);
 
         await _editionRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -73,7 +77,7 @@ public class ChangeCategoryResponsibleHandlerTests
             .Returns((Domain.Convention.Aggregates.Edition?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new ChangeCategoryResponsibleCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()), default));
+            () => _handler.Handle(new ChangeCategoryResponsibleCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -81,23 +85,24 @@ public class ChangeCategoryResponsibleHandlerTests
     {
         var (convention, _, newResponsible, edition, category) = Setup();
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new ChangeCategoryResponsibleCommand(
-                edition.Id.Value, category.Id.Value, newResponsible.Id.Value, nonAdmin.Id.Value), default));
+                edition.Id.Value, category.Id.Value, newResponsible.Id.Value), default));
     }
 
     [Fact]
     public async Task Handle_NewResponsibleFromOtherConvention_Throws()
     {
         var (_, admin, _, edition, category) = Setup();
-
         var otherConvention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Other Con", "other-con");
         var outsider = otherConvention.CreatePerson("Outsider", "outsider@example.com");
         _personRepo.GetByIdAsync(outsider.Id, Arg.Any<CancellationToken>()).Returns(outsider);
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new ChangeCategoryResponsibleCommand(
-                edition.Id.Value, category.Id.Value, outsider.Id.Value, admin.Id.Value), default));
+                edition.Id.Value, category.Id.Value, outsider.Id.Value), default));
     }
 }

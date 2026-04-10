@@ -5,5 +5,4 @@ namespace ConventionSystem.Application.Convention.Commands.OpenRegistration;
 
 public sealed record OpenRegistrationCommand(
     Guid EditionId,
-    RegistrationType RegistrationType,
-    Guid PerformedById) : IRequest;
+    RegistrationType RegistrationType) : IRequest;

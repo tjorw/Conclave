@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -9,13 +10,14 @@ namespace ConventionSystem.Application.Event.Commands.DeactivateSession;
 public sealed class DeactivateSessionHandler(
     IEventRepository eventRepository,
     IEditionRepository editionRepository,
-    IConventionRepository conventionRepository)
+    IConventionRepository conventionRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<DeactivateSessionCommand>
 {
     public async Task Handle(DeactivateSessionCommand command, CancellationToken ct)
     {
         var sessionId = new SessionId(command.SessionId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var ev = await eventRepository.GetByIdWithSessionsAsync(new EventId(command.EventId), ct)
             ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");

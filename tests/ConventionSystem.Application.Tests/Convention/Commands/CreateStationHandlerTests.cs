@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateStation;
 using ConventionSystem.Domain.Convention.Ids;
@@ -10,11 +11,12 @@ public class CreateStationHandlerTests
 {
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly CreateStationHandler _handler;
 
     public CreateStationHandlerTests()
     {
-        _handler = new CreateStationHandler(_editionRepo, _conventionRepo);
+        _handler = new CreateStationHandler(_editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -43,8 +45,9 @@ public class CreateStationHandlerTests
     public async Task Handle_ValidCommand_AddsStationToEdition()
     {
         var (_, admin, staffArea, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Reception A", null, staffArea.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Reception A", null, staffArea.Id.Value), default);
 
         Assert.Single(edition.Stations);
         Assert.Equal("Reception A", edition.Stations[0].Name);
@@ -54,8 +57,9 @@ public class CreateStationHandlerTests
     public async Task Handle_ValidCommand_ReturnsStationId()
     {
         var (_, admin, staffArea, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        var id = await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Reception A", null, staffArea.Id.Value, admin.Id.Value), default);
+        var id = await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Reception A", null, staffArea.Id.Value), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -64,8 +68,9 @@ public class CreateStationHandlerTests
     public async Task Handle_ValidCommand_CallsSave()
     {
         var (_, admin, staffArea, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Reception A", null, staffArea.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Reception A", null, staffArea.Id.Value), default);
 
         await _editionRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -77,7 +82,7 @@ public class CreateStationHandlerTests
             .Returns((Domain.Convention.Aggregates.Edition?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateStationCommand(Guid.NewGuid(), "Station", null, Guid.NewGuid(), Guid.NewGuid()), default));
+            () => _handler.Handle(new CreateStationCommand(Guid.NewGuid(), "Station", null, Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -85,17 +90,19 @@ public class CreateStationHandlerTests
     {
         var (convention, _, staffArea, edition) = Setup();
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, staffArea.Id.Value, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, staffArea.Id.Value), default));
     }
 
     [Fact]
     public async Task Handle_StaffCoordinatorCanCreate()
     {
-        var (convention, _, staffArea, edition) = Setup();
+        var (_, _, staffArea, edition) = Setup();
+        _currentUser.PersonId.Returns(edition.StaffCoordinatorId!.Value);
 
-        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, staffArea.Id.Value, edition.StaffCoordinatorId!.Value.Value), default);
+        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, staffArea.Id.Value), default);
 
         Assert.Single(edition.Stations);
     }
@@ -104,9 +111,9 @@ public class CreateStationHandlerTests
     public async Task Handle_StaffAreaResponsibleCanCreate()
     {
         var (_, _, staffArea, edition) = Setup();
+        _currentUser.PersonId.Returns(edition.StaffAreas[0].ResponsibleId);
 
-        var areaResponsible = edition.StaffAreas[0].ResponsibleId;
-        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, staffArea.Id.Value, areaResponsible.Value), default);
+        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, staffArea.Id.Value), default);
 
         Assert.Single(edition.Stations);
     }
@@ -115,9 +122,9 @@ public class CreateStationHandlerTests
     public async Task Handle_StaffAreaNotOnEdition_Throws()
     {
         var (_, admin, _, edition) = Setup();
-        var unknownAreaId = Guid.NewGuid();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, unknownAreaId, admin.Id.Value), default));
+            () => _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, Guid.NewGuid()), default));
     }
 }

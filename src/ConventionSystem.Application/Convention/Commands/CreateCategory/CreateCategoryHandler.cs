@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using MediatR;
@@ -7,13 +8,14 @@ namespace ConventionSystem.Application.Convention.Commands.CreateCategory;
 public sealed class CreateCategoryHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
-    IPersonRepository personRepository)
+    IPersonRepository personRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<CreateCategoryCommand, Guid>
 {
     public async Task<Guid> Handle(CreateCategoryCommand command, CancellationToken ct)
     {
         var editionId = new EditionId(command.EditionId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
         var responsibleId = new PersonId(command.ResponsibleId);
 
         var edition = await editionRepository.GetByIdAsync(editionId, ct)

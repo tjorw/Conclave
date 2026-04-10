@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Staff.Commands.CancelShift;
@@ -15,11 +16,12 @@ public class CancelShiftHandlerTests
     private readonly IShiftRepository _shiftRepo = Substitute.For<IShiftRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly CancelShiftHandler _handler;
 
     public CancelShiftHandlerTests()
     {
-        _handler = new CancelShiftHandler(_shiftRepo, _editionRepo, _conventionRepo);
+        _handler = new CancelShiftHandler(_shiftRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -53,8 +55,9 @@ public class CancelShiftHandlerTests
     public async Task Handle_ValidCommand_CancelsShift()
     {
         var (_, admin, _, shift) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CancelShiftCommand(shift.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new CancelShiftCommand(shift.Id.Value), default);
 
         Assert.Equal(Domain.Staff.Enums.ShiftStatus.Cancelled, shift.Status);
     }
@@ -63,8 +66,9 @@ public class CancelShiftHandlerTests
     public async Task Handle_ValidCommand_CallsSave()
     {
         var (_, admin, _, shift) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CancelShiftCommand(shift.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new CancelShiftCommand(shift.Id.Value), default);
 
         await _shiftRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -76,7 +80,7 @@ public class CancelShiftHandlerTests
             .Returns((Shift?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CancelShiftCommand(Guid.NewGuid(), Guid.NewGuid()), default));
+            () => _handler.Handle(new CancelShiftCommand(Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -84,18 +88,20 @@ public class CancelShiftHandlerTests
     {
         var (convention, _, _, shift) = Setup();
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CancelShiftCommand(shift.Id.Value, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new CancelShiftCommand(shift.Id.Value), default));
     }
 
     [Fact]
     public async Task Handle_StaffCoordinatorCanCancel()
     {
         var (_, _, edition, shift) = Setup();
-        var staffCoordId = edition.StaffCoordinatorId!.Value.Value;
+        var staffCoordId = edition.StaffCoordinatorId!.Value;
+        _currentUser.PersonId.Returns(staffCoordId);
 
-        await _handler.Handle(new CancelShiftCommand(shift.Id.Value, staffCoordId), default);
+        await _handler.Handle(new CancelShiftCommand(shift.Id.Value), default);
 
         Assert.Equal(Domain.Staff.Enums.ShiftStatus.Cancelled, shift.Status);
     }
@@ -104,9 +110,10 @@ public class CancelShiftHandlerTests
     public async Task Handle_StaffAreaResponsibleCanCancel()
     {
         var (_, _, edition, shift) = Setup();
-        var areaResponsibleId = edition.StaffAreas[0].ResponsibleId.Value;
+        var areaResponsibleId = edition.StaffAreas[0].ResponsibleId;
+        _currentUser.PersonId.Returns(areaResponsibleId);
 
-        await _handler.Handle(new CancelShiftCommand(shift.Id.Value, areaResponsibleId), default);
+        await _handler.Handle(new CancelShiftCommand(shift.Id.Value), default);
 
         Assert.Equal(Domain.Staff.Enums.ShiftStatus.Cancelled, shift.Status);
     }

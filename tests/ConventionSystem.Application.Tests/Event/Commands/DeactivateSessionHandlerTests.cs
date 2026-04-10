@@ -1,7 +1,7 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.DeactivateSession;
-using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Event.Enums;
@@ -17,11 +17,12 @@ public class DeactivateSessionHandlerTests
     private readonly IEventRepository _eventRepo = Substitute.For<IEventRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly DeactivateSessionHandler _handler;
 
     public DeactivateSessionHandlerTests()
     {
-        _handler = new DeactivateSessionHandler(_eventRepo, _editionRepo, _conventionRepo);
+        _handler = new DeactivateSessionHandler(_eventRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person responsible,
@@ -47,9 +48,7 @@ public class DeactivateSessionHandlerTests
         ev.SubmitForReview();
         ev.ApproveVersion(eventCoord.Id);
 
-        var timeSlot = new TimeSlot(
-            new DateTime(2027, 3, 1, 10, 0, 0),
-            new DateTime(2027, 3, 1, 14, 0, 0));
+        var timeSlot = new TimeSlot(new DateTime(2027, 3, 1, 10, 0, 0), new DateTime(2027, 3, 1, 14, 0, 0));
         var session = ev.CreateSession(venue.Id, timeSlot, 20, StartType.FixedTime);
 
         _eventRepo.GetByIdWithSessionsAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
@@ -63,8 +62,9 @@ public class DeactivateSessionHandlerTests
     public async Task Handle_ValidCommand_SessionBecomesInactive()
     {
         var (_, responsible, _, ev, sessionId) = Setup();
+        _currentUser.PersonId.Returns(responsible.Id);
 
-        await _handler.Handle(new DeactivateSessionCommand(ev.Id.Value, sessionId.Value, responsible.Id.Value), default);
+        await _handler.Handle(new DeactivateSessionCommand(ev.Id.Value, sessionId.Value), default);
 
         Assert.Equal(SessionStatus.Inactive, ev.Sessions.First(s => s.Id == sessionId).Status);
     }
@@ -74,8 +74,9 @@ public class DeactivateSessionHandlerTests
     {
         var (_, responsible, _, ev, sessionId) = Setup();
         ev.ClearDomainEvents();
+        _currentUser.PersonId.Returns(responsible.Id);
 
-        await _handler.Handle(new DeactivateSessionCommand(ev.Id.Value, sessionId.Value, responsible.Id.Value), default);
+        await _handler.Handle(new DeactivateSessionCommand(ev.Id.Value, sessionId.Value), default);
 
         Assert.Single(ev.DomainEvents.OfType<SessionDeactivated>());
     }
@@ -86,9 +87,10 @@ public class DeactivateSessionHandlerTests
         var (_, responsible, _, ev, sessionId) = Setup();
         ev.DeactivateSession(sessionId, responsible.Id);
         _eventRepo.GetByIdWithSessionsAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _currentUser.PersonId.Returns(responsible.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _handler.Handle(new DeactivateSessionCommand(ev.Id.Value, sessionId.Value, responsible.Id.Value), default));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(new DeactivateSessionCommand(ev.Id.Value, sessionId.Value), default));
     }
 
     [Fact]
@@ -96,8 +98,9 @@ public class DeactivateSessionHandlerTests
     {
         var (convention, _, _, ev, sessionId) = Setup();
         var outsider = convention.CreatePerson("Utomstående", "other@example.com");
+        _currentUser.PersonId.Returns(outsider.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _handler.Handle(new DeactivateSessionCommand(ev.Id.Value, sessionId.Value, outsider.Id.Value), default));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(new DeactivateSessionCommand(ev.Id.Value, sessionId.Value), default));
     }
 }

@@ -1,7 +1,7 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.ScheduleSession;
-using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Event.Enums;
@@ -16,11 +16,12 @@ public class ScheduleSessionHandlerTests
     private readonly IEventRepository _eventRepo = Substitute.For<IEventRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly ScheduleSessionHandler _handler;
 
     public ScheduleSessionHandlerTests()
     {
-        _handler = new ScheduleSessionHandler(_eventRepo, _editionRepo, _conventionRepo);
+        _handler = new ScheduleSessionHandler(_eventRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person responsible,
@@ -57,12 +58,13 @@ public class ScheduleSessionHandlerTests
     public async Task Handle_ValidCommand_ReturnsSessionId()
     {
         var (_, responsible, _, ev, venueId) = Setup();
+        _currentUser.PersonId.Returns(responsible.Id);
 
         var id = await _handler.Handle(new ScheduleSessionCommand(
             ev.Id.Value, venueId.Value,
             new DateTime(2027, 3, 1, 10, 0, 0),
             new DateTime(2027, 3, 1, 14, 0, 0),
-            20, StartType.FixedTime, responsible.Id.Value), default);
+            20, StartType.FixedTime), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -72,12 +74,13 @@ public class ScheduleSessionHandlerTests
     {
         var (_, responsible, _, ev, venueId) = Setup();
         ev.ClearDomainEvents();
+        _currentUser.PersonId.Returns(responsible.Id);
 
         await _handler.Handle(new ScheduleSessionCommand(
             ev.Id.Value, venueId.Value,
             new DateTime(2027, 3, 1, 10, 0, 0),
             new DateTime(2027, 3, 1, 14, 0, 0),
-            20, StartType.FixedTime, responsible.Id.Value), default);
+            20, StartType.FixedTime), default);
 
         Assert.Single(ev.DomainEvents.OfType<SessionCreated>());
     }
@@ -86,6 +89,7 @@ public class ScheduleSessionHandlerTests
     public async Task Handle_EventNotPublished_Throws()
     {
         var (_, responsible, edition, _, venueId) = Setup();
+        _currentUser.PersonId.Returns(responsible.Id);
         var draftEvent = new Domain.Event.Aggregates.Event(
             EventId.New(), edition.Id, edition.Categories.First().Id, responsible.Id);
         _eventRepo.GetByIdAsync(draftEvent.Id, Arg.Any<CancellationToken>()).Returns(draftEvent);
@@ -95,20 +99,21 @@ public class ScheduleSessionHandlerTests
                 draftEvent.Id.Value, venueId.Value,
                 new DateTime(2027, 3, 1, 10, 0, 0),
                 new DateTime(2027, 3, 1, 14, 0, 0),
-                20, StartType.FixedTime, responsible.Id.Value), default));
+                20, StartType.FixedTime), default));
     }
 
     [Fact]
     public async Task Handle_VenueNotOnEdition_Throws()
     {
         var (_, responsible, _, ev, _) = Setup();
+        _currentUser.PersonId.Returns(responsible.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(new ScheduleSessionCommand(
                 ev.Id.Value, Guid.NewGuid(),
                 new DateTime(2027, 3, 1, 10, 0, 0),
                 new DateTime(2027, 3, 1, 14, 0, 0),
-                20, StartType.FixedTime, responsible.Id.Value), default));
+                20, StartType.FixedTime), default));
     }
 
     [Fact]
@@ -116,12 +121,13 @@ public class ScheduleSessionHandlerTests
     {
         var (convention, _, _, ev, venueId) = Setup();
         var outsider = convention.CreatePerson("Utomstående", "other@example.com");
+        _currentUser.PersonId.Returns(outsider.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(new ScheduleSessionCommand(
                 ev.Id.Value, venueId.Value,
                 new DateTime(2027, 3, 1, 10, 0, 0),
                 new DateTime(2027, 3, 1, 14, 0, 0),
-                20, StartType.FixedTime, outsider.Id.Value), default));
+                20, StartType.FixedTime), default));
     }
 }

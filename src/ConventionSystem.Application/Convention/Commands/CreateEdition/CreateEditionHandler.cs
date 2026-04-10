@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
@@ -8,7 +9,8 @@ namespace ConventionSystem.Application.Convention.Commands.CreateEdition;
 public sealed class CreateEditionHandler(
     IConventionRepository conventionRepository,
     IPersonRepository personRepository,
-    IEditionRepository editionRepository)
+    IEditionRepository editionRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<CreateEditionCommand, Guid>
 {
     public async Task<Guid> Handle(CreateEditionCommand command, CancellationToken ct)
@@ -18,7 +20,7 @@ public sealed class CreateEditionHandler(
         var convention = await conventionRepository.GetByIdAsync(conventionId, ct)
             ?? throw new InvalidOperationException($"Konvention '{command.ConventionId}' hittades inte.");
 
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
         if (!convention.IsAdministrator(performedById))
             throw new InvalidOperationException("Utföraren är inte administratör för denna konvention.");
 

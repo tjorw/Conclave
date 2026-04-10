@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.AddAdministrator;
 using ConventionSystem.Domain.Convention.Ids;
@@ -9,11 +10,12 @@ public class AddAdministratorHandlerTests
 {
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
     private readonly IPersonRepository _personRepo = Substitute.For<IPersonRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly AddAdministratorHandler _handler;
 
     public AddAdministratorHandlerTests()
     {
-        _handler = new AddAdministratorHandler(_conventionRepo, _personRepo);
+        _handler = new AddAdministratorHandler(_conventionRepo, _personRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -36,9 +38,9 @@ public class AddAdministratorHandlerTests
     public async Task Handle_ValidCommand_AddsAdministrator()
     {
         var (convention, existingAdmin, newPerson) = Setup();
+        _currentUser.PersonId.Returns(existingAdmin.Id);
 
-        await _handler.Handle(
-            new AddAdministratorCommand(convention.Id.Value, newPerson.Id.Value, existingAdmin.Id.Value), default);
+        await _handler.Handle(new AddAdministratorCommand(convention.Id.Value, newPerson.Id.Value), default);
 
         Assert.True(convention.IsAdministrator(newPerson.Id));
     }
@@ -47,9 +49,9 @@ public class AddAdministratorHandlerTests
     public async Task Handle_ValidCommand_CallsSave()
     {
         var (convention, existingAdmin, newPerson) = Setup();
+        _currentUser.PersonId.Returns(existingAdmin.Id);
 
-        await _handler.Handle(
-            new AddAdministratorCommand(convention.Id.Value, newPerson.Id.Value, existingAdmin.Id.Value), default);
+        await _handler.Handle(new AddAdministratorCommand(convention.Id.Value, newPerson.Id.Value), default);
 
         await _conventionRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -61,7 +63,7 @@ public class AddAdministratorHandlerTests
             .Returns((Domain.Convention.Aggregates.Convention?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new AddAdministratorCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()), default));
+            () => _handler.Handle(new AddAdministratorCommand(Guid.NewGuid(), Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -70,10 +72,10 @@ public class AddAdministratorHandlerTests
         var (convention, _, newPerson) = Setup();
         var nonAdmin = convention.CreatePerson("Bob", "bob@example.com");
         _personRepo.GetByIdAsync(newPerson.Id, Arg.Any<CancellationToken>()).Returns(newPerson);
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(
-                new AddAdministratorCommand(convention.Id.Value, newPerson.Id.Value, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new AddAdministratorCommand(convention.Id.Value, newPerson.Id.Value), default));
     }
 
     [Fact]
@@ -82,10 +84,10 @@ public class AddAdministratorHandlerTests
         var (convention, existingAdmin, _) = Setup();
         _personRepo.GetByIdAsync(Arg.Any<PersonId>(), Arg.Any<CancellationToken>())
             .Returns((Domain.Convention.Entities.Person?)null);
+        _currentUser.PersonId.Returns(existingAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(
-                new AddAdministratorCommand(convention.Id.Value, Guid.NewGuid(), existingAdmin.Id.Value), default));
+            () => _handler.Handle(new AddAdministratorCommand(convention.Id.Value, Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -95,10 +97,10 @@ public class AddAdministratorHandlerTests
         var otherConvention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Other", "other");
         var foreignPerson = otherConvention.CreatePerson("Foreign", "foreign@example.com");
         _personRepo.GetByIdAsync(foreignPerson.Id, Arg.Any<CancellationToken>()).Returns(foreignPerson);
+        _currentUser.PersonId.Returns(existingAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(
-                new AddAdministratorCommand(convention.Id.Value, foreignPerson.Id.Value, existingAdmin.Id.Value), default));
+            () => _handler.Handle(new AddAdministratorCommand(convention.Id.Value, foreignPerson.Id.Value), default));
     }
 
     [Fact]
@@ -106,9 +108,9 @@ public class AddAdministratorHandlerTests
     {
         var (convention, existingAdmin, _) = Setup();
         _personRepo.GetByIdAsync(existingAdmin.Id, Arg.Any<CancellationToken>()).Returns(existingAdmin);
+        _currentUser.PersonId.Returns(existingAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(
-                new AddAdministratorCommand(convention.Id.Value, existingAdmin.Id.Value, existingAdmin.Id.Value), default));
+            () => _handler.Handle(new AddAdministratorCommand(convention.Id.Value, existingAdmin.Id.Value), default));
     }
 }

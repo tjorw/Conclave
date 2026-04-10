@@ -4,5 +4,4 @@ namespace ConventionSystem.Application.Registration.Commands.ConfirmVisitorRegis
 
 public sealed record ConfirmVisitorRegistrationPaymentCommand(
     Guid VisitorRegistrationId,
-    string ExternalReference,
-    Guid PerformedById) : IRequest;
+    string ExternalReference) : IRequest;

@@ -35,7 +35,7 @@ public class ConfirmVisitorRegistrationPaymentHandlerTests
     {
         var (registration, ticket) = Setup();
 
-        await _handler.Handle(new ConfirmVisitorRegistrationPaymentCommand(registration.Id.Value, "EXT-123", Guid.NewGuid()), default);
+        await _handler.Handle(new ConfirmVisitorRegistrationPaymentCommand(registration.Id.Value, "EXT-123"), default);
 
         Assert.Equal(Domain.Registration.Enums.VisitorRegistrationStatus.Confirmed, registration.Status);
         Assert.Equal(Domain.Registration.Enums.TicketStatus.Paid, ticket.Status);
@@ -46,7 +46,7 @@ public class ConfirmVisitorRegistrationPaymentHandlerTests
     {
         var (registration, _) = Setup();
 
-        await _handler.Handle(new ConfirmVisitorRegistrationPaymentCommand(registration.Id.Value, "EXT-123", Guid.NewGuid()), default);
+        await _handler.Handle(new ConfirmVisitorRegistrationPaymentCommand(registration.Id.Value, "EXT-123"), default);
 
         await _registrationRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -58,6 +58,6 @@ public class ConfirmVisitorRegistrationPaymentHandlerTests
             .Returns((VisitorRegistration?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new ConfirmVisitorRegistrationPaymentCommand(Guid.NewGuid(), "EXT", Guid.NewGuid()), default));
+            () => _handler.Handle(new ConfirmVisitorRegistrationPaymentCommand(Guid.NewGuid(), "EXT"), default));
     }
 }

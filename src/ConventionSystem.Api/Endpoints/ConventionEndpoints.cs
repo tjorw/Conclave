@@ -31,7 +31,7 @@ public static class ConventionEndpoints
         group.MapPost("/{conventionId:guid}/administrators",
             async (Guid conventionId, AddAdministratorRequest request, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new AddAdministratorCommand(conventionId, request.PersonId, request.PerformedById), ct);
+                await sender.Send(new AddAdministratorCommand(conventionId, request.PersonId), ct);
                 return Results.NoContent();
             });
 
@@ -48,4 +48,4 @@ public static class ConventionEndpoints
 }
 
 public record CreateConventionRequest(string Name, string Slug, string RegistrantName, string RegistrantEmail);
-public record AddAdministratorRequest(Guid PersonId, Guid PerformedById);
+public record AddAdministratorRequest(Guid PersonId);

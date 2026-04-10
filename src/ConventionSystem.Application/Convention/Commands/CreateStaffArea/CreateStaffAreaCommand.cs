@@ -6,5 +6,4 @@ public sealed record CreateStaffAreaCommand(
     Guid EditionId,
     string Name,
     string? Description,
-    Guid ResponsibleId,
-    Guid PerformedById) : IRequest<Guid>;
+    Guid ResponsibleId) : IRequest<Guid>;

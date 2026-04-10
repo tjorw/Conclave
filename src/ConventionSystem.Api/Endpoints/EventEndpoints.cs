@@ -85,9 +85,9 @@ public static class EventEndpoints
 
         // UC-EV007 – Godkänn evenemangsversion
         app.MapPost("/events/{eventId:guid}/approve",
-            async (Guid eventId, PerformedByRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid eventId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new ApproveVersionCommand(eventId, request.PerformedById), ct);
+                await sender.Send(new ApproveVersionCommand(eventId), ct);
                 return Results.NoContent();
             });
 
@@ -95,7 +95,7 @@ public static class EventEndpoints
         app.MapPost("/events/{eventId:guid}/reject",
             async (Guid eventId, RejectVersionRequest request, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new RejectVersionCommand(eventId, request.PerformedById, request.Comment), ct);
+                await sender.Send(new RejectVersionCommand(eventId, request.Comment), ct);
                 return Results.NoContent();
             });
 
@@ -105,23 +105,23 @@ public static class EventEndpoints
             {
                 var id = await sender.Send(
                     new ScheduleSessionCommand(eventId, request.VenueId, request.StartTime, request.EndTime,
-                        request.MaxSeats, request.StartType, request.PerformedById), ct);
+                        request.MaxSeats, request.StartType), ct);
                 return Results.Created($"/sessions/{id}", new { id });
             });
 
         // UC-EV010 – Inaktivera session
         app.MapPost("/events/{eventId:guid}/sessions/{sessionId:guid}/deactivate",
-            async (Guid eventId, Guid sessionId, PerformedByRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid eventId, Guid sessionId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new DeactivateSessionCommand(eventId, sessionId, request.PerformedById), ct);
+                await sender.Send(new DeactivateSessionCommand(eventId, sessionId), ct);
                 return Results.NoContent();
             });
 
         // UC-EV011 – Ställ in evenemang
         app.MapPost("/events/{eventId:guid}/cancel",
-            async (Guid eventId, PerformedByRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid eventId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new CancelEventCommand(eventId, request.PerformedById), ct);
+                await sender.Send(new CancelEventCommand(eventId), ct);
                 return Results.NoContent();
             });
 
@@ -133,5 +133,5 @@ public record CreateEventRequest(Guid CategoryId, Guid LeadOrganiserId, Guid Con
 public record EditEventDraftRequest(string Title, string Description, RegistrationType RegistrationType, string? DropInRules);
 public record AddSessionRequestRequest(string Description, int DurationMinutes, int Seats, StartType StartType);
 public record AddCoOrganiserRequest(Guid PersonId, Guid ConventionId);
-public record RejectVersionRequest(Guid PerformedById, string Comment);
-public record ScheduleSessionRequest(Guid VenueId, DateTime StartTime, DateTime EndTime, int MaxSeats, StartType StartType, Guid PerformedById);
+public record RejectVersionRequest(string Comment);
+public record ScheduleSessionRequest(Guid VenueId, DateTime StartTime, DateTime EndTime, int MaxSeats, StartType StartType);

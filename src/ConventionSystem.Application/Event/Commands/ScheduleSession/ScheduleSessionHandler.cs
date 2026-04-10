@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -11,13 +12,14 @@ namespace ConventionSystem.Application.Event.Commands.ScheduleSession;
 public sealed class ScheduleSessionHandler(
     IEventRepository eventRepository,
     IEditionRepository editionRepository,
-    IConventionRepository conventionRepository)
+    IConventionRepository conventionRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<ScheduleSessionCommand, Guid>
 {
     public async Task<Guid> Handle(ScheduleSessionCommand command, CancellationToken ct)
     {
         var venueId = new VenueId(command.VenueId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var ev = await eventRepository.GetByIdAsync(new EventId(command.EventId), ct)
             ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");

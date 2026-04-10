@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.RejectStaffApplication;
@@ -14,11 +15,12 @@ public class RejectStaffApplicationHandlerTests
     private readonly IStaffApplicationRepository _applicationRepo = Substitute.For<IStaffApplicationRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly RejectStaffApplicationHandler _handler;
 
     public RejectStaffApplicationHandlerTests()
     {
-        _handler = new RejectStaffApplicationHandler(_applicationRepo, _editionRepo, _conventionRepo);
+        _handler = new RejectStaffApplicationHandler(_applicationRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -50,8 +52,9 @@ public class RejectStaffApplicationHandlerTests
     public async Task Handle_AdminRejects_TransitionsToRejected()
     {
         var (_, admin, _, application) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new RejectStaffApplicationCommand(application.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new RejectStaffApplicationCommand(application.Id.Value), default);
 
         Assert.Equal(Domain.Registration.Enums.StaffApplicationStatus.Rejected, application.Status);
     }
@@ -60,9 +63,10 @@ public class RejectStaffApplicationHandlerTests
     public async Task Handle_StaffCoordinatorRejects_TransitionsToRejected()
     {
         var (_, _, edition, application) = Setup();
-        var staffCoordId = edition.StaffCoordinatorId!.Value.Value;
+        var staffCoordId = edition.StaffCoordinatorId!.Value;
+        _currentUser.PersonId.Returns(staffCoordId);
 
-        await _handler.Handle(new RejectStaffApplicationCommand(application.Id.Value, staffCoordId), default);
+        await _handler.Handle(new RejectStaffApplicationCommand(application.Id.Value), default);
 
         Assert.Equal(Domain.Registration.Enums.StaffApplicationStatus.Rejected, application.Status);
     }
@@ -72,8 +76,9 @@ public class RejectStaffApplicationHandlerTests
     {
         var (convention, _, _, application) = Setup();
         var nonAdmin = convention.CreatePerson("Annan", "annan@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new RejectStaffApplicationCommand(application.Id.Value, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new RejectStaffApplicationCommand(application.Id.Value), default));
     }
 }

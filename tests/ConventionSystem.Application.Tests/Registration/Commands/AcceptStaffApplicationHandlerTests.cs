@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
@@ -14,11 +15,12 @@ public class AcceptStaffApplicationHandlerTests
     private readonly IStaffApplicationRepository _applicationRepo = Substitute.For<IStaffApplicationRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly AcceptStaffApplicationHandler _handler;
 
     public AcceptStaffApplicationHandlerTests()
     {
-        _handler = new AcceptStaffApplicationHandler(_applicationRepo, _editionRepo, _conventionRepo);
+        _handler = new AcceptStaffApplicationHandler(_applicationRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -50,8 +52,9 @@ public class AcceptStaffApplicationHandlerTests
     public async Task Handle_AdminAccepts_TransitionsToConfirmed()
     {
         var (_, admin, _, application) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new AcceptStaffApplicationCommand(application.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new AcceptStaffApplicationCommand(application.Id.Value), default);
 
         Assert.Equal(Domain.Registration.Enums.StaffApplicationStatus.Confirmed, application.Status);
     }
@@ -60,9 +63,9 @@ public class AcceptStaffApplicationHandlerTests
     public async Task Handle_StaffCoordinatorAccepts_TransitionsToConfirmed()
     {
         var (_, _, edition, application) = Setup();
-        var staffCoordId = edition.StaffCoordinatorId!.Value.Value;
+        _currentUser.PersonId.Returns(edition.StaffCoordinatorId!.Value);
 
-        await _handler.Handle(new AcceptStaffApplicationCommand(application.Id.Value, staffCoordId), default);
+        await _handler.Handle(new AcceptStaffApplicationCommand(application.Id.Value), default);
 
         Assert.Equal(Domain.Registration.Enums.StaffApplicationStatus.Confirmed, application.Status);
     }
@@ -72,9 +75,10 @@ public class AcceptStaffApplicationHandlerTests
     {
         var (convention, _, _, application) = Setup();
         var nonAdmin = convention.CreatePerson("Annan", "annan@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new AcceptStaffApplicationCommand(application.Id.Value, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new AcceptStaffApplicationCommand(application.Id.Value), default));
     }
 
     [Fact]
@@ -84,6 +88,6 @@ public class AcceptStaffApplicationHandlerTests
             .Returns((StaffApplication?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new AcceptStaffApplicationCommand(Guid.NewGuid(), Guid.NewGuid()), default));
+            () => _handler.Handle(new AcceptStaffApplicationCommand(Guid.NewGuid()), default));
     }
 }

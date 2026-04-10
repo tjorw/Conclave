@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Enums;
 using ConventionSystem.Domain.Convention.Ids;
@@ -7,13 +8,14 @@ namespace ConventionSystem.Application.Convention.Commands.OpenRegistration;
 
 public sealed class OpenRegistrationHandler(
     IEditionRepository editionRepository,
-    IConventionRepository conventionRepository)
+    IConventionRepository conventionRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<OpenRegistrationCommand>
 {
     public async Task Handle(OpenRegistrationCommand command, CancellationToken ct)
     {
         var editionId = new EditionId(command.EditionId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var edition = await editionRepository.GetByIdAsync(editionId, ct)
             ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");

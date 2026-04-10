@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateVenue;
 using ConventionSystem.Domain.Convention.Ids;
@@ -10,11 +11,12 @@ public class CreateVenueHandlerTests
 {
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly CreateVenueHandler _handler;
 
     public CreateVenueHandlerTests()
     {
-        _handler = new CreateVenueHandler(_editionRepo, _conventionRepo);
+        _handler = new CreateVenueHandler(_editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -40,8 +42,9 @@ public class CreateVenueHandlerTests
     public async Task Handle_ValidCommand_AddsVenueToEdition()
     {
         var (_, admin, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CreateVenueCommand(edition.Id.Value, "Stora salen", "Huvudbyggnad", null, admin.Id.Value), default);
+        await _handler.Handle(new CreateVenueCommand(edition.Id.Value, "Stora salen", "Huvudbyggnad", null), default);
 
         Assert.Single(edition.Venues);
         Assert.Equal("Stora salen", edition.Venues[0].Name);
@@ -51,8 +54,9 @@ public class CreateVenueHandlerTests
     public async Task Handle_ValidCommand_ReturnsVenueId()
     {
         var (_, admin, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        var id = await _handler.Handle(new CreateVenueCommand(edition.Id.Value, "Stora salen", "Huvudbyggnad", null, admin.Id.Value), default);
+        var id = await _handler.Handle(new CreateVenueCommand(edition.Id.Value, "Stora salen", "Huvudbyggnad", null), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -61,8 +65,9 @@ public class CreateVenueHandlerTests
     public async Task Handle_ValidCommand_CallsSave()
     {
         var (_, admin, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CreateVenueCommand(edition.Id.Value, "Stora salen", "Huvudbyggnad", null, admin.Id.Value), default);
+        await _handler.Handle(new CreateVenueCommand(edition.Id.Value, "Stora salen", "Huvudbyggnad", null), default);
 
         await _editionRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -74,7 +79,7 @@ public class CreateVenueHandlerTests
             .Returns((Domain.Convention.Aggregates.Edition?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateVenueCommand(Guid.NewGuid(), "Sal", "Byggnad", null, Guid.NewGuid()), default));
+            () => _handler.Handle(new CreateVenueCommand(Guid.NewGuid(), "Sal", "Byggnad", null), default));
     }
 
     [Fact]
@@ -82,8 +87,9 @@ public class CreateVenueHandlerTests
     {
         var (convention, _, edition) = Setup();
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateVenueCommand(edition.Id.Value, "Sal", "Byggnad", null, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new CreateVenueCommand(edition.Id.Value, "Sal", "Byggnad", null), default));
     }
 }

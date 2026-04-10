@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -12,7 +13,8 @@ public sealed class IssueTicketHandler(
     ITicketTypeRepository ticketTypeRepository,
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
-    IPersonRepository personRepository)
+    IPersonRepository personRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<IssueTicketCommand, Guid>
 {
     public async Task<Guid> Handle(IssueTicketCommand command, CancellationToken ct)
@@ -20,7 +22,7 @@ public sealed class IssueTicketHandler(
         var personId = new PersonId(command.PersonId);
         var editionId = new EditionId(command.EditionId);
         var ticketTypeId = new TicketTypeId(command.TicketTypeId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var edition = await editionRepository.GetByIdAsync(editionId, ct)
             ?? throw new InvalidOperationException($"Upplagan '{command.EditionId}' hittades inte.");

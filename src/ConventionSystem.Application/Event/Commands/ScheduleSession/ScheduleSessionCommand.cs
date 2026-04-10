@@ -9,5 +9,4 @@ public sealed record ScheduleSessionCommand(
     DateTime StartTime,
     DateTime EndTime,
     int MaxSeats,
-    StartType StartType,
-    Guid PerformedById) : IRequest<Guid>;
+    StartType StartType) : IRequest<Guid>;

@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Staff.Commands.RejectAssignment;
@@ -15,11 +16,12 @@ public class RejectAssignmentHandlerTests
     private readonly IShiftRepository _shiftRepo = Substitute.For<IShiftRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly RejectAssignmentHandler _handler;
 
     public RejectAssignmentHandlerTests()
     {
-        _handler = new RejectAssignmentHandler(_shiftRepo, _editionRepo, _conventionRepo);
+        _handler = new RejectAssignmentHandler(_shiftRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -54,8 +56,9 @@ public class RejectAssignmentHandlerTests
     {
         var (_, admin, _, shift) = Setup();
         var assignment = shift.AssignPerson(PersonId.New(), admin.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
 
         Assert.Equal(Domain.Staff.Enums.StaffAssignmentStatus.Rejected, assignment.Status);
     }
@@ -65,8 +68,9 @@ public class RejectAssignmentHandlerTests
     {
         var (_, admin, _, shift) = Setup();
         var assignment = shift.AssignPerson(PersonId.New(), admin.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
 
         await _shiftRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -78,7 +82,7 @@ public class RejectAssignmentHandlerTests
             .Returns((Shift?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new RejectAssignmentCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()), default));
+            () => _handler.Handle(new RejectAssignmentCommand(Guid.NewGuid(), Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -87,9 +91,10 @@ public class RejectAssignmentHandlerTests
         var (convention, _, _, shift) = Setup();
         var assignment = shift.AssignPerson(PersonId.New(), PersonId.New());
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value), default));
     }
 
     [Fact]
@@ -97,9 +102,10 @@ public class RejectAssignmentHandlerTests
     {
         var (_, _, edition, shift) = Setup();
         var assignment = shift.AssignPerson(PersonId.New(), PersonId.New());
-        var staffCoordId = edition.StaffCoordinatorId!.Value.Value;
+        var staffCoordId = edition.StaffCoordinatorId!.Value;
+        _currentUser.PersonId.Returns(staffCoordId);
 
-        await _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value, staffCoordId), default);
+        await _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
 
         Assert.Equal(Domain.Staff.Enums.StaffAssignmentStatus.Rejected, assignment.Status);
     }
@@ -109,9 +115,10 @@ public class RejectAssignmentHandlerTests
     {
         var (_, _, edition, shift) = Setup();
         var assignment = shift.AssignPerson(PersonId.New(), PersonId.New());
-        var areaResponsibleId = edition.StaffAreas[0].ResponsibleId.Value;
+        var areaResponsibleId = edition.StaffAreas[0].ResponsibleId;
+        _currentUser.PersonId.Returns(areaResponsibleId);
 
-        await _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value, areaResponsibleId), default);
+        await _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
 
         Assert.Equal(Domain.Staff.Enums.StaffAssignmentStatus.Rejected, assignment.Status);
     }

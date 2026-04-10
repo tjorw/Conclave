@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -10,13 +11,14 @@ namespace ConventionSystem.Application.Registration.Commands.CreateTicketType;
 public sealed class CreateTicketTypeHandler(
     ITicketTypeRepository ticketTypeRepository,
     IEditionRepository editionRepository,
-    IConventionRepository conventionRepository)
+    IConventionRepository conventionRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<CreateTicketTypeCommand, Guid>
 {
     public async Task<Guid> Handle(CreateTicketTypeCommand command, CancellationToken ct)
     {
         var editionId = new EditionId(command.EditionId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var edition = await editionRepository.GetByIdAsync(editionId, ct)
             ?? throw new InvalidOperationException($"Upplagan '{command.EditionId}' hittades inte.");

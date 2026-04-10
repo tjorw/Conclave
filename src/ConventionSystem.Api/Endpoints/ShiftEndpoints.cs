@@ -29,42 +29,42 @@ public static class ShiftEndpoints
             {
                 var id = await sender.Send(new CreateShiftCommand(
                     stationId, request.ResponsibleId, request.StartTime, request.EndTime,
-                    request.MinPersons, request.MaxPersons, request.PerformedById), ct);
+                    request.MinPersons, request.MaxPersons), ct);
                 return Results.Created($"/shifts/{id}", new { id });
             });
 
         app.MapPost("/shifts/{shiftId:guid}/assignments",
             async (Guid shiftId, AssignPersonRequest request, ISender sender, CancellationToken ct) =>
             {
-                var id = await sender.Send(new AssignPersonToShiftCommand(shiftId, request.PersonId, request.PerformedById), ct);
+                var id = await sender.Send(new AssignPersonToShiftCommand(shiftId, request.PersonId), ct);
                 return Results.Created($"/assignments/{id}", new { id });
             });
 
         app.MapPost("/shifts/{shiftId:guid}/assignments/{assignmentId:guid}/confirm",
-            async (Guid shiftId, Guid assignmentId, PerformedByRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid shiftId, Guid assignmentId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new ConfirmAssignmentCommand(shiftId, assignmentId, request.PerformedById), ct);
+                await sender.Send(new ConfirmAssignmentCommand(shiftId, assignmentId), ct);
                 return Results.NoContent();
             });
 
         app.MapPost("/shifts/{shiftId:guid}/assignments/{assignmentId:guid}/reject",
-            async (Guid shiftId, Guid assignmentId, PerformedByRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid shiftId, Guid assignmentId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new RejectAssignmentCommand(shiftId, assignmentId, request.PerformedById), ct);
+                await sender.Send(new RejectAssignmentCommand(shiftId, assignmentId), ct);
                 return Results.NoContent();
             });
 
         app.MapDelete("/shifts/{shiftId:guid}/assignments/{assignmentId:guid}",
-            async (Guid shiftId, Guid assignmentId, PerformedByRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid shiftId, Guid assignmentId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new CancelAssignmentCommand(shiftId, assignmentId, request.PerformedById), ct);
+                await sender.Send(new CancelAssignmentCommand(shiftId, assignmentId), ct);
                 return Results.NoContent();
             });
 
         app.MapPost("/shifts/{shiftId:guid}/cancel",
-            async (Guid shiftId, PerformedByRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid shiftId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new CancelShiftCommand(shiftId, request.PerformedById), ct);
+                await sender.Send(new CancelShiftCommand(shiftId), ct);
                 return Results.NoContent();
             });
 
@@ -77,8 +77,6 @@ public record CreateShiftRequest(
     DateTime StartTime,
     DateTime EndTime,
     int MinPersons,
-    int MaxPersons,
-    Guid PerformedById);
+    int MaxPersons);
 
-public record AssignPersonRequest(Guid PersonId, Guid PerformedById);
-public record PerformedByRequest(Guid PerformedById);
+public record AssignPersonRequest(Guid PersonId);

@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using MediatR;
@@ -6,13 +7,14 @@ namespace ConventionSystem.Application.Convention.Commands.CreateStation;
 
 public sealed class CreateStationHandler(
     IEditionRepository editionRepository,
-    IConventionRepository conventionRepository)
+    IConventionRepository conventionRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<CreateStationCommand, Guid>
 {
     public async Task<Guid> Handle(CreateStationCommand command, CancellationToken ct)
     {
         var editionId = new EditionId(command.EditionId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
         var staffAreaId = new StaffAreaId(command.StaffAreaId);
 
         var edition = await editionRepository.GetByIdWithStaffAreasAsync(editionId, ct)

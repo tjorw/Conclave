@@ -27,7 +27,7 @@ public static class RegistrationEndpoints
         app.MapPost("/editions/{editionId:guid}/ticket-types",
             async (Guid editionId, CreateTicketTypeRequest request, ISender sender, CancellationToken ct) =>
             {
-                var id = await sender.Send(new CreateTicketTypeCommand(editionId, request.Name, request.Price, request.Category, request.PerformedById), ct);
+                var id = await sender.Send(new CreateTicketTypeCommand(editionId, request.Name, request.Price, request.Category), ct);
                 return Results.Created($"/ticket-types/{id}", new { id });
             });
 
@@ -43,15 +43,15 @@ public static class RegistrationEndpoints
         app.MapPost("/visitor-registrations/{registrationId:guid}/confirm-payment",
             async (Guid registrationId, ConfirmPaymentRequest request, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new ConfirmVisitorRegistrationPaymentCommand(registrationId, request.ExternalReference, request.PerformedById), ct);
+                await sender.Send(new ConfirmVisitorRegistrationPaymentCommand(registrationId, request.ExternalReference), ct);
                 return Results.NoContent();
             });
 
         // UC-VR003: Avboka registrering
         app.MapDelete("/visitor-registrations/{registrationId:guid}",
-            async (Guid registrationId, PerformedByRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid registrationId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new CancelVisitorRegistrationCommand(registrationId, request.PerformedById), ct);
+                await sender.Send(new CancelVisitorRegistrationCommand(registrationId), ct);
                 return Results.NoContent();
             });
 
@@ -59,23 +59,23 @@ public static class RegistrationEndpoints
         app.MapPost("/editions/{editionId:guid}/tickets",
             async (Guid editionId, IssueTicketRequest request, ISender sender, CancellationToken ct) =>
             {
-                var id = await sender.Send(new IssueTicketCommand(request.PersonId, editionId, request.TicketTypeId, request.PerformedById), ct);
+                var id = await sender.Send(new IssueTicketCommand(request.PersonId, editionId, request.TicketTypeId), ct);
                 return Results.Created($"/tickets/{id}", new { id });
             });
 
         // UC-TK003: Hämta ut biljett
         app.MapPost("/tickets/{ticketId:guid}/collect",
-            async (Guid ticketId, PerformedByRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid ticketId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new CollectTicketCommand(ticketId, request.PerformedById), ct);
+                await sender.Send(new CollectTicketCommand(ticketId), ct);
                 return Results.NoContent();
             });
 
         // UC-TK004: Makulera biljett
         app.MapDelete("/tickets/{ticketId:guid}",
-            async (Guid ticketId, PerformedByRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid ticketId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new RevokeTicketCommand(ticketId, request.PerformedById), ct);
+                await sender.Send(new RevokeTicketCommand(ticketId), ct);
                 return Results.NoContent();
             });
 
@@ -121,17 +121,17 @@ public static class RegistrationEndpoints
 
         // UC-SA006: Acceptera staffansökan
         app.MapPost("/staff-applications/{applicationId:guid}/accept",
-            async (Guid applicationId, PerformedByRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid applicationId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new AcceptStaffApplicationCommand(applicationId, request.PerformedById), ct);
+                await sender.Send(new AcceptStaffApplicationCommand(applicationId), ct);
                 return Results.NoContent();
             });
 
         // UC-SA007: Avslå staffansökan
         app.MapPost("/staff-applications/{applicationId:guid}/reject",
-            async (Guid applicationId, PerformedByRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid applicationId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new RejectStaffApplicationCommand(applicationId, request.PerformedById), ct);
+                await sender.Send(new RejectStaffApplicationCommand(applicationId), ct);
                 return Results.NoContent();
             });
 
@@ -155,10 +155,10 @@ public static class RegistrationEndpoints
     }
 }
 
-public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, Guid PerformedById);
+public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category);
 public record SubmitVisitorRegistrationRequest(Guid PersonId, Guid TicketTypeId);
-public record ConfirmPaymentRequest(string ExternalReference, Guid PerformedById);
-public record IssueTicketRequest(Guid PersonId, Guid TicketTypeId, Guid PerformedById);
+public record ConfirmPaymentRequest(string ExternalReference);
+public record IssueTicketRequest(Guid PersonId, Guid TicketTypeId);
 public record SubmitStaffApplicationRequest(Guid PersonId, string InterestDescription);
 public record AddAvailabilityRequest(DateTime From, DateTime To);
 public record StationPreferenceRequest(Guid StationId);

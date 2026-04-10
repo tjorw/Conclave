@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -9,7 +10,8 @@ namespace ConventionSystem.Application.Event.Commands.RejectVersion;
 public sealed class RejectVersionHandler(
     IEventRepository eventRepository,
     IEditionRepository editionRepository,
-    IConventionRepository conventionRepository)
+    IConventionRepository conventionRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<RejectVersionCommand>
 {
     public async Task Handle(RejectVersionCommand command, CancellationToken ct)
@@ -17,7 +19,7 @@ public sealed class RejectVersionHandler(
         if (string.IsNullOrWhiteSpace(command.Comment))
             throw new InvalidOperationException("En kommentar måste anges vid avvisning.");
 
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var ev = await eventRepository.GetByIdWithDraftVersionAsync(new EventId(command.EventId), ct)
             ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");

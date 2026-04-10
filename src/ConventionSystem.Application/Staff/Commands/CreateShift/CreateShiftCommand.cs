@@ -8,5 +8,4 @@ public sealed record CreateShiftCommand(
     DateTime StartTime,
     DateTime EndTime,
     int MinPersons,
-    int MaxPersons,
-    Guid PerformedById) : IRequest<Guid>;
+    int MaxPersons) : IRequest<Guid>;

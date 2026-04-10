@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using MediatR;
@@ -6,14 +7,15 @@ namespace ConventionSystem.Application.Convention.Commands.CopyEditionStructure;
 
 public sealed class CopyEditionStructureHandler(
     IEditionRepository editionRepository,
-    IConventionRepository conventionRepository)
+    IConventionRepository conventionRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<CopyEditionStructureCommand>
 {
     public async Task Handle(CopyEditionStructureCommand command, CancellationToken ct)
     {
         var targetId = new EditionId(command.TargetEditionId);
         var sourceId = new EditionId(command.SourceEditionId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var target = await editionRepository.GetByIdWithStructureAsync(targetId, ct)
             ?? throw new InvalidOperationException($"Målupplaga '{command.TargetEditionId}' hittades inte.");

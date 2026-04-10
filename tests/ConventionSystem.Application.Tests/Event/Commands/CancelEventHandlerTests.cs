@@ -1,7 +1,7 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.CancelEvent;
-using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Event.Enums;
@@ -16,11 +16,12 @@ public class CancelEventHandlerTests
     private readonly IEventRepository _eventRepo = Substitute.For<IEventRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly CancelEventHandler _handler;
 
     public CancelEventHandlerTests()
     {
-        _handler = new CancelEventHandler(_eventRepo, _editionRepo, _conventionRepo);
+        _handler = new CancelEventHandler(_eventRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person responsible,
@@ -50,8 +51,9 @@ public class CancelEventHandlerTests
     public async Task Handle_CategoryResponsible_EventBecomesCancelled()
     {
         var (_, responsible, _, ev) = Setup();
+        _currentUser.PersonId.Returns(responsible.Id);
 
-        await _handler.Handle(new CancelEventCommand(ev.Id.Value, responsible.Id.Value), default);
+        await _handler.Handle(new CancelEventCommand(ev.Id.Value), default);
 
         Assert.Equal(EventStatus.Cancelled, ev.Status);
     }
@@ -61,8 +63,9 @@ public class CancelEventHandlerTests
     {
         var (_, responsible, _, ev) = Setup();
         ev.ClearDomainEvents();
+        _currentUser.PersonId.Returns(responsible.Id);
 
-        await _handler.Handle(new CancelEventCommand(ev.Id.Value, responsible.Id.Value), default);
+        await _handler.Handle(new CancelEventCommand(ev.Id.Value), default);
 
         Assert.Single(ev.DomainEvents.OfType<EventCancelled>());
     }
@@ -73,9 +76,10 @@ public class CancelEventHandlerTests
         var (_, responsible, _, ev) = Setup();
         ev.CancelEvent(responsible.Id);
         _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _currentUser.PersonId.Returns(responsible.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _handler.Handle(new CancelEventCommand(ev.Id.Value, responsible.Id.Value), default));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(new CancelEventCommand(ev.Id.Value), default));
     }
 
     [Fact]
@@ -83,8 +87,9 @@ public class CancelEventHandlerTests
     {
         var (convention, _, _, ev) = Setup();
         var outsider = convention.CreatePerson("Utomstående", "other@example.com");
+        _currentUser.PersonId.Returns(outsider.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _handler.Handle(new CancelEventCommand(ev.Id.Value, outsider.Id.Value), default));
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(new CancelEventCommand(ev.Id.Value), default));
     }
 }

@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.IssueTicket;
@@ -17,11 +18,12 @@ public class IssueTicketHandlerTests
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
     private readonly IPersonRepository _personRepo = Substitute.For<IPersonRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly IssueTicketHandler _handler;
 
     public IssueTicketHandlerTests()
     {
-        _handler = new IssueTicketHandler(_ticketRepo, _ticketTypeRepo, _editionRepo, _conventionRepo, _personRepo);
+        _handler = new IssueTicketHandler(_ticketRepo, _ticketTypeRepo, _editionRepo, _conventionRepo, _personRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -52,9 +54,10 @@ public class IssueTicketHandlerTests
     public async Task Handle_ValidCommand_ReturnsTicketId()
     {
         var (_, admin, edition, ticketType) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         var id = await _handler.Handle(
-            new IssueTicketCommand(admin.Id.Value, edition.Id.Value, ticketType.Id.Value, admin.Id.Value), default);
+            new IssueTicketCommand(admin.Id.Value, edition.Id.Value, ticketType.Id.Value), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -63,9 +66,10 @@ public class IssueTicketHandlerTests
     public async Task Handle_ValidCommand_CallsAddAndSave()
     {
         var (_, admin, edition, ticketType) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(
-            new IssueTicketCommand(admin.Id.Value, edition.Id.Value, ticketType.Id.Value, admin.Id.Value), default);
+            new IssueTicketCommand(admin.Id.Value, edition.Id.Value, ticketType.Id.Value), default);
 
         await _ticketRepo.Received(1).AddAndSaveAsync(Arg.Any<Domain.Registration.Aggregates.Ticket>(), Arg.Any<CancellationToken>());
     }
@@ -76,10 +80,11 @@ public class IssueTicketHandlerTests
         var (convention, _, edition, ticketType) = Setup();
         var nonAdmin = convention.CreatePerson("Annan", "annan@example.com");
         _personRepo.GetByIdAsync(nonAdmin.Id, Arg.Any<CancellationToken>()).Returns(nonAdmin);
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(
-                new IssueTicketCommand(nonAdmin.Id.Value, edition.Id.Value, ticketType.Id.Value, nonAdmin.Id.Value), default));
+                new IssueTicketCommand(nonAdmin.Id.Value, edition.Id.Value, ticketType.Id.Value), default));
     }
 
     [Fact]
@@ -89,6 +94,6 @@ public class IssueTicketHandlerTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(
-                new IssueTicketCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()), default));
+                new IssueTicketCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()), default));
     }
 }

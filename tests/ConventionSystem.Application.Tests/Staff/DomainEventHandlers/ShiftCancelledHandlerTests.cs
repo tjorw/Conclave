@@ -1,7 +1,6 @@
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Staff.DomainEventHandlers;
 using ConventionSystem.Domain.Convention.Ids;
-using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Staff.Aggregates;
 using ConventionSystem.Domain.Staff.Enums;
 using ConventionSystem.Domain.Staff.Events;

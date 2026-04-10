@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -12,14 +13,15 @@ public sealed class CreateShiftHandler(
     IShiftRepository shiftRepository,
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
-    IPersonRepository personRepository)
+    IPersonRepository personRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<CreateShiftCommand, Guid>
 {
     public async Task<Guid> Handle(CreateShiftCommand command, CancellationToken ct)
     {
         var stationId = new StationId(command.StationId);
         var responsibleId = new PersonId(command.ResponsibleId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var edition = await editionRepository.GetByStationIdAsync(stationId, ct)
             ?? throw new InvalidOperationException($"Station '{command.StationId}' hittades inte.");

@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Ids;
@@ -7,13 +8,14 @@ namespace ConventionSystem.Application.Registration.Commands.CancelVisitorRegist
 
 public sealed class CancelVisitorRegistrationHandler(
     IVisitorRegistrationRepository visitorRegistrationRepository,
-    ITicketRepository ticketRepository)
+    ITicketRepository ticketRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<CancelVisitorRegistrationCommand>
 {
     public async Task Handle(CancelVisitorRegistrationCommand command, CancellationToken ct)
     {
         var registrationId = new VisitorRegistrationId(command.VisitorRegistrationId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var registration = await visitorRegistrationRepository.GetByIdAsync(registrationId, ct)
             ?? throw new InvalidOperationException($"Besöksregistreringen '{command.VisitorRegistrationId}' hittades inte.");

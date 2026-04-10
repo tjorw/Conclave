@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -9,12 +10,13 @@ namespace ConventionSystem.Application.Event.Commands.ApproveVersion;
 public sealed class ApproveVersionHandler(
     IEventRepository eventRepository,
     IEditionRepository editionRepository,
-    IConventionRepository conventionRepository)
+    IConventionRepository conventionRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<ApproveVersionCommand>
 {
     public async Task Handle(ApproveVersionCommand command, CancellationToken ct)
     {
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var ev = await eventRepository.GetByIdWithDraftVersionAsync(new EventId(command.EventId), ct)
             ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");

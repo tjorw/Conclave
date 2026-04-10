@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Staff.Commands.CancelAssignment;
@@ -15,11 +16,12 @@ public class CancelAssignmentHandlerTests
     private readonly IShiftRepository _shiftRepo = Substitute.For<IShiftRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly CancelAssignmentHandler _handler;
 
     public CancelAssignmentHandlerTests()
     {
-        _handler = new CancelAssignmentHandler(_shiftRepo, _editionRepo, _conventionRepo);
+        _handler = new CancelAssignmentHandler(_shiftRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -54,8 +56,9 @@ public class CancelAssignmentHandlerTests
     {
         var (_, admin, _, shift) = Setup();
         var assignment = shift.AssignPerson(PersonId.New(), admin.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CancelAssignmentCommand(shift.Id.Value, assignment.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new CancelAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
 
         Assert.Equal(Domain.Staff.Enums.StaffAssignmentStatus.Cancelled, assignment.Status);
     }
@@ -66,8 +69,9 @@ public class CancelAssignmentHandlerTests
         var (_, admin, _, shift) = Setup();
         var personId = PersonId.New();
         var assignment = shift.AssignPerson(personId, admin.Id);
+        _currentUser.PersonId.Returns(personId);
 
-        await _handler.Handle(new CancelAssignmentCommand(shift.Id.Value, assignment.Id.Value, personId.Value), default);
+        await _handler.Handle(new CancelAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
 
         Assert.Equal(Domain.Staff.Enums.StaffAssignmentStatus.Cancelled, assignment.Status);
     }
@@ -78,8 +82,9 @@ public class CancelAssignmentHandlerTests
         var (_, admin, _, shift) = Setup();
         var personId = PersonId.New();
         var assignment = shift.AssignPerson(personId, admin.Id);
+        _currentUser.PersonId.Returns(personId);
 
-        await _handler.Handle(new CancelAssignmentCommand(shift.Id.Value, assignment.Id.Value, personId.Value), default);
+        await _handler.Handle(new CancelAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
 
         await _editionRepo.DidNotReceive().GetByStationIdAsync(Arg.Any<StationId>(), Arg.Any<CancellationToken>());
     }
@@ -90,9 +95,10 @@ public class CancelAssignmentHandlerTests
         var (convention, _, _, shift) = Setup();
         var assignment = shift.AssignPerson(PersonId.New(), PersonId.New());
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CancelAssignmentCommand(shift.Id.Value, assignment.Id.Value, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new CancelAssignmentCommand(shift.Id.Value, assignment.Id.Value), default));
     }
 
     [Fact]
@@ -102,7 +108,7 @@ public class CancelAssignmentHandlerTests
             .Returns((Shift?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CancelAssignmentCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()), default));
+            () => _handler.Handle(new CancelAssignmentCommand(Guid.NewGuid(), Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -110,8 +116,9 @@ public class CancelAssignmentHandlerTests
     {
         var (_, admin, _, shift) = Setup();
         var assignment = shift.AssignPerson(PersonId.New(), admin.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CancelAssignmentCommand(shift.Id.Value, assignment.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new CancelAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
 
         await _shiftRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }

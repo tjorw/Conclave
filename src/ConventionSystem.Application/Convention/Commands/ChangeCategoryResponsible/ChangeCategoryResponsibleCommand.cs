@@ -5,5 +5,4 @@ namespace ConventionSystem.Application.Convention.Commands.ChangeCategoryRespons
 public sealed record ChangeCategoryResponsibleCommand(
     Guid EditionId,
     Guid CategoryId,
-    Guid NewResponsibleId,
-    Guid PerformedById) : IRequest;
+    Guid NewResponsibleId) : IRequest;

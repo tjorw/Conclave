@@ -7,5 +7,4 @@ public sealed record CreateTicketTypeCommand(
     Guid EditionId,
     string Name,
     int Price,
-    TicketTypeCategory Category,
-    Guid PerformedById) : IRequest<Guid>;
+    TicketTypeCategory Category) : IRequest<Guid>;

@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateEdition;
 using ConventionSystem.Domain.Convention.Ids;
@@ -10,11 +11,12 @@ public class CreateEditionHandlerTests
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
     private readonly IPersonRepository _personRepo = Substitute.For<IPersonRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly CreateEditionHandler _handler;
 
     public CreateEditionHandlerTests()
     {
-        _handler = new CreateEditionHandler(_conventionRepo, _personRepo, _editionRepo);
+        _handler = new CreateEditionHandler(_conventionRepo, _personRepo, _editionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -36,19 +38,19 @@ public class CreateEditionHandlerTests
     }
 
     private CreateEditionCommand ValidCommand(Domain.Convention.Aggregates.Convention convention,
-        Domain.Convention.Entities.Person admin,
         Domain.Convention.Entities.Person staffCoord,
         Domain.Convention.Entities.Person eventCoord) =>
         new(convention.Id.Value, "Konvent 2027",
             new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3),
-            staffCoord.Id.Value, eventCoord.Id.Value, admin.Id.Value);
+            staffCoord.Id.Value, eventCoord.Id.Value);
 
     [Fact]
     public async Task Handle_ValidCommand_ReturnsNewGuid()
     {
         var (convention, admin, staffCoord, eventCoord) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        var id = await _handler.Handle(ValidCommand(convention, admin, staffCoord, eventCoord), default);
+        var id = await _handler.Handle(ValidCommand(convention, staffCoord, eventCoord), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -57,8 +59,9 @@ public class CreateEditionHandlerTests
     public async Task Handle_ValidCommand_PersistsEdition()
     {
         var (convention, admin, staffCoord, eventCoord) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(ValidCommand(convention, admin, staffCoord, eventCoord), default);
+        await _handler.Handle(ValidCommand(convention, staffCoord, eventCoord), default);
 
         await _editionRepo.Received(1).AddAndSaveAsync(
             Arg.Is<Domain.Convention.Aggregates.Edition>(e =>
@@ -74,24 +77,26 @@ public class CreateEditionHandlerTests
     {
         var (convention, _, staffCoord, eventCoord) = Setup();
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new CreateEditionCommand(
                 convention.Id.Value, "Konvent 2027",
                 new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3),
-                staffCoord.Id.Value, eventCoord.Id.Value, nonAdmin.Id.Value), default));
+                staffCoord.Id.Value, eventCoord.Id.Value), default));
     }
 
     [Fact]
     public async Task Handle_InvalidDateRange_Throws()
     {
         var (convention, admin, staffCoord, eventCoord) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<ArgumentException>(
             () => _handler.Handle(new CreateEditionCommand(
                 convention.Id.Value, "Konvent 2027",
                 new DateOnly(2027, 3, 3), new DateOnly(2027, 3, 1),
-                staffCoord.Id.Value, eventCoord.Id.Value, admin.Id.Value), default));
+                staffCoord.Id.Value, eventCoord.Id.Value), default));
     }
 
     [Fact]
@@ -101,12 +106,13 @@ public class CreateEditionHandlerTests
         var other = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Other", "other");
         var foreignPerson = other.CreatePerson("Foreign", "foreign@example.com");
         _personRepo.GetByIdAsync(foreignPerson.Id, Arg.Any<CancellationToken>()).Returns(foreignPerson);
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new CreateEditionCommand(
                 convention.Id.Value, "Konvent 2027",
                 new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3),
-                foreignPerson.Id.Value, eventCoord.Id.Value, admin.Id.Value), default));
+                foreignPerson.Id.Value, eventCoord.Id.Value), default));
     }
 
     [Fact]
@@ -116,11 +122,12 @@ public class CreateEditionHandlerTests
         var other = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Other", "other");
         var foreignPerson = other.CreatePerson("Foreign", "foreign@example.com");
         _personRepo.GetByIdAsync(foreignPerson.Id, Arg.Any<CancellationToken>()).Returns(foreignPerson);
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new CreateEditionCommand(
                 convention.Id.Value, "Konvent 2027",
                 new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3),
-                staffCoord.Id.Value, foreignPerson.Id.Value, admin.Id.Value), default));
+                staffCoord.Id.Value, foreignPerson.Id.Value), default));
     }
 }

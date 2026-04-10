@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.CreateTicketType;
@@ -13,11 +14,12 @@ public class CreateTicketTypeHandlerTests
     private readonly ITicketTypeRepository _ticketTypeRepo = Substitute.For<ITicketTypeRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly CreateTicketTypeHandler _handler;
 
     public CreateTicketTypeHandlerTests()
     {
-        _handler = new CreateTicketTypeHandler(_ticketTypeRepo, _editionRepo, _conventionRepo);
+        _handler = new CreateTicketTypeHandler(_ticketTypeRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -42,8 +44,9 @@ public class CreateTicketTypeHandlerTests
     public async Task Handle_ValidCommand_ReturnsTicketTypeId()
     {
         var (_, admin, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        var id = await _handler.Handle(new CreateTicketTypeCommand(edition.Id.Value, "Helgbiljett", 15000, TicketTypeCategory.Visitor, admin.Id.Value), default);
+        var id = await _handler.Handle(new CreateTicketTypeCommand(edition.Id.Value, "Helgbiljett", 15000, TicketTypeCategory.Visitor), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -52,8 +55,9 @@ public class CreateTicketTypeHandlerTests
     public async Task Handle_ValidCommand_CallsAddAndSave()
     {
         var (_, admin, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CreateTicketTypeCommand(edition.Id.Value, "Helgbiljett", 15000, TicketTypeCategory.Visitor, admin.Id.Value), default);
+        await _handler.Handle(new CreateTicketTypeCommand(edition.Id.Value, "Helgbiljett", 15000, TicketTypeCategory.Visitor), default);
 
         await _ticketTypeRepo.Received(1).AddAndSaveAsync(Arg.Any<Domain.Registration.Entities.TicketType>(), Arg.Any<CancellationToken>());
     }
@@ -65,7 +69,7 @@ public class CreateTicketTypeHandlerTests
             .Returns((Domain.Convention.Aggregates.Edition?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateTicketTypeCommand(Guid.NewGuid(), "Biljett", 0, TicketTypeCategory.Visitor, Guid.NewGuid()), default));
+            () => _handler.Handle(new CreateTicketTypeCommand(Guid.NewGuid(), "Biljett", 0, TicketTypeCategory.Visitor), default));
     }
 
     [Fact]
@@ -73,8 +77,9 @@ public class CreateTicketTypeHandlerTests
     {
         var (convention, _, edition) = Setup();
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateTicketTypeCommand(edition.Id.Value, "Biljett", 0, TicketTypeCategory.Visitor, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new CreateTicketTypeCommand(edition.Id.Value, "Biljett", 0, TicketTypeCategory.Visitor), default));
     }
 }

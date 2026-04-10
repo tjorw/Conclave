@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using MediatR;
@@ -6,7 +7,8 @@ namespace ConventionSystem.Application.Convention.Commands.AddAdministrator;
 
 public sealed class AddAdministratorHandler(
     IConventionRepository conventionRepository,
-    IPersonRepository personRepository)
+    IPersonRepository personRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<AddAdministratorCommand>
 {
     public async Task Handle(AddAdministratorCommand command, CancellationToken ct)
@@ -16,7 +18,7 @@ public sealed class AddAdministratorHandler(
         var convention = await conventionRepository.GetByIdAsync(conventionId, ct)
             ?? throw new InvalidOperationException($"Konvention '{command.ConventionId}' hittades inte.");
 
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
         if (!convention.IsAdministrator(performedById))
             throw new InvalidOperationException("Utföraren är inte administratör för denna konvention.");
 

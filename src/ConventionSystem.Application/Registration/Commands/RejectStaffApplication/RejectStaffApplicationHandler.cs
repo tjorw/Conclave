@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -9,13 +10,14 @@ namespace ConventionSystem.Application.Registration.Commands.RejectStaffApplicat
 public sealed class RejectStaffApplicationHandler(
     IStaffApplicationRepository staffApplicationRepository,
     IEditionRepository editionRepository,
-    IConventionRepository conventionRepository)
+    IConventionRepository conventionRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<RejectStaffApplicationCommand>
 {
     public async Task Handle(RejectStaffApplicationCommand command, CancellationToken ct)
     {
         var applicationId = new StaffApplicationId(command.StaffApplicationId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var application = await staffApplicationRepository.GetByIdAsync(applicationId, ct)
             ?? throw new InvalidOperationException($"Staffansökan '{command.StaffApplicationId}' hittades inte.");

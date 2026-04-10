@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateCategory;
 using ConventionSystem.Domain.Convention.Ids;
@@ -11,11 +12,12 @@ public class CreateCategoryHandlerTests
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
     private readonly IPersonRepository _personRepo = Substitute.For<IPersonRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly CreateCategoryHandler _handler;
 
     public CreateCategoryHandlerTests()
     {
-        _handler = new CreateCategoryHandler(_editionRepo, _conventionRepo, _personRepo);
+        _handler = new CreateCategoryHandler(_editionRepo, _conventionRepo, _personRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -44,8 +46,9 @@ public class CreateCategoryHandlerTests
     public async Task Handle_ValidCommand_AddsCategoryToEdition()
     {
         var (_, admin, responsible, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Brädspel", null, responsible.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Brädspel", null, responsible.Id.Value), default);
 
         Assert.Single(edition.Categories);
         Assert.Equal("Brädspel", edition.Categories[0].Name);
@@ -55,8 +58,9 @@ public class CreateCategoryHandlerTests
     public async Task Handle_ValidCommand_ReturnsCategoryId()
     {
         var (_, admin, responsible, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        var id = await _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Brädspel", null, responsible.Id.Value, admin.Id.Value), default);
+        var id = await _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Brädspel", null, responsible.Id.Value), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -65,8 +69,9 @@ public class CreateCategoryHandlerTests
     public async Task Handle_ValidCommand_CallsSave()
     {
         var (_, admin, responsible, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Brädspel", null, responsible.Id.Value, admin.Id.Value), default);
+        await _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Brädspel", null, responsible.Id.Value), default);
 
         await _editionRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -78,7 +83,7 @@ public class CreateCategoryHandlerTests
             .Returns((Domain.Convention.Aggregates.Edition?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateCategoryCommand(Guid.NewGuid(), "Kategori", null, Guid.NewGuid(), Guid.NewGuid()), default));
+            () => _handler.Handle(new CreateCategoryCommand(Guid.NewGuid(), "Kategori", null, Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -86,21 +91,22 @@ public class CreateCategoryHandlerTests
     {
         var (convention, _, responsible, edition) = Setup();
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
+        _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Kategori", null, responsible.Id.Value, nonAdmin.Id.Value), default));
+            () => _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Kategori", null, responsible.Id.Value), default));
     }
 
     [Fact]
     public async Task Handle_ResponsibleFromOtherConvention_Throws()
     {
         var (_, admin, _, edition) = Setup();
-
         var otherConvention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Other Con", "other-con");
         var outsider = otherConvention.CreatePerson("Outsider", "outsider@example.com");
         _personRepo.GetByIdAsync(outsider.Id, Arg.Any<CancellationToken>()).Returns(outsider);
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Kategori", null, outsider.Id.Value, admin.Id.Value), default));
+            () => _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Kategori", null, outsider.Id.Value), default));
     }
 }

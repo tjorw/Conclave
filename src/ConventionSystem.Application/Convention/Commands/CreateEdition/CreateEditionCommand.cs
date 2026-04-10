@@ -8,5 +8,4 @@ public sealed record CreateEditionCommand(
     DateOnly StartDate,
     DateOnly EndDate,
     Guid StaffCoordinatorId,
-    Guid EventCoordinatorId,
-    Guid PerformedById) : IRequest<Guid>;
+    Guid EventCoordinatorId) : IRequest<Guid>;

@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -9,14 +10,15 @@ namespace ConventionSystem.Application.Staff.Commands.CancelAssignment;
 public sealed class CancelAssignmentHandler(
     IShiftRepository shiftRepository,
     IEditionRepository editionRepository,
-    IConventionRepository conventionRepository)
+    IConventionRepository conventionRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<CancelAssignmentCommand>
 {
     public async Task Handle(CancelAssignmentCommand command, CancellationToken ct)
     {
         var shiftId = new ShiftId(command.ShiftId);
         var assignmentId = new StaffAssignmentId(command.AssignmentId);
-        var performedById = new PersonId(command.PerformedById);
+        var performedById = currentUser.PersonId;
 
         var shift = await shiftRepository.GetByIdWithAssignmentsAsync(shiftId, ct)
             ?? throw new InvalidOperationException($"Pass '{command.ShiftId}' hittades inte.");
