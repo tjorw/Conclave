@@ -136,6 +136,9 @@ public sealed class Edition : AggregateRoot
     public bool IsStaffCoordinator(PersonId personId)
         => StaffCoordinatorId == personId;
 
+    public bool IsCategoryResponsible(CategoryId categoryId, PersonId personId)
+        => _categories.Any(c => c.Id == categoryId && c.ResponsibleId == personId);
+
     /// <summary>
     /// Kopierar lokaler, funktionsområden och stationer från en källupplaga.
     /// Anropas av applikationslagret som ansvarar för att hämta källupplagets data.

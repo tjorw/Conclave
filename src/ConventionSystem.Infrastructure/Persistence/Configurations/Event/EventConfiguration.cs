@@ -87,6 +87,7 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
 
         builder.HasIndex(e => e.EditionId).HasDatabaseName("IX_events_edition_id");
         builder.HasIndex(e => e.CategoryId).HasDatabaseName("IX_events_category_id");
+        builder.HasIndex(e => e.LeadOrganiserId).HasDatabaseName("IX_events_lead_organiser_id");
     }
 }
 
@@ -173,5 +174,6 @@ public sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
             .HasMaxLength(50);
 
         builder.HasIndex(s => s.VenueId).HasDatabaseName("IX_sessions_venue_id");
+        builder.HasIndex("EventId").HasDatabaseName("IX_sessions_event_id");
     }
 }

@@ -46,6 +46,7 @@ public sealed class EventVersionConfiguration : IEntityTypeConfiguration<EventVe
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Navigation(v => v.SessionRequests).HasField("_sessionRequests");
+        builder.HasIndex("EventId").HasDatabaseName("IX_event_versions_event_id");
     }
 }
 
@@ -72,5 +73,7 @@ public sealed class SessionRequestConfiguration : IEntityTypeConfiguration<Sessi
             .HasConversion<string>()
             .HasMaxLength(50)
             .HasColumnName("start_type");
+
+        builder.HasIndex("EventVersionId").HasDatabaseName("IX_session_requests_event_version_id");
     }
 }

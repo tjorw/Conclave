@@ -4,6 +4,24 @@ using ConventionSystem.Domain.Event.Ids;
 
 namespace ConventionSystem.Domain.Event.Events;
 
+public record EventCreated(
+    EventId EventId,
+    EditionId EditionId,
+    CategoryId CategoryId,
+    PersonId LeadOrganiserId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record EventSubmittedForReview(
+    EventId EventId,
+    EventVersionId VersionId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record SessionCreated(
+    EventId EventId,
+    SessionId SessionId,
+    VenueId VenueId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public record VersionApproved(
     EventId EventId,
     EventVersionId VersionId,

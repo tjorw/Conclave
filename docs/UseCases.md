@@ -1225,14 +1225,14 @@ Arrangör (person registrerad i konventionen)
 - Kategorin måste tillhöra upplagan
 
 ## Domänhändelser
-- `EventCreated { eventId, editionId, categoryId, leadOrganiserId, occurredAt }` *(läggs till under implementation)*
+- `EventCreated { eventId, editionId, categoryId, leadOrganiserId, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Event sparas med status Utkast och korrekt kategori och arrangör
-- [ ] Ett tomt EventVersion-utkast skapas automatiskt
-- [ ] Skapande på en opublicerad upplaga returnerar ett valideringsfel
-- [ ] Skapande med okänd kategori returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Event sparas med status Utkast och korrekt kategori och arrangör
+- [x] Ett tomt EventVersion-utkast skapas automatiskt
+- [x] Skapande på en opublicerad upplaga returnerar ett valideringsfel
+- [x] Skapande med okänd kategori returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1262,10 +1262,10 @@ Huvudarrangör eller medarrangör
 - Inga
 
 ## Acceptanskriterier
-- [ ] Titel, beskrivning och registreringstyp uppdateras på utkastet
-- [ ] Redigering av ett evenemang i granskning eller publicerat returnerar ett valideringsfel
-- [ ] Tom titel returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Titel, beskrivning och registreringstyp uppdateras på utkastet
+- [x] Redigering av ett evenemang i granskning eller publicerat returnerar ett valideringsfel
+- [x] Tom titel returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1293,9 +1293,9 @@ Huvudarrangör eller medarrangör
 - Inga
 
 ## Acceptanskriterier
-- [ ] SessionRequest sparas på utkastversionen med korrekt data
-- [ ] Tillägg på en icke-Utkast-version returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] SessionRequest sparas på utkastversionen med korrekt data
+- [x] Tillägg på en icke-Utkast-version returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1323,9 +1323,9 @@ Huvudarrangör eller medarrangör
 - Inga
 
 ## Acceptanskriterier
-- [ ] SessionRequest tas bort från utkastet
-- [ ] Borttagning av ett icke-existerande önskemål returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] SessionRequest tas bort från utkastet
+- [x] Borttagning av ett icke-existerande önskemål returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1355,10 +1355,10 @@ Huvudarrangör
 - Inga
 
 ## Acceptanskriterier
-- [ ] CoOrganiser sparas på evenemanget
-- [ ] Dublettillägg returnerar ett valideringsfel
-- [ ] Tillägg av person från annan konvention returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] CoOrganiser sparas på evenemanget
+- [x] Dublettillägg returnerar ett valideringsfel
+- [x] Tillägg av person från annan konvention returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1384,14 +1384,14 @@ Huvudarrangör
 - Titel och beskrivning måste vara ifyllda
 
 ## Domänhändelser
-- `EventSubmittedForReview { eventId, versionId, occurredAt }` *(läggs till under implementation)*
+- `EventSubmittedForReview { eventId, versionId, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Evenemangsstatus övergår till UnderReview
-- [ ] Utkastversionen övergår till UnderReview
-- [ ] Inskickning utan titel returnerar ett valideringsfel
-- [ ] Inskickning av ett redan granskat evenemang returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Evenemangsstatus övergår till UnderReview
+- [x] Utkastversionen övergår till UnderReview
+- [x] Inskickning utan titel returnerar ett valideringsfel
+- [x] Inskickning av ett redan granskat evenemang returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1422,11 +1422,11 @@ Kategoriansvarig
 - `VersionApproved { eventId, versionId, responsibleId, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Evenemangsstatus övergår till Published
-- [ ] PublishedVersionId sätts, DraftVersionId nollställs
-- [ ] Godkännande av ett icke-granskat evenemang returnerar ett valideringsfel
-- [ ] Obehörig utförare returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Evenemangsstatus övergår till Published
+- [x] PublishedVersionId sätts, DraftVersionId nollställs
+- [x] Godkännande av ett icke-granskat evenemang returnerar ett valideringsfel
+- [x] Obehörig utförare returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1459,12 +1459,12 @@ Kategoriansvarig
 - `VersionRejected { eventId, versionId, responsibleId, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Evenemangsstatus återgår till Draft
-- [ ] Den avvisade versionen får status Rejected
-- [ ] Ett nytt utkast med kopierat innehåll skapas
-- [ ] Kommentaren sparas kopplad till den avvisade versionen
-- [ ] Avvisning utan kommentar returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Evenemangsstatus återgår till Draft
+- [x] Den avvisade versionen får status Rejected
+- [x] Ett nytt utkast med kopierat innehåll skapas
+- [x] Kommentaren sparas kopplad till den avvisade versionen
+- [x] Avvisning utan kommentar returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1494,14 +1494,14 @@ Kategoriansvarig
 - Lokalen måste tillhöra upplagan
 
 ## Domänhändelser
-- `SessionCreated { eventId, sessionId, venueId, occurredAt }` *(läggs till under implementation)*
+- `SessionCreated { eventId, sessionId, venueId, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Session sparas med status Aktiv och korrekt tidslucka och lokal
-- [ ] Schemaläggning på ett icke-publicerat evenemang returnerar ett valideringsfel
-- [ ] Ogiltig tidslucka (slut ≤ start) returnerar ett valideringsfel
-- [ ] Lokal som inte tillhör upplagan returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Session sparas med status Aktiv och korrekt tidslucka och lokal
+- [x] Schemaläggning på ett icke-publicerat evenemang returnerar ett valideringsfel
+- [x] Ogiltig tidslucka (slut ≤ start) returnerar ett valideringsfel
+- [x] Lokal som inte tillhör upplagan returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1533,10 +1533,10 @@ Kategoriansvarig eller konventionsadministratör
 - `SessionDeactivated { sessionId, eventId, performedById, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Sessionsstatus övergår till Inaktiv
-- [ ] SessionDeactivated-händelse skickas
-- [ ] Inaktivering av en redan inaktiv session returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Sessionsstatus övergår till Inaktiv
+- [x] SessionDeactivated-händelse skickas
+- [x] Inaktivering av en redan inaktiv session returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -1567,8 +1567,8 @@ Kategoriansvarig eller konventionsadministratör
 - `EventCancelled { eventId, responsibleId, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Evenemangsstatus övergår till Cancelled
-- [ ] EventCancelled-händelse skickas
-- [ ] Inställning av ett redan inställt evenemang returnerar ett valideringsfel
-- [ ] Obehörig utförare returnerar ett valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Evenemangsstatus övergår till Cancelled
+- [x] EventCancelled-händelse skickas
+- [x] Inställning av ett redan inställt evenemang returnerar ett valideringsfel
+- [x] Obehörig utförare returnerar ett valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest

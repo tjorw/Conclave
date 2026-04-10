@@ -11,5 +11,6 @@ public interface IEditionRepository
     Task<Edition?> GetByIdWithStaffAreasAsync(EditionId id, CancellationToken ct = default);
     Task<Edition?> GetByStationIdAsync(StationId stationId, CancellationToken ct = default);
     Task<Edition?> GetByIdWithCategoriesAsync(EditionId id, CancellationToken ct = default);
+    Task<Edition?> GetByIdWithCategoriesAndVenuesAsync(EditionId id, CancellationToken ct = default);
     Task SaveAsync(CancellationToken ct = default);
 }

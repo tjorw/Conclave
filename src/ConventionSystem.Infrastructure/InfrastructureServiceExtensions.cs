@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Common;
@@ -23,6 +24,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IPersonRepository, PersonRepository>();
         services.AddScoped<IEditionRepository, EditionRepository>();
         services.AddScoped<IShiftRepository, ShiftRepository>();
+        services.AddScoped<IEventRepository, EventRepository>();
 
         services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();

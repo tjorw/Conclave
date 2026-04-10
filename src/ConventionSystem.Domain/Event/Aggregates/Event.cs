@@ -41,6 +41,8 @@ public sealed class Event : AggregateRoot
         var initialVersion = new EventVersion(EventVersionId.New(), id);
         _versions.Add(initialVersion);
         DraftVersionId = initialVersion.Id;
+
+        RaiseDomainEvent(new EventCreated(id, editionId, categoryId, leadOrganiserId, DateTimeOffset.UtcNow));
     }
 
     public EventVersion GetDraftVersion()
@@ -58,8 +60,15 @@ public sealed class Event : AggregateRoot
         if (Status != EventStatus.Draft)
             throw new InvalidOperationException("Evenemanget måste vara i utkastläge för att skickas in för granskning.");
 
-        GetDraftVersion().SubmitForReview();
+        var draft = GetDraftVersion();
+        if (string.IsNullOrWhiteSpace(draft.Title))
+            throw new InvalidOperationException("Evenemanget måste ha en titel innan det kan skickas in för granskning.");
+        if (string.IsNullOrWhiteSpace(draft.Description))
+            throw new InvalidOperationException("Evenemanget måste ha en beskrivning innan det kan skickas in för granskning.");
+
+        draft.SubmitForReview();
         Status = EventStatus.UnderReview;
+        RaiseDomainEvent(new EventSubmittedForReview(Id, draft.Id, DateTimeOffset.UtcNow));
     }
 
     public void ApproveVersion(PersonId responsibleId)
@@ -109,6 +118,7 @@ public sealed class Event : AggregateRoot
     {
         var session = new Session(SessionId.New(), Id, venueId, timeSlot, maxSeats, startType);
         _sessions.Add(session);
+        RaiseDomainEvent(new SessionCreated(Id, session.Id, venueId, DateTimeOffset.UtcNow));
         return session;
     }
 

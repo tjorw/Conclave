@@ -45,12 +45,16 @@ public sealed class EventVersion : Entity<EventVersionId>
     public void EditTitle(string title)
     {
         EnsureDraft();
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Titel får inte vara tom.", nameof(title));
         Title = title;
     }
 
     public void EditDescription(string description)
     {
         EnsureDraft();
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Beskrivning får inte vara tom.", nameof(description));
         Description = description;
     }
 
@@ -64,6 +68,8 @@ public sealed class EventVersion : Entity<EventVersionId>
     public SessionRequest AddSessionRequest(string description, int durationMinutes, int seats, StartType startType)
     {
         EnsureDraft();
+        if (durationMinutes <= 0)
+            throw new ArgumentException("Duration måste vara mer än 0 minuter.", nameof(durationMinutes));
         var request = new SessionRequest(SessionRequestId.New(), description, durationMinutes, seats, startType);
         _sessionRequests.Add(request);
         return request;
