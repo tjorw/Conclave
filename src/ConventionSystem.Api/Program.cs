@@ -1,6 +1,7 @@
 using ConventionSystem.Application;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Api.Endpoints;
+using ConventionSystem.Api.Middleware;
 using ConventionSystem.Api.Services;
 using ConventionSystem.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -45,6 +46,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<TenantMiddleware>();
 
 app.MapAuthEndpoints();
 app.MapConventionEndpoints();
