@@ -21,13 +21,17 @@ public static class AuthEndpoints
             UserManager<ApplicationUser> userManager,
             ApplicationIdentityDbContext identityDb,
             ITenantContext tenantContext,
-            IConventionRepository conventionRepo,
-            IPersonRepository personRepo,
+            IServiceProvider services,
             IConfiguration configuration,
             CancellationToken ct) =>
         {
             if (!tenantContext.IsResolved)
                 return Results.BadRequest("X-Convention-Id-header saknas eller är ogiltig.");
+
+            // Löses lazily efter att tenant-kontexten är klar, så att ConventionDbContext
+            // byggs med rätt connection string och inte kastar InvalidOperationException.
+            var conventionRepo = services.GetRequiredService<IConventionRepository>();
+            var personRepo = services.GetRequiredService<IPersonRepository>();
 
             var user = await userManager.FindByEmailAsync(request.Email);
             if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))

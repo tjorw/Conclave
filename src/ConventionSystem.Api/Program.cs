@@ -67,3 +67,6 @@ app.MapRegistrationEndpoints();
 app.MapEventEndpoints();
 
 app.Run();
+
+// Behövs för WebApplicationFactory i integrationstester
+public partial class Program { }
