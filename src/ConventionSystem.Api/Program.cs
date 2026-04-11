@@ -57,6 +57,7 @@ app.UseMiddleware<TenantMiddleware>();
 
 app.MapAuthEndpoints();
 app.MapMeEndpoints();
+app.MapFeedEndpoints();
 app.MapSystemEndpoints();
 app.MapConventionEndpoints();
 app.MapPersonEndpoints();
