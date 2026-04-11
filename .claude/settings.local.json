@@ -16,7 +16,22 @@
       "Bash(dotnet run:*)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5127/openapi/v1.json)",
       "Bash(dotnet ef:*)",
-      "Bash(dotnet test:*)"
+      "Bash(dotnet test:*)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -n \"MapGet\\\\|MapPost\\\\|MapPut\\\\|MapDelete\" /d/Dev/Konvent/src/ConventionSystem.Api/Endpoints/*.cs)",
+      "Bash(grep -n \"MapGet\" /d/Dev/Konvent/src/ConventionSystem.Api/Endpoints/*.cs)",
+      "Bash(grep -oE \"ConventionSystem\\\\.Application\\\\.Tests\\\\\\\\\\\\\\\\[A-Za-z]+\\\\\\\\\\\\\\\\[A-Za-z]+\\\\\\\\\\\\\\\\[A-Za-z]+\\\\.cs\")",
+      "Bash(grep:*)",
+      "Bash(npm list:*)",
+      "Bash(npm install:*)",
+      "Bash(ng version:*)",
+      "Bash(ng new:*)",
+      "Bash(ng generate:*)",
+      "Bash(ng add:*)",
+      "Bash(ng build:*)",
+      "Bash(cp -r src backend/src)",
+      "Bash(cp -r tests backend/tests)",
+      "Bash(cp ConventionSystem.sln backend/ConventionSystem.sln)"
     ]
   }
 }

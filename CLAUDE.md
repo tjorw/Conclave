@@ -20,32 +20,41 @@ Den här filen styr hur Claude Code arbetar i det här projektet.
 ## Byggkommandon
 
 ```bash
-dotnet build
-dotnet test
-dotnet test --filter "FullyQualifiedName~Convention"   # kör tester för ett specifikt bounded context
-dotnet run --project src/ConventionSystem.Api
+dotnet build backend/ConventionSystem.sln
+dotnet test backend/ConventionSystem.sln
+dotnet test backend/ConventionSystem.sln --filter "FullyQualifiedName~Convention"   # kör tester för ett specifikt bounded context
+dotnet run --project backend/src/ConventionSystem.Api
 ```
 
 ## Lösningsstruktur
 
 ```
-ConventionSystem.sln
-├── src/
-│   ├── ConventionSystem.Domain/          # Domänlager – inga beroenden utåt
-│   │   ├── Convention/
-│   │   ├── Event/
-│   │   ├── Registration/
-│   │   └── Staff/
-│   ├── ConventionSystem.Application/     # Use cases, commands, queries (CQRS)
-│   │   ├── Convention/
-│   │   ├── Event/
-│   │   ├── Registration/
-│   │   └── Staff/
-│   ├── ConventionSystem.Infrastructure/  # EF Core, repositories, identity, extern auth, e-post
-│   └── ConventionSystem.Api/             # Controllers, minimal API-endpoints, feed-endpoints
-└── tests/
-    ├── ConventionSystem.Domain.Tests/
-    └── ConventionSystem.Application.Tests/
+/
+├── backend/
+│   ├── ConventionSystem.sln
+│   ├── src/
+│   │   ├── ConventionSystem.Domain/          # Domänlager – inga beroenden utåt
+│   │   │   ├── Convention/
+│   │   │   ├── Event/
+│   │   │   ├── Registration/
+│   │   │   └── Staff/
+│   │   ├── ConventionSystem.Application/     # Use cases, commands, queries (CQRS)
+│   │   │   ├── Convention/
+│   │   │   ├── Event/
+│   │   │   ├── Registration/
+│   │   │   └── Staff/
+│   │   ├── ConventionSystem.Infrastructure/  # EF Core, repositories, identity, extern auth, e-post
+│   │   └── ConventionSystem.Api/             # Controllers, minimal API-endpoints, feed-endpoints
+│   └── tests/
+│       ├── ConventionSystem.Domain.Tests/
+│       ├── ConventionSystem.Application.Tests/
+│       └── ConventionSystem.Integration.Tests/
+├── frontend/
+│   └── projects/
+│       ├── admin/     # Admin-app (Angular Material)
+│       ├── public/    # Publik vy (Angular Material)
+│       └── shared/    # Delat bibliotek: API-typer, auth, interceptors
+└── docs/
 ```
 
 ## Arkitektur

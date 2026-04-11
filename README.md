@@ -31,10 +31,10 @@ Docker Desktop krävs bara för integrationstesterna. Testcontainers startar en 
 
 ```bash
 # Bygg hela lösningen
-dotnet build
+dotnet build backend/ConventionSystem.sln
 
 # Kör API:t (lyssnar på http://localhost:5000 och https://localhost:5001)
-dotnet run --project src/ConventionSystem.Api
+dotnet run --project backend/src/ConventionSystem.Api
 ```
 
 **Notering:** `appsettings.Development.json` (ej incheckad) behöver innehålla connection strings och JWT-konfiguration. Skapa den lokalt med:
@@ -101,32 +101,41 @@ ng build public --configuration production
 
 ```bash
 # Enhetstester och applikationstester (kräver inte Docker)
-dotnet test --filter "FullyQualifiedName!~Integration"
+dotnet test backend/ConventionSystem.sln --filter "FullyQualifiedName!~Integration"
 
 # Alla tester inklusive integrationstester (kräver Docker Desktop)
-dotnet test
+dotnet test backend/ConventionSystem.sln
 ```
 
 ## Lösningsstruktur
 
 ```
-ConventionSystem.sln
-├── src/
-│   ├── ConventionSystem.Domain/          # Domänlager – inga beroenden utåt
-│   │   ├── Convention/
-│   │   ├── Event/
-│   │   ├── Registration/
-│   │   └── Staff/
-│   ├── ConventionSystem.Application/     # Use cases, commands, queries (CQRS)
-│   │   ├── Convention/
-│   │   ├── Event/
-│   │   ├── Registration/
-│   │   └── Staff/
-│   ├── ConventionSystem.Infrastructure/  # EF Core, repositories, identity, extern auth, e-post
-│   └── ConventionSystem.Api/             # Minimal API-endpoints
-└── tests/
-    ├── ConventionSystem.Domain.Tests/
-    └── ConventionSystem.Application.Tests/
+/
+├── backend/
+│   ├── ConventionSystem.sln
+│   ├── src/
+│   │   ├── ConventionSystem.Domain/          # Domänlager – inga beroenden utåt
+│   │   │   ├── Convention/
+│   │   │   ├── Event/
+│   │   │   ├── Registration/
+│   │   │   └── Staff/
+│   │   ├── ConventionSystem.Application/     # Use cases, commands, queries (CQRS)
+│   │   │   ├── Convention/
+│   │   │   ├── Event/
+│   │   │   ├── Registration/
+│   │   │   └── Staff/
+│   │   ├── ConventionSystem.Infrastructure/  # EF Core, repositories, identity, extern auth, e-post
+│   │   └── ConventionSystem.Api/             # Minimal API-endpoints
+│   └── tests/
+│       ├── ConventionSystem.Domain.Tests/
+│       ├── ConventionSystem.Application.Tests/
+│       └── ConventionSystem.Integration.Tests/
+├── frontend/
+│   └── projects/
+│       ├── admin/     # Admin-app (Angular Material)
+│       ├── public/    # Publik vy (Angular Material)
+│       └── shared/    # Delat bibliotek: API-typer, auth, interceptors
+└── docs/
 ```
 
 Beroendet pekar alltid inåt: Infrastructure → Application → Domain.

@@ -29,22 +29,22 @@ jobs:
           restore-keys: nuget-
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore backend/ConventionSystem.sln
 
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build backend/ConventionSystem.sln --no-restore --configuration Release
 
       - name: Unit tests
         run: |
-          dotnet test tests/ConventionSystem.Domain.Tests \
+          dotnet test backend/tests/ConventionSystem.Domain.Tests \
             --no-build --configuration Release \
             --logger "console;verbosity=normal"
-          dotnet test tests/ConventionSystem.Application.Tests \
+          dotnet test backend/tests/ConventionSystem.Application.Tests \
             --no-build --configuration Release \
             --logger "console;verbosity=normal"
 
       - name: Integration tests
         run: |
-          dotnet test tests/ConventionSystem.Integration.Tests \
+          dotnet test backend/tests/ConventionSystem.Integration.Tests \
             --no-build --configuration Release \
             --logger "console;verbosity=normal"
