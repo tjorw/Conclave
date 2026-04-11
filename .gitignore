@@ -489,3 +489,7 @@ appsettings.Development.json
 # Angular build-output och cache
 frontend/dist/
 frontend/.angular/
+
+# Lokal Angular-konfiguration (conventionId skiljer sig per utvecklare)
+frontend/projects/admin/src/environments/environment.ts
+frontend/projects/public/src/environments/environment.ts

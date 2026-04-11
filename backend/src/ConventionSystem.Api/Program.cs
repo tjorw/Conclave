@@ -4,7 +4,9 @@ using ConventionSystem.Api.Endpoints;
 using ConventionSystem.Api.Middleware;
 using ConventionSystem.Api.Services;
 using ConventionSystem.Infrastructure;
+using ConventionSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -42,7 +44,25 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("is_admin", "true"));
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+        policy
+            .WithOrigins(
+                builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                ?? ["http://localhost:4200", "http://localhost:4201"])
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
+
 var app = builder.Build();
+
+// Migrera systemdatabaserna automatiskt vid uppstart
+using (var scope = app.Services.CreateScope())
+{
+    await scope.ServiceProvider.GetRequiredService<SystemDbContext>().Database.MigrateAsync();
+    await scope.ServiceProvider.GetRequiredService<ApplicationIdentityDbContext>().Database.MigrateAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -51,6 +71,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
+app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<TenantMiddleware>();

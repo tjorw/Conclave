@@ -7,6 +7,7 @@ using ConventionSystem.Infrastructure.Persistence;
 using ConventionSystem.Infrastructure.System;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace ConventionSystem.Api.Endpoints;
 
@@ -31,6 +32,13 @@ public static class SystemEndpoints
             // Löser tenant-kontexten med den angivna connection string så att
             // ConventionDbContext byggs mot rätt databas när handlern körs.
             tenantContext.Resolve(conventionId, request.ConnectionString);
+
+            // Migrera konventionsdatabasen innan något skrivs till den.
+            var conventionDbOptions = new DbContextOptionsBuilder<ConventionDbContext>()
+                .UseSqlServer(request.ConnectionString)
+                .Options;
+            await using (var conventionDb = new ConventionDbContext(conventionDbOptions))
+                await conventionDb.Database.MigrateAsync(ct);
 
             // Skapa konventionen och registrantpersonen i ConventionDb
             await sender.Send(new CreateConventionCommand(

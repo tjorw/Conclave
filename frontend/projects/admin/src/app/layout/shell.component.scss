@@ -1,0 +1,43 @@
+.shell-container {
+  height: 100%;
+}
+
+.shell-sidenav {
+  width: 240px;
+}
+
+.sidenav-header {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.sidenav-logo {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.sidenav-subtitle {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+.shell-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.shell-main {
+  padding: 24px;
+}
+
+.active-link {
+  background: rgba(0, 0, 0, 0.08);
+}

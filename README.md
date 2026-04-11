@@ -8,8 +8,8 @@ System för att administrera, annonsera, registrera och driva hobbymässor (tabl
 - **Arkitektur:** Clean Architecture med DDD (Domain-Driven Design)
 - **ORM:** Entity Framework Core
 - **Databas:** SQL Server (multi-tenant – en databas per konvention + systemdatabas + identitetsdatabas)
-- **Frontend:** Angular *(ej påbörjat)*
-- **Auth:** ASP.NET Identity med OAuth *(ej påbörjat)*
+- **Frontend:** Angular (admin-app + publik vy)
+- **Auth:** ASP.NET Identity med JWT
 - **API:** REST, minimal API
 
 ## Kom igång
@@ -19,81 +19,94 @@ System för att administrera, annonsera, registrera och driva hobbymässor (tabl
 | Verktyg | Version | Används till |
 |---------|---------|--------------|
 | .NET SDK | 9.0 | Backend API |
+| SQL Server | valfri lokal instans | Databaser (SystemDb, IdentityDb, en per konvention) |
 | Node.js | 22+ | Angular frontend |
 | Angular CLI | 21+ | Bygga och köra Angular-apparna |
 | Docker Desktop | senaste | Integrationstester (SQL Server-container) |
 
-Docker Desktop krävs bara för integrationstesterna. Testcontainers startar en SQL Server-container automatiskt; ingen lokal SQL Server-installation behövs. SQL Server-imagen (`mcr.microsoft.com/mssql/server`, ~600 MB) hämtas första gången.
+Docker Desktop krävs bara för integrationstesterna. Testcontainers startar en SQL Server-container automatiskt; ingen lokal SQL Server-installation behövs för CI. SQL Server-imagen (`mcr.microsoft.com/mssql/server`, ~600 MB) hämtas första gången.
 
 ---
 
-### Backend-API
+### Första gången – från kod till inloggning
 
-```bash
-# Bygg hela lösningen
-dotnet build backend/ConventionSystem.sln
+#### Steg 1 – Skapa `appsettings.Development.json`
 
-# Kör API:t (lyssnar på http://localhost:5000 och https://localhost:5001)
-dotnet run --project backend/src/ConventionSystem.Api
-```
-
-**Notering:** `appsettings.Development.json` (ej incheckad) behöver innehålla connection strings och JWT-konfiguration. Skapa den lokalt med:
+Filen är gitignorerad och måste skapas lokalt. Lägg den i `backend/src/ConventionSystem.Api/`:
 
 ```json
 {
   "ConnectionStrings": {
-    "SystemDb": "Server=...;Database=ConventionSystemRegistry;...",
-    "IdentityDb": "Server=...;Database=ConventionSystemIdentity;..."
+    "SystemDb": "Server=localhost;Database=ConventionSystemRegistry;Trusted_Connection=True;TrustServerCertificate=True;",
+    "IdentityDb": "Server=localhost;Database=ConventionSystemIdentity;Trusted_Connection=True;TrustServerCertificate=True;"
   },
   "Jwt": {
-    "Key": "minst-32-tecken-lång-hemlig-nyckel",
+    "Key": "minst-32-tecken-lång-hemlig-nyckel-byt-ut-mig",
     "Issuer": "ConventionSystem",
     "Audience": "ConventionSystem"
   }
 }
 ```
 
----
+#### Steg 2 – Starta API:t
 
-### Frontend
-
-Frontend-projekten bor under `frontend/` och är ett Angular-workspace med två appar och ett delat bibliotek.
-
-```
-frontend/
-├── projects/
-│   ├── admin/    # Admin-app (port 4200)
-│   ├── public/   # Publik vy (port 4201)
-│   └── shared/   # Delat bibliotek: API-typer, auth, interceptors, guards
-└── angular.json
+```bash
+dotnet run --project backend/src/ConventionSystem.Api
 ```
 
-**Förberedelse (en gång):**
+API:t lyssnar på `http://localhost:5127`. Databaserna `ConventionSystemRegistry` och `ConventionSystemIdentity` skapas och migreras automatiskt vid uppstart.
+
+#### Steg 3 – Provisionera din första konvention
+
+```
+curl.exe -X POST http://localhost:5127/system/conventions -H "Content-Type: application/json" -d "{\"name\":\"Min konvention\",\"slug\":\"min-konvention\",\"registrantName\":\"Admin Adminsson\",\"registrantEmail\":\"admin@example.com\",\"registrantPassword\":\"Lösenord123!\",\"connectionString\":\"Server=localhost;Database=ConventionMinKonvention;Trusted_Connection=True;TrustServerCertificate=True;\"}"
+```
+
+Svaret innehåller ett `conventionId` (GUID) – spara det.
+
+Endpointen skapar automatiskt databasen `ConventionMinKonvention` och kör dess migrations.
+
+#### Steg 4 – Konfigurera frontend-miljön
+
+`environment.ts` är gitignorerad (innehåller lokalt `conventionId`). Kopiera exempelfilen och fyll i ditt `conventionId` från steg 3:
+
+```bash
+cp frontend/projects/admin/src/environments/environment.ts.example \
+   frontend/projects/admin/src/environments/environment.ts
+```
+
+Öppna sedan filen och ersätt placeholder-värdet:
+
+```typescript
+conventionId: '<conventionId från steg 3>',
+```
+
+#### Steg 5 – Installera npm-paket (en gång)
 
 ```bash
 cd frontend
 npm install
 ```
 
-**Konfigurera konventions-ID:**
-
-Redigera `projects/admin/src/environments/environment.ts` respektive `projects/public/src/environments/environment.ts` och sätt rätt `conventionId` (det Guid som skapades vid provisioning).
-
-**Kör apparna:**
+#### Steg 6 – Starta admin-appen
 
 ```bash
-# Admin-app på http://localhost:4200
 ng serve admin
-
-# Publik vy på http://localhost:4201
-ng serve public --port 4201
-
-# Bygg för produktion
-ng build admin --configuration production
-ng build public --configuration production
 ```
 
-> Starta API:t först – Angular-apparna gör API-anrop mot `http://localhost:5000`.
+Öppna `http://localhost:4200` – logga in med e-postadressen och lösenordet från steg 5.
+
+---
+
+### Daglig utveckling
+
+```bash
+# Terminal 1 – API
+dotnet run --project backend/src/ConventionSystem.Api
+
+# Terminal 2 – Admin-app
+cd frontend && ng serve admin
+```
 
 ---
 
