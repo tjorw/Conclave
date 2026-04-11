@@ -69,6 +69,8 @@ Systemet är indelat i fyra bounded contexts som kommunicerar via domain events 
 
 ### Convention
 
+Kärn-BC. Ansvarar för konventionens identitet, organisationsstruktur och livscykel. Hanterar upplagan (`Edition`) som är den faktiska genomföringsinstansen, samt allt som definierar dess fysiska och organisatoriska form: lokaler, funktionsområden, stationer, kategorier och personer. Alla andra BC:n refererar till id:n härifrån.
+
 | Typ | Namn |
 |---|---|
 | Aggregate roots | `Convention`, `Edition` |
@@ -80,6 +82,8 @@ Systemet är indelat i fyra bounded contexts som kommunicerar via domain events 
 - En `Edition` har en bemanningskoordinator och en evenemangskoordinator
 
 ### Event
+
+Hanterar livscykeln för ett evenemang (rollspel, brädspel, föreläsning etc.) från inlämning till publicering och schemaläggning. En arrangör skapar ett utkast, fyller i sessionönskemål och skickar in för granskning. Evenemangskoordinatorn godkänner eller avvisar. Kategoriansvarig schemalägger sessioner oberoende av arrangörens önskemål.
 
 | Typ | Namn |
 |---|---|
@@ -95,6 +99,8 @@ Systemet är indelat i fyra bounded contexts som kommunicerar via domain events 
 
 ### Registration
 
+Hanterar de tre registreringstyperna: besöksregistrering (vill gå på konventionen), staffansökan (vill arbeta som funktionär) och sessionsregistrering (vill delta i ett specifikt evenemang). Varje typ är ett eget aggregat med sin regeluppsättning. `RegistrationRuleService` samordnar plats- och biljettvalidering tvärs aggregat.
+
 | Typ | Namn |
 |---|---|
 | Aggregate roots | `VisitorRegistration`, `SessionRegistration`, `StaffApplication`, `Ticket` |
@@ -102,6 +108,8 @@ Systemet är indelat i fyra bounded contexts som kommunicerar via domain events 
 | Domain service | `RegistrationRuleService` (validerar platser och biljetter) |
 
 ### Staff
+
+Hanterar bemanningen av konventionen. Bemanningskoordinatorn skapar pass (`Shift`) på stationer, och funktionärer tilldelas via `StaffAssignment`. `AssignmentService` varnar vid överlappande pass men blockerar inte – koordinatorn har sista ordet. Staffansökan (i Registration-BC:n) är förutsättningen för att en person ska kunna tilldelas ett pass.
 
 | Typ | Namn |
 |---|---|
