@@ -13,6 +13,9 @@ public sealed class PersonRepository(ConventionDbContext db) : IPersonRepository
     public Task<Person?> GetByIdAsync(PersonId id, CancellationToken ct = default)
         => db.Persons.FirstOrDefaultAsync(p => p.Id == id, ct);
 
+    public Task<Person?> FindByEmailInConventionAsync(ConventionId conventionId, string email, CancellationToken ct = default)
+        => db.Persons.FirstOrDefaultAsync(p => p.ConventionId == conventionId && p.Email == email, ct);
+
     public async Task AddAndSaveAsync(Person person, CancellationToken ct = default)
     {
         await db.Persons.AddAsync(person, ct);

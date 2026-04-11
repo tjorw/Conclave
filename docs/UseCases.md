@@ -66,10 +66,10 @@ Valfri användare som startar ett registreringsflöde
 - Inga (personskapandet är infrastrukturellt, inte en domänhändelse)
 
 ## Acceptanskriterier
-- [ ] Befintlig person identifieras korrekt vid återinloggning
-- [ ] Nytt personkonto skapas vid första inloggning till en konvention
-- [ ] Person kopplas till korrekt ConventionId
-- [ ] Inga dubbla personkonton skapas för samma identitet inom en konvention
+- [x] Befintlig person identifieras korrekt vid återinloggning
+- [x] Nytt personkonto skapas vid första inloggning till en konvention
+- [x] Person kopplas till korrekt ConventionId
+- [x] Inga dubbla personkonton skapas för samma identitet inom en konvention
 
 ---
 

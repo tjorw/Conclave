@@ -1,4 +1,7 @@
+using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Infrastructure.Identity;
+using ConventionSystem.Infrastructure.MultiTenancy;
 using ConventionSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -17,21 +20,59 @@ public static class AuthEndpoints
             LoginRequest request,
             UserManager<ApplicationUser> userManager,
             ApplicationIdentityDbContext identityDb,
+            ITenantContext tenantContext,
+            IConventionRepository conventionRepo,
+            IPersonRepository personRepo,
             IConfiguration configuration,
             CancellationToken ct) =>
         {
+            if (!tenantContext.IsResolved)
+                return Results.BadRequest("X-Convention-Id-header saknas eller är ogiltig.");
+
             var user = await userManager.FindByEmailAsync(request.Email);
             if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
                 return Results.Unauthorized();
 
+            var conventionId = new ConventionId(tenantContext.ConventionId);
+
+            // UC002: identifiera eller skapa person
             var link = await identityDb.ConventionUserLinks
-                .FirstOrDefaultAsync(
-                    l => l.UserId == user.Id && l.ConventionId == request.ConventionId, ct);
+                .FirstOrDefaultAsync(l => l.UserId == user.Id && l.ConventionId == tenantContext.ConventionId, ct);
 
-            if (link is null)
-                return Results.Forbid();
+            Guid personId;
+            if (link is not null)
+            {
+                // Befintlig person – återinloggning
+                personId = link.PersonId;
+            }
+            else
+            {
+                // Första inloggningen till denna konvention – identifiera eller skapa person
+                var existingPerson = await personRepo.FindByEmailInConventionAsync(conventionId, request.Email, ct);
 
-            var token = IssueJwt(link.PersonId, configuration);
+                if (existingPerson is not null)
+                {
+                    // Person finns redan (t.ex. skapad av admin) – koppla identitetskontot
+                    personId = existingPerson.Id.Value;
+                }
+                else
+                {
+                    // Skapa nytt personkonto; namn samlas in i registreringsflödet (UC-VR001/SA001/EV001)
+                    var convention = await conventionRepo.GetByIdAsync(conventionId, ct);
+                    if (convention is null)
+                        return Results.BadRequest("Konventionen hittades inte.");
+
+                    var person = convention.RegisterPerson(string.Empty, request.Email);
+                    await personRepo.AddAndSaveAsync(person, ct);
+                    personId = person.Id.Value;
+                }
+
+                var newLink = ConventionUserLink.Create(user.Id, tenantContext.ConventionId, personId);
+                await identityDb.ConventionUserLinks.AddAsync(newLink, ct);
+                await identityDb.SaveChangesAsync(ct);
+            }
+
+            var token = IssueJwt(personId, configuration);
             return Results.Ok(new { token });
         });
 
@@ -57,4 +98,4 @@ public static class AuthEndpoints
     }
 }
 
-public record LoginRequest(string Email, string Password, Guid ConventionId);
+public record LoginRequest(string Email, string Password);
