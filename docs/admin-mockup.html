@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Konvent Admin – UI Mockup</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; display: flex; height: 100vh; overflow: hidden; color: #212121; }
+
+/* ── Sidebar ── */
+nav { width: 236px; background: #1a237e; color: #fff; display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
+.nav-logo { padding: 18px 16px 10px; font-size: 1rem; font-weight: 600; letter-spacing: .02em; }
+.nav-edition { padding: 0 16px 14px; font-size: .75rem; opacity: .55; }
+.nav-section { padding: 14px 16px 4px; font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; opacity: .45; }
+nav a { display: block; padding: 7px 16px; color: rgba(255,255,255,.8); text-decoration: none; font-size: .85rem; cursor: pointer; }
+nav a:hover { background: rgba(255,255,255,.1); color: #fff; }
+nav a.active { background: rgba(255,255,255,.18); color: #fff; font-weight: 500; }
+
+/* ── Main ── */
+main { flex: 1; overflow-y: auto; background: #f4f4f6; }
+.view { display: none; padding: 28px 32px; max-width: 1080px; }
+.view.active { display: block; }
+
+/* ── Typography ── */
+h1 { font-size: 1.5rem; font-weight: 500; }
+h2 { font-size: 1.05rem; font-weight: 500; }
+.subtitle { font-size: .85rem; color: #777; margin-top: 3px; margin-bottom: 24px; }
+.breadcrumb { font-size: .78rem; color: #999; margin-bottom: 6px; }
+.breadcrumb a { color: #999; text-decoration: none; cursor: pointer; }
+.breadcrumb a:hover { color: #1a237e; text-decoration: underline; }
+.page-header { margin-bottom: 20px; }
+.title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* ── Cards ── */
+.card { background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin-bottom: 16px; }
+.card-header { padding: 14px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: .9rem; }
+.card-body { padding: 16px 20px; }
+.card-body.no-pad { padding: 0; }
+
+/* ── Buttons ── */
+.btn { display: inline-flex; align-items: center; gap: 5px; padding: 7px 16px; border-radius: 4px; border: none; cursor: pointer; font-size: .85rem; font-family: inherit; transition: opacity .15s; }
+.btn:hover { opacity: .85; }
+.btn-primary { background: #1a237e; color: #fff; }
+.btn-secondary { background: transparent; color: #1a237e; border: 1px solid #1a237e; }
+.btn-danger { background: transparent; color: #c62828; border: 1px solid #c62828; }
+.btn-ghost { background: transparent; color: #555; border: 1px solid #ddd; }
+.btn-sm { padding: 4px 12px; font-size: .8rem; }
+.btn[disabled] { opacity: .4; cursor: default; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Chips ── */
+.chip { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: .73rem; font-weight: 600; white-space: nowrap; }
+.chip-blue   { background: #e3f2fd; color: #1565c0; }
+.chip-green  { background: #e8f5e9; color: #2e7d32; }
+.chip-orange { background: #fff3e0; color: #e65100; }
+.chip-red    { background: #ffebee; color: #c62828; }
+.chip-grey   { background: #f0f0f0; color: #616161; }
+.chip-purple { background: #f3e5f5; color: #6a1b9a; }
+
+/* ── Tables ── */
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: .72rem; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: .06em; padding: 10px 16px; border-bottom: 2px solid #eee; white-space: nowrap; }
+td { padding: 10px 16px; border-bottom: 1px solid #f2f2f2; font-size: .875rem; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafafa; }
+.muted { color: #bbb; }
+
+/* ── Forms ── */
+.form-grid   { display: grid; gap: 14px; }
+.cols-2 { grid-template-columns: 1fr 1fr; }
+.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.field label { display: block; font-size: .75rem; color: #888; margin-bottom: 5px; }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 7px 10px;
+  border: 1px solid #ddd; border-radius: 4px;
+  font-size: .875rem; font-family: inherit;
+  background: #fff;
+}
+.field textarea { resize: vertical; min-height: 80px; }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: #1a237e; box-shadow: 0 0 0 2px rgba(26,35,126,.1);
+}
+.inline-form { background: #f9f9f9; border: 1px solid #e8e8e8; border-radius: 4px; padding: 14px 16px; margin-top: 14px; }
+.inline-form .form-label { font-size: .8rem; font-weight: 500; color: #666; margin-bottom: 10px; }
+
+/* ── Action bar ── */
+.action-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+.spacer { flex: 1; }
+.search-input { padding: 7px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: .85rem; width: 240px; }
+
+/* ── Stats ── */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.1); padding: 16px 20px; }
+.stat-number { font-size: 2rem; font-weight: 300; color: #1a237e; line-height: 1; }
+.stat-label { font-size: .75rem; color: #888; margin-top: 5px; }
+
+/* ── Alert ── */
+.alert { padding: 10px 14px; border-radius: 4px; font-size: .85rem; margin-bottom: 14px; }
+.alert-info    { background: #e3f2fd; color: #1565c0; border-left: 3px solid #1565c0; }
+.alert-warning { background: #fff8e1; color: #e65100; border-left: 3px solid #e65100; }
+.alert-success { background: #e8f5e9; color: #2e7d32; border-left: 3px solid #2e7d32; }
+
+/* ── Filter tabs ── */
+.filter-tabs { display: flex; gap: 0; border-bottom: 2px solid #e0e0e0; margin-bottom: 18px; }
+.ftab { padding: 8px 18px; cursor: pointer; font-size: .85rem; color: #777; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.ftab:hover { color: #333; }
+.ftab.active { color: #1a237e; border-bottom-color: #1a237e; font-weight: 500; }
+
+/* ── Area blocks (struktur) ── */
+.area-block { border: 1px solid #e4e4e4; border-radius: 4px; padding: 12px 14px; margin-bottom: 8px; }
+.area-name { font-weight: 500; font-size: .9rem; margin-bottom: 6px; }
+.area-meta { font-size: .78rem; color: #888; font-weight: normal; }
+.station-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.station-chip { background: #f0f0f0; border-radius: 12px; padding: 2px 10px; font-size: .78rem; }
+
+/* ── Detail rows ── */
+.detail-row { display: flex; align-items: baseline; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f4f4f4; }
+.detail-row:last-child { border-bottom: none; }
+.dl { font-size: .78rem; color: #999; min-width: 180px; }
+.dv { font-size: .875rem; }
+
+/* ── Misc ── */
+.row { display: flex; gap: 12px; align-items: center; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.text-right { text-align: right; }
+.text-muted { color: #999; font-style: italic; font-size: .85rem; }
+.divider { border: none; border-top: 1px solid #eee; margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ SIDEBAR ═══ -->
+<nav>
+  <div class="nav-logo">Konvent Admin</div>
+  <div class="nav-edition">Konvent 2027 · Utkast</div>
+
+  <div class="nav-section">Upplaga</div>
+  <a onclick="show('dashboard')">Dashboard</a>
+  <a onclick="show('edition-grunddata')">Grunddata &amp; publicering</a>
+  <a onclick="show('edition-struktur')">Struktur</a>
+
+  <div class="nav-section">Deltagare</div>
+  <a onclick="show('persons')">Personer</a>
+  <a onclick="show('reg-organiser')">Arrangörsregistreringar</a>
+  <a onclick="show('reg-visitor')">Besökarregistreringar</a>
+
+  <div class="nav-section">Evenemang</div>
+  <a onclick="show('events-list')">Evenemangslista</a>
+  <a onclick="show('sessions-schedule')">Sessionsschemaläggning</a>
+
+  <div class="nav-section">Bemanning</div>
+  <a onclick="show('staff-applications')">Staffansökningar</a>
+  <a onclick="show('shifts')">Pass</a>
+  <a onclick="show('assignments')">Tilldelningsöversikt</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════ VIEWS ═══════ -->
+<main>
+
+<!-- ─────────────────────── DASHBOARD ─── -->
+<div class="view active" id="view-dashboard">
+  <div class="page-header">
+    <h1>Dashboard</h1>
+    <p class="subtitle">Konvent · startpunkt för administration</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Evenemang inskickade</div></div>
+    <div class="stat-card"><div class="stat-number">12</div><div class="stat-label">Staffansökningar</div></div>
+    <div class="stat-card"><div class="stat-number">47</div><div class="stat-label">Besökarregistreringar</div></div>
+    <div class="stat-card"><div class="stat-number">4</div><div class="stat-label">Arrangörer</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      Upplagor
+      <span style="margin-left:auto">
+        <button class="btn btn-primary btn-sm">+ Ny upplaga</button>
+      </span>
+    </div>
+    <div class="card-body no-pad">
+      <table>
+        <thead><tr>
+          <th>Namn</th><th>Datum</th><th>Status</th><th>Registreringar öppna</th><th></th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Konvent 2027</strong></td>
+            <td>1–3 mars 2027</td>
+            <td><span class="chip chip-orange">Utkast</span></td>
+            <td class="muted">–</td>
+            <td><button class="btn btn-secondary btn-sm" onclick="show('edition-grunddata')">Öppna</button></td>
+          </tr>
+          <tr>
+            <td>Konvent 2026</td>
+            <td>5–7 mars 2026</td>
+            <td><span class="chip chip-green">Publicerad</span></td>
+            <td>
+              <span class="chip chip-blue">Arrangör</span>
+              <span class="chip chip-blue" style="margin-left:4px">Staff</span>
+              <span class="chip chip-blue" style="margin-left:4px">Besökare</span>
+            </td>
+            <td><button class="btn btn-ghost btn-sm">Öppna</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── EDITION: GRUNDDATA ─── -->
+<div class="view" id="view-edition-grunddata">
+  <div class="page-header">
+    <div class="breadcrumb"><a onclick="show('dashboard')">Dashboard</a> / Grunddata &amp; publicering</div>
+    <div class="title-row">
+      <h1>Konvent 2027</h1>
+      <span class="chip chip-orange">Utkast</span>
+    </div>
+    <p class="subtitle">1–3 mars 2027</p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Livscykel</div>
+    <div class="card-body">
+      <div class="alert alert-info">
+        Upplagan är ett utkast. Publicera för att låsa upp registreringar och evenemangsflöden.
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary">Publicera upplaga</button>
+      </div>
+      <hr class="divider">
+      <div class="btn-group">
+        <button class="btn btn-secondary" disabled title="Kräver publicerad upplaga">Öppna arrangörsregistrering</button>
+        <button class="btn btn-secondary" disabled>Öppna staffregistrering</button>
+        <button class="btn btn-secondary" disabled>Öppna besökarregistrering</button>
+      </div>
+      <p class="text-muted mt-8">Registreringar kan öppnas separat efter publicering.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Koordinatorer</div>
+    <div class="card-body">
+      <div class="form-grid cols-2">
+        <div class="field">
+          <label>Bemanningskoordinator</label>
+          <select><option>Anna Svensson</option><option>Björn Lindqvist</option></select>
+        </div>
+        <div class="field">
+          <label>Evenemangskoordinator</label>
+          <select><option>Maria Jonsson</option><option>Erik Persson</option></select>
+        </div>
+      </div>
+      <div class="text-right mt-12">
+        <button class="btn btn-primary btn-sm">Spara</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Kopiera struktur från tidigare upplaga</div>
+    <div class="card-body">
+      <div class="row">
+        <div class="field" style="flex:1">
+          <label>Kopiera lokaler, funktionsområden och stationer från</label>
+          <select><option>Konvent 2026</option></select>
+        </div>
+        <div style="align-self:flex-end"><button class="btn btn-secondary">Kopiera struktur</button></div>
+      </div>
+      <p class="text-muted mt-8">Befintlig struktur på denna upplaga skrivs över.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── EDITION: STRUKTUR ─── -->
+<div class="view" id="view-edition-struktur">
+  <div class="page-header">
+    <div class="breadcrumb"><a onclick="show('dashboard')">Dashboard</a> / Struktur</div>
+    <h1>Konventionsstruktur</h1>
+    <p class="subtitle">Konvent 2027 · Lokaler, funktionsområden, stationer och kategorier</p>
+  </div>
+
+  <!-- Lokaler -->
+  <div class="card">
+    <div class="card-header">Lokaler <span style="font-weight:400; opacity:.5; font-size:.8rem">(2)</span></div>
+    <div class="card-body no-pad">
+      <table>
+        <thead><tr><th>Namn</th><th>Byggnad</th><th>Beskrivning</th></tr></thead>
+        <tbody>
+          <tr><td>Stora salen</td><td>Huvudbyggnad</td><td class="muted">–</td></tr>
+          <tr><td>Lilla salen</td><td>Annexet</td><td>Brädspelshall</td></tr>
+        </tbody>
+      </table>
+      <div class="inline-form" style="margin:0; border-radius:0; border-left:none; border-right:none; border-bottom:none;">
+        <div class="form-label">Lägg till lokal</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div class="field" style="flex:1; min-width:130px;"><label>Namn *</label><input placeholder="Namn"></div>
+          <div class="field" style="flex:1; min-width:130px;"><label>Byggnad *</label><input placeholder="Byggnad"></div>
+          <div class="field" style="flex:2; min-width:130px;"><label>Beskrivning</label><input placeholder="Valfri"></div>
+          <button class="btn btn-primary">Lägg till</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Funktionsområden & Stationer -->
+  <div class="card">
+    <div class="card-header">Funktionsområden &amp; Stationer <span style="font-weight:400; opacity:.5; font-size:.8rem">(2)</span></div>
+    <div class="card-body">
+      <div class="area-block">
+        <div class="area-name">Reception <span class="area-meta">· Ansvarig: Anna Svensson</span></div>
+        <div class="station-row">
+          <span class="station-chip">Ingång A</span>
+          <span class="station-chip">Ingång B</span>
+        </div>
+      </div>
+      <div class="area-block">
+        <div class="area-name">Brädspel <span class="area-meta">· Ansvarig: Björn Lindqvist</span></div>
+        <div class="station-row">
+          <span class="station-chip">Inlåning</span>
+        </div>
+      </div>
+      <div class="inline-form">
+        <div class="form-label">Lägg till funktionsområde</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div class="field" style="flex:2; min-width:130px;"><label>Namn *</label><input placeholder="Namn"></div>
+          <div class="field" style="flex:2; min-width:130px;"><label>Beskrivning</label><input placeholder="Valfri"></div>
+          <div class="field" style="flex:2; min-width:160px;"><label>Ansvarig *</label>
+            <select><option>Anna Svensson</option><option>Björn Lindqvist</option></select>
+          </div>
+          <button class="btn btn-primary">Lägg till</button>
+        </div>
+      </div>
+      <div class="inline-form mt-8">
+        <div class="form-label">Lägg till station</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div class="field" style="flex:2; min-width:130px;"><label>Namn *</label><input placeholder="Namn"></div>
+          <div class="field" style="flex:2; min-width:130px;"><label>Beskrivning</label><input placeholder="Valfri"></div>
+          <div class="field" style="flex:2; min-width:160px;"><label>Funktionsområde *</label>
+            <select><option>Reception</option><option>Brädspel</option></select>
+          </div>
+          <button class="btn btn-primary">Lägg till</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kategorier -->
+  <div class="card">
+    <div class="card-header">Kategorier <span style="font-weight:400; opacity:.5; font-size:.8rem">(2)</span></div>
+    <div class="card-body no-pad">
+      <table>
+        <thead><tr><th>Namn</th><th>Beskrivning</th><th>Ansvarig</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Brädspel</td>
+            <td class="muted">–</td>
+            <td>
+              <select style="padding:3px 8px; border:1px solid #ddd; border-radius:4px; font-size:.8rem;">
+                <option selected>Maria Jonsson</option><option>Erik Persson</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>Rollspel</td>
+            <td class="muted">–</td>
+            <td>
+              <select style="padding:3px 8px; border:1px solid #ddd; border-radius:4px; font-size:.8rem;">
+                <option selected>Erik Persson</option><option>Maria Jonsson</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="inline-form" style="margin:0; border-radius:0; border-left:none; border-right:none; border-bottom:none;">
+        <div class="form-label">Lägg till kategori</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+          <div class="field" style="flex:2; min-width:130px;"><label>Namn *</label><input placeholder="Namn"></div>
+          <div class="field" style="flex:2; min-width:130px;"><label>Beskrivning</label><input placeholder="Valfri"></div>
+          <div class="field" style="flex:2; min-width:160px;"><label>Ansvarig *</label>
+            <select><option>Maria Jonsson</option><option>Erik Persson</option></select>
+          </div>
+          <button class="btn btn-primary">Lägg till</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── PERSONER ─── -->
+<div class="view" id="view-persons">
+  <div class="page-header">
+    <h1>Personer</h1>
+    <p class="subtitle">Alla registrerade personer i konventionen</p>
+  </div>
+
+  <div class="action-bar">
+    <input class="search-input" placeholder="Sök namn eller e-post…">
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="toggleCreatePerson()">+ Skapa person</button>
+  </div>
+
+  <div class="card" id="create-person-card" style="display:none;">
+    <div class="card-header">Skapa ny person</div>
+    <div class="card-body">
+      <div class="form-grid cols-3">
+        <div class="field"><label>Namn *</label><input placeholder="För- och efternamn"></div>
+        <div class="field"><label>E-post *</label><input type="email" placeholder="namn@example.com"></div>
+        <div class="field"><label>Telefon</label><input placeholder="Valfritt"></div>
+      </div>
+      <div class="text-right mt-12">
+        <button class="btn btn-ghost btn-sm" onclick="toggleCreatePerson()">Avbryt</button>
+        &nbsp;
+        <button class="btn btn-primary btn-sm">Skapa</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body no-pad">
+      <table>
+        <thead><tr><th>Namn</th><th>E-post</th><th>Telefon</th><th>Roller</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Anna Svensson</strong></td>
+            <td>anna@example.com</td>
+            <td>070-111 22 33</td>
+            <td><span class="chip chip-blue">Admin</span></td>
+            <td><span class="chip chip-green">Aktiv</span></td>
+            <td>
+              <button class="btn btn-ghost btn-sm">Redigera</button>
+              <button class="btn btn-danger btn-sm" style="margin-left:4px">Avaktivera</button>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Björn Lindqvist</strong></td>
+            <td>bjorn@example.com</td>
+            <td>–</td>
+            <td></td>
+            <td><span class="chip chip-green">Aktiv</span></td>
+            <td>
+              <button class="btn btn-ghost btn-sm">Redigera</button>
+              <button class="btn btn-danger btn-sm" style="margin-left:4px">Avaktivera</button>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Maria Jonsson</strong></td>
+            <td>maria@example.com</td>
+            <td>073-444 55 66</td>
+            <td></td>
+            <td><span class="chip chip-green">Aktiv</span></td>
+            <td>
+              <button class="btn btn-ghost btn-sm">Redigera</button>
+              <button class="btn btn-danger btn-sm" style="margin-left:4px">Avaktivera</button>
+            </td>
+          </tr>
+          <tr style="opacity:.5">
+            <td><strong>Carl Gustafsson</strong></td>
+            <td>carl@example.com</td>
+            <td>–</td>
+            <td></td>
+            <td><span class="chip chip-grey">Inaktiv</span></td>
+            <td>
+              <button class="btn btn-ghost btn-sm">Redigera</button>
+              <button class="btn btn-secondary btn-sm" style="margin-left:4px">Återaktivera</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── ARRANGÖRSREGISTRERINGAR ─── -->
+<div class="view" id="view-reg-organiser">
+  <div class="page-header">
+    <h1>Arrangörsregistreringar</h1>
+    <p class="subtitle">Konvent 2027 · 4 registrerade arrangörer</p>
+  </div>
+
+  <div class="card">
+    <div class="card-body no-pad">
+      <table>
+        <thead><tr><th>Person</th><th>E-post</th><th>Registrerad</th><th>Inskickade evenemang</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Maria Jonsson</strong></td>
+            <td>maria@example.com</td>
+            <td>2026-10-01</td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td><strong>Erik Persson</strong></td>
+            <td>erik@example.com</td>
+            <td>2026-10-03</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td><strong>Sara Nilsson</strong></td>
+            <td>sara@example.com</td>
+            <td>2026-10-10</td>
+            <td>0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── BESÖKARREGISTRERINGAR ─── -->
+<div class="view" id="view-reg-visitor">
+  <div class="page-header">
+    <h1>Besökarregistreringar</h1>
+    <p class="subtitle">Konvent 2027 · 47 registrerade</p>
+  </div>
+
+  <div class="action-bar">
+    <input class="search-input" placeholder="Sök namn eller e-post…">
+    <div class="spacer"></div>
+    <button class="btn btn-ghost">Exportera CSV</button>
+  </div>
+
+  <div class="card">
+    <div class="card-body no-pad">
+      <table>
+        <thead><tr><th>Namn</th><th>E-post</th><th>Biljetttyp</th><th>Registrerad</th><th>Betalad</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Sven Andersson</strong></td><td>sven@ex.com</td>
+            <td>Helgbiljett</td><td>2026-11-01</td>
+            <td><span class="chip chip-green">Ja</span></td>
+          </tr>
+          <tr>
+            <td><strong>Lisa Berg</strong></td><td>lisa@ex.com</td>
+            <td>Lördagsbiljett</td><td>2026-11-02</td>
+            <td><span class="chip chip-orange">Nej</span></td>
+          </tr>
+          <tr>
+            <td><strong>Per Nilsson</strong></td><td>per@ex.com</td>
+            <td>Helgbiljett</td><td>2026-11-03</td>
+            <td><span class="chip chip-green">Ja</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── EVENEMANGSLISTA ─── -->
+<div class="view" id="view-events-list">
+  <div class="page-header">
+    <h1>Evenemang</h1>
+    <p class="subtitle">Konvent 2027 · Granskning och hantering av inskickade evenemang</p>
+  </div>
+
+  <div class="filter-tabs">
+    <div class="ftab active">Alla (6)</div>
+    <div class="ftab">Utkast (1)</div>
+    <div class="ftab">Granskning (3)</div>
+    <div class="ftab">Godkända (2)</div>
+    <div class="ftab">Avvisade (0)</div>
+  </div>
+
+  <div class="action-bar">
+    <input class="search-input" placeholder="Sök titel eller arrangör…">
+    <div class="spacer"></div>
+    <select style="padding:7px 10px; border:1px solid #ddd; border-radius:4px; font-size:.85rem;">
+      <option>Alla kategorier</option>
+      <option>Brädspel</option>
+      <option>Rollspel</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <div class="card-body no-pad">
+      <table>
+        <thead><tr>
+          <th>Titel</th><th>Arrangör</th><th>Kategori</th><th>Sessioner</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Brädspelsmaraton</strong></td>
+            <td>Maria Jonsson</td>
+            <td>Brädspel</td>
+            <td>3</td>
+            <td><span class="chip chip-orange">Granskning</span></td>
+            <td><button class="btn btn-secondary btn-sm" onclick="show('event-detail')">Granska</button></td>
+          </tr>
+          <tr>
+            <td><strong>D&amp;D – Nybörjare</strong></td>
+            <td>Erik Persson</td>
+            <td>Rollspel</td>
+            <td>2</td>
+            <td><span class="chip chip-orange">Granskning</span></td>
+            <td><button class="btn btn-secondary btn-sm" onclick="show('event-detail')">Granska</button></td>
+          </tr>
+          <tr>
+            <td><strong>Warhammer 40k – Öppet</strong></td>
+            <td>Sara Nilsson</td>
+            <td>Brädspel</td>
+            <td>1</td>
+            <td><span class="chip chip-orange">Granskning</span></td>
+            <td><button class="btn btn-secondary btn-sm" onclick="show('event-detail')">Granska</button></td>
+          </tr>
+          <tr>
+            <td><strong>Schack-SM</strong></td>
+            <td>Anna Svensson</td>
+            <td>Brädspel</td>
+            <td>1</td>
+            <td><span class="chip chip-green">Godkänd</span></td>
+            <td><button class="btn btn-ghost btn-sm" onclick="show('event-detail')">Visa</button></td>
+          </tr>
+          <tr>
+            <td><strong>Pathfinder – Kampanj</strong></td>
+            <td>Erik Persson</td>
+            <td>Rollspel</td>
+            <td>4</td>
+            <td><span class="chip chip-green">Godkänd</span></td>
+            <td><button class="btn btn-ghost btn-sm" onclick="show('event-detail')">Visa</button></td>
+          </tr>
+          <tr>
+            <td><strong>Kortspelskväll</strong></td>
+            <td>Björn Lindqvist</td>
+            <td>Brädspel</td>
+            <td>–</td>
+            <td><span class="chip chip-grey">Utkast</span></td>
+            <td><button class="btn btn-ghost btn-sm" disabled>Granska</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── EVENEMANG: DETALJ ─── -->
+<div class="view" id="view-event-detail">
+  <div class="page-header">
+    <div class="breadcrumb"><a onclick="show('events-list')">Evenemang</a> / Brädspelsmaraton</div>
+    <div class="title-row">
+      <h1>Brädspelsmaraton</h1>
+      <span class="chip chip-orange">Granskning</span>
+    </div>
+    <p class="subtitle">Arrangör: Maria Jonsson · Kategori: Brädspel</p>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-primary">Godkänn</button>
+    <button class="btn btn-danger">Avvisa</button>
+    <button class="btn btn-secondary">Begär ändringar</button>
+  </div>
+
+  <div style="display:grid; grid-template-columns:2fr 1fr; gap:16px;">
+    <div>
+      <div class="card">
+        <div class="card-header">Beskrivning</div>
+        <div class="card-body">
+          <p style="font-size:.875rem; line-height:1.7;">
+            En heldag med brädspel för alla nivåer. Vi kör allt från klassiker som Catan
+            och Ticket to Ride till nyare titlar. Lärare finns tillgängliga. Välkomna!
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Sessioner</div>
+        <div class="card-body no-pad">
+          <table>
+            <thead><tr><th>Begärd tid</th><th>Lokal (önskemål)</th><th>Platser</th><th>Åldersgräns</th></tr></thead>
+            <tbody>
+              <tr><td>Fredag 18:00–21:00</td><td>Stor lokal</td><td>20</td><td class="muted">–</td></tr>
+              <tr><td>Lördag 10:00–14:00</td><td>Stor lokal</td><td>20</td><td class="muted">–</td></tr>
+              <tr><td>Lördag 15:00–18:00</td><td>Valfri</td><td>12</td><td>15+</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-header">Versionshistorik</div>
+        <div class="card-body">
+          <div class="detail-row"><span class="dl">Nuvarande version</span><span class="dv">v2</span></div>
+          <div class="detail-row"><span class="dl">Senast uppdaterad</span><span class="dv">2026-11-12</span></div>
+          <div class="detail-row"><span class="dl">Inskickad</span><span class="dv">2026-11-10</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Koordinatorns anteckningar</div>
+        <div class="card-body">
+          <textarea placeholder="Interna anteckningar – visas ej för arrangören…" style="width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:4px; font-size:.85rem; font-family:inherit;"></textarea>
+          <div class="text-right mt-8">
+            <button class="btn btn-ghost btn-sm">Spara anteckning</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── SESSIONSSCHEMALÄGGNING ─── -->
+<div class="view" id="view-sessions-schedule">
+  <div class="page-header">
+    <h1>Sessionsschemaläggning</h1>
+    <p class="subtitle">Godkända sessioner – tilldela lokal och exakt tid</p>
+  </div>
+
+  <div class="alert alert-info">
+    Schemalägg sessioner genom att ange lokal och starttid. Arrangören ser schemat när det är publicerat.
+  </div>
+
+  <div class="card">
+    <div class="card-body no-pad">
+      <table>
+        <thead><tr>
+          <th>Session</th><th>Evenemang</th><th>Önskad tid</th><th>Lokal</th><th>Schemalagd tid</th><th></th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Fredag kväll</strong></td>
+            <td>Brädspelsmaraton</td>
+            <td>Fre 18–21</td>
+            <td>
+              <select style="padding:4px 8px; border:1px solid #ddd; border-radius:4px; font-size:.8rem;">
+                <option>– Välj –</option>
+                <option selected>Stora salen</option>
+                <option>Lilla salen</option>
+              </select>
+            </td>
+            <td>
+              <input type="datetime-local" value="2027-03-05T18:00"
+                style="padding:4px 8px; border:1px solid #ddd; border-radius:4px; font-size:.8rem;">
+            </td>
+            <td><button class="btn btn-primary btn-sm">Spara</button></td>
+          </tr>
+          <tr>
+            <td><strong>Lördag fm</strong></td>
+            <td>Brädspelsmaraton</td>
+            <td>Lör 10–14</td>
+            <td>
+              <select style="padding:4px 8px; border:1px solid #ddd; border-radius:4px; font-size:.8rem;">
+                <option>– Välj –</option>
+                <option>Stora salen</option>
+                <option>Lilla salen</option>
+              </select>
+            </td>
+            <td>
+              <input type="datetime-local"
+                style="padding:4px 8px; border:1px solid #ddd; border-radius:4px; font-size:.8rem;">
+            </td>
+            <td><button class="btn btn-ghost btn-sm">Spara</button></td>
+          </tr>
+          <tr>
+            <td><strong>Intro-session</strong></td>
+            <td>D&amp;D – Nybörjare</td>
+            <td>Lör fm</td>
+            <td>
+              <select style="padding:4px 8px; border:1px solid #ddd; border-radius:4px; font-size:.8rem;">
+                <option>– Välj –</option>
+                <option>Stora salen</option>
+                <option>Lilla salen</option>
+              </select>
+            </td>
+            <td>
+              <input type="datetime-local"
+                style="padding:4px 8px; border:1px solid #ddd; border-radius:4px; font-size:.8rem;">
+            </td>
+            <td><button class="btn btn-ghost btn-sm">Spara</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── STAFFANSÖKNINGAR ─── -->
+<div class="view" id="view-staff-applications">
+  <div class="page-header">
+    <h1>Staffansökningar</h1>
+    <p class="subtitle">Konvent 2027 · 12 inkommer ansökningar</p>
+  </div>
+
+  <div class="filter-tabs">
+    <div class="ftab active">Ohanterade (8)</div>
+    <div class="ftab">Accepterade (3)</div>
+    <div class="ftab">Avvisade (1)</div>
+    <div class="ftab">Alla (12)</div>
+  </div>
+
+  <div class="action-bar">
+    <input class="search-input" placeholder="Sök person eller station…">
+    <div class="spacer"></div>
+    <select style="padding:7px 10px; border:1px solid #ddd; border-radius:4px; font-size:.85rem;">
+      <option>Alla funktionsområden</option>
+      <option>Reception</option>
+      <option>Brädspel</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <div class="card-body no-pad">
+      <table>
+        <thead><tr>
+          <th>Person</th><th>Önskar station</th><th>Meddelande</th><th>Inkommen</th><th></th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Sven Andersson</strong></td>
+            <td>Reception – Ingång A</td>
+            <td style="max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              Har jobbat som volontär tidigare och trivs med att ta emot besökare.
+            </td>
+            <td>2026-11-01</td>
+            <td>
+              <div style="display:flex; gap:4px;">
+                <button class="btn btn-primary btn-sm">Acceptera</button>
+                <button class="btn btn-danger btn-sm">Avvisa</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Lisa Berg</strong></td>
+            <td>Brädspel – Inlåning</td>
+            <td class="muted">–</td>
+            <td>2026-11-02</td>
+            <td>
+              <div style="display:flex; gap:4px;">
+                <button class="btn btn-primary btn-sm">Acceptera</button>
+                <button class="btn btn-danger btn-sm">Avvisa</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Per Nilsson</strong></td>
+            <td>Reception – Ingång B</td>
+            <td class="muted">–</td>
+            <td>2026-11-04</td>
+            <td>
+              <div style="display:flex; gap:4px;">
+                <button class="btn btn-primary btn-sm">Acceptera</button>
+                <button class="btn btn-danger btn-sm">Avvisa</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── PASS ─── -->
+<div class="view" id="view-shifts">
+  <div class="page-header">
+    <h1>Pass</h1>
+    <p class="subtitle">Definiera arbetstillfällen per station</p>
+  </div>
+
+  <div class="action-bar">
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="toggleCreateShift()">+ Nytt pass</button>
+  </div>
+
+  <div class="card" id="create-shift-card" style="display:none;">
+    <div class="card-header">Skapa nytt pass</div>
+    <div class="card-body">
+      <div class="form-grid cols-2">
+        <div class="field">
+          <label>Station *</label>
+          <select>
+            <option>– Välj –</option>
+            <option>Reception – Ingång A</option>
+            <option>Reception – Ingång B</option>
+            <option>Brädspel – Inlåning</option>
+          </select>
+        </div>
+        <div class="field"><label>Kapacitet *</label><input type="number" value="2" style="max-width:90px;"></div>
+        <div class="field"><label>Starttid *</label><input type="datetime-local"></div>
+        <div class="field"><label>Sluttid *</label><input type="datetime-local"></div>
+      </div>
+      <div class="text-right mt-12">
+        <button class="btn btn-ghost btn-sm" onclick="toggleCreateShift()">Avbryt</button>
+        &nbsp;
+        <button class="btn btn-primary btn-sm">Skapa</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body no-pad">
+      <table>
+        <thead><tr>
+          <th>Station</th><th>Starttid</th><th>Sluttid</th><th>Kapacitet</th><th>Tilldelade</th><th></th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td>Reception – Ingång A</td>
+            <td>Fre 17:00</td><td>Fre 21:00</td>
+            <td>3</td>
+            <td>
+              <span style="color: #e65100; font-weight:500;">1&thinsp;/&thinsp;3</span>
+            </td>
+            <td>
+              <button class="btn btn-secondary btn-sm" onclick="show('assignments')">Hantera</button>
+              <button class="btn btn-danger btn-sm" style="margin-left:4px">Ta bort</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Reception – Ingång B</td>
+            <td>Fre 17:00</td><td>Fre 21:00</td>
+            <td>2</td>
+            <td>
+              <span style="color: #c62828; font-weight:500;">0&thinsp;/&thinsp;2</span>
+            </td>
+            <td>
+              <button class="btn btn-secondary btn-sm" onclick="show('assignments')">Hantera</button>
+              <button class="btn btn-danger btn-sm" style="margin-left:4px">Ta bort</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Brädspel – Inlåning</td>
+            <td>Lör 10:00</td><td>Lör 18:00</td>
+            <td>2</td>
+            <td>
+              <span style="color: #2e7d32; font-weight:500;">2&thinsp;/&thinsp;2</span>
+            </td>
+            <td>
+              <button class="btn btn-secondary btn-sm" onclick="show('assignments')">Hantera</button>
+              <button class="btn btn-danger btn-sm" style="margin-left:4px">Ta bort</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Reception – Ingång A</td>
+            <td>Lör 10:00</td><td>Lör 14:00</td>
+            <td>3</td>
+            <td>
+              <span style="color: #e65100; font-weight:500;">2&thinsp;/&thinsp;3</span>
+            </td>
+            <td>
+              <button class="btn btn-secondary btn-sm" onclick="show('assignments')">Hantera</button>
+              <button class="btn btn-danger btn-sm" style="margin-left:4px">Ta bort</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────── TILLDELNING ─── -->
+<div class="view" id="view-assignments">
+  <div class="page-header">
+    <h1>Tilldelningsöversikt</h1>
+    <p class="subtitle">Hantera bemanning per pass</p>
+  </div>
+
+  <div class="action-bar">
+    <div class="spacer"></div>
+    <select style="padding:7px 10px; border:1px solid #ddd; border-radius:4px; font-size:.85rem;">
+      <option>Alla pass</option>
+      <option>Fredag</option>
+      <option>Lördag</option>
+      <option>Söndag</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      Reception – Ingång A
+      <span style="margin-left:8px; font-size:.78rem; color:#888; font-weight:400;">Fre 17:00–21:00 · 1&thinsp;/&thinsp;3 tilldelade</span>
+    </div>
+    <div class="card-body">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <span class="chip chip-green">Sven Andersson</span>
+        <button class="btn btn-danger btn-sm">Ta bort</button>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <select style="padding:6px 10px; border:1px solid #ddd; border-radius:4px; font-size:.85rem;">
+          <option>– Lägg till person –</option>
+          <option>Lisa Berg</option>
+          <option>Per Nilsson</option>
+        </select>
+        <button class="btn btn-primary btn-sm">Tilldela</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      Reception – Ingång B
+      <span style="margin-left:8px; font-size:.78rem; color:#888; font-weight:400;">Fre 17:00–21:00 · 0&thinsp;/&thinsp;2 tilldelade</span>
+    </div>
+    <div class="card-body">
+      <p class="text-muted">Inga tilldelade ännu.</p>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px;">
+        <select style="padding:6px 10px; border:1px solid #ddd; border-radius:4px; font-size:.85rem;">
+          <option>– Lägg till person –</option>
+          <option>Lisa Berg</option>
+          <option>Per Nilsson</option>
+        </select>
+        <button class="btn btn-primary btn-sm">Tilldela</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      Brädspel – Inlåning
+      <span style="margin-left:8px; font-size:.78rem; color:#888; font-weight:400;">Lör 10:00–18:00 · 2&thinsp;/&thinsp;2 tilldelade</span>
+      <span class="chip chip-green" style="margin-left:auto">Fullt</span>
+    </div>
+    <div class="card-body">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <span class="chip chip-green">Lisa Berg</span>
+        <button class="btn btn-danger btn-sm">Ta bort</button>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="chip chip-green">Per Nilsson</span>
+        <button class="btn btn-danger btn-sm">Ta bort</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main><!-- end main -->
+
+<script>
+function show(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+}
+
+function toggleCreatePerson() {
+  var card = document.getElementById('create-person-card');
+  card.style.display = card.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleCreateShift() {
+  var card = document.getElementById('create-shift-card');
+  card.style.display = card.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
