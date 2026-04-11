@@ -31,7 +31,8 @@
       "Bash(ng build:*)",
       "Bash(cp -r src backend/src)",
       "Bash(cp -r tests backend/tests)",
-      "Bash(cp ConventionSystem.sln backend/ConventionSystem.sln)"
+      "Bash(cp ConventionSystem.sln backend/ConventionSystem.sln)",
+      "Bash(npx ng:*)"
     ]
   }
 }
