@@ -15,7 +15,7 @@ public static class PersonEndpoints
                 var id = await sender.Send(
                     new CreatePersonCommand(conventionId, request.Name, request.Email, request.Phone), ct);
                 return Results.Created($"/persons/{id}", new { id });
-            }).RequireAuthorization();
+            }).RequireAuthorization("IsAdmin");
 
         app.MapPut("/persons/{personId:guid}",
             async (Guid personId, UpdatePersonRequest request, ISender sender, CancellationToken ct) =>
@@ -23,14 +23,14 @@ public static class PersonEndpoints
                 await sender.Send(
                     new UpdatePersonCommand(personId, request.Name, request.Email, request.Phone), ct);
                 return Results.NoContent();
-            }).RequireAuthorization();
+            }).RequireAuthorization("IsAdmin");
 
         app.MapDelete("/persons/{personId:guid}",
             async (Guid personId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new DeactivatePersonCommand(personId), ct);
                 return Results.NoContent();
-            }).RequireAuthorization();
+            }).RequireAuthorization("IsAdmin");
 
         return app;
     }

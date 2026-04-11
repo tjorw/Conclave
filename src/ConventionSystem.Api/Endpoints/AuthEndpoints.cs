@@ -35,6 +35,10 @@ public static class AuthEndpoints
 
             var conventionId = new ConventionId(tenantContext.ConventionId);
 
+            var convention = await conventionRepo.GetByIdAsync(conventionId, ct);
+            if (convention is null)
+                return Results.BadRequest("Konventionen hittades inte.");
+
             // UC002: identifiera eller skapa person
             var link = await identityDb.ConventionUserLinks
                 .FirstOrDefaultAsync(l => l.UserId == user.Id && l.ConventionId == tenantContext.ConventionId, ct);
@@ -58,10 +62,6 @@ public static class AuthEndpoints
                 else
                 {
                     // Skapa nytt personkonto; namn samlas in i registreringsflödet (UC-VR001/SA001/EV001)
-                    var convention = await conventionRepo.GetByIdAsync(conventionId, ct);
-                    if (convention is null)
-                        return Results.BadRequest("Konventionen hittades inte.");
-
                     var person = convention.RegisterPerson(string.Empty, request.Email);
                     await personRepo.AddAndSaveAsync(person, ct);
                     personId = person.Id.Value;
@@ -72,21 +72,26 @@ public static class AuthEndpoints
                 await identityDb.SaveChangesAsync(ct);
             }
 
-            var token = IssueJwt(personId, configuration);
+            var isAdmin = convention.IsAdministrator(new Domain.Convention.Ids.PersonId(personId));
+            var token = IssueJwt(personId, isAdmin, configuration);
             return Results.Ok(new { token });
         });
 
         return app;
     }
 
-    private static string IssueJwt(Guid personId, IConfiguration configuration)
+    private static string IssueJwt(Guid personId, bool isAdmin, IConfiguration configuration)
     {
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
 
+        List<Claim> claims = [new Claim("person_id", personId.ToString())];
+        if (isAdmin)
+            claims.Add(new Claim("is_admin", "true"));
+
         var descriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity([new Claim("person_id", personId.ToString())]),
+            Subject = new ClaimsIdentity(claims),
             Expires = DateTimeOffset.UtcNow.AddHours(8).UtcDateTime,
             Issuer = configuration["Jwt:Issuer"],
             Audience = configuration["Jwt:Audience"],

@@ -33,7 +33,7 @@ public static class ConventionEndpoints
             {
                 await sender.Send(new AddAdministratorCommand(conventionId, request.PersonId), ct);
                 return Results.NoContent();
-            }).RequireAuthorization();
+            }).RequireAuthorization("IsAdmin");
 
         var editions = app.MapGroup("/editions");
 
