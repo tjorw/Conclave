@@ -123,11 +123,10 @@ Rollbaserad app för konventionsadministratörer. Kräver `is_admin`-claim.
 - ~~Token sparas, `is_admin`-check, redirect till dashboard~~
 - ~~Logout rensar token och navigerar till login~~
 
-#### 3.1.3 Dashboard
-- Välkomstsida med platshållare *(implementerad)*
-- Konventionsöversikt: namn, aktiv upplaga, nyckeltal *(ej klar)*
-- Snabblänkar till de viktigaste sektionerna *(ej klar)*
-- *Kräver:* `GET /conventions/{id}`, `GET /conventions/{id}/editions`
+#### ~~3.1.3 Dashboard~~ ✓ Klar
+- ~~Välkomstsida med konventionsnamn och upplageöversikt~~
+- ~~Upplagor visas med status och datum~~
+- ~~Kräver:~~ `GET /conventions/{id}`, `GET /conventions/{id}/editions`
 
 #### 3.1.4 Konventionsstruktur
 Upplaga, lokaler, funktionsområden, stationer, kategorier:
