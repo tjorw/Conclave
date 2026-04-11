@@ -76,4 +76,20 @@ public class CreateConventionHandlerTests
         await Assert.ThrowsAsync<ArgumentException>(
             () => _handler.Handle(new CreateConventionCommand("", "valid-slug", "Anna", "anna@example.com"), default));
     }
+
+    [Fact]
+    public async Task Handle_WithProvidedConventionId_UsesProvidedId()
+    {
+        var providedId = Guid.CreateVersion7();
+        _repository.SlugExistsAsync("my-con", Arg.Any<CancellationToken>()).Returns(false);
+
+        var command = new CreateConventionCommand("My Con", "my-con", "Anna Svensson", "anna@example.com", providedId);
+        var returnedId = await _handler.Handle(command, default);
+
+        Assert.Equal(providedId, returnedId);
+        await _repository.Received(1).CreateWithAdminAsync(
+            Arg.Is<Domain.Convention.Aggregates.Convention>(c => c.Id.Value == providedId),
+            Arg.Any<Person>(),
+            Arg.Any<CancellationToken>());
+    }
 }

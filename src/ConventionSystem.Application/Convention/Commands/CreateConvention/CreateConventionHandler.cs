@@ -12,8 +12,12 @@ public sealed class CreateConventionHandler(IConventionRepository repository)
         if (await repository.SlugExistsAsync(command.Slug, ct))
             throw new InvalidOperationException($"Slug '{command.Slug}' är redan använd.");
 
+        var conventionId = command.ConventionId.HasValue
+            ? new ConventionId(command.ConventionId.Value)
+            : ConventionId.New();
+
         var convention = new Domain.Convention.Aggregates.Convention(
-            ConventionId.New(),
+            conventionId,
             command.Name,
             command.Slug);
 

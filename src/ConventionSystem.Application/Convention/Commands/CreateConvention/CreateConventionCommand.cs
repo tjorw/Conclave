@@ -6,4 +6,5 @@ public record CreateConventionCommand(
     string Name,
     string Slug,
     string RegistrantName,
-    string RegistrantEmail) : IRequest<Guid>;
+    string RegistrantEmail,
+    Guid? ConventionId = null) : IRequest<Guid>;
