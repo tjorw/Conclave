@@ -25,6 +25,12 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 - **2.2 Publik feed-API** – `GET /feed/editions/{id}` och `GET /feed/events/{id}`, anonyma, filtrerar bort intern data
 - **2.3 Integrationstester** – 14 tester mot SQL Server (Testcontainers), täcker tenant-resolution, UC002, auth-flödet och publik feed; per-test isolerade databaser via `ProvisionAsync`
 
+### Klar – Fas 3 (delvis)
+- **3.0 Workspace och delad infrastruktur** – Angular monorepo med admin-app, publik-app och delat bibliotek; `AuthService` (signals), `authGuard`, `adminGuard`, `ConventionInterceptor`, `AuthInterceptor`, alla API-modeller
+- **3.1.1 Scaffold och layout** – App-shell med sidenav, toolbar, logout; lazy-loadade routes med `authGuard` + `adminGuard`
+- **3.1.2 Inloggning** – Inloggningsformulär med Angular Material Reactive Forms, JWT sparas i sessionStorage, redirect vid lyckad inloggning, logout
+- **API-förbättringar** – CORS-policy för Angular-apparna, SystemDb/IdentityDb auto-migreras vid uppstart, ConventionDb auto-migreras vid provisioning
+
 ### Ej klar
 Se faserna nedan.
 
@@ -74,9 +80,11 @@ frontend/
 
 Konventions-ID konfigureras per driftsättning via `environment.ts`. HTTP-interceptorn lägger automatiskt till `X-Convention-Id`-headern på alla anrop. Den publika appen deployas en gång per konvention med rätt ID inbakat.
 
+> **OBS – måste lösas inför produktion:** Nuvarande modell kräver en unik deploy per konvention enbart för att byta `conventionId`. Se teknisk skuld: *Tenant-routing via domän*.
+
 ---
 
-### Fas 3.0 – Workspace och delad infrastruktur
+### ~~Fas 3.0 – Workspace och delad infrastruktur~~ ✓ Klar
 
 *Förutsättning för båda apparna. Byggs en gång.*
 
@@ -104,20 +112,21 @@ Konventions-ID konfigureras per driftsättning via `environment.ts`. HTTP-interc
 
 Rollbaserad app för konventionsadministratörer. Kräver `is_admin`-claim.
 
-#### 3.1.1 Scaffold och layout
-- App-shell: topbar, sidebar-navigation, content-area
-- Routing: `AdminGuard` på alla routes utom login
-- Felsidor: 401, 403, 404
-- Lazy-loaded feature-routes per sektion
+#### ~~3.1.1 Scaffold och layout~~ ✓ Klar
+- ~~App-shell: topbar, sidebar-navigation, content-area~~
+- ~~Routing: `AdminGuard` på alla routes utom login~~
+- Felsidor: 401, 403, 404 *(ej klar)*
+- ~~Lazy-loaded feature-routes per sektion~~
 
-#### 3.1.2 Inloggning
-- Inloggningsformulär (`POST /auth/login`)
-- Token sparas, `is_admin`-check, redirect till dashboard
-- Logout rensar token och navigerar till login
+#### ~~3.1.2 Inloggning~~ ✓ Klar
+- ~~Inloggningsformulär (`POST /auth/login`)~~
+- ~~Token sparas, `is_admin`-check, redirect till dashboard~~
+- ~~Logout rensar token och navigerar till login~~
 
 #### 3.1.3 Dashboard
-- Konventionsöversikt: namn, aktiv upplaga, nyckeltal
-- Snabblänkar till de viktigaste sektionerna
+- Välkomstsida med platshållare *(implementerad)*
+- Konventionsöversikt: namn, aktiv upplaga, nyckeltal *(ej klar)*
+- Snabblänkar till de viktigaste sektionerna *(ej klar)*
 - *Kräver:* `GET /conventions/{id}`, `GET /conventions/{id}/editions`
 
 #### 3.1.4 Konventionsstruktur
@@ -221,19 +230,18 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 
 | Post | Beskrivning | Prioritet |
 |------|-------------|-----------|
-| Tenant-routing via domän | Idag: bara `X-Convention-Id`-header. Ska vara: lösa tenant via HTTP-domän (subdomän eller hostnamn) | Låg – header räcker för MVP |
+| **Skydda provisioning-endpoint** | `POST /system/conventions` är oskyddad – vem som helst kan skapa tenants och databaser. Måste skyddas med API-nyckel eller system-admin-roll innan produktion. | **Hög – blockar produktion** |
+| **Tenant-routing via domän** | Idag: `conventionId` hårdkodat i `environment.ts` → unik deploy per konvention. Ska vara: TenantMiddleware löser tenant från HTTP-domän (subdomän); frontend resolvar `conventionId` dynamiskt från API:t baserat på `window.location.hostname`. Tenant-tabellen har redan ett `Domain`-fält. | **Hög – blockar produktion** |
+| `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |
 | Social inloggning (OAuth) | ASP.NET Identity stöder det men inte implementerat | Låg |
 | `CreatePersonCommand` vs UC002 | Två vägar att skapa en person (admin-väg och auth-väg). Kan leda till inkonsekvens om e-post-uniqueness-kontrollen blockerar auth-skapande | Medel – se till att UC002-vägen aldrig kolliderar |
-| Tenant-databas-provisionering | Varje ny konvention behöver en ny SQL Server-databas. Processen för att skapa och migrera den är manuell | Medel |
-| `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |
 | Idempotens i login-flödet | Race condition: två parallella första-inloggningar kan försöka skapa person+länk simultaneously | Låg – unikt index är sista skyddet |
 
 ---
 
 ## Nästa konkreta steg (förslag)
 
-1. **Fas 3.0** – Angular workspace + delat bibliotek (auth, interceptors, API-typer)
-2. **Fas 3.1.1–3.1.3** – Admin-app scaffold, login, dashboard
-3. **Fas 3.1.4** – Konventionsstruktur (Edition, Venue, Area, Station, Category)
-4. **Fas 3.1.5–3.1.8** – Personregister, event-granskning, bemanning, registrering
-5. **Fas 3.2** – Publik vy
+1. **Fas 3.1.4** – Konventionsstruktur (Edition, Venue, Area, Station, Category)
+2. **Fas 3.1.5–3.1.8** – Personregister, event-granskning, bemanning, registrering
+3. **Fas 3.2** – Publik vy
+4. **Pre-produktion** – Skydda provisioning-endpoint + domänbaserad tenant-routing
