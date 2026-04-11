@@ -14,73 +14,20 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 - **UC002** – identifiera eller skapa person vid inloggning
 - **Minimal API** – endpoints för alla ovanstående use cases
 
+### Klar – Fas 1 (end-to-end)
+- **1.1 Tenant-provisionering** – `POST /system/conventions` skapar konvention i ConventionDb, tenant-post i SystemDb, `ApplicationUser` i IdentityDb och `ConventionUserLink`
+- **1.2 Profilkomplettering** – `PUT /me/profile` låter inloggad användare uppdatera namn, e-post och telefon
+- **1.3 Rollbaserad auktorisering** – `is_admin`-claim i JWT, `IsAdmin`-policy, admin-endpoints skyddade; domänägarskapskontroller görs inline i handlers
+- **1.4 Global felhantering** – `GlobalExceptionHandler` med ProblemDetails (RFC 7807): `ArgumentException` → 400, `InvalidOperationException` → 422, `UnauthorizedAccessException` → 401, `KeyNotFoundException` → 404
+
 ### Ej klar
 Se faserna nedan.
 
 ---
 
-## Fas 1 – Systemet fungerar end-to-end
+## ~~Fas 1 – Systemet fungerar end-to-end~~ ✓ Klar
 
-*Dessa delar krävs för att någon ska kunna logga in och använda systemet.*
-
-### 1.1 Tenant-provisionering (blockerar allt annat)
-
-UC001 skapar konventionen i konventionsdatabasen men registrerar den **inte** i systemdatabasen (`tenants`-tabellen). Utan den posten fungerar inte `X-Convention-Id`-headern och tenanten kan aldrig lösas.
-
-**Vad som behövs:**
-- `POST /auth/login` och UC001 förutsätter att en tenant-post finns i SystemDb med rätt connection string
-- Antingen: UC001-handlern skapar tenant-posten automatiskt (kräver att handlern får tillgång till `SystemDbContext` eller en ny `ITenantRepository`)
-- Eller: ett separat administrativt endpoint `POST /system/tenants` för att registrera en ny konvention i SystemDb
-- Identity-konto måste också skapas för den registrerande personen (`ApplicationUser` i identitetsdatabasen)
-
-**Beroenden:** Inget – kan tas direkt.
-
----
-
-### 1.2 Profilkomplettering efter första inloggning
-
-UC002 skapar en person med tomt namn. Registreringsflödena (UC-VR001, UC-SA001, UC-EV001) förutsätter att personen har ett namn och eventuellt telefonnummer.
-
-**Vad som behövs:**
-- Endpoint `PUT /me/profile` – autentiserad, uppdaterar den inloggade personens namn och telefon via `ICurrentUser.PersonId`
-- Existerande `UpdatePersonCommand` kan återanvändas
-
-**Beroenden:** Auth-stack (klar).
-
----
-
-### 1.3 Rollbaserad auktorisering
-
-Idag: alla autentiserade användare kan anropa alla muterande endpoints. En besökare kan t.ex. anropa `POST /editions/{id}/publish`.
-
-Rollerna i systemet är inte traditionella JWT-roller – de härleds ur domäntillståndet:
-- **Konventionsadministratör** – `ConventionAdministrator`-post finns för personens `PersonId`
-- **Bemanningskoordinator** – person är bemanningskoordinator på en upplaga
-- **Arrangemangskoordinator** – person är arrangemangskoordinator på en upplaga
-- **Kategoriansvarig** – person är `ResponsibleId` på en kategori
-- **Funktionsområdesansvarig** – person är `ResponsibleId` på ett funktionsområde
-
-**Alternativ A (enkel, tillräcklig för v1):** Extrahera roller ur JWT vid utfärdande (lägg till claim `is_admin`, etc.) och kontrollera dem i endpoints.
-
-**Alternativ B (korrekt, mer komplex):** Kontrollera domäntillståndet per request (ladda `Convention`, kolla `IsAdministrator(personId)`). Kan implementeras som en policy-baserad `IAuthorizationHandler`.
-
-**Rekommendation för v1:** Alternativ A för admin-kontroll; resten kan vara öppet eller kontrolleras i handlers.
-
-**Beroenden:** Inget – kan tas direkt, men kräver designbeslut.
-
----
-
-### 1.4 Standardiserad felhantering
-
-Idag returnerar servern 500 med undantagstext vid `InvalidOperationException`. Klienter behöver strukturerade felsvar.
-
-**Vad som behövs:**
-- `app.UseExceptionHandler` med ProblemDetails-format (RFC 7807)
-- `InvalidOperationException` → 400/422
-- `UnauthorizedAccessException` → 401
-- `KeyNotFoundException` / null-aggregat → 404
-
-**Beroenden:** Inget.
+*Alla delar implementerade – se "Nuläge" ovan.*
 
 ---
 
@@ -161,8 +108,8 @@ Alla befintliga tester är enhets- och applikationstester mot mockade repositori
 
 ## Nästa konkreta steg (förslag)
 
-1. **Fas 1.1** – Implementera tenant-provisionering: UC001 skapar också tenant-post i SystemDb + `ApplicationUser` i IdentityDb
-2. **Fas 1.4** – Global felhantering med ProblemDetails (liten insats, stor vinst)
-3. **Fas 1.2** – `PUT /me/profile` för profilkomplettering
-4. **Fas 1.3** – Rollbaserad auktorisering (Alternativ A)
-5. **Fas 2.1** – E-postnotifikationer
+1. **Fas 2.1** – E-postnotifikationer (bekräftelse vid registrering, staffansökan, evenemangsgranskning)
+2. **Fas 2.2** – Publik feed-API (`GET /feed/editions/{id}`, `GET /feed/events/{id}`)
+3. **Fas 2.3** – Integrationstester med Testcontainers mot riktig databas
+4. **Fas 3.1** – Admin-app (Angular)
+5. **Fas 3.2** – Publik vy (Angular)
