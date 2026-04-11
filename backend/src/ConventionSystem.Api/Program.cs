@@ -68,7 +68,12 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    await DevDataSeeder.SeedAsync(app.Services, app.Configuration);
+
+    var enableDevDataSeeding = app.Configuration.GetValue("DevData:EnableSeeding", true);
+    if (enableDevDataSeeding)
+    {
+        await DevDataSeeder.SeedAsync(app.Services, app.Configuration);
+    }
 }
 
 app.UseExceptionHandler();

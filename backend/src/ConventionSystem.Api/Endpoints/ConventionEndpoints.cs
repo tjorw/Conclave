@@ -3,6 +3,7 @@ using ConventionSystem.Application.Convention.Commands.CreateConvention;
 using ConventionSystem.Application.Convention.Queries.GetConvention;
 using ConventionSystem.Application.Convention.Queries.GetEdition;
 using ConventionSystem.Application.Convention.Queries.ListEditions;
+using ConventionSystem.Application.Convention.Queries.ListPersons;
 using MediatR;
 
 namespace ConventionSystem.Api.Endpoints;
@@ -27,6 +28,9 @@ public static class ConventionEndpoints
 
         group.MapGet("/{conventionId:guid}/editions", async (Guid conventionId, ISender sender, CancellationToken ct) =>
             Results.Ok(await sender.Send(new ListEditionsQuery(conventionId), ct)));
+
+        group.MapGet("/{conventionId:guid}/persons", async (Guid conventionId, ISender sender, CancellationToken ct) =>
+            Results.Ok(await sender.Send(new ListPersonsQuery(conventionId), ct)));
 
         group.MapPost("/{conventionId:guid}/administrators",
             async (Guid conventionId, AddAdministratorRequest request, ISender sender, CancellationToken ct) =>

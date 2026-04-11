@@ -16,7 +16,7 @@ public sealed class CreateVenueHandler(
         var editionId = new EditionId(command.EditionId);
         var performedById = currentUser.PersonId;
 
-        var edition = await editionRepository.GetByIdAsync(editionId, ct)
+        var edition = await editionRepository.GetByIdWithStructureAsync(editionId, ct)
             ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
@@ -26,6 +26,7 @@ public sealed class CreateVenueHandler(
             throw new InvalidOperationException("Utföraren är inte administratör för denna konvention.");
 
         var venue = edition.CreateVenue(command.Name, command.Building, command.Description);
+        editionRepository.MarkAsAdded(venue);
         await editionRepository.SaveAsync(ct);
 
         return venue.Id.Value;

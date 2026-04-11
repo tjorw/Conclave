@@ -17,7 +17,7 @@ public sealed class CreateStationHandler(
         var performedById = currentUser.PersonId;
         var staffAreaId = new StaffAreaId(command.StaffAreaId);
 
-        var edition = await editionRepository.GetByIdWithStaffAreasAsync(editionId, ct)
+        var edition = await editionRepository.GetByIdWithStructureAsync(editionId, ct)
             ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
@@ -29,6 +29,7 @@ public sealed class CreateStationHandler(
             throw new InvalidOperationException("Utföraren har inte behörighet att skapa stationer för detta funktionsområde.");
 
         var station = edition.CreateStation(command.Name, staffAreaId, command.Description);
+        editionRepository.MarkAsAdded(station);
         await editionRepository.SaveAsync(ct);
 
         return station.Id.Value;

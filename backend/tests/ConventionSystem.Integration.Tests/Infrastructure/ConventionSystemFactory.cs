@@ -61,7 +61,8 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
                 ["ConnectionStrings:IdentityDb"] = GetConnectionString("ConventionSystemIdentity"),
                 ["Jwt:Key"] = "integration-test-secret-key-minimum-32-chars",
                 ["Jwt:Issuer"] = "ConventionSystem",
-                ["Jwt:Audience"] = "ConventionSystem"
+                ["Jwt:Audience"] = "ConventionSystem",
+                ["DevData:EnableSeeding"] = "false"
             });
         });
     }

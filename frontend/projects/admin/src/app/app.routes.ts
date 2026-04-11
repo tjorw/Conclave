@@ -20,6 +20,13 @@ export const routes: Routes = [
             m => m.DashboardComponent
           ),
       },
+      {
+        path: 'editions/:id',
+        loadComponent: () =>
+          import('./features/editions/edition-detail/edition-detail.component').then(
+            m => m.EditionDetailComponent
+          ),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

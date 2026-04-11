@@ -18,7 +18,7 @@ public sealed class CreateStaffAreaHandler(
         var performedById = currentUser.PersonId;
         var responsibleId = new PersonId(command.ResponsibleId);
 
-        var edition = await editionRepository.GetByIdAsync(editionId, ct)
+        var edition = await editionRepository.GetByIdWithStaffAreasAsync(editionId, ct)
             ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
@@ -33,6 +33,7 @@ public sealed class CreateStaffAreaHandler(
             throw new InvalidOperationException("Ansvarig person tillhör inte denna konvention.");
 
         var staffArea = edition.CreateStaffArea(command.Name, responsibleId, command.Description);
+        editionRepository.MarkAsAdded(staffArea);
         await editionRepository.SaveAsync(ct);
 
         return staffArea.Id.Value;

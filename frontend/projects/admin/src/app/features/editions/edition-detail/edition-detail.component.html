@@ -1,0 +1,222 @@
+@if (loading()) {
+  <div class="spinner-wrapper">
+    <mat-spinner diameter="48" />
+  </div>
+} @else if (error()) {
+  <p class="error-message">{{ error() }}</p>
+} @else if (edition(); as e) {
+  <div class="page-header">
+    <a routerLink="/dashboard" class="back-link">
+      <mat-icon>arrow_back</mat-icon> Dashboard
+    </a>
+    <div class="title-row">
+      <h1 class="page-title">{{ e.name }}</h1>
+      <mat-chip-set>
+        <mat-chip [color]="isPublished() ? 'primary' : 'default'" highlighted>
+          {{ isPublished() ? 'Publicerad' : 'Utkast' }}
+        </mat-chip>
+      </mat-chip-set>
+    </div>
+    <p class="page-subtitle">{{ formatDate(e.start) }} – {{ formatDate(e.end) }}</p>
+  </div>
+
+  <mat-card class="actions-card">
+    <mat-card-content class="actions-row">
+      @if (isDraft()) {
+        <button mat-flat-button color="primary" [disabled]="saving()" (click)="publish()">
+          <mat-icon>publish</mat-icon> Publicera upplaga
+        </button>
+      }
+      @for (rt of registrationTypes; track rt.type) {
+        <button
+          mat-stroked-button
+          [disabled]="saving() || !isPublished() || registrationOpen(rt.type)"
+          [matTooltip]="registrationOpen(rt.type) ? 'Redan öppen' : (!isPublished() ? 'Kräver publicerad upplaga' : '')"
+          (click)="openRegistration(rt.type)">
+          {{ rt.label }}
+          @if (registrationOpen(rt.type)) { <mat-icon>check</mat-icon> }
+        </button>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Lokaler -->
+  <mat-expansion-panel class="section-panel" expanded>
+    <mat-expansion-panel-header>
+      <mat-panel-title>Lokaler ({{ e.venues.length }})</mat-panel-title>
+    </mat-expansion-panel-header>
+
+    @if (e.venues.length > 0) {
+      <div class="item-list">
+        @for (v of e.venues; track v.id) {
+          <div class="item-row">
+            <span class="item-name">{{ v.name }}</span>
+            <span class="item-meta">{{ v.building }}</span>
+            @if (v.description) { <span class="item-desc">{{ v.description }}</span> }
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="empty-hint">Inga lokaler tillagda.</p>
+    }
+
+    <form [formGroup]="venueForm" (ngSubmit)="addVenue()" class="inline-form">
+      <h4 class="form-title">Lägg till lokal</h4>
+      <div class="form-row">
+        <mat-form-field>
+          <mat-label>Namn</mat-label>
+          <input matInput formControlName="name" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Byggnad</mat-label>
+          <input matInput formControlName="building" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Beskrivning</mat-label>
+          <input matInput formControlName="description" />
+        </mat-form-field>
+        <button mat-flat-button color="accent" type="submit" [disabled]="venueForm.invalid || saving()">
+          Lägg till
+        </button>
+      </div>
+    </form>
+  </mat-expansion-panel>
+
+  <!-- Funktionsområden & Stationer -->
+  <mat-expansion-panel class="section-panel" expanded>
+    <mat-expansion-panel-header>
+      <mat-panel-title>Funktionsområden & Stationer ({{ e.staffAreas.length }})</mat-panel-title>
+    </mat-expansion-panel-header>
+
+    @if (e.staffAreas.length > 0) {
+      <div class="area-list">
+        @for (area of e.staffAreas; track area.id) {
+          <div class="area-block">
+            <div class="area-header">
+              <span class="item-name">{{ area.name }}</span>
+              <span class="item-meta">Ansvarig: {{ personName(area.responsibleId) }}</span>
+            </div>
+            <div class="station-list">
+              @for (s of stationsForArea(area); track s.id) {
+                <span class="station-chip">{{ s.name }}</span>
+              }
+              @if (stationsForArea(area).length === 0) {
+                <span class="empty-hint">Inga stationer</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="empty-hint">Inga funktionsområden tillagda.</p>
+    }
+
+    <form [formGroup]="staffAreaForm" (ngSubmit)="addStaffArea()" class="inline-form">
+      <h4 class="form-title">Lägg till funktionsområde</h4>
+      <div class="form-row">
+        <mat-form-field>
+          <mat-label>Namn</mat-label>
+          <input matInput formControlName="name" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Beskrivning</mat-label>
+          <input matInput formControlName="description" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Ansvarig</mat-label>
+          <mat-select formControlName="responsibleId">
+            @for (p of persons(); track p.id) {
+              <mat-option [value]="p.id">{{ p.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <button mat-flat-button color="accent" type="submit" [disabled]="staffAreaForm.invalid || saving()">
+          Lägg till
+        </button>
+      </div>
+    </form>
+
+    @if (e.staffAreas.length > 0) {
+      <form [formGroup]="stationForm" (ngSubmit)="addStation()" class="inline-form">
+        <h4 class="form-title">Lägg till station</h4>
+        <div class="form-row">
+          <mat-form-field>
+            <mat-label>Namn</mat-label>
+            <input matInput formControlName="name" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Beskrivning</mat-label>
+            <input matInput formControlName="description" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Funktionsområde</mat-label>
+            <mat-select formControlName="staffAreaId">
+              @for (area of e.staffAreas; track area.id) {
+                <mat-option [value]="area.id">{{ area.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <button mat-flat-button color="accent" type="submit" [disabled]="stationForm.invalid || saving()">
+            Lägg till
+          </button>
+        </div>
+      </form>
+    }
+  </mat-expansion-panel>
+
+  <!-- Kategorier -->
+  <mat-expansion-panel class="section-panel" expanded>
+    <mat-expansion-panel-header>
+      <mat-panel-title>Kategorier ({{ e.categories.length }})</mat-panel-title>
+    </mat-expansion-panel-header>
+
+    @if (e.categories.length > 0) {
+      <div class="item-list">
+        @for (c of e.categories; track c.id) {
+          <div class="item-row">
+            <span class="item-name">{{ c.name }}</span>
+            @if (c.description) { <span class="item-desc">{{ c.description }}</span> }
+            <div class="responsible-row">
+              <span class="item-meta">Ansvarig:</span>
+              <mat-select
+                class="responsible-select"
+                [value]="c.responsibleId"
+                (selectionChange)="changeResponsible(c.id, $event.value)">
+                @for (p of persons(); track p.id) {
+                  <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="empty-hint">Inga kategorier tillagda.</p>
+    }
+
+    <form [formGroup]="categoryForm" (ngSubmit)="addCategory()" class="inline-form">
+      <h4 class="form-title">Lägg till kategori</h4>
+      <div class="form-row">
+        <mat-form-field>
+          <mat-label>Namn</mat-label>
+          <input matInput formControlName="name" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Beskrivning</mat-label>
+          <input matInput formControlName="description" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Ansvarig</mat-label>
+          <mat-select formControlName="responsibleId">
+            @for (p of persons(); track p.id) {
+              <mat-option [value]="p.id">{{ p.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <button mat-flat-button color="accent" type="submit" [disabled]="categoryForm.invalid || saving()">
+          Lägg till
+        </button>
+      </div>
+    </form>
+  </mat-expansion-panel>
+}

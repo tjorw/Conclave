@@ -18,7 +18,7 @@ public sealed class CreateCategoryHandler(
         var performedById = currentUser.PersonId;
         var responsibleId = new PersonId(command.ResponsibleId);
 
-        var edition = await editionRepository.GetByIdAsync(editionId, ct)
+        var edition = await editionRepository.GetByIdWithCategoriesAsync(editionId, ct)
             ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
@@ -33,6 +33,7 @@ public sealed class CreateCategoryHandler(
             throw new InvalidOperationException("Ansvarig person tillhör inte denna konvention.");
 
         var category = edition.CreateCategory(command.Name, responsibleId, command.Description);
+        editionRepository.MarkAsAdded(category);
         await editionRepository.SaveAsync(ct);
 
         return category.Id.Value;

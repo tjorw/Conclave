@@ -35,7 +35,7 @@ public class CreateStationHandlerTests
         var edition = convention.CreateEdition("Konvent 2027", period, staff.Id, evt.Id);
         var staffArea = edition.CreateStaffArea("Reception", areaResponsible.Id);
 
-        _editionRepo.GetByIdWithStaffAreasAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
+        _editionRepo.GetByIdWithStructureAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
 
         return (convention, admin, staffArea, edition);
@@ -78,7 +78,7 @@ public class CreateStationHandlerTests
     [Fact]
     public async Task Handle_EditionNotFound_Throws()
     {
-        _editionRepo.GetByIdWithStaffAreasAsync(Arg.Any<EditionId>(), Arg.Any<CancellationToken>())
+        _editionRepo.GetByIdWithStructureAsync(Arg.Any<EditionId>(), Arg.Any<CancellationToken>())
             .Returns((Domain.Convention.Aggregates.Edition?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(

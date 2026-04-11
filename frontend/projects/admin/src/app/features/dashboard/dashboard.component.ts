@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,6 +22,7 @@ import { ConventionDto, ConventionService, EditionSummaryDto } from 'shared';
 })
 export class DashboardComponent implements OnInit {
   private readonly conventionService = inject(ConventionService);
+  private readonly router = inject(Router);
 
   readonly convention = signal<ConventionDto | null>(null);
   readonly editions = signal<EditionSummaryDto[]>([]);
@@ -43,6 +45,10 @@ export class DashboardComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  openEdition(id: string): void {
+    this.router.navigate(['/editions', id]);
   }
 
   statusLabel(status: string): string {

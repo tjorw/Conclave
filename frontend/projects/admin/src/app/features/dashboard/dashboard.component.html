@@ -21,7 +21,7 @@
   } @else {
     <div class="editions-grid">
       @for (edition of editions(); track edition.id) {
-        <mat-card class="edition-card">
+        <mat-card class="edition-card" (click)="openEdition(edition.id)">
           <mat-card-header>
             <mat-card-title>{{ edition.name }}</mat-card-title>
             <mat-card-subtitle>
