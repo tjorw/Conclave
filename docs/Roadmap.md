@@ -20,9 +20,10 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 - **1.3 Rollbaserad auktorisering** – `is_admin`-claim i JWT, `IsAdmin`-policy, admin-endpoints skyddade; domänägarskapskontroller görs inline i handlers
 - **1.4 Global felhantering** – `GlobalExceptionHandler` med ProblemDetails (RFC 7807): `ArgumentException` → 400, `InvalidOperationException` → 422, `UnauthorizedAccessException` → 401, `KeyNotFoundException` → 404
 
-### Klar – Fas 2 (delvis)
+### Klar – Fas 2
 - **2.1 E-postnotifikationer** – `IEmailService` med handlers för `VisitorRegistrationConfirmed`, `StaffApplicationReceived/Accepted/Rejected`, `VersionApproved/Rejected`; `LoggingEmailService` som platshållare tills SMTP/SendGrid kopplas in
 - **2.2 Publik feed-API** – `GET /feed/editions/{id}` och `GET /feed/events/{id}`, anonyma, filtrerar bort intern data
+- **2.3 Integrationstester** – 14 tester mot SQL Server (Testcontainers), täcker tenant-resolution, UC002, auth-flödet och publik feed; per-test isolerade databaser via `ProvisionAsync`
 
 ### Ej klar
 Se faserna nedan.
@@ -35,21 +36,11 @@ Se faserna nedan.
 
 ---
 
-## ~~Fas 2 – Operativa funktioner~~ (pågående)
+## ~~Fas 2 – Operativa funktioner~~ ✓ Klar
 
 ### ~~2.1 E-postnotifikationer~~ ✓ Klar
 ### ~~2.2 Publik feed-API~~ ✓ Klar
-
-### 2.3 Integrationstester
-
-Alla befintliga tester är enhets- och applikationstester mot mockade repositories. Ingen täckning av:
-- Auth-flödet (inloggning, token-validering)
-- Tenant-resolution
-- EF Core-queries mot riktig databas
-
-**Vad som behövs:**
-- Testprojekt med Testcontainers eller lokal SQL Server
-- Tester för UC002 (de viktigaste acceptanskriterierna kräver integration)
+### ~~2.3 Integrationstester~~ ✓ Klar
 
 ---
 
@@ -88,6 +79,5 @@ Alla befintliga tester är enhets- och applikationstester mot mockade repositori
 
 ## Nästa konkreta steg (förslag)
 
-1. **Fas 2.3** – Integrationstester med Testcontainers mot riktig databas
-2. **Fas 3.1** – Admin-app (Angular)
-3. **Fas 3.2** – Publik vy (Angular)
+1. **Fas 3.1** – Admin-app (Angular)
+2. **Fas 3.2** – Publik vy (Angular)
