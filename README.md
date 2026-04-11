@@ -14,10 +14,26 @@ System för att administrera, annonsera, registrera och driva hobbymässor (tabl
 
 ## Kom igång
 
+### Krav
+
+- .NET 9 SDK
+- **Docker Desktop** – krävs för integrationstester. Testcontainers startar en SQL Server-container automatiskt; ingen lokal SQL Server-installation behövs. SQL Server-imagen (`mcr.microsoft.com/mssql/server`, ~600 MB) hämtas första gången.
+
+### Bygga och köra
+
 ```bash
 dotnet build
-dotnet test
 dotnet run --project src/ConventionSystem.Api
+```
+
+### Tester
+
+```bash
+# Enhetstester och applikationstester (kräver inte Docker)
+dotnet test --filter "FullyQualifiedName!~Integration"
+
+# Alla tester inklusive integrationstester (kräver Docker Desktop)
+dotnet test
 ```
 
 ## Lösningsstruktur
