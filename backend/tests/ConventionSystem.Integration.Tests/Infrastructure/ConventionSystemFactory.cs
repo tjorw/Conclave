@@ -53,11 +53,15 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
     {
         builder.ConfigureAppConfiguration((_, config) =>
         {
-            // Ersätter connection strings från appsettings med test-containerns
+            // Ersätter connection strings och JWT-konfiguration från appsettings
+            // (appsettings.Development.json är gitignorerad och finns inte i CI)
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:SystemDb"] = GetConnectionString("ConventionSystemRegistry"),
-                ["ConnectionStrings:IdentityDb"] = GetConnectionString("ConventionSystemIdentity")
+                ["ConnectionStrings:IdentityDb"] = GetConnectionString("ConventionSystemIdentity"),
+                ["Jwt:Key"] = "integration-test-secret-key-minimum-32-chars",
+                ["Jwt:Issuer"] = "ConventionSystem",
+                ["Jwt:Audience"] = "ConventionSystem"
             });
         });
     }
