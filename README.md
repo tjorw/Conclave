@@ -16,15 +16,86 @@ System för att administrera, annonsera, registrera och driva hobbymässor (tabl
 
 ### Krav
 
-- .NET 9 SDK
-- **Docker Desktop** – krävs för integrationstester. Testcontainers startar en SQL Server-container automatiskt; ingen lokal SQL Server-installation behövs. SQL Server-imagen (`mcr.microsoft.com/mssql/server`, ~600 MB) hämtas första gången.
+| Verktyg | Version | Används till |
+|---------|---------|--------------|
+| .NET SDK | 9.0 | Backend API |
+| Node.js | 22+ | Angular frontend |
+| Angular CLI | 21+ | Bygga och köra Angular-apparna |
+| Docker Desktop | senaste | Integrationstester (SQL Server-container) |
 
-### Bygga och köra
+Docker Desktop krävs bara för integrationstesterna. Testcontainers startar en SQL Server-container automatiskt; ingen lokal SQL Server-installation behövs. SQL Server-imagen (`mcr.microsoft.com/mssql/server`, ~600 MB) hämtas första gången.
+
+---
+
+### Backend-API
 
 ```bash
+# Bygg hela lösningen
 dotnet build
+
+# Kör API:t (lyssnar på http://localhost:5000 och https://localhost:5001)
 dotnet run --project src/ConventionSystem.Api
 ```
+
+**Notering:** `appsettings.Development.json` (ej incheckad) behöver innehålla connection strings och JWT-konfiguration. Skapa den lokalt med:
+
+```json
+{
+  "ConnectionStrings": {
+    "SystemDb": "Server=...;Database=ConventionSystemRegistry;...",
+    "IdentityDb": "Server=...;Database=ConventionSystemIdentity;..."
+  },
+  "Jwt": {
+    "Key": "minst-32-tecken-lång-hemlig-nyckel",
+    "Issuer": "ConventionSystem",
+    "Audience": "ConventionSystem"
+  }
+}
+```
+
+---
+
+### Frontend
+
+Frontend-projekten bor under `frontend/` och är ett Angular-workspace med två appar och ett delat bibliotek.
+
+```
+frontend/
+├── projects/
+│   ├── admin/    # Admin-app (port 4200)
+│   ├── public/   # Publik vy (port 4201)
+│   └── shared/   # Delat bibliotek: API-typer, auth, interceptors, guards
+└── angular.json
+```
+
+**Förberedelse (en gång):**
+
+```bash
+cd frontend
+npm install
+```
+
+**Konfigurera konventions-ID:**
+
+Redigera `projects/admin/src/environments/environment.ts` respektive `projects/public/src/environments/environment.ts` och sätt rätt `conventionId` (det Guid som skapades vid provisioning).
+
+**Kör apparna:**
+
+```bash
+# Admin-app på http://localhost:4200
+ng serve admin
+
+# Publik vy på http://localhost:4201
+ng serve public --port 4201
+
+# Bygg för produktion
+ng build admin --configuration production
+ng build public --configuration production
+```
+
+> Starta API:t först – Angular-apparna gör API-anrop mot `http://localhost:5000`.
+
+---
 
 ### Tester
 
