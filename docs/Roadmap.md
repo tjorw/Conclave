@@ -20,6 +20,10 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 - **1.3 Rollbaserad auktorisering** – `is_admin`-claim i JWT, `IsAdmin`-policy, admin-endpoints skyddade; domänägarskapskontroller görs inline i handlers
 - **1.4 Global felhantering** – `GlobalExceptionHandler` med ProblemDetails (RFC 7807): `ArgumentException` → 400, `InvalidOperationException` → 422, `UnauthorizedAccessException` → 401, `KeyNotFoundException` → 404
 
+### Klar – Fas 2 (delvis)
+- **2.1 E-postnotifikationer** – `IEmailService` med handlers för `VisitorRegistrationConfirmed`, `StaffApplicationReceived/Accepted/Rejected`, `VersionApproved/Rejected`; `LoggingEmailService` som platshållare tills SMTP/SendGrid kopplas in
+- **2.2 Publik feed-API** – `GET /feed/editions/{id}` och `GET /feed/events/{id}`, anonyma, filtrerar bort intern data
+
 ### Ej klar
 Se faserna nedan.
 
@@ -31,34 +35,10 @@ Se faserna nedan.
 
 ---
 
-## Fas 2 – Operativa funktioner
+## ~~Fas 2 – Operativa funktioner~~ (pågående)
 
-*Dessa delar krävs för ett fullt fungerande system men blockerar inte tidig testning.*
-
-### 2.1 E-postnotifikationer
-
-Kritiska e-postflöden som saknas:
-- Besöksregistrering bekräftad (UC-VR002)
-- Staffansökan mottagen / accepterad / avslagen (UC-SA001, SA006, SA007)
-- Evenemang godkänt / avvisat (UC-EV007, EV008)
-
-**Vad som behövs:**
-- `IEmailService`-interface i Application
-- Implementation i Infrastructure (t.ex. SMTP eller SendGrid)
-- Handlers för relevanta domain events
-
----
-
-### 2.2 Publik feed-API
-
-Externt CMS och publik vy behöver läsbara endpoints utan autentisering.
-
-**Vad som behövs:**
-- `GET /feed/editions/{id}` – schema, sessions, lokaler
-- `GET /feed/events/{id}` – evenemangsdetaljer
-- Anonyma endpoints, svarar med publik information
-
----
+### ~~2.1 E-postnotifikationer~~ ✓ Klar
+### ~~2.2 Publik feed-API~~ ✓ Klar
 
 ### 2.3 Integrationstester
 
@@ -108,8 +88,6 @@ Alla befintliga tester är enhets- och applikationstester mot mockade repositori
 
 ## Nästa konkreta steg (förslag)
 
-1. **Fas 2.1** – E-postnotifikationer (bekräftelse vid registrering, staffansökan, evenemangsgranskning)
-2. **Fas 2.2** – Publik feed-API (`GET /feed/editions/{id}`, `GET /feed/events/{id}`)
-3. **Fas 2.3** – Integrationstester med Testcontainers mot riktig databas
-4. **Fas 3.1** – Admin-app (Angular)
-5. **Fas 3.2** – Publik vy (Angular)
+1. **Fas 2.3** – Integrationstester med Testcontainers mot riktig databas
+2. **Fas 3.1** – Admin-app (Angular)
+3. **Fas 3.2** – Publik vy (Angular)
