@@ -223,6 +223,56 @@ builder.HasIndex(p => new { p.ConventionId, p.Email }).HasDatabaseName("IX_perso
 - URL-hierarki: skapande under förälder (`POST /conventions/{id}/persons`), mutationer på känd resurs (`PUT /persons/{id}`)
 - Returkoder: `201 Created` med location-header vid skapande, `204 No Content` vid mutation
 
+## Auktorisering
+
+Systemet använder en tvånivåmodell: JWT-claims för statiska konventionsroller och inline domänkontroller i handlers för ägarskapsberoende roller.
+
+### JWT-claims
+
+| Claim | Typ | Innebörd |
+|-------|-----|----------|
+| `person_id` | `Guid` | Den inloggades PersonId i konventionen – alltid med |
+| `is_admin` | `"true"` | Personen är `ConventionAdministrator` i konventionen – läggs bara till om sant |
+
+Claims utfärdas vid login baserat på domäntillståndet vid den tidpunkten. Om en person läggs till som admin måste de logga in på nytt för att få `is_admin`-claim.
+
+### Skydd av endpoints
+
+**Adminendpoints** – kräver `is_admin`-claim:
+```csharp
+app.MapPost("/editions/{id}/publish", ...).RequireAuthorization("IsAdmin");
+```
+Används för: konventionsstruktur (upplaga, lokal, kategori, funktionsområde, station), publicering, kopiering av struktur, hantering av administratörer, direktskapande/uppdatering/avaktivering av personer.
+
+**Autentiserade endpoints utan rollkrav** – kräver bara giltig token:
+```csharp
+app.MapPost("/events/{id}/submit", ...).RequireAuthorization();
+```
+Används för: arrangörsflöden (skapa/redigera evenemang, skicka in för granskning), staffansökningar, besöksregistrering, tilldelningar. Eventuella ägarskapskontroller görs i handlern (se nedan).
+
+**Publika endpoints** – ingen autentisering:
+```csharp
+app.MapGet("/editions/{id}", ...); // ingen .RequireAuthorization()
+```
+Används för: alla GET-queries.
+
+### Domänkontroller i handlers
+
+Roller som härleds ur domäntillståndet (arrangör, kategoriansvarig, bemanningskoordinator etc.) kontrolleras **inte** i endpointen utan i handlern, nära affärslogiken:
+
+```csharp
+// I en handler – kontrollera ägarskap innan domänmetod anropas
+if (eventAggregate.LeadOrganiserId != currentUser.PersonId)
+    throw new UnauthorizedAccessException("Bara huvudarrangören kan utföra denna åtgärd.");
+```
+
+`UnauthorizedAccessException` → 401 via `GlobalExceptionHandler`. Använd **inte** `InvalidOperationException` för behörighetsfel – det ger 422 och döljer att det är ett auktoriseringsproblem.
+
+### Vad som inte ska göras
+
+- Lägg inte till JWT-claims för domänspecifika roller (`is_event_coordinator`, `is_category_responsible` etc.) – de beror på domäntillståndet och skulle bli inaktuella
+- Gör inte domänkontroller i endpointen – handlers har bättre kontext och aggregatet är redan laddat
+
 ## Tester
 
 ### Domäntester
