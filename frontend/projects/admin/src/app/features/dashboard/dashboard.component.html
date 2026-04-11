@@ -1,12 +1,42 @@
-<h1 class="page-title">Dashboard</h1>
+@if (loading()) {
+  <div class="spinner-wrapper">
+    <mat-spinner diameter="48" />
+  </div>
+} @else if (error()) {
+  <p class="error-message">{{ error() }}</p>
+} @else {
+  <div class="page-header">
+    <h1 class="page-title">{{ convention()?.name }}</h1>
+    <p class="page-subtitle">{{ convention()?.slug }}</p>
+  </div>
 
-<div class="cards-grid">
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Välkommen</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <p>Välj ett alternativ i menyn till vänster för att komma igång.</p>
-    </mat-card-content>
-  </mat-card>
-</div>
+  <h2 class="section-title">Upplagor</h2>
+
+  @if (editions().length === 0) {
+    <mat-card class="empty-card">
+      <mat-card-content>
+        <p>Inga upplagor skapade ännu.</p>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <div class="editions-grid">
+      @for (edition of editions(); track edition.id) {
+        <mat-card class="edition-card">
+          <mat-card-header>
+            <mat-card-title>{{ edition.name }}</mat-card-title>
+            <mat-card-subtitle>
+              {{ formatDate(edition.start) }} – {{ formatDate(edition.end) }}
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-chip-set>
+              <mat-chip [color]="statusColor(edition.status)" highlighted>
+                {{ statusLabel(edition.status) }}
+              </mat-chip>
+            </mat-chip-set>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+}

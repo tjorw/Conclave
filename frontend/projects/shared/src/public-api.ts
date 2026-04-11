@@ -20,6 +20,7 @@ export * from './lib/interceptors/auth.interceptor';
 
 // Services
 export * from './lib/services/auth.service';
+export * from './lib/services/convention.service';
 
 // Guards
 export * from './lib/guards/auth.guard';

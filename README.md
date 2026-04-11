@@ -56,19 +56,17 @@ dotnet run --project backend/src/ConventionSystem.Api
 
 API:t lyssnar på `http://localhost:5127`. Databaserna `ConventionSystemRegistry` och `ConventionSystemIdentity` skapas och migreras automatiskt vid uppstart.
 
-#### Steg 3 – Provisionera din första konvention
+I `Development`-miljön körs seedern automatiskt och skapar en komplett demo-konvention om den inte redan finns. I konsolen loggas konventions-ID:t:
 
 ```
-curl.exe -X POST http://localhost:5127/system/conventions -H "Content-Type: application/json" -d "{\"name\":\"Min konvention\",\"slug\":\"min-konvention\",\"registrantName\":\"Admin Adminsson\",\"registrantEmail\":\"admin@example.com\",\"registrantPassword\":\"Lösenord123!\",\"connectionString\":\"Server=localhost;Database=ConventionMinKonvention;Trusted_Connection=True;TrustServerCertificate=True;\"}"
+Seeder: demo-konvention skapad (id=<GUID>). Logga in med admin@demo.se / Admin123!
 ```
 
-Svaret innehåller ett `conventionId` (GUID) – spara det.
+Demo-konventionen innehåller en publicerad upplaga med lokaler, funktionsområden, stationer och kategorier ifyllda.
 
-Endpointen skapar automatiskt databasen `ConventionMinKonvention` och kör dess migrations.
+#### Steg 3 – Konfigurera frontend-miljön
 
-#### Steg 4 – Konfigurera frontend-miljön
-
-`environment.ts` är gitignorerad (innehåller lokalt `conventionId`). Kopiera exempelfilen och fyll i ditt `conventionId` från steg 3:
+`environment.ts` är gitignorerad (innehåller lokalt `conventionId`). Kopiera exempelfilen och fyll i GUID:t från konsolen:
 
 ```bash
 cp frontend/projects/admin/src/environments/environment.ts.example \
@@ -78,17 +76,17 @@ cp frontend/projects/admin/src/environments/environment.ts.example \
 Öppna sedan filen och ersätt placeholder-värdet:
 
 ```typescript
-conventionId: '<conventionId från steg 3>',
+conventionId: '<GUID från konsolen>',
 ```
 
-#### Steg 5 – Installera npm-paket (en gång)
+#### Steg 4 – Installera npm-paket (en gång)
 
 ```bash
 cd frontend
 npm install
 ```
 
-#### Steg 6 – Starta admin-appen
+#### Steg 5 – Starta admin-appen
 
 ```bash
 ng serve admin

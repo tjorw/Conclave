@@ -1,5 +1,6 @@
 using ConventionSystem.Application;
 using ConventionSystem.Application.Common;
+using ConventionSystem.Api.DevData;
 using ConventionSystem.Api.Endpoints;
 using ConventionSystem.Api.Middleware;
 using ConventionSystem.Api.Services;
@@ -67,6 +68,7 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    await DevDataSeeder.SeedAsync(app.Services, app.Configuration);
 }
 
 app.UseExceptionHandler();
