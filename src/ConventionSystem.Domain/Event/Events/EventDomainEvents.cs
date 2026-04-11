@@ -25,13 +25,18 @@ public record SessionCreated(
 public record VersionApproved(
     EventId EventId,
     EventVersionId VersionId,
-    PersonId ResponsibleId,
+    PersonId LeadOrganiserId,
+    PersonId ReviewedById,
+    string EventTitle,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
 public record VersionRejected(
     EventId EventId,
     EventVersionId VersionId,
-    PersonId ResponsibleId,
+    PersonId LeadOrganiserId,
+    PersonId ReviewedById,
+    string EventTitle,
+    string RejectionComment,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
 public record EventCancelled(

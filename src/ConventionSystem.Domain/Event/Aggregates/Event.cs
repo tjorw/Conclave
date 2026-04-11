@@ -82,7 +82,7 @@ public sealed class Event : AggregateRoot
         DraftVersionId = null;
         Status = EventStatus.Published;
 
-        RaiseDomainEvent(new VersionApproved(Id, draft.Id, responsibleId, DateTimeOffset.UtcNow));
+        RaiseDomainEvent(new VersionApproved(Id, draft.Id, LeadOrganiserId, responsibleId, draft.Title, DateTimeOffset.UtcNow));
     }
 
     public void RejectVersion(PersonId responsibleId, string comment)
@@ -102,7 +102,7 @@ public sealed class Event : AggregateRoot
         DraftVersionId = newDraft.Id;
         Status = EventStatus.Draft;
 
-        RaiseDomainEvent(new VersionRejected(Id, rejected.Id, responsibleId, DateTimeOffset.UtcNow));
+        RaiseDomainEvent(new VersionRejected(Id, rejected.Id, LeadOrganiserId, responsibleId, rejected.Title, comment, DateTimeOffset.UtcNow));
     }
 
     public void CancelEvent(PersonId responsibleId)

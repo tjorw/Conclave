@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
@@ -5,6 +6,7 @@ using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Registration.Services;
 using ConventionSystem.Infrastructure.Dispatching;
+using ConventionSystem.Infrastructure.Email;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.MultiTenancy;
 using ConventionSystem.Infrastructure.Persistence;
@@ -13,6 +15,7 @@ using ConventionSystem.Infrastructure.Registration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace ConventionSystem.Infrastructure;
 
@@ -37,6 +40,8 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IStaffApplicationRepository, StaffApplicationRepository>();
         services.AddScoped<ISessionRegistrationRepository, SessionRegistrationRepository>();
         services.AddScoped<IRegistrationRuleService, StubRegistrationRuleService>();
+
+        services.AddScoped<IEmailService, LoggingEmailService>();
 
         services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
         services.AddScoped<EventDispatchInterceptor>();
