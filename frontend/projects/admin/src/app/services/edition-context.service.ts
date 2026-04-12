@@ -29,6 +29,14 @@ export class EditionContextService {
 
   load(): void {
     if (this._editions().length > 0 || this._loading()) return;
+    this.fetch();
+  }
+
+  reload(): void {
+    this.fetch();
+  }
+
+  private fetch(): void {
     this._loading.set(true);
     this.conventionService.listEditions().subscribe({
       next: editions => {

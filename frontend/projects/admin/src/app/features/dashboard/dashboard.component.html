@@ -12,7 +12,7 @@
 
   <h2 class="section-title">Upplagor</h2>
 
-  @if (editions().length === 0) {
+  @if (editionContext.editions().length === 0) {
     <mat-card class="empty-card">
       <mat-card-content>
         <p>Inga upplagor skapade ännu.</p>
@@ -20,7 +20,7 @@
     </mat-card>
   } @else {
     <div class="editions-grid">
-      @for (edition of editions(); track edition.id) {
+      @for (edition of editionContext.editions(); track edition.id) {
         <mat-card class="edition-card" (click)="openEdition(edition.id)">
           <mat-card-header>
             <mat-card-title>{{ edition.name }}</mat-card-title>
@@ -39,4 +39,60 @@
       }
     </div>
   }
+
+  <mat-expansion-panel class="create-panel">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <mat-icon>add</mat-icon>
+        Skapa ny upplaga
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <form [formGroup]="createForm" (ngSubmit)="create()" class="create-form">
+      <mat-form-field appearance="outline">
+        <mat-label>Namn</mat-label>
+        <input matInput formControlName="name" placeholder="t.ex. Conclave 2026" />
+      </mat-form-field>
+
+      <div class="date-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Startdatum</mat-label>
+          <input matInput type="date" formControlName="startDate" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Slutdatum</mat-label>
+          <input matInput type="date" formControlName="endDate" />
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Staffkoordinator</mat-label>
+        <mat-select formControlName="staffCoordinatorId">
+          @for (person of persons(); track person.id) {
+            <mat-option [value]="person.id">{{ person.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Evenemangskoordinator</mat-label>
+        <mat-select formControlName="eventCoordinatorId">
+          @for (person of persons(); track person.id) {
+            <mat-option [value]="person.id">{{ person.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <div class="form-actions">
+        <button mat-flat-button color="primary" type="submit" [disabled]="createForm.invalid || saving()">
+          @if (saving()) {
+            <mat-spinner diameter="18" />
+          } @else {
+            Skapa
+          }
+        </button>
+      </div>
+    </form>
+  </mat-expansion-panel>
 }

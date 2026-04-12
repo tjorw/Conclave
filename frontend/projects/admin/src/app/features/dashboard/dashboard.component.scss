@@ -53,3 +53,36 @@
 .empty-card {
   max-width: 400px;
 }
+
+.create-panel {
+  margin-top: 24px;
+  max-width: 600px;
+
+  mat-icon {
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+}
+
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
