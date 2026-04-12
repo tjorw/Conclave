@@ -195,11 +195,11 @@ Hanterar livscykeln för ett evenemang (rollspel, brädspel, föreläsning etc.)
 | Typ | Namn |
 |---|---|
 | Aggregate root | `Event` |
-| Entiteter | `EventVersion`, `Session`, `SessionRequest`, `CoOrganiser`, `EventComment` |
+| Entiteter | `Session`, `SessionRequest`, `CoOrganiser`, `EventComment` |
 | Value objects | `TimeSlot` |
 
 **Viktiga regler:**
-- Ett evenemang har alltid ett `DraftVersionId` (utkast) och eventuellt ett `PublishedVersionId` (publicerad version) – cirkulär FK-referens med `NoAction` på delete
+- Innehållsfälten (titel, beskrivning, registreringstyp) och sessionönskemål lagras direkt på `Event` och är redigerbara i `Draft`-status
 - `SessionRequest` har ingen koppling till `Session` – kategoriansvarig äger schemat och behöver inte följa requests
 
 **Livscykel:** `Draft` → `UnderReview` → `Published` (eller `Cancelled`)

@@ -1217,7 +1217,7 @@ Arrangör (person registrerad i konventionen)
 
 ## Flöde
 1. Arrangören anger EditionId, CategoryId och sitt PersonId
-2. Systemet skapar ett Event-aggregat med status Utkast och ett tomt EventVersion-utkast
+2. Systemet skapar ett Event-aggregat med status Utkast
 3. Systemet returnerar det nya EventId
 
 ## Affärsregler
@@ -1229,7 +1229,7 @@ Arrangör (person registrerad i konventionen)
 
 ## Acceptanskriterier
 - [x] Event sparas med status Utkast och korrekt kategori och arrangör
-- [x] Ett tomt EventVersion-utkast skapas automatiskt
+- [x] Event sparas med tomma innehållsfält (titel, beskrivning) redo att redigeras
 - [x] Skapande på en opublicerad upplaga returnerar ett valideringsfel
 - [x] Skapande med okänd kategori returnerar ett valideringsfel
 - [x] Kommandohanteraren har ett tillhörande enhetstest
@@ -1239,7 +1239,7 @@ Arrangör (person registrerad i konventionen)
 # UC-EV002 – Redigera evenemangsutkast
 
 ## Sammanfattning
-Arrangören uppdaterar titel, beskrivning och registreringstyp på utkastversionen av evenemanget.
+Arrangören uppdaterar titel, beskrivning och registreringstyp på evenemanget.
 
 ## Aktör
 Huvudarrangör eller medarrangör
@@ -1250,7 +1250,7 @@ Huvudarrangör eller medarrangör
 
 ## Flöde
 1. Arrangören anger EventId, titel, beskrivning, registreringstyp (och eventuella drop-in-regler)
-2. Systemet anropar `GetDraftVersion()` och uppdaterar fälten
+2. Systemet uppdaterar fälten direkt på Event-aggregatet
 3. Systemet sparar ändringen
 
 ## Affärsregler
@@ -1262,7 +1262,7 @@ Huvudarrangör eller medarrangör
 - Inga
 
 ## Acceptanskriterier
-- [x] Titel, beskrivning och registreringstyp uppdateras på utkastet
+- [x] Titel, beskrivning och registreringstyp uppdateras på evenemanget
 - [x] Redigering av ett evenemang i granskning eller publicerat returnerar ett valideringsfel
 - [x] Tom titel returnerar ett valideringsfel
 - [x] Kommandohanteraren har ett tillhörande enhetstest
@@ -1282,19 +1282,19 @@ Huvudarrangör eller medarrangör
 
 ## Flöde
 1. Arrangören anger EventId, beskrivning, önskad duration (minuter), antal platser och starttyp
-2. Systemet lägger till ett SessionRequest på utkastversionen
+2. Systemet lägger till ett SessionRequest på evenemanget
 3. Systemet returnerar det nya SessionRequestId
 
 ## Affärsregler
-- SessionRequest kan bara läggas till på en Utkast-version
+- SessionRequest kan bara läggas till när evenemanget har status Utkast
 - Duration måste vara > 0
 
 ## Domänhändelser
 - Inga
 
 ## Acceptanskriterier
-- [x] SessionRequest sparas på utkastversionen med korrekt data
-- [x] Tillägg på en icke-Utkast-version returnerar ett valideringsfel
+- [x] SessionRequest sparas på evenemanget med korrekt data
+- [x] Tillägg när evenemang inte är i Utkast-status returnerar ett valideringsfel
 - [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
@@ -1309,21 +1309,21 @@ Huvudarrangör eller medarrangör
 
 ## Förutsättningar
 - Evenemanget finns och har status Utkast
-- SessionRequest med angivet id finns på utkastet
+- SessionRequest med angivet id finns på evenemanget
 
 ## Flöde
 1. Arrangören anger EventId och SessionRequestId
-2. Systemet tar bort önskemålet från utkastversionen
+2. Systemet tar bort önskemålet från evenemanget
 3. Systemet sparar ändringen
 
 ## Affärsregler
-- Borttagning är bara möjlig på en Utkast-version
+- Borttagning är bara möjlig när evenemanget har status Utkast
 
 ## Domänhändelser
 - Inga
 
 ## Acceptanskriterier
-- [x] SessionRequest tas bort från utkastet
+- [x] SessionRequest tas bort från evenemanget
 - [x] Borttagning av ett icke-existerande önskemål returnerar ett valideringsfel
 - [x] Kommandohanteraren har ett tillhörande enhetstest
 
@@ -1372,11 +1372,11 @@ Huvudarrangör
 
 ## Förutsättningar
 - Evenemanget finns och har status Utkast
-- Utkastversionen har titel och beskrivning
+- Evenemanget har titel och beskrivning ifyllda
 
 ## Flöde
 1. Huvudarrangören anger EventId
-2. Systemet anropar `SubmitForReview()` – versionen övergår till UnderReview, evenemanget till UnderReview
+2. Systemet anropar `SubmitForReview()` – evenemangets status övergår till UnderReview
 3. Systemet sparar ändringen
 
 ## Affärsregler
@@ -1384,21 +1384,20 @@ Huvudarrangör
 - Titel och beskrivning måste vara ifyllda
 
 ## Domänhändelser
-- `EventSubmittedForReview { eventId, versionId, occurredAt }`
+- `EventSubmittedForReview { eventId, occurredAt }`
 
 ## Acceptanskriterier
 - [x] Evenemangsstatus övergår till UnderReview
-- [x] Utkastversionen övergår till UnderReview
 - [x] Inskickning utan titel returnerar ett valideringsfel
 - [x] Inskickning av ett redan granskat evenemang returnerar ett valideringsfel
 - [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC-EV007 – Godkänn evenemangsversion
+# UC-EV007 – Godkänn evenemang
 
 ## Sammanfattning
-Kategoriansvarig godkänner den inskickade versionen. Evenemanget publiceras och den godkända versionen blir publik.
+Kategoriansvarig godkänner det inskickade evenemanget. Evenemanget publiceras och innehållet är låst för redigering.
 
 ## Aktör
 Kategoriansvarig
@@ -1409,31 +1408,29 @@ Kategoriansvarig
 
 ## Flöde
 1. Kategoriansvarig anger EventId
-2. Systemet anropar `ApproveVersion(responsibleId)`
-3. Versionen får status Approved, PublishedVersionId sätts, DraftVersionId nollställs
-4. Evenemangets status övergår till Published
-5. Systemet sparar ändringen
+2. Systemet anropar `Approve(responsibleId)`
+3. Evenemangets status övergår till Published
+4. Systemet sparar ändringen
 
 ## Affärsregler
 - Bara ett UnderReview-evenemang kan godkännas
 - Utföraren måste vara kategoriansvarig för kategorin
 
 ## Domänhändelser
-- `VersionApproved { eventId, versionId, responsibleId, occurredAt }`
+- `EventApproved { eventId, responsibleId, occurredAt }`
 
 ## Acceptanskriterier
 - [x] Evenemangsstatus övergår till Published
-- [x] PublishedVersionId sätts, DraftVersionId nollställs
 - [x] Godkännande av ett icke-granskat evenemang returnerar ett valideringsfel
 - [x] Obehörig utförare returnerar ett valideringsfel
 - [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC-EV008 – Avvisa evenemangsversion
+# UC-EV008 – Avvisa evenemang
 
 ## Sammanfattning
-Kategoriansvarig avvisar den inskickade versionen med en kommentar. Systemet skapar ett nytt utkast med kopierat innehåll så arrangören kan revidera och skicka in igen.
+Kategoriansvarig avvisar det inskickade evenemanget med en kommentar. Evenemangets status återgår till Utkast med innehållet intakt så arrangören kan revidera och skicka in igen.
 
 ## Aktör
 Kategoriansvarig
@@ -1444,11 +1441,10 @@ Kategoriansvarig
 
 ## Flöde
 1. Kategoriansvarig anger EventId och en kommentar
-2. Systemet anropar `RejectVersion(responsibleId, comment)`
-3. Den aktuella versionen får status Rejected, kommentaren sparas
-4. Ett nytt utkast skapas med kopierat innehåll från den avvisade versionen
-5. Evenemangets status återgår till Draft
-6. Systemet sparar ändringen
+2. Systemet anropar `Reject(responsibleId, comment)`
+3. Kommentaren sparas som EventComment
+4. Evenemangets status återgår till Draft
+5. Systemet sparar ändringen
 
 ## Affärsregler
 - Bara ett UnderReview-evenemang kan avvisas
@@ -1456,13 +1452,11 @@ Kategoriansvarig
 - Utföraren måste vara kategoriansvarig
 
 ## Domänhändelser
-- `VersionRejected { eventId, versionId, responsibleId, occurredAt }`
+- `EventRejected { eventId, responsibleId, occurredAt }`
 
 ## Acceptanskriterier
 - [x] Evenemangsstatus återgår till Draft
-- [x] Den avvisade versionen får status Rejected
-- [x] Ett nytt utkast med kopierat innehåll skapas
-- [x] Kommentaren sparas kopplad till den avvisade versionen
+- [x] Kommentaren sparas på evenemanget
 - [x] Avvisning utan kommentar returnerar ett valideringsfel
 - [x] Kommandohanteraren har ett tillhörande enhetstest
 

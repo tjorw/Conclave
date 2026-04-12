@@ -430,11 +430,8 @@ Regler som inte framgår direkt av koden och kräver aktiv uppmärksamhet vid im
 
 ### Event BC
 
-- `Event.publishedVersionId` och `draftVersionId` är nullable FK:er med cirkulär referens mot
-  `EventVersion`. Konfigurera alltid med `IsRequired(false)` och `OnDelete(DeleteBehavior.NoAction)`
-  i EF Core – annars skapas en DELETE-kaskad som SQL Server inte tillåter vid cirkulära referenser.
-- `SessionRequest` har ingen koppling till `Session`. Kategoriansvarig äger schemat och schemalägger
-  sessioner oberoende av arrangörens önskemål – det är ett medvetet designbeslut, inte ett fel.
+- Innehållsfälten (`Title`, `Description`, `RegistrationType`, `DropInRules`) och `SessionRequest`-samlingen ägs direkt av `Event`-aggregatet och är redigerbara när `Status == EventStatus.Draft`.
+- `SessionRequest` har ingen koppling till `Session`. Kategoriansvarig äger schemat och schemalägger sessioner oberoende av arrangörens önskemål – det är ett medvetet designbeslut, inte ett fel.
 
 ### Staff BC
 
