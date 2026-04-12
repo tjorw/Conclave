@@ -35,8 +35,9 @@ public sealed class ConventionRepository(ConventionDbContext db) : IConventionRe
     public Task SaveAsync(CancellationToken ct = default)
         => db.SaveChangesAsync(ct);
 
-    public Task<EditionId?> GetActiveEditionIdAsync(CancellationToken ct = default)
-        => db.Conventions
-            .Select(c => c.ActiveEditionId)
-            .FirstOrDefaultAsync(ct);
+    public async Task<EditionId?> GetActiveEditionIdAsync(CancellationToken ct = default)
+    {
+        var convention = await db.Conventions.FirstOrDefaultAsync(ct);
+        return convention?.ActiveEditionId;
+    }
 }
