@@ -106,6 +106,15 @@ tr:hover td { background: #fafafa; }
 .ftab:hover { color: #333; }
 .ftab.active { color: #1a237e; border-bottom-color: #1a237e; font-weight: 500; }
 
+/* ── Section tabs (struktur) ── */
+.stab-bar { display: flex; gap: 0; border-bottom: 2px solid #e0e0e0; margin-bottom: 0; }
+.stab { padding: 10px 20px; cursor: pointer; font-size: .875rem; color: #777; border-bottom: 2px solid transparent; margin-bottom: -2px; display: flex; align-items: center; gap: 6px; }
+.stab:hover { color: #333; background: rgba(0,0,0,.03); }
+.stab.active { color: #1a237e; border-bottom-color: #1a237e; font-weight: 500; }
+.stab-count { background: rgba(0,0,0,.08); border-radius: 10px; font-size: .7rem; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; }
+.stab-panel { display: none; padding: 20px 0 0; }
+.stab-panel.active { display: block; }
+
 /* ── Area blocks (struktur) ── */
 .area-block { border: 1px solid #e4e4e4; border-radius: 4px; padding: 12px 14px; margin-bottom: 8px; }
 .area-name { font-weight: 500; font-size: .9rem; margin-bottom: 6px; }
@@ -279,110 +288,104 @@ tr:hover td { background: #fafafa; }
   <div class="page-header">
     <div class="breadcrumb"><a onclick="show('dashboard')">Dashboard</a> / Struktur</div>
     <h1>Konventionsstruktur</h1>
-    <p class="subtitle">Konvent 2027 · Lokaler, funktionsområden, stationer och kategorier</p>
+    <p class="subtitle">Konvent 2027 · Lokaler, funktionsområden och kategorier</p>
   </div>
 
-  <!-- Lokaler -->
   <div class="card">
-    <div class="card-header">Lokaler <span style="font-weight:400; opacity:.5; font-size:.8rem">(2)</span></div>
-    <div class="card-body no-pad">
-      <table>
-        <thead><tr><th>Namn</th><th>Byggnad</th><th>Beskrivning</th></tr></thead>
-        <tbody>
-          <tr><td>Stora salen</td><td>Huvudbyggnad</td><td class="muted">–</td></tr>
-          <tr><td>Lilla salen</td><td>Annexet</td><td>Brädspelshall</td></tr>
-        </tbody>
-      </table>
-      <div class="inline-form" style="margin:0; border-radius:0; border-left:none; border-right:none; border-bottom:none;">
-        <div class="form-label">Lägg till lokal</div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-          <div class="field" style="flex:1; min-width:130px;"><label>Namn *</label><input placeholder="Namn"></div>
-          <div class="field" style="flex:1; min-width:130px;"><label>Byggnad *</label><input placeholder="Byggnad"></div>
-          <div class="field" style="flex:2; min-width:130px;"><label>Beskrivning</label><input placeholder="Valfri"></div>
-          <button class="btn btn-primary">Lägg till</button>
+    <div class="stab-bar">
+      <div class="stab active" onclick="showStab('struktur','lokaler',this)">Lokaler <span class="stab-count">2</span></div>
+      <div class="stab" onclick="showStab('struktur','omraden',this)">Funktionsområden <span class="stab-count">2</span></div>
+      <div class="stab" onclick="showStab('struktur','kategorier',this)">Kategorier <span class="stab-count">2</span></div>
+    </div>
+
+    <!-- Lokaler -->
+    <div class="stab-panel active" id="struktur-lokaler">
+      <div class="card-body no-pad">
+        <table>
+          <thead><tr><th>Namn</th><th>Byggnad</th><th>Beskrivning</th></tr></thead>
+          <tbody>
+            <tr><td>Stora salen</td><td>Huvudbyggnad</td><td class="muted">–</td></tr>
+            <tr><td>Lilla salen</td><td>Annexet</td><td>Brädspelshall</td></tr>
+          </tbody>
+        </table>
+        <div class="inline-form" style="margin:0; border-radius:0; border-left:none; border-right:none; border-bottom:none;">
+          <div class="form-label">Lägg till lokal</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+            <div class="field" style="flex:1; min-width:130px;"><label>Namn *</label><input placeholder="Namn"></div>
+            <div class="field" style="flex:1; min-width:130px;"><label>Byggnad *</label><input placeholder="Byggnad"></div>
+            <div class="field" style="flex:2; min-width:130px;"><label>Beskrivning</label><input placeholder="Valfri"></div>
+            <button class="btn btn-primary">Lägg till</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Funktionsområden & Stationer -->
-  <div class="card">
-    <div class="card-header">Funktionsområden &amp; Stationer <span style="font-weight:400; opacity:.5; font-size:.8rem">(2)</span></div>
-    <div class="card-body">
-      <div class="area-block">
-        <div class="area-name">Reception <span class="area-meta">· Ansvarig: Anna Svensson</span></div>
-        <div class="station-row">
-          <span class="station-chip">Ingång A</span>
-          <span class="station-chip">Ingång B</span>
-        </div>
-      </div>
-      <div class="area-block">
-        <div class="area-name">Brädspel <span class="area-meta">· Ansvarig: Björn Lindqvist</span></div>
-        <div class="station-row">
-          <span class="station-chip">Inlåning</span>
-        </div>
-      </div>
-      <div class="inline-form">
-        <div class="form-label">Lägg till funktionsområde</div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-          <div class="field" style="flex:2; min-width:130px;"><label>Namn *</label><input placeholder="Namn"></div>
-          <div class="field" style="flex:2; min-width:130px;"><label>Beskrivning</label><input placeholder="Valfri"></div>
-          <div class="field" style="flex:2; min-width:160px;"><label>Ansvarig *</label>
-            <select><option>Anna Svensson</option><option>Björn Lindqvist</option></select>
+    <!-- Funktionsområden -->
+    <div class="stab-panel" id="struktur-omraden">
+      <div class="card-body">
+        <div class="area-block">
+          <div class="area-name">Reception <span class="area-meta">· Ansvarig: Anna Svensson</span></div>
+          <div class="station-row">
+            <span class="station-chip">Ingång A</span>
+            <span class="station-chip">Ingång B</span>
           </div>
-          <button class="btn btn-primary">Lägg till</button>
         </div>
-      </div>
-      <div class="inline-form mt-8">
-        <div class="form-label">Lägg till station</div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-          <div class="field" style="flex:2; min-width:130px;"><label>Namn *</label><input placeholder="Namn"></div>
-          <div class="field" style="flex:2; min-width:130px;"><label>Beskrivning</label><input placeholder="Valfri"></div>
-          <div class="field" style="flex:2; min-width:160px;"><label>Funktionsområde *</label>
-            <select><option>Reception</option><option>Brädspel</option></select>
+        <div class="area-block">
+          <div class="area-name">Brädspel <span class="area-meta">· Ansvarig: Björn Lindqvist</span></div>
+          <div class="station-row">
+            <span class="station-chip">Inlåning</span>
           </div>
-          <button class="btn btn-primary">Lägg till</button>
+        </div>
+        <div class="inline-form">
+          <div class="form-label">Lägg till funktionsområde</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+            <div class="field" style="flex:2; min-width:130px;"><label>Namn *</label><input placeholder="Namn"></div>
+            <div class="field" style="flex:2; min-width:130px;"><label>Beskrivning</label><input placeholder="Valfri"></div>
+            <div class="field" style="flex:2; min-width:160px;"><label>Ansvarig *</label>
+              <select><option>Anna Svensson</option><option>Björn Lindqvist</option></select>
+            </div>
+            <button class="btn btn-primary">Lägg till</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Kategorier -->
-  <div class="card">
-    <div class="card-header">Kategorier <span style="font-weight:400; opacity:.5; font-size:.8rem">(2)</span></div>
-    <div class="card-body no-pad">
-      <table>
-        <thead><tr><th>Namn</th><th>Beskrivning</th><th>Ansvarig</th></tr></thead>
-        <tbody>
-          <tr>
-            <td>Brädspel</td>
-            <td class="muted">–</td>
-            <td>
-              <select style="padding:3px 8px; border:1px solid #ddd; border-radius:4px; font-size:.8rem;">
-                <option selected>Maria Jonsson</option><option>Erik Persson</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>Rollspel</td>
-            <td class="muted">–</td>
-            <td>
-              <select style="padding:3px 8px; border:1px solid #ddd; border-radius:4px; font-size:.8rem;">
-                <option selected>Erik Persson</option><option>Maria Jonsson</option>
-              </select>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="inline-form" style="margin:0; border-radius:0; border-left:none; border-right:none; border-bottom:none;">
-        <div class="form-label">Lägg till kategori</div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-          <div class="field" style="flex:2; min-width:130px;"><label>Namn *</label><input placeholder="Namn"></div>
-          <div class="field" style="flex:2; min-width:130px;"><label>Beskrivning</label><input placeholder="Valfri"></div>
-          <div class="field" style="flex:2; min-width:160px;"><label>Ansvarig *</label>
-            <select><option>Maria Jonsson</option><option>Erik Persson</option></select>
+    <!-- Kategorier -->
+    <div class="stab-panel" id="struktur-kategorier">
+      <div class="card-body no-pad">
+        <table>
+          <thead><tr><th>Namn</th><th>Beskrivning</th><th>Ansvarig</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Brädspel</td>
+              <td class="muted">–</td>
+              <td>
+                <select style="padding:3px 8px; border:1px solid #ddd; border-radius:4px; font-size:.8rem;">
+                  <option selected>Maria Jonsson</option><option>Erik Persson</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Rollspel</td>
+              <td class="muted">–</td>
+              <td>
+                <select style="padding:3px 8px; border:1px solid #ddd; border-radius:4px; font-size:.8rem;">
+                  <option selected>Erik Persson</option><option>Maria Jonsson</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="inline-form" style="margin:0; border-radius:0; border-left:none; border-right:none; border-bottom:none;">
+          <div class="form-label">Lägg till kategori</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+            <div class="field" style="flex:2; min-width:130px;"><label>Namn *</label><input placeholder="Namn"></div>
+            <div class="field" style="flex:2; min-width:130px;"><label>Beskrivning</label><input placeholder="Valfri"></div>
+            <div class="field" style="flex:2; min-width:160px;"><label>Ansvarig *</label>
+              <select><option>Maria Jonsson</option><option>Erik Persson</option></select>
+            </div>
+            <button class="btn btn-primary">Lägg till</button>
           </div>
-          <button class="btn btn-primary">Lägg till</button>
         </div>
       </div>
     </div>
@@ -1041,6 +1044,13 @@ function toggleCreatePerson() {
 function toggleCreateShift() {
   var card = document.getElementById('create-shift-card');
   card.style.display = card.style.display === 'none' ? 'block' : 'none';
+}
+
+function showStab(group, tab, el) {
+  document.querySelectorAll('#view-edition-' + group + ' .stab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#view-edition-' + group + ' .stab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(group + '-' + tab).classList.add('active');
+  el.classList.add('active');
 }
 </script>
 </body>

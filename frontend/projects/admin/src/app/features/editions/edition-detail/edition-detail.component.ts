@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -27,7 +27,7 @@ import {
     MatButtonModule,
     MatCardModule,
     MatChipsModule,
-    MatExpansionModule,
+    MatTabsModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -75,12 +75,6 @@ export class EditionDetailComponent implements OnInit {
     name: ['', Validators.required],
     description: [''],
     responsibleId: ['', Validators.required],
-  });
-
-  readonly stationForm = this.fb.group({
-    name: ['', Validators.required],
-    description: [''],
-    staffAreaId: ['', Validators.required],
   });
 
   readonly categoryForm = this.fb.group({
@@ -166,20 +160,6 @@ export class EditionDetailComponent implements OnInit {
     }).subscribe({
       next: () => { this.reload(); this.staffAreaForm.reset(); this.saving.set(false); },
       error: (err) => this.handleError('Kunde inte skapa funktionsområde', err),
-    });
-  }
-
-  addStation(): void {
-    if (this.stationForm.invalid) return;
-    const v = this.stationForm.value;
-    this.saving.set(true);
-    this.svc.createStation(this.edition()!.id, {
-      name: v.name!,
-      description: v.description || null,
-      staffAreaId: v.staffAreaId!,
-    }).subscribe({
-      next: () => { this.reload(); this.stationForm.reset(); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte skapa station', err),
     });
   }
 
