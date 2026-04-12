@@ -269,6 +269,7 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 | **Skalbart val av ansvariga personer** | När personlistan växer behövs en bättre lösning än enkel dropdown för att välja ansvariga (t.ex. sökbar/autocomplete-väljare, filtrering på aktiv status och begränsning till relevanta kandidater). Utvärdera även om en särskild roll ska krävas för att kunna tilldelas som ansvarig. | Medel |
 | `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |
 | Social inloggning (OAuth) | ASP.NET Identity stöder det men inte implementerat | Låg |
+| **Feed-cachning och API-nyckel** | Feed-endpointsen är öppna och läser från databasen vid varje anrop. Vid hög trafik (t.ex. om ett CMS pollar ofta) bör svaren cachas (HTTP-headers `Cache-Control`/`ETag`, CDN-lager eller Redis). Vid behov av skyddade feeds kan en API-nyckel i header eller query-parameter läggas till utan att ändra URL-strukturen. | Medel – utvärdera inför produktion |
 | `CreatePersonCommand` vs UC002 | Två vägar att skapa en person (admin-väg och auth-väg). Kan leda till inkonsekvens om e-post-uniqueness-kontrollen blockerar auth-skapande | Medel – se till att UC002-vägen aldrig kolliderar |
 | Idempotens i login-flödet | Race condition: två parallella första-inloggningar kan försöka skapa person+länk simultaneously | Låg – unikt index är sista skyddet |
 

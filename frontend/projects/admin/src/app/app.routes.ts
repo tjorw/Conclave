@@ -51,6 +51,11 @@ export const routes: Routes = [
             m => m.StaffingComponent
           ),
       },
+      {
+        path: 'feeds',
+        loadComponent: () =>
+          import('./features/feeds/feeds.component').then(m => m.FeedsComponent),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

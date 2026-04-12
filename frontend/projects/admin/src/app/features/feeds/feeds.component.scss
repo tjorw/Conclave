@@ -1,0 +1,61 @@
+.page-header {
+  margin-bottom: 2rem;
+
+  h1 { margin: 0 0 0.25rem; }
+
+  .page-subtitle {
+    color: var(--mat-sys-on-surface-variant);
+    margin: 0;
+  }
+}
+
+.feed-section {
+  margin-bottom: 2.5rem;
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  .feed-description {
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.feed-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  &:last-child { border-bottom: none; }
+
+  .feed-label {
+    min-width: 160px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .feed-url {
+    flex: 1;
+    font-size: 0.8125rem;
+    background: var(--mat-sys-surface-variant);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.empty-hint {
+  color: var(--mat-sys-on-surface-variant);
+  font-style: italic;
+}

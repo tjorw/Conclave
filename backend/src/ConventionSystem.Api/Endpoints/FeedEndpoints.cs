@@ -10,7 +10,7 @@ public static class FeedEndpoints
 {
     public static IEndpointRouteBuilder MapFeedEndpoints(this IEndpointRouteBuilder app)
     {
-        var feed = app.MapGroup("/feed");
+        var feed = app.MapGroup("/feed/{conventionId:guid}");
 
         feed.MapGet("/editions/{editionId:guid}", async (
             Guid editionId, ITenantContext tenantContext, ISender sender, CancellationToken ct) =>

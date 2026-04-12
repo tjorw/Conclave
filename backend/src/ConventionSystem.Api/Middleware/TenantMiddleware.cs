@@ -10,12 +10,24 @@ public sealed class TenantMiddleware(RequestDelegate next)
 
     public async Task InvokeAsync(HttpContext context, SystemDbContext systemDb, TenantContext tenantContext)
     {
-        if (context.Request.Headers.TryGetValue(ConventionIdHeader, out var value)
-            && Guid.TryParse(value, out var conventionId))
+        Guid? conventionId = null;
+
+        if (context.Request.Headers.TryGetValue(ConventionIdHeader, out var headerValue)
+            && Guid.TryParse(headerValue, out var fromHeader))
         {
-            var tenant = await systemDb.Tenants.FindAsync(conventionId);
+            conventionId = fromHeader;
+        }
+        else if (context.GetRouteValue("conventionId") is string routeValue
+            && Guid.TryParse(routeValue, out var fromRoute))
+        {
+            conventionId = fromRoute;
+        }
+
+        if (conventionId.HasValue)
+        {
+            var tenant = await systemDb.Tenants.FindAsync(conventionId.Value);
             if (tenant is not null)
-                tenantContext.Resolve(conventionId, tenant.ConnectionString);
+                tenantContext.Resolve(conventionId.Value, tenant.ConnectionString);
         }
 
         await next(context);

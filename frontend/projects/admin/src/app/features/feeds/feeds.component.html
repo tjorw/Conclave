@@ -1,0 +1,45 @@
+<div class="page-header">
+  <h1>Feeds</h1>
+  <p class="page-subtitle">Öppna REST-URL:er som CMS och externa verktyg kan konsumera utan header eller autentisering.</p>
+</div>
+
+<div class="feed-section">
+  <h2>Aktiv upplaga</h2>
+  <p class="feed-description">Returnerar alltid den upplaga som är markerad som aktiv. Lämplig för startsidor och widgets.</p>
+  <div class="feed-row">
+    <code class="feed-url">{{ activeEditionUrl }}</code>
+    <button mat-icon-button (click)="copy(activeEditionUrl)" matTooltip="Kopiera URL">
+      <mat-icon>content_copy</mat-icon>
+    </button>
+    <a mat-icon-button [href]="activeEditionUrl" target="_blank" matTooltip="Öppna i ny flik">
+      <mat-icon>open_in_new</mat-icon>
+    </a>
+  </div>
+</div>
+
+<div class="feed-section">
+  <h2>Per upplaga</h2>
+  <p class="feed-description">Specifik upplaga med alla evenemang, lokaler och kategorier.</p>
+  @for (ed of editionUrls(); track ed.url) {
+    <div class="feed-row">
+      <span class="feed-label">{{ ed.name }}</span>
+      <code class="feed-url">{{ ed.url }}</code>
+      <button mat-icon-button (click)="copy(ed.url)" matTooltip="Kopiera URL">
+        <mat-icon>content_copy</mat-icon>
+      </button>
+      <a mat-icon-button [href]="ed.url" target="_blank" matTooltip="Öppna i ny flik">
+        <mat-icon>open_in_new</mat-icon>
+      </a>
+    </div>
+  } @empty {
+    <p class="empty-hint">Inga upplagor skapade ännu.</p>
+  }
+</div>
+
+<div class="feed-section">
+  <h2>Per evenemang</h2>
+  <p class="feed-description">Hämtar ett enskilt evenemang med fullständig sessionsinfo.</p>
+  <div class="feed-row">
+    <code class="feed-url">{{ activeEditionUrl.replace('active-edition', 'events/{eventId}') }}</code>
+  </div>
+</div>
