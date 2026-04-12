@@ -147,11 +147,15 @@ Rollbaserad app för konventionsadministratörer. Kräver `is_admin`-claim.
 - ~~Skapa, redigera, avaktivera och återaktivera person~~
 - ~~`GET /conventions/{id}/persons`, admin-flagga via join mot `convention_administrators`~~
 
-#### 3.1.6 Evenemangs-granskning
-- Lista evenemang under granskning (`GET /editions/{id}/events`, filtrera på status `UnderReview`)
-- Detaljvy: titel, beskrivning, sessionönskemål, kommentarer
-- Åtgärder: godkänn (`POST /events/{id}/approve`) eller avvisa med kommentar (`POST /events/{id}/reject`)
-- Visa publicerade evenemang och schemalägg sessioner (`POST /events/{id}/sessions`)
+#### ~~3.1.6 Evenemangs-granskning~~ ✓ Klar
+- ~~Lista evenemang med statusfilter (`GET /editions/{id}/events`)~~
+- ~~Skapa evenemang (kategori + arrangör), ställ in från lista~~
+- ~~Detaljvy: titel, beskrivning, sessionönskemål~~
+- ~~Redigera utkastfält och sessionönskemål~~
+- ~~Åtgärder: godkänn / avvisa med kommentar / ställ in / skicka in för granskning~~
+
+#### 3.1.6b Evenemangsflöde – genomgång och förfining
+Draftprocessen fungerar tekniskt men speglar inte fullt ut hur flödet ska fungera ur arrangörens och adminens perspektiv. Kräver ett dedikerat arbetspass där flödet beskrivs i detalj och implementationen justeras därefter.
 
 #### 3.1.7 Bemanningshantering
 - Passöversikt per station: `GET /stations/{id}/shifts`
@@ -243,7 +247,7 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 
 ## Nästa konkreta steg (förslag)
 
-1. **Fas 3.1.6** – Evenemangs-granskning
+1. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
 2. **Fas 3.1.7–3.1.8** – Bemanningshantering, registreringsöversikt
 3. **Fas 3.2** – Publik vy
 4. **Pre-produktion** – Skydda provisioning-endpoint + domänbaserad tenant-routing
