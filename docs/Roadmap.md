@@ -33,6 +33,8 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 - **3.1.4 Konventionsstruktur** – Upplagehantering, lokaler, funktionsområden, kategorier med full CRUD; aktiv upplaga i sessionStorage-kontext; tabbar och tabelllistningar
 - **3.1.5 Personregister** – Personlista med sökning, skapa/redigera/avaktivera/återaktivera; admin-flagga; standardmönster för listningssidor dokumenterat
 - **3.1.7 Bemanningshantering** – Passöversikt per station, skapa/ställa in pass, tilldela/bekräfta/avslå/avboka tilldelningar, staffansökningslista med acceptera/avslå; `GET /editions/{id}/staff-applications` implementerad
+- **3.2.1 Publik scaffold och layout** – ShellComponent med brandad topnav, CSS custom properties, lazy-loadade routes, `EditionService` med APP_INITIALIZER
+- **3.2.2 Hem och program** – Hemsida med hero och CTA-kort, programlista med dagsfilter och kategori-chips, evenemangsdetaljvy med sessionsexpandering; aktiv upplaga styrs av admin via `POST /editions/{id}/set-active`
 
 ### Ej klar
 Se faserna nedan.
@@ -179,19 +181,21 @@ Bemanningsvyn fungerar tekniskt men behöver ett dedikerat arbetspass för att g
 Konventionsstyld app för besökare, staff och arrangörer. Deployed en gång per konvention.
 Se `docs/public-mockup.html` för interaktiv skissbild av alla skärmar.
 
-#### 3.2.1 Scaffold och layout
-- `ShellComponent` med `mat-toolbar` (konventionsbrandad topnav), footer
-- Angular Material custom theme via CSS custom properties (`--brand-primary`, `--brand-accent`)
-- Route-split: publika routes (`/`, `/program`, `/program/:id`, `/login`) + skyddade (`/mina-sidor/**`)
-- `authGuard` på alla `/mina-sidor/**`-routes – ingen `adminGuard`
-- `EditionService` (singleton): laddar aktiv uplaga vid app-start via `APP_INITIALIZER`, exponerar `editionId` som signal
-- Skeleton shimmer utility-klass i `styles.scss`
+#### ~~3.2.1 Scaffold och layout~~ ✓ Klar
+- ~~`ShellComponent` med `mat-toolbar` (konventionsbrandad topnav), footer~~
+- ~~Angular Material custom theme via CSS custom properties (`--brand-primary`, `--brand-accent`)~~
+- ~~Route-split: publika routes (`/`, `/program`, `/program/:id`, `/login`) + skyddade (`/mina-sidor/**`)~~
+- ~~`authGuard` på alla `/mina-sidor/**`-routes – ingen `adminGuard`~~
+- ~~`EditionService` (singleton): laddar aktiv upplaga vid app-start via `APP_INITIALIZER`, exponerar `editionId` som signal~~
+- ~~Skeleton shimmer utility-klass i `styles.scss`~~
+- ~~`EditionService.load()` anropar `GET /feed/active-edition` – admin styr publikt synlig upplaga via admin-appen~~
 
-#### 3.2.2 Hem och program
-- Landningssida: hero, CTA-kort för besökare/arrangör/staff, utvalda evenemang
-- Evenemangslista (`/program`): dag-tabs (Alla/Fredag/Lördag/Söndag), kategori-filter chips, evenemangskort med border-left accent
-- Evenemangsdetalj (`/program/:id`): tvåkolumns-layout, sessionslista med expand/collapse, registreringsknapp
-- Publika endpoints: `GET /feed/editions/{id}`, `GET /feed/events/{id}`
+#### ~~3.2.2 Hem och program~~ ✓ Klar
+- ~~Landningssida: hero, CTA-kort för besökare/arrangör/staff, utvalda evenemang~~
+- ~~Evenemangslista (`/program`): dag-tabs (Alla/Fredag/Lördag/Söndag), kategori-filter chips, evenemangskort med border-left accent~~
+- ~~Evenemangsdetalj (`/program/:id`): tvåkolumns-layout, sessionslista med expand/collapse, registreringsknapp~~
+- ~~Publika endpoints: `GET /feed/editions/{id}`, `GET /feed/events/{id}`, `GET /feed/active-edition`~~
+- ~~Aktiv upplaga: Convention-aggregatet lagrar `ActiveEditionId`, admin sätter via `POST /editions/{id}/set-active`~~
 
 #### 3.2.3 Inloggning och profil
 - Inloggningsformulär (`POST /auth/login`) – samma mekanism som admin
@@ -246,6 +250,8 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 | `PUT /me/profile` | 3.2.3 profil-redigering | Autentiserad |
 | `GET /editions/{id}/persons` | 3.1.5 personregister | IsAdmin |
 | ~~`GET /editions/{id}/staff-applications`~~ | ~~3.1.7 bemanningshantering~~ ✓ Klar | IsAdmin |
+| ~~`GET /feed/active-edition`~~ | ~~3.2.1–3.2.2 publik vy~~ ✓ Klar | Anonym |
+| ~~`POST /editions/{id}/set-active`~~ | ~~3.2.2 admin sätter aktiv upplaga~~ ✓ Klar | IsAdmin |
 | `GET /editions/{id}/visitor-registrations` | 3.1.8 registreringsöversikt | IsAdmin |
 | `GET /editions/{id}/ticket-types` | 3.1.8 biljettyper | Publik |
 | `GET /editions/{id}/my-visitor-registration` | 3.2.5 besökarregistrering | Autentiserad |
@@ -270,9 +276,9 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 
 ## Nästa konkreta steg (förslag)
 
-1. **Fas 3.2.1** – Scaffold och layout för publika appen: shell, topnav, route-split, Angular Material custom theme, `EditionService`
-2. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
-3. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
-4. **Fas 3.1.8** – Registreringsöversikt
-5. **Fas 3.2.2** – Hem och program (landningssida + evenemangslista + detaljvy)
+1. **Fas 3.2.3** – Inloggning och profil för publika appen (formulär, social login-platshållare, profilvy)
+2. **Fas 3.1.8** – Registreringsöversikt i admin (biljettyper, besökarregistreringar)
+3. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
+4. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
+5. **Fas 3.2.4** – Besökarregistrering (publik vy)
 6. **Pre-produktion** – Skydda provisioning-endpoint + domänbaserad tenant-routing
