@@ -80,6 +80,25 @@
   padding: 24px 0;
 }
 
+// ── Redigera upplaga ──────────────────────────────────────
+
+.edit-card {
+  margin-bottom: 24px;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
 // ── Tabeller ──────────────────────────────────────────────
 
 .data-table {
@@ -108,6 +127,20 @@
 
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #fafafa; }
+
+  .actions-col { width: 88px; }
+}
+
+.row-actions {
+  display: flex;
+  gap: 0;
+  justify-content: flex-end;
+
+  button {
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+  }
 }
 
 .muted { color: #bbb; }

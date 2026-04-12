@@ -8,6 +8,13 @@ using ConventionSystem.Application.Convention.Commands.CreateStation;
 using ConventionSystem.Application.Convention.Commands.CreateVenue;
 using ConventionSystem.Application.Convention.Commands.OpenRegistration;
 using ConventionSystem.Application.Convention.Commands.PublishEdition;
+using ConventionSystem.Application.Convention.Commands.RemoveCategory;
+using ConventionSystem.Application.Convention.Commands.RemoveStaffArea;
+using ConventionSystem.Application.Convention.Commands.RemoveVenue;
+using ConventionSystem.Application.Convention.Commands.UpdateCategory;
+using ConventionSystem.Application.Convention.Commands.UpdateEdition;
+using ConventionSystem.Application.Convention.Commands.UpdateStaffArea;
+using ConventionSystem.Application.Convention.Commands.UpdateVenue;
 using ConventionSystem.Domain.Convention.Enums;
 using MediatR;
 
@@ -17,6 +24,54 @@ public static class EditionEndpoints
 {
     public static IEndpointRouteBuilder MapEditionEndpoints(this IEndpointRouteBuilder app)
     {
+        app.MapPut("/editions/{editionId:guid}",
+            async (Guid editionId, UpdateEditionRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateEditionCommand(
+                    editionId,
+                    request.Name,
+                    request.StartDate,
+                    request.EndDate,
+                    request.StaffCoordinatorId,
+                    request.EventCoordinatorId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapPut("/editions/{editionId:guid}/venues/{venueId:guid}",
+            async (Guid editionId, Guid venueId, UpdateVenueRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateVenueCommand(editionId, venueId, request.Name, request.Building, request.Description), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapDelete("/editions/{editionId:guid}/venues/{venueId:guid}",
+            async (Guid editionId, Guid venueId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveVenueCommand(editionId, venueId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapPut("/editions/{editionId:guid}/staff-areas/{staffAreaId:guid}",
+            async (Guid editionId, Guid staffAreaId, UpdateStaffAreaRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateStaffAreaCommand(editionId, staffAreaId, request.Name, request.Description, request.ResponsibleId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapDelete("/editions/{editionId:guid}/staff-areas/{staffAreaId:guid}",
+            async (Guid editionId, Guid staffAreaId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveStaffAreaCommand(editionId, staffAreaId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapDelete("/editions/{editionId:guid}/categories/{categoryId:guid}",
+            async (Guid editionId, Guid categoryId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveCategoryCommand(editionId, categoryId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
         app.MapPost("/conventions/{conventionId:guid}/editions",
             async (Guid conventionId, CreateEditionRequest request, ISender sender, CancellationToken ct) =>
             {
@@ -45,9 +100,9 @@ public static class EditionEndpoints
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         app.MapPut("/editions/{editionId:guid}/categories/{categoryId:guid}",
-            async (Guid editionId, Guid categoryId, ChangeCategoryResponsibleRequest request, ISender sender, CancellationToken ct) =>
+            async (Guid editionId, Guid categoryId, UpdateCategoryRequest request, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new ChangeCategoryResponsibleCommand(editionId, categoryId, request.NewResponsibleId), ct);
+                await sender.Send(new UpdateCategoryCommand(editionId, categoryId, request.Name, request.Description, request.ResponsibleId), ct);
                 return Results.NoContent();
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
@@ -98,12 +153,22 @@ public static class EditionEndpoints
 
 public record CopyEditionStructureRequest(Guid SourceEditionId);
 public record CreateVenueRequest(string Name, string Building, string? Description);
+public record UpdateVenueRequest(string Name, string Building, string? Description);
 public record CreateStaffAreaRequest(string Name, string? Description, Guid ResponsibleId);
+public record UpdateStaffAreaRequest(string Name, string? Description, Guid ResponsibleId);
 public record CreateStationRequest(string Name, string? Description, Guid StaffAreaId);
 public record CreateCategoryRequest(string Name, string? Description, Guid ResponsibleId);
+public record UpdateCategoryRequest(string Name, string? Description, Guid ResponsibleId);
 public record ChangeCategoryResponsibleRequest(Guid NewResponsibleId);
 
 public record CreateEditionRequest(
+    string Name,
+    DateOnly StartDate,
+    DateOnly EndDate,
+    Guid StaffCoordinatorId,
+    Guid EventCoordinatorId);
+
+public record UpdateEditionRequest(
     string Name,
     DateOnly StartDate,
     DateOnly EndDate,

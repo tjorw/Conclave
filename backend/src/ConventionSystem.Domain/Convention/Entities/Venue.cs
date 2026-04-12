@@ -22,4 +22,15 @@ public sealed class Venue : Entity<VenueId>
         Building = building;
         Description = description;
     }
+
+    internal void Update(string name, string building, string? description)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
+        if (string.IsNullOrWhiteSpace(building))
+            throw new ArgumentException("Byggnad får inte vara tom.", nameof(building));
+        Name = name;
+        Building = building;
+        Description = description;
+    }
 }

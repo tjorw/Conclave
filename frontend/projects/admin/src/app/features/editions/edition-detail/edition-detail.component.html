@@ -5,6 +5,8 @@
 } @else if (error()) {
   <p class="error-message">{{ error() }}</p>
 } @else if (edition(); as e) {
+
+  <!-- ── Sidhuvud ── -->
   <div class="page-header">
     <a routerLink="/dashboard" class="back-link">
       <mat-icon>arrow_back</mat-icon> Dashboard
@@ -16,10 +18,61 @@
           {{ isPublished() ? 'Publicerad' : 'Utkast' }}
         </mat-chip>
       </mat-chip-set>
+      <button mat-icon-button (click)="startEditEdition()" matTooltip="Redigera grunddata" [disabled]="saving()">
+        <mat-icon>edit</mat-icon>
+      </button>
     </div>
     <p class="page-subtitle">{{ formatDate(e.start) }} – {{ formatDate(e.end) }}</p>
   </div>
 
+  <!-- ── Redigera upplaga ── -->
+  @if (editingEdition()) {
+    <mat-card class="edit-card">
+      <mat-card-header><mat-card-title>Redigera grunddata</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="editEditionForm" (ngSubmit)="saveEdition()" class="edit-form">
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>Namn</mat-label>
+              <input matInput formControlName="name" />
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Startdatum</mat-label>
+              <input matInput type="date" formControlName="startDate" />
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Slutdatum</mat-label>
+              <input matInput type="date" formControlName="endDate" />
+            </mat-form-field>
+          </div>
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>Staffkoordinator</mat-label>
+              <mat-select formControlName="staffCoordinatorId">
+                @for (p of persons(); track p.id) {
+                  <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Evenemangskoordinator</mat-label>
+              <mat-select formControlName="eventCoordinatorId">
+                @for (p of persons(); track p.id) {
+                  <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="form-actions">
+            <button mat-button type="button" (click)="editingEdition.set(false)">Avbryt</button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="editEditionForm.invalid || saving()">Spara</button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- ── Åtgärdskort ── -->
   <mat-card class="actions-card">
     <mat-card-content class="actions-row">
       @if (isDraft()) {
@@ -40,24 +93,20 @@
     </mat-card-content>
   </mat-card>
 
+  <!-- ── Tabbar ── -->
   <mat-tab-group animationDuration="150ms">
 
     <!-- Lokaler -->
     <mat-tab>
       <ng-template mat-tab-label>
-        Lokaler
-        <span class="tab-count">{{ e.venues.length }}</span>
+        Lokaler <span class="tab-count">{{ e.venues.length }}</span>
       </ng-template>
 
       <div class="tab-content">
         @if (e.venues.length > 0) {
           <table class="data-table">
             <thead>
-              <tr>
-                <th>Namn</th>
-                <th>Byggnad</th>
-                <th>Beskrivning</th>
-              </tr>
+              <tr><th>Namn</th><th>Byggnad</th><th>Beskrivning</th><th class="actions-col"></th></tr>
             </thead>
             <tbody>
               @for (v of e.venues; track v.id) {
@@ -65,6 +114,14 @@
                   <td>{{ v.name }}</td>
                   <td>{{ v.building }}</td>
                   <td class="muted">{{ v.description || '–' }}</td>
+                  <td class="row-actions">
+                    <button mat-icon-button (click)="startEditVenue(v)" matTooltip="Redigera" [disabled]="saving()">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteVenue(v)" matTooltip="Ta bort" [disabled]="saving()">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
                 </tr>
               }
             </tbody>
@@ -73,24 +130,26 @@
           <p class="empty-hint">Inga lokaler tillagda.</p>
         }
 
+        @if (editingVenue(); as ev) {
+          <form [formGroup]="editVenueForm" (ngSubmit)="saveVenue()" class="inline-form">
+            <h4 class="form-title">Redigera: {{ ev.name }}</h4>
+            <div class="form-row">
+              <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
+              <mat-form-field><mat-label>Byggnad</mat-label><input matInput formControlName="building" /></mat-form-field>
+              <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
+              <button mat-button type="button" (click)="editingVenue.set(null)">Avbryt</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="editVenueForm.invalid || saving()">Spara</button>
+            </div>
+          </form>
+        }
+
         <form [formGroup]="venueForm" (ngSubmit)="addVenue()" class="inline-form">
           <h4 class="form-title">Lägg till lokal</h4>
           <div class="form-row">
-            <mat-form-field>
-              <mat-label>Namn</mat-label>
-              <input matInput formControlName="name" />
-            </mat-form-field>
-            <mat-form-field>
-              <mat-label>Byggnad</mat-label>
-              <input matInput formControlName="building" />
-            </mat-form-field>
-            <mat-form-field>
-              <mat-label>Beskrivning</mat-label>
-              <input matInput formControlName="description" />
-            </mat-form-field>
-            <button mat-flat-button color="accent" type="submit" [disabled]="venueForm.invalid || saving()">
-              Lägg till
-            </button>
+            <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
+            <mat-form-field><mat-label>Byggnad</mat-label><input matInput formControlName="building" /></mat-form-field>
+            <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
+            <button mat-flat-button color="accent" type="submit" [disabled]="venueForm.invalid || saving()">Lägg till</button>
           </div>
         </form>
       </div>
@@ -99,20 +158,14 @@
     <!-- Funktionsområden -->
     <mat-tab>
       <ng-template mat-tab-label>
-        Funktionsområden
-        <span class="tab-count">{{ e.staffAreas.length }}</span>
+        Funktionsområden <span class="tab-count">{{ e.staffAreas.length }}</span>
       </ng-template>
 
       <div class="tab-content">
         @if (e.staffAreas.length > 0) {
           <table class="data-table">
             <thead>
-              <tr>
-                <th>Namn</th>
-                <th>Beskrivning</th>
-                <th>Ansvarig</th>
-                <th>Stationer</th>
-              </tr>
+              <tr><th>Namn</th><th>Beskrivning</th><th>Ansvarig</th><th>Stationer</th><th class="actions-col"></th></tr>
             </thead>
             <tbody>
               @for (area of e.staffAreas; track area.id) {
@@ -130,6 +183,14 @@
                       }
                     </div>
                   </td>
+                  <td class="row-actions">
+                    <button mat-icon-button (click)="startEditStaffArea(area)" matTooltip="Redigera" [disabled]="saving()">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteStaffArea(area)" matTooltip="Ta bort" [disabled]="saving()">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
                 </tr>
               }
             </tbody>
@@ -138,28 +199,36 @@
           <p class="empty-hint">Inga funktionsområden tillagda.</p>
         }
 
+        @if (editingStaffArea(); as ea) {
+          <form [formGroup]="editStaffAreaForm" (ngSubmit)="saveStaffArea()" class="inline-form">
+            <h4 class="form-title">Redigera: {{ ea.name }}</h4>
+            <div class="form-row">
+              <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
+              <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
+              <mat-form-field>
+                <mat-label>Ansvarig</mat-label>
+                <mat-select formControlName="responsibleId">
+                  @for (p of persons(); track p.id) { <mat-option [value]="p.id">{{ p.name }}</mat-option> }
+                </mat-select>
+              </mat-form-field>
+              <button mat-button type="button" (click)="editingStaffArea.set(null)">Avbryt</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="editStaffAreaForm.invalid || saving()">Spara</button>
+            </div>
+          </form>
+        }
+
         <form [formGroup]="staffAreaForm" (ngSubmit)="addStaffArea()" class="inline-form">
           <h4 class="form-title">Lägg till funktionsområde</h4>
           <div class="form-row">
-            <mat-form-field>
-              <mat-label>Namn</mat-label>
-              <input matInput formControlName="name" />
-            </mat-form-field>
-            <mat-form-field>
-              <mat-label>Beskrivning</mat-label>
-              <input matInput formControlName="description" />
-            </mat-form-field>
+            <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
+            <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
             <mat-form-field>
               <mat-label>Ansvarig</mat-label>
               <mat-select formControlName="responsibleId">
-                @for (p of persons(); track p.id) {
-                  <mat-option [value]="p.id">{{ p.name }}</mat-option>
-                }
+                @for (p of persons(); track p.id) { <mat-option [value]="p.id">{{ p.name }}</mat-option> }
               </mat-select>
             </mat-form-field>
-            <button mat-flat-button color="accent" type="submit" [disabled]="staffAreaForm.invalid || saving()">
-              Lägg till
-            </button>
+            <button mat-flat-button color="accent" type="submit" [disabled]="staffAreaForm.invalid || saving()">Lägg till</button>
           </div>
         </form>
       </div>
@@ -168,34 +237,28 @@
     <!-- Kategorier -->
     <mat-tab>
       <ng-template mat-tab-label>
-        Kategorier
-        <span class="tab-count">{{ e.categories.length }}</span>
+        Kategorier <span class="tab-count">{{ e.categories.length }}</span>
       </ng-template>
 
       <div class="tab-content">
         @if (e.categories.length > 0) {
           <table class="data-table">
             <thead>
-              <tr>
-                <th>Namn</th>
-                <th>Beskrivning</th>
-                <th>Ansvarig</th>
-              </tr>
+              <tr><th>Namn</th><th>Beskrivning</th><th>Ansvarig</th><th class="actions-col"></th></tr>
             </thead>
             <tbody>
               @for (c of e.categories; track c.id) {
                 <tr>
                   <td>{{ c.name }}</td>
                   <td class="muted">{{ c.description || '–' }}</td>
-                  <td>
-                    <mat-select
-                      class="responsible-select"
-                      [value]="c.responsibleId"
-                      (selectionChange)="changeResponsible(c.id, $event.value)">
-                      @for (p of persons(); track p.id) {
-                        <mat-option [value]="p.id">{{ p.name }}</mat-option>
-                      }
-                    </mat-select>
+                  <td>{{ personName(c.responsibleId) }}</td>
+                  <td class="row-actions">
+                    <button mat-icon-button (click)="startEditCategory(c)" matTooltip="Redigera" [disabled]="saving()">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteCategory(c)" matTooltip="Ta bort" [disabled]="saving()">
+                      <mat-icon>delete</mat-icon>
+                    </button>
                   </td>
                 </tr>
               }
@@ -205,28 +268,36 @@
           <p class="empty-hint">Inga kategorier tillagda.</p>
         }
 
+        @if (editingCategory(); as ec) {
+          <form [formGroup]="editCategoryForm" (ngSubmit)="saveCategory()" class="inline-form">
+            <h4 class="form-title">Redigera: {{ ec.name }}</h4>
+            <div class="form-row">
+              <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
+              <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
+              <mat-form-field>
+                <mat-label>Ansvarig</mat-label>
+                <mat-select formControlName="responsibleId">
+                  @for (p of persons(); track p.id) { <mat-option [value]="p.id">{{ p.name }}</mat-option> }
+                </mat-select>
+              </mat-form-field>
+              <button mat-button type="button" (click)="editingCategory.set(null)">Avbryt</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="editCategoryForm.invalid || saving()">Spara</button>
+            </div>
+          </form>
+        }
+
         <form [formGroup]="categoryForm" (ngSubmit)="addCategory()" class="inline-form">
           <h4 class="form-title">Lägg till kategori</h4>
           <div class="form-row">
-            <mat-form-field>
-              <mat-label>Namn</mat-label>
-              <input matInput formControlName="name" />
-            </mat-form-field>
-            <mat-form-field>
-              <mat-label>Beskrivning</mat-label>
-              <input matInput formControlName="description" />
-            </mat-form-field>
+            <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
+            <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
             <mat-form-field>
               <mat-label>Ansvarig</mat-label>
               <mat-select formControlName="responsibleId">
-                @for (p of persons(); track p.id) {
-                  <mat-option [value]="p.id">{{ p.name }}</mat-option>
-                }
+                @for (p of persons(); track p.id) { <mat-option [value]="p.id">{{ p.name }}</mat-option> }
               </mat-select>
             </mat-form-field>
-            <button mat-flat-button color="accent" type="submit" [disabled]="categoryForm.invalid || saving()">
-              Lägg till
-            </button>
+            <button mat-flat-button color="accent" type="submit" [disabled]="categoryForm.invalid || saving()">Lägg till</button>
           </div>
         </form>
       </div>

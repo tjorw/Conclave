@@ -44,6 +44,32 @@ export interface CreateCategoryRequest {
   responsibleId: string;
 }
 
+export interface UpdateEditionRequest {
+  name: string;
+  startDate: string;
+  endDate: string;
+  staffCoordinatorId: string;
+  eventCoordinatorId: string;
+}
+
+export interface UpdateVenueRequest {
+  name: string;
+  building: string;
+  description?: string | null;
+}
+
+export interface UpdateStaffAreaRequest {
+  name: string;
+  description?: string | null;
+  responsibleId: string;
+}
+
+export interface UpdateCategoryRequest {
+  name: string;
+  description?: string | null;
+  responsibleId: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ConventionService {
   private readonly http = inject(HttpClient);
@@ -117,5 +143,33 @@ export class ConventionService {
       `${this.env.apiBaseUrl}/editions/${editionId}/categories/${categoryId}`,
       { newResponsibleId }
     );
+  }
+
+  updateEdition(editionId: string, request: UpdateEditionRequest) {
+    return this.http.put<void>(`${this.env.apiBaseUrl}/editions/${editionId}`, request);
+  }
+
+  updateVenue(editionId: string, venueId: string, request: UpdateVenueRequest) {
+    return this.http.put<void>(`${this.env.apiBaseUrl}/editions/${editionId}/venues/${venueId}`, request);
+  }
+
+  removeVenue(editionId: string, venueId: string) {
+    return this.http.delete<void>(`${this.env.apiBaseUrl}/editions/${editionId}/venues/${venueId}`);
+  }
+
+  updateStaffArea(editionId: string, staffAreaId: string, request: UpdateStaffAreaRequest) {
+    return this.http.put<void>(`${this.env.apiBaseUrl}/editions/${editionId}/staff-areas/${staffAreaId}`, request);
+  }
+
+  removeStaffArea(editionId: string, staffAreaId: string) {
+    return this.http.delete<void>(`${this.env.apiBaseUrl}/editions/${editionId}/staff-areas/${staffAreaId}`);
+  }
+
+  updateCategory(editionId: string, categoryId: string, request: UpdateCategoryRequest) {
+    return this.http.put<void>(`${this.env.apiBaseUrl}/editions/${editionId}/categories/${categoryId}`, request);
+  }
+
+  removeCategory(editionId: string, categoryId: string) {
+    return this.http.delete<void>(`${this.env.apiBaseUrl}/editions/${editionId}/categories/${categoryId}`);
   }
 }

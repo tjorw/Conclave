@@ -16,5 +16,6 @@ public interface IEditionRepository
     Task<IReadOnlyList<EditionSummaryDto>> ListByConventionIdAsync(ConventionId id, CancellationToken ct = default);
     Task<EditionDto?> GetProjectedByIdAsync(EditionId id, CancellationToken ct = default);
     void MarkAsAdded<T>(T entity) where T : class;
+    void MarkAsRemoved<T>(T entity) where T : class;
     Task SaveAsync(CancellationToken ct = default);
 }

@@ -117,6 +117,63 @@ public sealed class Edition : AggregateRoot
         return category;
     }
 
+    public void UpdateDetails(string name, DatePeriod period, PersonId staffCoordinatorId, PersonId eventCoordinatorId)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
+        Name = name;
+        Period = period;
+        StaffCoordinatorId = staffCoordinatorId;
+        EventCoordinatorId = eventCoordinatorId;
+    }
+
+    public void UpdateVenue(VenueId venueId, string name, string building, string? description)
+    {
+        var venue = _venues.FirstOrDefault(v => v.Id == venueId)
+            ?? throw new InvalidOperationException("Lokalen hittades inte på denna upplaga.");
+        venue.Update(name, building, description);
+    }
+
+    public Venue RemoveVenue(VenueId venueId)
+    {
+        var venue = _venues.FirstOrDefault(v => v.Id == venueId)
+            ?? throw new InvalidOperationException("Lokalen hittades inte på denna upplaga.");
+        _venues.Remove(venue);
+        return venue;
+    }
+
+    public void UpdateStaffArea(StaffAreaId staffAreaId, string name, string? description, PersonId responsibleId)
+    {
+        var area = _staffAreas.FirstOrDefault(sa => sa.Id == staffAreaId)
+            ?? throw new InvalidOperationException("Funktionsområdet hittades inte på denna upplaga.");
+        area.Update(name, description, responsibleId);
+    }
+
+    public (StaffArea area, IReadOnlyList<Station> stations) RemoveStaffArea(StaffAreaId staffAreaId)
+    {
+        var area = _staffAreas.FirstOrDefault(sa => sa.Id == staffAreaId)
+            ?? throw new InvalidOperationException("Funktionsområdet hittades inte på denna upplaga.");
+        var stations = _stations.Where(s => s.StaffAreaId == staffAreaId).ToList();
+        foreach (var s in stations) _stations.Remove(s);
+        _staffAreas.Remove(area);
+        return (area, stations);
+    }
+
+    public void UpdateCategory(CategoryId categoryId, string name, string? description, PersonId responsibleId)
+    {
+        var category = _categories.FirstOrDefault(c => c.Id == categoryId)
+            ?? throw new InvalidOperationException("Kategorin hittades inte på denna upplaga.");
+        category.Update(name, description, responsibleId);
+    }
+
+    public Category RemoveCategory(CategoryId categoryId)
+    {
+        var category = _categories.FirstOrDefault(c => c.Id == categoryId)
+            ?? throw new InvalidOperationException("Kategorin hittades inte på denna upplaga.");
+        _categories.Remove(category);
+        return category;
+    }
+
     public void ChangeCategoryResponsible(CategoryId categoryId, PersonId newResponsibleId)
     {
         var category = _categories.FirstOrDefault(c => c.Id == categoryId)

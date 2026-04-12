@@ -87,6 +87,9 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
     public void MarkAsAdded<T>(T entity) where T : class
         => db.Entry(entity).State = Microsoft.EntityFrameworkCore.EntityState.Added;
 
+    public void MarkAsRemoved<T>(T entity) where T : class
+        => db.Entry(entity).State = Microsoft.EntityFrameworkCore.EntityState.Deleted;
+
     public Task SaveAsync(CancellationToken ct = default)
         => db.SaveChangesAsync(ct);
 }

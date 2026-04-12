@@ -22,4 +22,13 @@ public sealed class StaffArea : Entity<StaffAreaId>
     }
 
     internal void ChangeResponsible(PersonId personId) => ResponsibleId = personId;
+
+    internal void Update(string name, string? description, PersonId responsibleId)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
+        Name = name;
+        Description = description;
+        ResponsibleId = responsibleId;
+    }
 }
