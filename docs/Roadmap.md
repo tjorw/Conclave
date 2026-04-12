@@ -30,6 +30,8 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 - **3.1.1 Scaffold och layout** – App-shell med sidenav, toolbar, logout; lazy-loadade routes med `authGuard` + `adminGuard`
 - **3.1.2 Inloggning** – Inloggningsformulär med Angular Material Reactive Forms, JWT sparas i sessionStorage, redirect vid lyckad inloggning, logout
 - **API-förbättringar** – CORS-policy för Angular-apparna, SystemDb/IdentityDb auto-migreras vid uppstart, ConventionDb auto-migreras vid provisioning
+- **3.1.4 Konventionsstruktur** – Upplagehantering, lokaler, funktionsområden, kategorier med full CRUD; aktiv upplaga i sessionStorage-kontext; tabbar och tabelllistningar
+- **3.1.5 Personregister** – Personlista med sökning, skapa/redigera/avaktivera/återaktivera; admin-flagga; standardmönster för listningssidor dokumenterat
 
 ### Ej klar
 Se faserna nedan.
@@ -128,22 +130,22 @@ Rollbaserad app för konventionsadministratörer. Kräver `is_admin`-claim.
 - ~~Upplagor visas med status och datum~~
 - ~~Kräver:~~ `GET /conventions/{id}`, `GET /conventions/{id}/editions`
 
-#### 3.1.4 Konventionsstruktur
-Upplaga, lokaler, funktionsområden, stationer, kategorier:
+#### ~~3.1.4 Konventionsstruktur~~ ✓ Klar
+~~Upplaga, lokaler, funktionsområden, stationer, kategorier:~~
 
-| Skärm | Endpoints |
+| ~~Skärm~~ | ~~Endpoints~~ |
 |-------|-----------|
-| Upplageöversikt (lista + skapa) | `GET /conventions/{id}/editions`, `POST /conventions/{id}/editions` |
-| Upplagestatus + publicering | `GET /editions/{id}`, `POST /editions/{id}/publish` |
-| Öppna registrering | `POST /editions/{id}/registrations/{type}/open` |
-| Lokaler (lista + skapa) | `POST /editions/{id}/venues` |
-| Funktionsområden + stationer | `POST /editions/{id}/staff-areas`, `POST /editions/{id}/stations` |
-| Kategorier (lista + ansvarig) | `POST /editions/{id}/categories`, `PUT /editions/{id}/categories/{id}` |
+| ~~Upplageöversikt (lista + skapa)~~ | ~~`GET /conventions/{id}/editions`, `POST /conventions/{id}/editions`~~ |
+| ~~Upplagestatus + publicering~~ | ~~`GET /editions/{id}`, `POST /editions/{id}/publish`~~ |
+| ~~Öppna registrering~~ | ~~`POST /editions/{id}/registrations/{type}/open`~~ |
+| ~~Lokaler (lista + skapa + redigera + ta bort)~~ | ~~`POST/PUT/DELETE /editions/{id}/venues/{id}`~~ |
+| ~~Funktionsområden + stationer~~ | ~~`POST/PUT/DELETE /editions/{id}/staff-areas/{id}`~~ |
+| ~~Kategorier (lista + CRUD)~~ | ~~`POST/PUT/DELETE /editions/{id}/categories/{id}`~~ |
 
-#### 3.1.5 Personregister
-- Personlista med sökning
-- Skapa, redigera, avaktivera person
-- *Kräver ny backend-endpoint:* `GET /editions/{id}/persons`
+#### ~~3.1.5 Personregister~~ ✓ Klar
+- ~~Personlista med sökning~~
+- ~~Skapa, redigera, avaktivera och återaktivera person~~
+- ~~`GET /conventions/{id}/persons`, admin-flagga via join mot `convention_administrators`~~
 
 #### 3.1.6 Evenemangs-granskning
 - Lista evenemang under granskning (`GET /editions/{id}/events`, filtrera på status `UnderReview`)
@@ -241,7 +243,7 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 
 ## Nästa konkreta steg (förslag)
 
-1. **Fas 3.1.4** – Konventionsstruktur (Edition, Venue, Area, Station, Category)
-2. **Fas 3.1.5–3.1.8** – Personregister, event-granskning, bemanning, registrering
+1. **Fas 3.1.6** – Evenemangs-granskning
+2. **Fas 3.1.7–3.1.8** – Bemanningshantering, registreringsöversikt
 3. **Fas 3.2** – Publik vy
 4. **Pre-produktion** – Skydda provisioning-endpoint + domänbaserad tenant-routing
