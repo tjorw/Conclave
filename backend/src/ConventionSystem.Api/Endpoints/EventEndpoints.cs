@@ -4,6 +4,7 @@ using ConventionSystem.Application.Event.Commands.ApproveVersion;
 using ConventionSystem.Application.Event.Commands.CancelEvent;
 using ConventionSystem.Application.Event.Commands.CreateEvent;
 using ConventionSystem.Application.Event.Commands.DeactivateSession;
+using ConventionSystem.Application.Event.Commands.UpdateSession;
 using ConventionSystem.Application.Event.Commands.EditEventDraft;
 using ConventionSystem.Application.Event.Commands.RejectVersion;
 using ConventionSystem.Application.Event.Commands.RemoveSessionRequest;
@@ -118,6 +119,16 @@ public static class EventEndpoints
                 return Results.Created($"/sessions/{id}", new { id });
             }).RequireAuthorization();
 
+        // UC-EV009b – Redigera session
+        app.MapPut("/events/{eventId:guid}/sessions/{sessionId:guid}",
+            async (Guid eventId, Guid sessionId, UpdateSessionRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(
+                    new UpdateSessionCommand(eventId, sessionId, request.VenueId, request.StartTime, request.EndTime,
+                        request.MaxSeats, request.StartType), ct);
+                return Results.NoContent();
+            }).RequireAuthorization();
+
         // UC-EV010 – Inaktivera session
         app.MapPost("/events/{eventId:guid}/sessions/{sessionId:guid}/deactivate",
             async (Guid eventId, Guid sessionId, ISender sender, CancellationToken ct) =>
@@ -144,3 +155,4 @@ public record AddSessionRequestRequest(string Description, int DurationMinutes, 
 public record AddCoOrganiserRequest(Guid PersonId, Guid ConventionId);
 public record RejectVersionRequest(string Comment);
 public record ScheduleSessionRequest(Guid VenueId, DateTime StartTime, DateTime EndTime, int MaxSeats, StartType StartType);
+public record UpdateSessionRequest(Guid VenueId, DateTime StartTime, DateTime EndTime, int MaxSeats, StartType StartType);

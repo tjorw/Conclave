@@ -138,7 +138,7 @@ public sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
         builder.HasKey(s => s.Id);
         builder.Property(s => s.Id)
             .HasConversion(id => id.Value, value => new SessionId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(s => s.EventId)
             .HasConversion(id => id.Value, value => new EventId(value))

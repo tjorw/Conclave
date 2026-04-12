@@ -28,6 +28,16 @@ public sealed class Session : Entity<SessionId>
         Status = SessionStatus.Active;
     }
 
+    internal void Update(VenueId venueId, TimeSlot timeSlot, int maxSeats, StartType startType)
+    {
+        if (Status == SessionStatus.Inactive)
+            throw new InvalidOperationException("Kan inte redigera en inaktiv session.");
+        VenueId = venueId;
+        TimeSlot = timeSlot;
+        MaxSeats = maxSeats;
+        StartType = startType;
+    }
+
     internal void Deactivate()
     {
         if (Status == SessionStatus.Inactive)

@@ -199,26 +199,133 @@
   </mat-card>
 
   <!-- Schemalagda sessioner -->
-  @if (e.sessions.length > 0) {
-    <mat-card class="content-card">
-      <mat-card-header><mat-card-title>Schemalagda sessioner</mat-card-title></mat-card-header>
-      <mat-card-content class="no-pad">
+  <mat-card class="content-card">
+    <mat-card-header><mat-card-title>Schemalagda sessioner</mat-card-title></mat-card-header>
+    <mat-card-content class="no-pad">
+      @if (e.sessions.length === 0 && !showAddSessionForm()) {
+        <p class="empty-state">Inga sessioner schemalagda ännu.</p>
+      }
+      @if (e.sessions.length > 0) {
         <table class="data-table">
           <thead>
-            <tr><th>Start</th><th>Slut</th><th>Max platser</th><th>Status</th></tr>
+            <tr><th>Start</th><th>Slut</th><th>Lokal</th><th>Max platser</th><th>Starttyp</th><th>Status</th><th></th></tr>
           </thead>
           <tbody>
             @for (s of e.sessions; track s.id) {
-              <tr>
+              <tr [class.editing-row]="editingSessionId() === s.id">
                 <td>{{ s.start | date:'yyyy-MM-dd HH:mm' }}</td>
                 <td>{{ s.end | date:'HH:mm' }}</td>
+                <td>{{ venueName(s.venueId) }}</td>
                 <td>{{ s.maxSeats }}</td>
-                <td><span class="chip chip-grey">{{ s.status }}</span></td>
+                <td>{{ startTypeLabel(s.startType) }}</td>
+                <td><span class="chip chip-grey">{{ sessionStatusLabel(s.status) }}</span></td>
+                <td class="action-cell">
+                  @if (s.status === 'Active') {
+                    <button mat-icon-button [matTooltip]="'Redigera'" [disabled]="saving()"
+                      (click)="startEditSession(s.id)">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button [matTooltip]="'Inaktivera'" [disabled]="saving()"
+                      (click)="deactivateSession(s.id)">
+                      <mat-icon>block</mat-icon>
+                    </button>
+                  }
+                </td>
               </tr>
+              @if (editingSessionId() === s.id) {
+                <tr>
+                  <td colspan="7" class="inline-form-cell">
+                    <form [formGroup]="sessionForm" class="inline-form">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Lokal</mat-label>
+                        <mat-select formControlName="venueId">
+                          @for (v of venues(); track v.id) {
+                            <mat-option [value]="v.id">{{ v.name }}</mat-option>
+                          }
+                        </mat-select>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline">
+                        <mat-label>Start</mat-label>
+                        <input matInput type="datetime-local" formControlName="startTime" />
+                      </mat-form-field>
+                      <mat-form-field appearance="outline">
+                        <mat-label>Slut</mat-label>
+                        <input matInput type="datetime-local" formControlName="endTime" />
+                      </mat-form-field>
+                      <mat-form-field appearance="outline">
+                        <mat-label>Max platser</mat-label>
+                        <input matInput type="number" formControlName="maxSeats" />
+                      </mat-form-field>
+                      <mat-form-field appearance="outline">
+                        <mat-label>Starttyp</mat-label>
+                        <mat-select formControlName="startType">
+                          <mat-option value="FixedTime">Fast tid</mat-option>
+                          <mat-option value="Rolling">Löpande</mat-option>
+                          <mat-option value="Tournament">Turneringsformat</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </form>
+                    <div class="inline-form-actions">
+                      <button mat-button (click)="cancelSessionEdit()">Avbryt</button>
+                      <button mat-flat-button color="primary" (click)="saveSessionEdit()"
+                        [disabled]="sessionForm.invalid || saving()">
+                        @if (saving()) { <mat-spinner diameter="18" /> } @else { Spara }
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>
-      </mat-card-content>
-    </mat-card>
-  }
+      }
+      @if (showAddSessionForm()) {
+        <div class="inline-form-container">
+          <form [formGroup]="sessionForm" class="inline-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Lokal</mat-label>
+              <mat-select formControlName="venueId">
+                @for (v of venues(); track v.id) {
+                  <mat-option [value]="v.id">{{ v.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Start</mat-label>
+              <input matInput type="datetime-local" formControlName="startTime" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Slut</mat-label>
+              <input matInput type="datetime-local" formControlName="endTime" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Max platser</mat-label>
+              <input matInput type="number" formControlName="maxSeats" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Starttyp</mat-label>
+              <mat-select formControlName="startType">
+                <mat-option value="FixedTime">Fast tid</mat-option>
+                <mat-option value="Rolling">Löpande</mat-option>
+                <mat-option value="Tournament">Turneringsformat</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </form>
+          <div class="inline-form-actions">
+            <button mat-button (click)="toggleAddSessionForm()">Avbryt</button>
+            <button mat-flat-button color="primary" (click)="scheduleSession()"
+              [disabled]="sessionForm.invalid || saving()">
+              @if (saving()) { <mat-spinner diameter="18" /> } @else { Schemalägg }
+            </button>
+          </div>
+        </div>
+      }
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-stroked-button (click)="toggleAddSessionForm()" [disabled]="saving() || !!editingSessionId()">
+        <mat-icon>add</mat-icon>
+        Schemalägg session
+      </button>
+    </mat-card-actions>
+  </mat-card>
 }

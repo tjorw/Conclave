@@ -79,4 +79,25 @@ export class EventService {
       {}
     );
   }
+
+  scheduleSession(eventId: string, venueId: string, startTime: string, endTime: string, maxSeats: number, startType: string) {
+    return this.http.post<{ id: string }>(
+      `${this.env.apiBaseUrl}/events/${eventId}/sessions`,
+      { venueId, startTime, endTime, maxSeats, startType }
+    );
+  }
+
+  updateSession(eventId: string, sessionId: string, venueId: string, startTime: string, endTime: string, maxSeats: number, startType: string) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/sessions/${sessionId}`,
+      { venueId, startTime, endTime, maxSeats, startType }
+    );
+  }
+
+  deactivateSession(eventId: string, sessionId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/sessions/${sessionId}/deactivate`,
+      {}
+    );
+  }
 }

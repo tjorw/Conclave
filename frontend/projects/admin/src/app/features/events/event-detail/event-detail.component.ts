@@ -11,7 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EventDto, EventService } from 'shared';
+import { ConventionService, EventDto, EventService, VenueDto } from 'shared';
 
 @Component({
   selector: 'app-event-detail',
@@ -34,17 +34,21 @@ import { EventDto, EventService } from 'shared';
   styleUrl: './event-detail.component.scss',
 })
 export class EventDetailComponent implements OnInit {
-  private readonly route  = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly svc    = inject(EventService);
-  private readonly fb     = inject(FormBuilder);
+  private readonly route      = inject(ActivatedRoute);
+  private readonly router     = inject(Router);
+  private readonly svc        = inject(EventService);
+  private readonly conSvc     = inject(ConventionService);
+  private readonly fb         = inject(FormBuilder);
 
   readonly event   = signal<EventDto | null>(null);
+  readonly venues  = signal<VenueDto[]>([]);
   readonly loading = signal(true);
   readonly saving  = signal(false);
   readonly error   = signal<string | null>(null);
   readonly showRejectForm        = signal(false);
   readonly showAddRequestForm    = signal(false);
+  readonly showAddSessionForm    = signal(false);
+  readonly editingSessionId      = signal<string | null>(null);
 
   readonly rejectForm = this.fb.group({
     comment: ['', [Validators.required, Validators.minLength(5)]],
@@ -64,10 +68,25 @@ export class EventDetailComponent implements OnInit {
     startType:       ['FixedTime', Validators.required],
   });
 
+  readonly sessionForm = this.fb.group({
+    venueId:   ['', Validators.required],
+    startTime: ['', Validators.required],
+    endTime:   ['', Validators.required],
+    maxSeats:  [20, [Validators.required, Validators.min(1)]],
+    startType: ['FixedTime', Validators.required],
+  });
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('eventId')!;
     this.svc.getEvent(id).subscribe({
-      next: e  => { this.event.set(e); this.loading.set(false); this.populateEditForm(e); },
+      next: e => {
+        this.event.set(e);
+        this.loading.set(false);
+        this.populateEditForm(e);
+        this.conSvc.getEdition(e.editionId).subscribe({
+          next: ed => this.venues.set(ed.venues),
+        });
+      },
       error: () => { this.error.set('Kunde inte hämta evenemanget.'); this.loading.set(false); },
     });
   }
@@ -151,6 +170,68 @@ export class EventDetailComponent implements OnInit {
     });
   }
 
+  // ── Sessions ────────────────────────────────────────────────────────────
+
+  toggleAddSessionForm(): void {
+    this.showAddSessionForm.update(v => !v);
+    this.editingSessionId.set(null);
+    if (!this.showAddSessionForm()) this.sessionForm.reset({ maxSeats: 20, startType: 'FixedTime' });
+  }
+
+  startEditSession(sessionId: string): void {
+    const ev = this.event();
+    if (!ev) return;
+    const session = ev.sessions.find(s => s.id === sessionId);
+    if (!session) return;
+    this.editingSessionId.set(sessionId);
+    this.showAddSessionForm.set(false);
+    this.sessionForm.patchValue({
+      venueId:   session.venueId,
+      startTime: session.start.slice(0, 16),
+      endTime:   session.end.slice(0, 16),
+      maxSeats:  session.maxSeats,
+      startType: session.startType,
+    });
+  }
+
+  cancelSessionEdit(): void {
+    this.editingSessionId.set(null);
+    this.sessionForm.reset({ maxSeats: 20, startType: 'FixedTime' });
+  }
+
+  scheduleSession(): void {
+    const ev = this.event();
+    if (!ev || this.sessionForm.invalid || this.saving()) return;
+    const { venueId, startTime, endTime, maxSeats, startType } = this.sessionForm.getRawValue();
+    this.saving.set(true);
+    this.svc.scheduleSession(ev.id, venueId!, startTime!, endTime!, maxSeats!, startType!).subscribe({
+      next: () => { this.saving.set(false); this.showAddSessionForm.set(false); this.reload(); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte schemalägga sessionen.'); },
+    });
+  }
+
+  saveSessionEdit(): void {
+    const ev = this.event();
+    const sessionId = this.editingSessionId();
+    if (!ev || !sessionId || this.sessionForm.invalid || this.saving()) return;
+    const { venueId, startTime, endTime, maxSeats, startType } = this.sessionForm.getRawValue();
+    this.saving.set(true);
+    this.svc.updateSession(ev.id, sessionId, venueId!, startTime!, endTime!, maxSeats!, startType!).subscribe({
+      next: () => { this.saving.set(false); this.editingSessionId.set(null); this.reload(); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte spara sessionen.'); },
+    });
+  }
+
+  deactivateSession(sessionId: string): void {
+    const ev = this.event();
+    if (!ev || this.saving()) return;
+    this.saving.set(true);
+    this.svc.deactivateSession(ev.id, sessionId).subscribe({
+      next: () => { this.saving.set(false); this.reload(); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte inaktivera sessionen.'); },
+    });
+  }
+
   // ── Lifecycle ───────────────────────────────────────────────────────────
 
   returnToDraft(): void {
@@ -211,5 +292,14 @@ export class EventDetailComponent implements OnInit {
       FixedTime: 'Fast tid', Rolling: 'Löpande', Tournament: 'Turneringsformat',
     };
     return map[type] ?? type;
+  }
+
+  sessionStatusLabel(status: string): string {
+    const map: Record<string, string> = { Active: 'Aktiv', Inactive: 'Inaktiv' };
+    return map[status] ?? status;
+  }
+
+  venueName(venueId: string): string {
+    return this.venues().find(v => v.id === venueId)?.name ?? venueId;
   }
 }

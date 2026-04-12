@@ -159,6 +159,14 @@ public sealed class Event : AggregateRoot
         return session;
     }
 
+    public void UpdateSession(SessionId sessionId, VenueId venueId, TimeSlot timeSlot, int maxSeats, StartType startType, PersonId performedById)
+    {
+        var session = _sessions.FirstOrDefault(s => s.Id == sessionId)
+            ?? throw new InvalidOperationException("Sessionen hittades inte.");
+
+        session.Update(venueId, timeSlot, maxSeats, startType);
+    }
+
     public void DeactivateSession(SessionId sessionId, PersonId performedById)
     {
         var session = _sessions.FirstOrDefault(s => s.Id == sessionId)
