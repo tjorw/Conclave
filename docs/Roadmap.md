@@ -231,6 +231,7 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 |------|-------------|-----------|
 | **Skydda provisioning-endpoint** | `POST /system/conventions` är oskyddad – vem som helst kan skapa tenants och databaser. Måste skyddas med API-nyckel eller system-admin-roll innan produktion. | **Hög – blockar produktion** |
 | **Tenant-routing via domän** | Idag: `conventionId` hårdkodat i `environment.ts` → unik deploy per konvention. Ska vara: TenantMiddleware löser tenant från HTTP-domän (subdomän); frontend resolvar `conventionId` dynamiskt från API:t baserat på `window.location.hostname`. Tenant-tabellen har redan ett `Domain`-fält. | **Hög – blockar produktion** |
+| **Skalbart val av ansvariga personer** | När personlistan växer behövs en bättre lösning än enkel dropdown för att välja ansvariga (t.ex. sökbar/autocomplete-väljare, filtrering på aktiv status och begränsning till relevanta kandidater). Utvärdera även om en särskild roll ska krävas för att kunna tilldelas som ansvarig. | Medel |
 | `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |
 | Social inloggning (OAuth) | ASP.NET Identity stöder det men inte implementerat | Låg |
 | `CreatePersonCommand` vs UC002 | Två vägar att skapa en person (admin-väg och auth-väg). Kan leda till inkonsekvens om e-post-uniqueness-kontrollen blockerar auth-skapande | Medel – se till att UC002-vägen aldrig kolliderar |

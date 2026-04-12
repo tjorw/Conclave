@@ -109,6 +109,27 @@ Se `README.md` för en komplett översikt av aggregate roots, entiteter och valu
 Se `docs/Backend.md` för fullständiga kodkonventioner per lager (domän, applikation, infrastruktur, API), auktoriseringsmodell, testmönster och kända EF Core-fallgropar.
 Se `docs/Frontend.md` för Angular-konventioner.
 
+# Tester
+
+## Regel: tester skrivs alltid tillsammans med koden
+
+Varje gång kod ändras eller läggs till i domänlagret eller applikationslagret
+**ska** motsvarande tester skrivas i samma arbetspass – inte efteråt.
+
+- **Domänmetod tillagd eller ändrad** → enhetstester i `ConventionSystem.Domain.Tests`
+  som täcker lyckligt flöde, invarianter och felfall.
+- **Command handler tillagd eller ändrad** → handlertester i `ConventionSystem.Application.Tests`
+  som täcker lyckligt flöde, felfall (entitet ej funnen, saknad behörighet) och att rätt
+  repository-metoder anropas.
+
+Tester körs alltid innan commit-förslag ges:
+```bash
+dotnet test backend/ConventionSystem.sln --filter "FullyQualifiedName~{BoundedContext}"
+```
+
+Se `docs/Backend.md` för testmönster (xUnit + NSubstitute, `Setup()`-hjälpare, stubbning av rätt
+hämtningsmetod).
+
 # Commit-strategi
 
 ## Grundregler
