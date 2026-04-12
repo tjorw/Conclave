@@ -60,7 +60,17 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             organiserNames.GetValueOrDefault(e.LeadOrganiserId),
             e.Status.ToString(),
             string.IsNullOrEmpty(e.Title) ? null : e.Title,
-            e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active)
+            e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active),
+            e.Description ?? "",
+            e.Sessions.Select(s => new SessionSummaryDto(
+                s.Id.Value,
+                s.VenueId.Value,
+                s.TimeSlot.Start,
+                s.TimeSlot.End,
+                s.MaxSeats,
+                s.StartType.ToString(),
+                s.Status.ToString()
+            )).ToList()
         )).ToList();
     }
 

@@ -17,9 +17,30 @@ public sealed class GetEditionFeedHandler(
         if (edition is null) return null;
 
         var allEvents = await eventRepository.ListByEditionIdAsync(new EditionId(query.EditionId), ct);
+
+        var venueIndex = edition.Venues.ToDictionary(v => v.Id, v => v.Name);
+
         var publishedEvents = allEvents
             .Where(e => e.Status == "Published" && e.Title is not null)
-            .Select(e => new EventSummaryFeedDto(e.Id, e.CategoryId, e.Title!, e.SessionCount))
+            .Select(e => new EventSummaryFeedDto(
+                e.Id,
+                e.CategoryId,
+                e.CategoryName,
+                e.Title!,
+                e.Description,
+                e.LeadOrganiserName,
+                e.SessionCount,
+                e.Sessions
+                    .Where(s => s.Status == "Active")
+                    .Select(s => new SessionSummaryFeedDto(
+                        s.Id,
+                        venueIndex.GetValueOrDefault(s.VenueId, "Okänd lokal"),
+                        s.Start,
+                        s.End,
+                        s.MaxSeats,
+                        s.StartType))
+                    .OrderBy(s => s.Start)
+                    .ToList()))
             .ToList();
 
         return new EditionFeedDto(

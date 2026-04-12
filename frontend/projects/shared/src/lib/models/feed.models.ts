@@ -27,8 +27,21 @@ export interface CategoryFeedDto {
 export interface EventSummaryFeedDto {
   id: string;
   categoryId: string;
+  categoryName: string | null;
   title: string;
+  description: string;
+  leadOrganiserName: string | null;
   sessionCount: number;
+  sessions: SessionSummaryFeedDto[];
+}
+
+export interface SessionSummaryFeedDto {
+  id: string;
+  venueName: string;
+  start: string;
+  end: string;
+  maxSeats: number;
+  startType: string;
 }
 
 export interface EventFeedDto {

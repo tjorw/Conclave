@@ -1,7 +1,89 @@
+<!-- ── Hero ──────────────────────────────────────────────────────────────── -->
 <section class="hero">
   <div class="hero-inner">
     <h1 class="hero-title">{{ editionSvc.conventionName() }}</h1>
-    <p class="hero-sub">Program och registrering öppnar snart.</p>
-    <a mat-flat-button class="hero-cta" routerLink="/program">Se programmet</a>
+    @if (editionSvc.edition(); as ed) {
+      <p class="hero-dates">
+        {{ ed.startDate | date:'d MMMM':'':'sv' }} – {{ ed.endDate | date:'d MMMM yyyy':'':'sv' }}
+      </p>
+    }
+    <div class="hero-actions">
+      <a mat-flat-button class="btn-accent" routerLink="/program">Se programmet</a>
+    </div>
   </div>
 </section>
+
+<!-- ── CTA-kort ──────────────────────────────────────────────────────────── -->
+@if (editionSvc.edition(); as ed) {
+  <section class="cta-section page-container">
+    <div class="cta-grid">
+
+      <div class="cta-card" [class.cta-open]="ed.visitorRegistrationOpen">
+        <mat-icon class="cta-icon">confirmation_number</mat-icon>
+        <h2>Bli besökare</h2>
+        <p>Köp en biljett och delta i massor av evenemang under helgen.</p>
+        @if (ed.visitorRegistrationOpen) {
+          <a mat-flat-button class="btn-primary" routerLink="/mina-sidor/registrering">
+            Registrera dig nu
+          </a>
+        } @else {
+          <span class="cta-closed">Registrering inte öppen än</span>
+        }
+      </div>
+
+      <div class="cta-card" [class.cta-open]="ed.organiserRegistrationOpen">
+        <mat-icon class="cta-icon">event</mat-icon>
+        <h2>Arrangera ett evenemang</h2>
+        <p>Har du en idé till ett rollspel, brädspelssession eller seminarium? Skicka in det!</p>
+        @if (ed.organiserRegistrationOpen) {
+          <a mat-flat-button class="btn-primary" routerLink="/mina-sidor/evenemang/nytt">
+            Skicka in evenemang
+          </a>
+        } @else {
+          <span class="cta-closed">Inlämning inte öppen än</span>
+        }
+      </div>
+
+      <div class="cta-card" [class.cta-open]="ed.staffRegistrationOpen">
+        <mat-icon class="cta-icon">badge</mat-icon>
+        <h2>Bli funktionär</h2>
+        <p>Hjälp till att driva konventet och jobba bakom kulisserna.</p>
+        @if (ed.staffRegistrationOpen) {
+          <a mat-flat-button class="btn-primary" routerLink="/mina-sidor/staffansökan">
+            Ansök nu
+          </a>
+        } @else {
+          <span class="cta-closed">Ansökan inte öppen än</span>
+        }
+      </div>
+
+    </div>
+  </section>
+}
+
+<!-- ── Utvalda evenemang ─────────────────────────────────────────────────── -->
+@if (featuredEvents().length > 0) {
+  <section class="events-section page-container">
+    <h2 class="section-title">Utvalda evenemang</h2>
+    <div class="events-grid">
+      @for (event of featuredEvents(); track event.id) {
+        <a class="event-card" [routerLink]="['/program', event.id]">
+          @if (event.categoryName) {
+            <span class="chip chip-purple event-category">{{ event.categoryName }}</span>
+          }
+          <h3 class="event-title">{{ event.title }}</h3>
+          <p class="event-desc">{{ event.description }}</p>
+          @if (event.sessions.length > 0) {
+            <span class="event-time">
+              <mat-icon>schedule</mat-icon>
+              {{ firstSession(event) }}
+            </span>
+          }
+        </a>
+      }
+    </div>
+    <div class="events-more">
+      <a mat-stroked-button routerLink="/program" class="btn-outline">Visa hela programmet</a>
+    </div>
+  </section>
+}

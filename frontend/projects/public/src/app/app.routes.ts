@@ -13,6 +13,18 @@ export const routes: Routes = [
           import('./features/hem/hem.component').then(m => m.HemComponent),
       },
       {
+        path: 'program',
+        loadComponent: () =>
+          import('./features/program/program.component').then(m => m.ProgramComponent),
+      },
+      {
+        path: 'program/:id',
+        loadComponent: () =>
+          import('./features/program/event-detail/event-detail.component').then(
+            m => m.EventDetailComponent
+          ),
+      },
+      {
         path: 'login',
         loadComponent: () =>
           import('./features/login/login.component').then(m => m.LoginComponent),

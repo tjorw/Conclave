@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Feed.GetActiveEditionFeed;
 using ConventionSystem.Application.Feed.GetEditionFeed;
 using ConventionSystem.Application.Feed.GetEventFeed;
 using ConventionSystem.Infrastructure.MultiTenancy;
@@ -24,6 +25,14 @@ public static class FeedEndpoints
         {
             if (!tenantContext.IsResolved) return Results.NotFound();
             var result = await sender.Send(new GetEventFeedQuery(eventId), ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        });
+
+        feed.MapGet("/active-edition", async (
+            ITenantContext tenantContext, ISender sender, CancellationToken ct) =>
+        {
+            if (!tenantContext.IsResolved) return Results.NotFound();
+            var result = await sender.Send(new GetActiveEditionFeedQuery(), ct);
             return result is null ? Results.NotFound() : Results.Ok(result);
         });
 

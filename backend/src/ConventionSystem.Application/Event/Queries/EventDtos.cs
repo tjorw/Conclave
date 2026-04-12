@@ -9,7 +9,18 @@ public record EventSummaryDto(
     string? LeadOrganiserName,
     string Status,
     string? Title,
-    int SessionCount);
+    int SessionCount,
+    string Description,
+    IReadOnlyList<SessionSummaryDto> Sessions);
+
+public record SessionSummaryDto(
+    Guid Id,
+    Guid VenueId,
+    DateTime Start,
+    DateTime End,
+    int MaxSeats,
+    string StartType,
+    string Status);
 
 public record EventDto(
     Guid Id,

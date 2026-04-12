@@ -88,6 +88,9 @@
           <mat-icon>publish</mat-icon> Publicera upplaga
         </button>
       }
+      <button mat-stroked-button color="primary" (click)="setActive()" [disabled]="saving()">
+        <mat-icon>public</mat-icon> Sätt som aktiv
+      </button>
       @for (rt of registrationTypes; track rt.type) {
         <button
           mat-stroked-button

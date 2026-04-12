@@ -16,7 +16,23 @@ public record VenueFeedDto(Guid Id, string Name, string Building, string? Descri
 
 public record CategoryFeedDto(Guid Id, string Name, string? Description);
 
-public record EventSummaryFeedDto(Guid Id, Guid CategoryId, string Title, int SessionCount);
+public record EventSummaryFeedDto(
+    Guid Id,
+    Guid CategoryId,
+    string? CategoryName,
+    string Title,
+    string Description,
+    string? LeadOrganiserName,
+    int SessionCount,
+    IReadOnlyList<SessionSummaryFeedDto> Sessions);
+
+public record SessionSummaryFeedDto(
+    Guid Id,
+    string VenueName,
+    DateTime Start,
+    DateTime End,
+    int MaxSeats,
+    string StartType);
 
 public record EventFeedDto(
     Guid Id,

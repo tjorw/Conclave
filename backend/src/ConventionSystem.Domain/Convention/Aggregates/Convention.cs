@@ -13,6 +13,7 @@ public sealed class Convention : AggregateRoot
     public ConventionId Id { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public string Slug { get; private set; } = string.Empty;
+    public EditionId? ActiveEditionId { get; private set; }
     public IReadOnlyList<ConventionAdministrator> Administrators => _administrators.AsReadOnly();
 
     private Convention() { }
@@ -85,6 +86,11 @@ public sealed class Convention : AggregateRoot
             throw new InvalidOperationException("Personen är redan aktiv.");
         person.Reactivate();
         RaiseDomainEvent(new PersonReactivated(person.Id, Id, DateTimeOffset.UtcNow));
+    }
+
+    public void SetActiveEdition(EditionId editionId)
+    {
+        ActiveEditionId = editionId;
     }
 
     public Edition CreateEdition(string name, DatePeriod period, PersonId staffCoordinatorId, PersonId eventCoordinatorId)

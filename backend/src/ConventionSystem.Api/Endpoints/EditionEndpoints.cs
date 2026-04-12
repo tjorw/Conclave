@@ -1,5 +1,6 @@
 using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Convention.Commands.ChangeCategoryResponsible;
+using ConventionSystem.Application.Convention.Commands.SetActiveEdition;
 using ConventionSystem.Application.Convention.Commands.CopyEditionStructure;
 using ConventionSystem.Application.Convention.Commands.CreateCategory;
 using ConventionSystem.Application.Convention.Commands.CreateEdition;
@@ -144,6 +145,13 @@ public static class EditionEndpoints
                 if (!Enum.TryParse<RegistrationType>(type, ignoreCase: true, out var registrationType))
                     return Results.BadRequest($"Okänd registreringstyp: {type}.");
                 await sender.Send(new OpenRegistrationCommand(editionId, registrationType), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapPost("/editions/{editionId:guid}/set-active",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new SetActiveEditionCommand(editionId), ct);
                 return Results.NoContent();
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 

@@ -152,7 +152,15 @@ export class EditionDetailComponent implements OnInit {
     return this.edition()?.stations.filter(s => s.staffAreaId === area.id) ?? [];
   }
 
-  // ── Publicering & Registrering ───────────────────────────────────────────
+  // ── Publicering, Aktiv upplaga & Registrering ────────────────────────────
+
+  setActive(): void {
+    this.saving.set(true);
+    this.svc.setActiveEdition(this.edition()!.id).subscribe({
+      next: () => { this.saving.set(false); },
+      error: (err) => this.handleError('Kunde inte sätta aktiv upplaga', err),
+    });
+  }
 
   publish(): void {
     if (!confirm('Publicera upplagan? Den kan inte återgå till utkast.')) return;

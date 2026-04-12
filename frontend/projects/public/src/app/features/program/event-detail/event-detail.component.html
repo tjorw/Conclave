@@ -1,0 +1,104 @@
+<div class="detail-page page-container">
+
+  <!-- Brödsmulor -->
+  <nav class="breadcrumb">
+    <a routerLink="/program">Program</a>
+    <span> › </span>
+    <span>{{ event()?.title ?? '…' }}</span>
+  </nav>
+
+  @if (loading()) {
+    <div class="skeleton-header">
+      <span class="skeleton" style="height:36px; width:60%;"></span>
+      <span class="skeleton" style="height:16px; width:200px;"></span>
+    </div>
+    <div class="skeleton-body">
+      <span class="skeleton" style="height:14px; width:100%;"></span>
+      <span class="skeleton" style="height:14px; width:90%;"></span>
+      <span class="skeleton" style="height:14px; width:80%;"></span>
+    </div>
+  } @else if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  } @else if (event(); as ev) {
+
+    <!-- Sidhuvud -->
+    <div class="event-header">
+      <h1 class="event-title">{{ ev.title }}</h1>
+      <div class="event-meta-row">
+        @if (ev.categoryName) {
+          <span class="chip chip-purple">{{ ev.categoryName }}</span>
+        }
+        <span class="chip chip-grey">{{ registrationLabel(ev.registrationType) }}</span>
+      </div>
+    </div>
+
+    <div class="event-body">
+
+      <!-- Vänsterkol: beskrivning + sessioner -->
+      <div class="event-main">
+
+        <p class="event-description">{{ ev.description }}</p>
+
+        @if (ev.dropInRules) {
+          <div class="drop-in-info">
+            <mat-icon>info</mat-icon>
+            <span>{{ ev.dropInRules }}</span>
+          </div>
+        }
+
+        <h2 class="section-heading">Sessioner</h2>
+
+        @if (ev.sessions.length === 0) {
+          <p class="empty-state">Inga sessioner schemalagda ännu.</p>
+        } @else {
+          <div class="sessions-list">
+            @for (s of ev.sessions; track s.id) {
+              <div class="session-row" (click)="toggleSession(s.id)">
+                <div class="session-main">
+                  <mat-icon class="session-icon">schedule</mat-icon>
+                  <div>
+                    <div class="session-time">{{ sessionTimeLabel(s) }}</div>
+                    <div class="session-venue">{{ s.venueName }}</div>
+                  </div>
+                  <div class="session-seats">
+                    <mat-icon>people</mat-icon>
+                    {{ s.maxSeats }} platser
+                  </div>
+                  <mat-icon class="expand-btn">
+                    {{ expandedSessions().has(s.id) ? 'expand_less' : 'expand_more' }}
+                  </mat-icon>
+                </div>
+                @if (expandedSessions().has(s.id)) {
+                  <div class="session-detail">
+                    <span>Starttyp: {{ s.startType === 'FixedTime' ? 'Fast tid' : s.startType }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Högerkol: sidopanel -->
+      <aside class="event-sidebar">
+        <div class="sidebar-card">
+          <h3>Om evenemanget</h3>
+          <div class="sidebar-row">
+            <mat-icon>category</mat-icon>
+            <span>{{ ev.categoryName ?? 'Okänd kategori' }}</span>
+          </div>
+          <div class="sidebar-row">
+            <mat-icon>confirmation_number</mat-icon>
+            <span>{{ registrationLabel(ev.registrationType) }}</span>
+          </div>
+          <div class="sidebar-row">
+            <mat-icon>calendar_today</mat-icon>
+            <span>{{ ev.sessions.length }} session{{ ev.sessions.length !== 1 ? 'er' : '' }}</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  }
+
+</div>

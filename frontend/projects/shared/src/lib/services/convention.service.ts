@@ -200,4 +200,8 @@ export class ConventionService {
   reactivatePerson(personId: string) {
     return this.http.post<void>(`${this.env.apiBaseUrl}/persons/${personId}/reactivate`, {});
   }
+
+  setActiveEdition(editionId: string) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/editions/${editionId}/set-active`, {});
+  }
 }

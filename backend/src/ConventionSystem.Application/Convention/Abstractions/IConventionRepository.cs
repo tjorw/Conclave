@@ -11,4 +11,6 @@ public interface IConventionRepository
     Task<Domain.Convention.Aggregates.Convention?> GetByIdAsync(ConventionId id, CancellationToken ct = default);
     Task<ConventionDto?> GetProjectedByIdAsync(ConventionId id, CancellationToken ct = default);
     Task SaveAsync(CancellationToken ct = default);
+    /// <summary>Returnerar ActiveEditionId för konventionen (hämtas via tenant context).</summary>
+    Task<EditionId?> GetActiveEditionIdAsync(CancellationToken ct = default);
 }

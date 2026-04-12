@@ -21,6 +21,11 @@ public sealed class ConventionConfiguration : IEntityTypeConfiguration<Domain.Co
         builder.Property(c => c.Slug).HasMaxLength(100).IsRequired();
         builder.HasIndex(c => c.Slug).IsUnique();
 
+        builder.Property(c => c.ActiveEditionId)
+            .HasConversion(id => id!.Value.Value, value => (EditionId?)new EditionId(value))
+            .HasColumnName("active_edition_id")
+            .IsRequired(false);
+
         builder.HasMany(c => c.Administrators)
             .WithOne()
             .HasForeignKey("ConventionId")

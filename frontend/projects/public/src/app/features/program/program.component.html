@@ -1,0 +1,83 @@
+<div class="program-page page-container">
+
+  <div class="page-header">
+    <h1>Program</h1>
+  </div>
+
+  @if (loading()) {
+    <!-- Skeleton-laddning -->
+    <div class="skeleton-filters">
+      <span class="skeleton" style="width:300px; height:36px;"></span>
+    </div>
+    <div class="event-grid">
+      @for (_ of [1,2,3,4,5,6]; track $index) {
+        <div class="skeleton-card">
+          <span class="skeleton" style="height:16px; width:80px;"></span>
+          <span class="skeleton" style="height:22px; width:90%;"></span>
+          <span class="skeleton" style="height:14px; width:100%;"></span>
+          <span class="skeleton" style="height:14px; width:75%;"></span>
+        </div>
+      }
+    </div>
+  } @else {
+
+    <!-- Dagfilter-tabbar -->
+    <div class="day-tabs">
+      <button class="day-tab" [class.active]="selectedDay() === 'alla'"
+              (click)="selectedDay.set('alla')">Alla dagar</button>
+      @for (day of availableDays(); track day) {
+        <button class="day-tab" [class.active]="selectedDay() === day"
+                (click)="selectedDay.set(day)">{{ dayLabel(day) }}</button>
+      }
+    </div>
+
+    <!-- Kategorifilter -->
+    @if (categories().length > 0) {
+      <div class="category-chips">
+        @for (cat of categories(); track cat.id) {
+          <button class="cat-chip" [class.active]="selectedCategory() === cat.id"
+                  (click)="toggleCategory(cat.id)">{{ cat.name }}</button>
+        }
+      </div>
+    }
+
+    <!-- Resultaträknare -->
+    <p class="result-count">
+      {{ filteredEvents().length }} evenemang
+    </p>
+
+    <!-- Evenemangskort -->
+    @if (filteredEvents().length > 0) {
+      <div class="event-grid">
+        @for (event of filteredEvents(); track event.id) {
+          <a class="event-card" [routerLink]="['/program', event.id]">
+            <div class="event-card-top">
+              @if (event.categoryName) {
+                <span class="chip chip-purple">{{ event.categoryName }}</span>
+              }
+              <span class="event-sessions-count">{{ event.sessionCount }} sess.</span>
+            </div>
+            <h3 class="event-title">{{ event.title }}</h3>
+            <p class="event-desc">{{ event.description }}</p>
+            @if (event.sessions.length > 0) {
+              <div class="event-meta">
+                <mat-icon>schedule</mat-icon>
+                <span>{{ firstSessionLabel(event) }}</span>
+                <span class="event-venue">· {{ event.sessions[0].venueName }}</span>
+              </div>
+            }
+            @if (event.leadOrganiserName) {
+              <div class="event-meta event-organiser">
+                <mat-icon>person</mat-icon>
+                <span>{{ event.leadOrganiserName }}</span>
+              </div>
+            }
+          </a>
+        }
+      </div>
+    } @else {
+      <p class="empty-state">Inga evenemang matchar ditt filter.</p>
+    }
+  }
+
+</div>

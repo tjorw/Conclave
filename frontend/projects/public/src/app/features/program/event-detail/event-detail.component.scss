@@ -1,0 +1,192 @@
+.detail-page {
+  padding: 32px 16px 60px;
+}
+
+.breadcrumb {
+  font-size: .8rem;
+  color: var(--brand-text-muted);
+  margin-bottom: 24px;
+
+  a {
+    color: var(--brand-primary);
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+// ── Sidhuvud ───────────────────────────────────────────────────────────────
+
+.event-header {
+  margin-bottom: 32px;
+}
+
+.event-title {
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--brand-primary);
+  margin: 0 0 12px;
+}
+
+.event-meta-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+// ── Tvåkolumns-layout ──────────────────────────────────────────────────────
+
+.event-body {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 40px;
+  align-items: start;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.event-description {
+  font-size: .95rem;
+  line-height: 1.7;
+  color: var(--brand-text);
+  margin: 0 0 24px;
+  white-space: pre-wrap;
+}
+
+.drop-in-info {
+  background: #e3f2fd;
+  color: #1565c0;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: .875rem;
+
+  mat-icon { flex-shrink: 0; font-size: 18px; width: 18px; height: 18px; }
+}
+
+.section-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--brand-text-muted);
+  margin: 0 0 12px;
+}
+
+// ── Sessioner ──────────────────────────────────────────────────────────────
+
+.sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-row {
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow .15s;
+
+  &:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+}
+
+.session-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.session-icon {
+  color: var(--brand-accent);
+  flex-shrink: 0;
+}
+
+.session-time {
+  font-size: .9rem;
+  font-weight: 500;
+  color: var(--brand-text);
+}
+
+.session-venue {
+  font-size: .8rem;
+  color: var(--brand-text-muted);
+  margin-top: 2px;
+}
+
+.session-seats {
+  margin-left: auto;
+  font-size: .8rem;
+  color: var(--brand-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+.expand-btn {
+  color: var(--brand-text-muted);
+  flex-shrink: 0;
+}
+
+.session-detail {
+  padding: 0 16px 12px 16px;
+  font-size: .8rem;
+  color: var(--brand-text-muted);
+  border-top: 1px solid var(--brand-border);
+  padding-top: 10px;
+}
+
+// ── Sidopanel ──────────────────────────────────────────────────────────────
+
+.sidebar-card {
+  background: var(--brand-surface);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+
+  h3 {
+    font-size: .8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--brand-text-muted);
+    margin: 0 0 14px;
+  }
+}
+
+.sidebar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .875rem;
+  color: var(--brand-text);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--brand-border);
+
+  &:last-child { border-bottom: none; }
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--brand-text-muted); }
+}
+
+// ── Övrigt ─────────────────────────────────────────────────────────────────
+
+.empty-state {
+  color: var(--brand-text-muted);
+  font-size: .9rem;
+  padding: 20px 0;
+}
+
+.skeleton-header, .skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
