@@ -177,44 +177,62 @@ Bemanningsvyn fungerar tekniskt men behöver ett dedikerat arbetspass för att g
 ### Fas 3.2 – Publik vy
 
 Konventionsstyld app för besökare, staff och arrangörer. Deployed en gång per konvention.
+Se `docs/public-mockup.html` för interaktiv skissbild av alla skärmar.
 
 #### 3.2.1 Scaffold och layout
-- App-shell: header med konventionslogotyp, navigation, footer
-- Konventionsthema via CSS-variabler (primärfärg, logotyp – konfigurerbart i environment)
-- Publika routes (ej inloggad), privata routes (inloggad)
+- `ShellComponent` med `mat-toolbar` (konventionsbrandad topnav), footer
+- Angular Material custom theme via CSS custom properties (`--brand-primary`, `--brand-accent`)
+- Route-split: publika routes (`/`, `/program`, `/program/:id`, `/login`) + skyddade (`/mina-sidor/**`)
+- `authGuard` på alla `/mina-sidor/**`-routes – ingen `adminGuard`
+- `EditionService` (singleton): laddar aktiv uplaga vid app-start via `APP_INITIALIZER`, exponerar `editionId` som signal
+- Skeleton shimmer utility-klass i `styles.scss`
 
-#### 3.2.2 Inloggning och profilkomplettering
-- Inloggningsformulär (`POST /auth/login`)
+#### 3.2.2 Hem och program
+- Landningssida: hero, CTA-kort för besökare/arrangör/staff, utvalda evenemang
+- Evenemangslista (`/program`): dag-tabs (Alla/Fredag/Lördag/Söndag), kategori-filter chips, evenemangskort med border-left accent
+- Evenemangsdetalj (`/program/:id`): tvåkolumns-layout, sessionslista med expand/collapse, registreringsknapp
+- Publika endpoints: `GET /feed/editions/{id}`, `GET /feed/events/{id}`
+
+#### 3.2.3 Inloggning och profil
+- Inloggningsformulär (`POST /auth/login`) – samma mekanism som admin
+- Social inloggning-platshållar-knappar (Google, Facebook)
 - Profilvy: visa och uppdatera namn/e-post/telefon
-- *Kräver ny backend-endpoint:* `GET /me/profile`
+- *Kräver ny backend-endpoint:* `GET /me/profile`, `PUT /me/profile`
 
-#### 3.2.3 Evenemangslista och detaljvy
-- Upplageöversikt med kategorier och sökfilter (från `GET /feed/editions/{id}`)
-- Evenemangsdetaljsida (från `GET /feed/events/{id}`)
-- Sessionsschema med tid, lokal och platsstatus
+#### 3.2.4 Mina sidor – nav och hub
+- `MinaSidorComponent` laddar alla tre deltagandesektioner parallellt i `ngOnInit`
+- Tre sektioner visas alltid: Besökarregistrering, Mina evenemang, Min staffansökan
+- CTA-card visas per sektion om data är null/tom
+- Hälsningsbanner med konventionsnamn och inloggt användarnamn
 
-#### 3.2.4 Besökarregistrering
-- Registreringsformulär (`POST /editions/{id}/visitor-registrations`)
-- Betalningstatus och bekräftelse
+#### 3.2.5 Besökarregistrering
+- Biljettval via radio-cards med pris (Helg-biljett, Dagsbiljetter)
+- Kontaktuppgifter förifyllda från profil, skrivskyddade med länk till "Redigera profil"
+- Villkorscheckbox + info om separat betalning
+- `POST /editions/{id}/visitor-registrations` vid submit
+- Bekräftelse-vy efter submit
 - *Kräver ny backend-endpoint:* `GET /editions/{id}/my-visitor-registration`
 
-#### 3.2.5 Staffansökan
-- Ansökningsformulär: tillgänglighet och stationsönskemål
-- Endpoints: `POST /editions/{id}/staff-applications`, tillgänglighets- och önskemålsendpoints
-- Ansökningsstatus (accepterad/avslagen)
-- *Kräver ny backend-endpoint:* `GET /editions/{id}/my-staff-application`
-
 #### 3.2.6 Arrangörsflöde
-- Skapa event (`POST /editions/{id}/events`)
-- Redigera utkast, lägg till sessionönskemål och medarrangörer
+- Skapa/redigera evenemang: titel, kategori, beskrivning, registreringstyp (radio-cards), medarrangörer (tag-chips)
+- Sessionönskemål: tabell med dag/start/slut-rader + lägg-till-rad
 - Skicka in för granskning (`POST /events/{id}/submit`)
-- Status och kommentarer på inskickade event
+- `MyEventComponent`: visar status, adminkommentar (gul alert), "Dra tillbaka till utkast"-knapp
+- Redigeringsformulär visas om status=Draft
 - *Kräver ny backend-endpoint:* `GET /editions/{id}/my-events`
 
-#### 3.2.7 Sessionsregistrering
-- Anmäl till en session (`POST /sessions/{id}/registrations`)
-- Avboka (`DELETE /session-registrations/{id}`)
-- Visa egna registreringar
+#### 3.2.7 Staffansökan
+- Ansökningsformulär: fritexter-motivering, checkbox-lista med stationer, tillgänglighets-checkboxar (Fre/Lör/Sön)
+- `POST /editions/{id}/staff-applications` vid submit
+- Statusvy om ansökan redan finns: chip-status + tilldelade pass-lista
+- *Kräver ny backend-endpoint:* `GET /editions/{id}/my-staff-application`
+
+#### 3.2.8 Sessionsregistrering
+- Anmäl till enskild session direkt från evenemangsdetalj-sidan
+- Kapacitetsindikator (grön/orange/röd beroende på fyllnadsgrad)
+- `POST /sessions/{id}/registrations` vid anmälan
+- Avboka: `DELETE /session-registrations/{id}`
+- Mina sessionsregistreringar visas i "Mina sidor"-hubben
 
 ---
 
@@ -224,14 +242,15 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 
 | Endpoint | Krävs för | Auth |
 |----------|-----------|------|
-| `GET /me/profile` | 3.2.2 profilvy | Autentiserad |
+| `GET /me/profile` | 3.2.3 profilvy | Autentiserad |
+| `PUT /me/profile` | 3.2.3 profil-redigering | Autentiserad |
 | `GET /editions/{id}/persons` | 3.1.5 personregister | IsAdmin |
 | ~~`GET /editions/{id}/staff-applications`~~ | ~~3.1.7 bemanningshantering~~ ✓ Klar | IsAdmin |
 | `GET /editions/{id}/visitor-registrations` | 3.1.8 registreringsöversikt | IsAdmin |
 | `GET /editions/{id}/ticket-types` | 3.1.8 biljettyper | Publik |
-| `GET /editions/{id}/my-visitor-registration` | 3.2.4 besökarregistrering | Autentiserad |
-| `GET /editions/{id}/my-staff-application` | 3.2.5 staffansökan | Autentiserad |
+| `GET /editions/{id}/my-visitor-registration` | 3.2.5 besökarregistrering | Autentiserad |
 | `GET /editions/{id}/my-events` | 3.2.6 arrangörsflöde | Autentiserad |
+| `GET /editions/{id}/my-staff-application` | 3.2.7 staffansökan | Autentiserad |
 
 ---
 
@@ -251,8 +270,9 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 
 ## Nästa konkreta steg (förslag)
 
-1. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
-2. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
-3. **Fas 3.1.8** – Registreringsöversikt
-4. **Fas 3.2** – Publik vy
-5. **Pre-produktion** – Skydda provisioning-endpoint + domänbaserad tenant-routing
+1. **Fas 3.2.1** – Scaffold och layout för publika appen: shell, topnav, route-split, Angular Material custom theme, `EditionService`
+2. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
+3. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
+4. **Fas 3.1.8** – Registreringsöversikt
+5. **Fas 3.2.2** – Hem och program (landningssida + evenemangslista + detaljvy)
+6. **Pre-produktion** – Skydda provisioning-endpoint + domänbaserad tenant-routing

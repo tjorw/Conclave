@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Conclave – Publik vy · UI Mockup</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; display: flex; height: 100vh; overflow: hidden; color: #212121; }
+
+/* ═══════════════════════════════════════
+   DEMO SIDEBAR (screen selector only)
+═══════════════════════════════════════ */
+.demo-nav {
+  width: 220px;
+  background: #2d2d2d;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex-shrink: 0;
+  font-size: .8rem;
+}
+.demo-nav-logo {
+  padding: 16px 14px 8px;
+  font-size: .85rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+  color: #e8920a;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.demo-nav-sub {
+  padding: 2px 14px 10px;
+  font-size: .7rem;
+  color: rgba(255,255,255,.35);
+}
+.demo-section {
+  padding: 12px 14px 3px;
+  font-size: .62rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: rgba(255,255,255,.35);
+}
+.demo-nav a {
+  display: block;
+  padding: 6px 14px;
+  color: rgba(255,255,255,.7);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .12s;
+}
+.demo-nav a:hover { background: rgba(255,255,255,.08); color: #fff; }
+.demo-nav a.active { background: rgba(232,146,10,.2); color: #e8920a; font-weight: 500; }
+
+/* ═══════════════════════════════════════
+   APP WRAPPER
+═══════════════════════════════════════ */
+.app-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+/* ═══════════════════════════════════════
+   APP TOP NAVIGATION
+═══════════════════════════════════════ */
+.app-topnav {
+  background: #1b2a4a;
+  color: #fff;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 56px;
+  padding: 0 24px;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+.topnav-brand {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: #fff;
+  text-decoration: none;
+  margin-right: 32px;
+  white-space: nowrap;
+}
+.topnav-brand span { color: #e8920a; }
+.topnav-links { display: flex; gap: 4px; flex: 1; }
+.topnav-links a {
+  color: rgba(255,255,255,.8);
+  text-decoration: none;
+  font-size: .875rem;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background .12s;
+}
+.topnav-links a:hover { background: rgba(255,255,255,.12); color: #fff; }
+.topnav-links a.active { background: rgba(255,255,255,.15); color: #fff; }
+.topnav-actions { display: flex; align-items: center; gap: 10px; }
+.topnav-login-btn {
+  background: #e8920a;
+  color: #fff;
+  border: none;
+  padding: 7px 18px;
+  border-radius: 4px;
+  font-size: .85rem;
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity .15s;
+}
+.topnav-login-btn:hover { opacity: .88; }
+.topnav-user-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,.9);
+  font-size: .85rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+.topnav-user-menu:hover { background: rgba(255,255,255,.1); }
+.topnav-avatar {
+  width: 30px;
+  height: 30px;
+  background: #e8920a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .75rem;
+  font-weight: 700;
+  color: #fff;
+}
+.topnav-dropdown-arrow { font-size: .7rem; opacity: .6; }
+.topnav-mina-sidor {
+  color: rgba(255,255,255,.8);
+  text-decoration: none;
+  font-size: .875rem;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.topnav-mina-sidor:hover { background: rgba(255,255,255,.12); }
+
+/* ═══════════════════════════════════════
+   VIEWS / SCROLL AREA
+═══════════════════════════════════════ */
+.app-content { flex: 1; overflow-y: auto; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* ═══════════════════════════════════════
+   SHARED COMPONENTS
+═══════════════════════════════════════ */
+
+/* Cards */
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  margin-bottom: 16px;
+}
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+  font-weight: 600;
+  font-size: .9rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-body { padding: 18px 20px; }
+.card-body.no-pad { padding: 0; }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: .875rem;
+  font-family: inherit;
+  font-weight: 500;
+  transition: opacity .15s, transform .1s;
+  text-decoration: none;
+}
+.btn:hover { opacity: .88; }
+.btn:active { transform: scale(.98); }
+.btn-primary { background: #1b2a4a; color: #fff; }
+.btn-accent { background: #e8920a; color: #fff; }
+.btn-secondary { background: transparent; color: #1b2a4a; border: 2px solid #1b2a4a; }
+.btn-ghost { background: transparent; color: #555; border: 1px solid #ddd; }
+.btn-danger { background: transparent; color: #c62828; border: 1px solid #c62828; }
+.btn-sm { padding: 5px 14px; font-size: .8rem; }
+.btn-lg { padding: 12px 28px; font-size: 1rem; }
+.btn[disabled] { opacity: .4; cursor: default; }
+.btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Chips */
+.chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: .73rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.chip-green  { background: #e8f5e9; color: #2e7d32; }
+.chip-blue   { background: #e3f2fd; color: #1565c0; }
+.chip-orange { background: #fff3e0; color: #e65100; }
+.chip-red    { background: #ffebee; color: #c62828; }
+.chip-grey   { background: #f0f0f0; color: #616161; }
+.chip-purple { background: #f3e5f5; color: #6a1b9a; }
+.chip-teal   { background: #e0f2f1; color: #00695c; }
+.chip-amber  { background: #fff8e1; color: #f57f17; }
+
+/* Category chips */
+.cat-rollspel  { background: #f3e5f5; color: #6a1b9a; }
+.cat-larp      { background: #e8f5e9; color: #2e7d32; }
+.cat-bradspel  { background: #e3f2fd; color: #1565c0; }
+.cat-seminarium { background: #fff3e0; color: #e65100; }
+.cat-barn      { background: #fce4ec; color: #ad1457; }
+
+/* Breadcrumb */
+.breadcrumb {
+  font-size: .8rem;
+  color: #999;
+  margin-bottom: 8px;
+}
+.breadcrumb a {
+  color: #999;
+  text-decoration: none;
+  cursor: pointer;
+}
+.breadcrumb a:hover { color: #1b2a4a; text-decoration: underline; }
+.breadcrumb span { margin: 0 6px; }
+
+/* Alert */
+.alert { padding: 12px 16px; border-radius: 6px; font-size: .875rem; margin-bottom: 14px; }
+.alert-info    { background: #e3f2fd; color: #1565c0; border-left: 4px solid #1565c0; }
+.alert-warning { background: #fff8e1; color: #7a4f00; border-left: 4px solid #e8920a; }
+.alert-success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
+.alert-comment { background: #fff9c4; color: #5d4037; border-left: 4px solid #f9a825; }
+
+/* Forms */
+.form-group { margin-bottom: 18px; }
+.form-group label {
+  display: block;
+  font-size: .8rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 6px;
+}
+.form-group input[type=text],
+.form-group input[type=email],
+.form-group input[type=password],
+.form-group input[type=date],
+.form-group input[type=time],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 6px;
+  font-size: .9rem;
+  font-family: inherit;
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #1b2a4a;
+  box-shadow: 0 0 0 3px rgba(27,42,74,.1);
+}
+.form-group textarea { resize: vertical; min-height: 100px; }
+.form-hint { font-size: .75rem; color: #888; margin-top: 4px; }
+
+/* Radio cards */
+.radio-card-group { display: flex; flex-direction: column; gap: 10px; }
+.radio-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.radio-card:hover { border-color: #1b2a4a; background: #f8f9ff; }
+.radio-card.selected { border-color: #1b2a4a; background: #f0f4ff; }
+.radio-card input[type=radio] { accent-color: #1b2a4a; }
+.radio-card-label { font-weight: 600; font-size: .9rem; }
+.radio-card-desc { font-size: .8rem; color: #777; }
+.radio-card-price { margin-left: auto; font-weight: 700; color: #1b2a4a; }
+
+/* Checkbox */
+.checkbox-group { display: flex; flex-direction: column; gap: 10px; }
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .875rem;
+}
+.checkbox-item input[type=checkbox] { accent-color: #1b2a4a; width: 16px; height: 16px; }
+
+/* Tags/chips input style */
+.tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #e8eaf6;
+  color: #1b2a4a;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: .8rem;
+  font-weight: 500;
+}
+.tag-remove {
+  cursor: pointer;
+  opacity: .5;
+  font-size: .85rem;
+}
+.tag-remove:hover { opacity: 1; }
+
+/* Divider with text */
+.divider-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: #aaa;
+  font-size: .8rem;
+}
+.divider-text::before,
+.divider-text::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Container */
+.container { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+.container-sm { max-width: 480px; margin: 0 auto; padding: 40px 24px; }
+.container-md { max-width: 720px; margin: 0 auto; padding: 32px 24px; }
+
+/* Section title */
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1b2a4a;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e8920a;
+  display: inline-block;
+}
+
+/* Footer */
+.app-footer {
+  background: #1b2a4a;
+  color: rgba(255,255,255,.7);
+  padding: 32px 24px;
+  font-size: .825rem;
+}
+.footer-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 32px;
+}
+.footer-brand { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.footer-brand span { color: #e8920a; }
+.footer-col-title { font-weight: 600; color: rgba(255,255,255,.9); margin-bottom: 10px; font-size: .85rem; }
+.footer-bottom {
+  max-width: 900px;
+  margin: 24px auto 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.1);
+  font-size: .75rem;
+  color: rgba(255,255,255,.4);
+}
+
+/* misc */
+.text-muted { color: #888; font-size: .875rem; }
+.text-small { font-size: .8rem; }
+.mt-8  { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.mb-0  { margin-bottom: 0; }
+.spacer { flex: 1; }
+.flex   { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.gap-8  { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+
+/* Day tabs */
+.day-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 16px;
+}
+.day-tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: .875rem;
+  color: #777;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-weight: 500;
+  transition: color .12s;
+}
+.day-tab:hover { color: #1b2a4a; }
+.day-tab.active { color: #1b2a4a; border-bottom-color: #e8920a; }
+
+/* Category filter chips */
+.filter-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.filter-chip {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: .8rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid #ddd;
+  background: #fff;
+  color: #555;
+  transition: all .12s;
+}
+.filter-chip:hover { border-color: #1b2a4a; color: #1b2a4a; }
+.filter-chip.active { background: #1b2a4a; color: #fff; border-color: #1b2a4a; }
+
+/* Event cards (program list) */
+.event-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  margin-bottom: 12px;
+  border-left: 4px solid #e8920a;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: box-shadow .15s, transform .1s;
+}
+.event-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.12); transform: translateY(-1px); }
+.event-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.event-card-title {
+  font-weight: 700;
+  font-size: .95rem;
+  color: #1b2a4a;
+  flex: 1;
+}
+.event-card-meta {
+  font-size: .8rem;
+  color: #888;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.event-card-meta span { display: flex; align-items: center; gap: 4px; }
+.event-card-desc { font-size: .85rem; color: #555; line-height: 1.5; }
+.event-card-footer { margin-top: 10px; display: flex; align-items: center; justify-content: space-between; }
+.read-more { font-size: .82rem; font-weight: 600; color: #e8920a; text-decoration: none; cursor: pointer; }
+.read-more:hover { text-decoration: underline; }
+
+/* CTA cards */
+.cta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+.cta-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  padding: 24px;
+  text-align: center;
+  transition: transform .15s, box-shadow .15s;
+}
+.cta-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.1); }
+.cta-icon { font-size: 2rem; margin-bottom: 12px; }
+.cta-title { font-size: 1rem; font-weight: 700; color: #1b2a4a; margin-bottom: 8px; }
+.cta-desc { font-size: .85rem; color: #666; line-height: 1.5; margin-bottom: 16px; }
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, #1b2a4a 0%, #2d4a7a 60%, #1b2a4a 100%);
+  color: #fff;
+  padding: 64px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 70% 50%, rgba(232,146,10,.15) 0%, transparent 60%);
+}
+.hero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+.hero-eyebrow { font-size: .8rem; letter-spacing: .15em; text-transform: uppercase; color: #e8920a; margin-bottom: 12px; font-weight: 600; }
+.hero-title { font-size: 2.4rem; font-weight: 800; line-height: 1.15; margin-bottom: 12px; }
+.hero-title span { color: #e8920a; }
+.hero-subtitle { font-size: 1.05rem; color: rgba(255,255,255,.8); margin-bottom: 28px; line-height: 1.6; }
+.hero-date { font-size: 1rem; color: rgba(255,255,255,.9); margin-bottom: 28px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.hero-date-dot { color: #e8920a; font-size: 1.4rem; line-height: 1; }
+
+/* Two-column layout */
+.two-col { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+.two-col .main-col {}
+.two-col .side-col {}
+
+/* Sidebar cards */
+.side-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 20px; margin-bottom: 16px; }
+.side-card-title { font-weight: 700; font-size: .9rem; color: #1b2a4a; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+
+/* Session rows */
+.session-list { margin-top: 12px; }
+.session-row {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.session-row-header {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  cursor: pointer;
+  background: #fafafa;
+}
+.session-row-header:hover { background: #f0f4ff; }
+.session-time { font-size: .875rem; font-weight: 600; color: #1b2a4a; }
+.session-loc { font-size: .8rem; color: #888; flex: 1; }
+.session-cap { font-size: .8rem; font-weight: 600; }
+.session-cap.available { color: #2e7d32; }
+.session-cap.nearly { color: #e65100; }
+.session-cap.full { color: #c62828; }
+.session-body { padding: 12px 16px; font-size: .85rem; color: #555; border-top: 1px solid #eee; background: #fff; }
+
+/* Status badge section */
+.status-section {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.status-section-info { flex: 1; }
+.status-section-title { font-weight: 700; font-size: .9rem; color: #1b2a4a; margin-bottom: 3px; }
+.status-section-sub { font-size: .82rem; color: #777; }
+
+/* My events mini table */
+.mini-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.mini-table th { text-align: left; font-size: .72rem; font-weight: 600; color: #aaa; text-transform: uppercase; letter-spacing: .06em; padding: 8px 12px; border-bottom: 2px solid #eee; }
+.mini-table td { padding: 10px 12px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+.mini-table tr:last-child td { border-bottom: none; }
+
+/* Shift list */
+.shift-list { list-style: none; }
+.shift-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: .875rem;
+}
+.shift-item:last-child { border-bottom: none; }
+.shift-icon { color: #e8920a; font-size: 1rem; }
+.shift-station { font-weight: 600; color: #1b2a4a; }
+.shift-time { color: #777; font-size: .82rem; }
+
+/* Session wish table */
+.wish-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.wish-table th { text-align: left; font-size: .72rem; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; padding: 6px 10px; border-bottom: 2px solid #eee; }
+.wish-table td { padding: 8px 10px; border-bottom: 1px solid #f5f5f5; }
+.wish-table tr:last-child td { border-bottom: none; }
+
+/* Social login buttons */
+.social-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border: 1.5px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  font-size: .875rem;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #333;
+  transition: background .12s, border-color .12s;
+}
+.social-btn:hover { background: #f8f8f8; border-color: #bbb; }
+.social-logo { width: 20px; height: 20px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 800; }
+.google-logo { background: #fff; color: #ea4335; border: 1px solid #eee; }
+
+/* Mina sidor role sections */
+.role-section { margin-bottom: 28px; }
+.role-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.role-section-title { font-size: 1rem; font-weight: 700; color: #1b2a4a; }
+.cta-empty {
+  background: #f8f9fa;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  color: #888;
+}
+.cta-empty-title { font-weight: 600; font-size: .9rem; color: #555; margin-bottom: 6px; }
+.cta-empty-desc { font-size: .82rem; margin-bottom: 14px; }
+
+/* Profile chip (nav) */
+.user-name { font-size: .875rem; color: rgba(255,255,255,.9); }
+
+/* Event detail header */
+.event-detail-header {
+  background: linear-gradient(135deg, #1b2a4a 0%, #2d4a7a 100%);
+  color: #fff;
+  padding: 32px 0;
+}
+.event-detail-header .container { padding-top: 0; padding-bottom: 0; }
+.event-detail-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 10px; line-height: 1.25; }
+.event-detail-meta { display: flex; flex-wrap: wrap; gap: 14px; font-size: .875rem; color: rgba(255,255,255,.8); margin-top: 12px; }
+.event-detail-meta span { display: flex; align-items: center; gap: 5px; }
+.drop-in-badge {
+  background: rgba(232,146,10,.2);
+  color: #e8920a;
+  border: 1px solid rgba(232,146,10,.4);
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: .8rem;
+  font-weight: 600;
+}
+
+/* Greeting */
+.greeting-banner {
+  background: linear-gradient(135deg, #1b2a4a 0%, #2d4a7a 100%);
+  color: #fff;
+  padding: 28px 24px;
+}
+.greeting-inner { max-width: 900px; margin: 0 auto; }
+.greeting-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+.greeting-sub { font-size: .9rem; color: rgba(255,255,255,.7); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     DEMO SIDEBAR – screen selector (not part of the app)
+═══════════════════════════════════════════════════════ -->
+<nav class="demo-nav">
+  <div class="demo-nav-logo">Publik vy · Mockup</div>
+  <div class="demo-nav-sub">Conclave 2026 – demoväljare</div>
+
+  <div class="demo-section">Publik (ej inloggad)</div>
+  <a onclick="show('hem')" class="active" id="link-hem">🏠 Hem (landing page)</a>
+  <a onclick="show('program')" id="link-program">📅 Program</a>
+  <a onclick="show('event-detail')" id="link-event-detail">📋 Evenemangsdetalj</a>
+  <a onclick="show('login')" id="link-login">🔑 Logga in</a>
+
+  <div class="demo-section">Inloggad – Mina sidor</div>
+  <a onclick="show('mina-sidor')" id="link-mina-sidor">👤 Mina sidor (hub)</a>
+  <a onclick="show('besökar-registrering')" id="link-besökar-registrering">🎫 Besökarregistrering</a>
+  <a onclick="show('skicka-in-evenemang')" id="link-skicka-in-evenemang">📝 Skicka in evenemang</a>
+  <a onclick="show('mitt-evenemang')" id="link-mitt-evenemang">🔍 Mitt evenemang</a>
+  <a onclick="show('staff-ansökan')" id="link-staff-ansökan">🙋 Staffansökan</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════
+     APP WRAPPER
+═══════════════════════════════════════════════════════ -->
+<div class="app-wrapper">
+
+  <!-- ══ APP TOP NAV ══ -->
+  <!-- Visas i två varianter (inloggad/ej); JS byter klass -->
+  <header class="app-topnav" id="app-topnav">
+    <a class="topnav-brand"><span>Conclave</span> 2026</a>
+    <nav class="topnav-links">
+      <a onclick="show('program')" id="nav-program">Program</a>
+      <a onclick="show('hem')" id="nav-om">Om konventet</a>
+    </nav>
+    <div class="topnav-actions" id="topnav-guest">
+      <button class="topnav-login-btn" onclick="show('login')">Logga in</button>
+    </div>
+    <div class="topnav-actions" id="topnav-user" style="display:none">
+      <a class="topnav-mina-sidor" onclick="show('mina-sidor')">Mina sidor ▾</a>
+      <div class="topnav-user-menu">
+        <div class="topnav-avatar">AL</div>
+        <span class="user-name">Anna L.</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ SCROLLABLE CONTENT ══ -->
+  <div class="app-content">
+
+    <!-- ═══════════════════════════════════════
+         VIEW: HEM
+    ═══════════════════════════════════════ -->
+    <div class="view active" id="view-hem">
+
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-content">
+          <div class="hero-eyebrow">Välkommen till</div>
+          <h1 class="hero-title"><span>Conclave</span> 2026</h1>
+          <p class="hero-date">
+            <span class="hero-date-dot">◆</span>
+            25–27 april 2026
+            <span class="hero-date-dot">◆</span>
+            Göteborg · Svenska Mässan
+          </p>
+          <p class="hero-subtitle">
+            Skandinaviens trevligaste konvent för rollspel, LARP, brädspel och allt däremellan.
+            Tre dagar. Hundratals evenemang. En gemenskap.
+          </p>
+          <div class="btn-group" style="justify-content:center; gap:12px">
+            <button class="btn btn-accent btn-lg" onclick="show('besökar-registrering')">Registrera dig</button>
+            <button class="btn btn-secondary btn-lg" style="border-color:rgba(255,255,255,.5);color:#fff" onclick="show('program')">Se program</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+
+        <!-- CTAs -->
+        <h2 class="section-title" style="margin-bottom:20px">Delta i Conclave 2026</h2>
+        <div class="cta-grid">
+          <div class="cta-card">
+            <div class="cta-icon">🎫</div>
+            <div class="cta-title">Bli besökare</div>
+            <div class="cta-desc">Köp din biljett och ta del av hela programmet. Helg- och dagsbiljetter finns.</div>
+            <button class="btn btn-accent" onclick="show('besökar-registrering')">Registrera dig</button>
+          </div>
+          <div class="cta-card">
+            <div class="cta-icon">🎲</div>
+            <div class="cta-title">Arrangera ett evenemang</div>
+            <div class="cta-desc">Har du en kampanj, ett spel eller ett seminarium att erbjuda? Skicka in ditt evenemang.</div>
+            <button class="btn btn-secondary" onclick="show('login')">Logga in för att skicka in</button>
+          </div>
+          <div class="cta-card">
+            <div class="cta-icon">🙋</div>
+            <div class="cta-title">Bli funktionär</div>
+            <div class="cta-desc">Hjälp oss genomföra konventet! Ansök som funktionär och välj dina stationer.</div>
+            <button class="btn btn-secondary" onclick="show('login')">Logga in för att ansöka</button>
+          </div>
+        </div>
+
+        <!-- Featured events -->
+        <h2 class="section-title" style="margin-bottom:20px">Utvalda evenemang</h2>
+        <div class="event-card" onclick="show('event-detail')">
+          <div class="event-card-header">
+            <div class="event-card-title">Skuggor över Mörkhaven – en episk D&amp;D-kampanj</div>
+            <span class="chip cat-rollspel">Rollspel</span>
+          </div>
+          <div class="event-card-meta">
+            <span>🕑 Lördag 14:00–18:00</span>
+            <span>📍 Sal A</span>
+            <span>👤 Arrangör: Karl Lindgren</span>
+          </div>
+          <div class="event-card-desc">En föranmälningsbaserad D&amp;D 5e-kampanj för 4–5 spelare. Karaktärer tillhandahålls. Nybörjarvänlig.</div>
+          <div class="event-card-footer">
+            <span class="chip chip-orange">Föranmälan</span>
+            <a class="read-more">Läs mer →</a>
+          </div>
+        </div>
+        <div class="event-card">
+          <div class="event-card-header">
+            <div class="event-card-title">LARP: Intrigen i Palazzo Mortello</div>
+            <span class="chip cat-larp">LARP</span>
+          </div>
+          <div class="event-card-meta">
+            <span>🕑 Söndag 10:00–13:00</span>
+            <span>📍 Bankettsalen</span>
+            <span>👤 Arrangör: Sofia Bergström</span>
+          </div>
+          <div class="event-card-desc">Renässansintrig i Venediansk miljö. Dräkt rekommenderas. Drop-in välkomnas.</div>
+          <div class="event-card-footer">
+            <span class="chip chip-blue">Drop-in</span>
+            <a class="read-more">Läs mer →</a>
+          </div>
+        </div>
+        <div class="event-card">
+          <div class="event-card-header">
+            <div class="event-card-title">Brädspelsmafian: Sociala deduktionsspel</div>
+            <span class="chip cat-bradspel">Brädspel</span>
+          </div>
+          <div class="event-card-meta">
+            <span>🕑 Fredag 19:00–22:00</span>
+            <span>📍 Spelhallen</span>
+            <span>👤 Arrangör: Marcus Ek</span>
+          </div>
+          <div class="event-card-desc">Kvällen av Werewolf, Secret Hitler och liknande spel. Rullande sessioner, alltid välkommen att hoppa in.</div>
+          <div class="event-card-footer">
+            <span class="chip chip-blue">Drop-in</span>
+            <a class="read-more">Läs mer →</a>
+          </div>
+        </div>
+
+        <div style="text-align:center; margin:24px 0">
+          <button class="btn btn-secondary" onclick="show('program')">Visa hela programmet →</button>
+        </div>
+
+      </div><!-- /container -->
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <div class="footer-inner">
+          <div>
+            <div class="footer-brand"><span>Conclave</span> 2026</div>
+            <p>Göteborg · Svenska Mässan<br>25–27 april 2026</p>
+            <p class="mt-8">Arrangerat av Göteborgs Spelförening sedan 2004.</p>
+          </div>
+          <div>
+            <div class="footer-col-title">Snabblänkar</div>
+            <p style="margin-bottom:6px; cursor:pointer" onclick="show('program')">Program</p>
+            <p style="margin-bottom:6px">Om konventet</p>
+            <p style="margin-bottom:6px; cursor:pointer" onclick="show('login')">Logga in</p>
+            <p style="margin-bottom:6px">Kontakt</p>
+          </div>
+          <div>
+            <div class="footer-col-title">Kontakt</div>
+            <p style="margin-bottom:6px">info@conclave.se</p>
+            <p style="margin-bottom:6px">@ConclaveSE</p>
+          </div>
+        </div>
+        <div class="footer-bottom">© 2026 Göteborgs Spelförening. Driven av Conclave.</div>
+      </footer>
+
+    </div><!-- /view-hem -->
+
+
+    <!-- ═══════════════════════════════════════
+         VIEW: PROGRAM
+    ═══════════════════════════════════════ -->
+    <div class="view" id="view-program">
+      <div class="container" style="padding-top:28px">
+        <div class="page-header" style="margin-bottom:20px">
+          <h1 style="font-size:1.6rem;font-weight:800;color:#1b2a4a">Program</h1>
+          <p class="text-muted mt-8">Conclave 2026 · 25–27 april</p>
+        </div>
+
+        <!-- Day tabs -->
+        <div class="day-tabs">
+          <div class="day-tab active" onclick="setDayTab(this)">Alla dagar</div>
+          <div class="day-tab" onclick="setDayTab(this)">Fredag 25/4</div>
+          <div class="day-tab" onclick="setDayTab(this)">Lördag 26/4</div>
+          <div class="day-tab" onclick="setDayTab(this)">Söndag 27/4</div>
+        </div>
+
+        <!-- Category chips -->
+        <div class="filter-chips">
+          <div class="filter-chip" onclick="toggleChip(this)">Alla kategorier</div>
+          <div class="filter-chip active" onclick="toggleChip(this)">🎲 Rollspel</div>
+          <div class="filter-chip" onclick="toggleChip(this)">⚔️ LARP</div>
+          <div class="filter-chip" onclick="toggleChip(this)">♟️ Brädspel</div>
+          <div class="filter-chip" onclick="toggleChip(this)">💬 Seminarium</div>
+          <div class="filter-chip" onclick="toggleChip(this)">👨‍👧 Barn &amp; Familj</div>
+        </div>
+
+        <!-- Event list -->
+        <div class="event-card" onclick="show('event-detail')">
+          <div class="event-card-header">
+            <div class="event-card-title">Skuggor över Mörkhaven – en episk D&amp;D-kampanj</div>
+            <span class="chip cat-rollspel">Rollspel</span>
+          </div>
+          <div class="event-card-meta">
+            <span>🕑 Lördag 14:00–18:00</span>
+            <span>📍 Sal A</span>
+            <span>👤 Karl Lindgren</span>
+          </div>
+          <div class="event-card-desc">En föranmälningsbaserad D&amp;D 5e-kampanj för 4–5 spelare. Karaktärer tillhandahålls.</div>
+          <div class="event-card-footer">
+            <span class="chip chip-orange">Föranmälan · 2/5 platser kvar</span>
+            <a class="read-more">Läs mer →</a>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-header">
+            <div class="event-card-title">Pathfinder för nybörjare – Scenario 1</div>
+            <span class="chip cat-rollspel">Rollspel</span>
+          </div>
+          <div class="event-card-meta">
+            <span>🕑 Fredag 18:00–22:00</span>
+            <span>📍 Sal C</span>
+            <span>👤 Anna Björk</span>
+          </div>
+          <div class="event-card-desc">Officiellt PFS-scenario med färdiga karaktärsblad. Perfekt för den som aldrig spelat Pathfinder.</div>
+          <div class="event-card-footer">
+            <span class="chip chip-orange">Föranmälan · 4/6 platser kvar</span>
+            <a class="read-more">Läs mer →</a>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-header">
+            <div class="event-card-title">LARP: Intrigen i Palazzo Mortello</div>
+            <span class="chip cat-larp">LARP</span>
+          </div>
+          <div class="event-card-meta">
+            <span>🕑 Söndag 10:00–13:00</span>
+            <span>📍 Bankettsalen</span>
+            <span>👤 Sofia Bergström</span>
+          </div>
+          <div class="event-card-desc">Renässansintrig i Venediansk miljö. Drop-in välkomnas hela morgonen.</div>
+          <div class="event-card-footer">
+            <span class="chip chip-blue">Drop-in</span>
+            <a class="read-more">Läs mer →</a>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-header">
+            <div class="event-card-title">Brädspelsmafian: Sociala deduktionsspel</div>
+            <span class="chip cat-bradspel">Brädspel</span>
+          </div>
+          <div class="event-card-meta">
+            <span>🕑 Fredag 19:00–22:00</span>
+            <span>📍 Spelhallen</span>
+            <span>👤 Marcus Ek</span>
+          </div>
+          <div class="event-card-desc">Kvällen av Werewolf, Secret Hitler och liknande spel. Alltid välkommen att hoppa in.</div>
+          <div class="event-card-footer">
+            <span class="chip chip-blue">Drop-in</span>
+            <a class="read-more">Läs mer →</a>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-header">
+            <div class="event-card-title">Speldesign 101 – Från idé till spel</div>
+            <span class="chip cat-seminarium">Seminarium</span>
+          </div>
+          <div class="event-card-meta">
+            <span>🕑 Lördag 11:00–12:30</span>
+            <span>📍 Konferensrum 2</span>
+            <span>👤 Helena Strand</span>
+          </div>
+          <div class="event-card-desc">Interaktivt seminarium om hur man designar ett brädspel eller rollspel från grunden. Begränsat antal platser.</div>
+          <div class="event-card-footer">
+            <span class="chip chip-orange">Föranmälan · 8/12 platser kvar</span>
+            <a class="read-more">Läs mer →</a>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-header">
+            <div class="event-card-title">Drakarnas Dal – LARP för barn 8–12 år</div>
+            <span class="chip cat-barn">Barn &amp; Familj</span>
+          </div>
+          <div class="event-card-meta">
+            <span>🕑 Lördag 13:00–15:00</span>
+            <span>📍 Aktivitetsrummet</span>
+            <span>👤 Peter Magnusson</span>
+          </div>
+          <div class="event-card-desc">Ett åldersanpassat LARP-äventyr med enkla regler. Förälder kan vara med. Dräkter är ett plus men inget krav.</div>
+          <div class="event-card-footer">
+            <span class="chip chip-blue">Drop-in</span>
+            <a class="read-more">Läs mer →</a>
+          </div>
+        </div>
+
+      </div><!-- /container -->
+    </div><!-- /view-program -->
+
+
+    <!-- ═══════════════════════════════════════
+         VIEW: EVENT DETAIL
+    ═══════════════════════════════════════ -->
+    <div class="view" id="view-event-detail">
+
+      <!-- Detail header (dark) -->
+      <div class="event-detail-header">
+        <div class="container">
+          <div class="breadcrumb" style="color:rgba(255,255,255,.5); margin-bottom:12px">
+            <a onclick="show('program')" style="color:rgba(255,255,255,.5)">Program</a>
+            <span>›</span>
+            Skuggor över Mörkhaven
+          </div>
+          <div style="display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap">
+            <h1 class="event-detail-title">Skuggor över Mörkhaven</h1>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px">
+            <span class="chip cat-rollspel">Rollspel</span>
+            <span class="chip chip-orange">Föranmälan</span>
+            <span class="chip chip-green">Publicerad</span>
+          </div>
+          <div class="event-detail-meta">
+            <span>🗓 Lördag 26 april</span>
+            <span>🕑 14:00–18:00</span>
+            <span>📍 Sal A</span>
+            <span>👤 Karl Lindgren</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="container" style="padding-top:24px">
+        <div class="two-col">
+
+          <!-- Left: main content -->
+          <div class="main-col">
+
+            <div class="card">
+              <div class="card-header">Om evenemanget</div>
+              <div class="card-body">
+                <p style="line-height:1.7; color:#444; font-size:.9rem">
+                  En föranmälningsbaserad D&amp;D 5e-kampanj för 4–5 spelare. Karaktärsblad tillhandahålls –
+                  du behöver inte ha spelat D&amp;D förut. Äventyret utspelar sig i den gotiska staden
+                  Mörkhaven där spelarna måste lösa mysteriet kring en serie försvinnanden.
+                  Fokus på rollspel, utforskning och atmosfär snarare än strid.
+                </p>
+                <p style="line-height:1.7; color:#444; font-size:.9rem; margin-top:12px">
+                  <strong>Vad du behöver ta med:</strong> Tärningar (om du har), annars finns att låna.
+                  Papper och penna. Vilja att ha kul.
+                </p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">Sessioner</div>
+              <div class="card-body" style="padding-bottom:4px">
+                <p class="text-muted text-small" style="margin-bottom:12px">2 av 3 sessioner har lediga platser.</p>
+
+                <div class="session-list">
+                  <div class="session-row">
+                    <div class="session-row-header" onclick="toggleSession(this)">
+                      <div class="session-time">Lördag 14:00–18:00</div>
+                      <div class="session-loc">📍 Sal A · Bord 3</div>
+                      <div class="session-cap nearly">3/5 platser</div>
+                      <div style="color:#aaa;font-size:.8rem">▼</div>
+                    </div>
+                    <div class="session-body" style="display:none">
+                      <p>Arrangör vid bordet: Karl Lindgren. Karaktärsblad finns tillgängliga 13:30.</p>
+                      <div style="margin-top:12px">
+                        <button class="btn btn-accent btn-sm" onclick="show('login')">Logga in för att anmäla dig</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="session-row">
+                    <div class="session-row-header" onclick="toggleSession(this)">
+                      <div class="session-time">Söndag 10:00–14:00</div>
+                      <div class="session-loc">📍 Sal A · Bord 3</div>
+                      <div class="session-cap available">1/5 platser</div>
+                      <div style="color:#aaa;font-size:.8rem">▼</div>
+                    </div>
+                    <div class="session-body" style="display:none">
+                      <p>Söndagspasset är en fristående del av kampanjen – kan spelas separat.</p>
+                      <div style="margin-top:12px">
+                        <button class="btn btn-accent btn-sm" onclick="show('login')">Logga in för att anmäla dig</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="session-row">
+                    <div class="session-row-header" onclick="toggleSession(this)">
+                      <div class="session-time">Fredag 20:00–24:00</div>
+                      <div class="session-loc">📍 Sal B · Bord 1</div>
+                      <div class="session-cap full">5/5 platser · FULLBOKAT</div>
+                      <div style="color:#aaa;font-size:.8rem">▼</div>
+                    </div>
+                    <div class="session-body" style="display:none">
+                      <p>Detta pass är fullbokat. Du kan stå i kö om en plats frigörs.</p>
+                      <div style="margin-top:12px">
+                        <button class="btn btn-ghost btn-sm" disabled>Fullbokat</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /main-col -->
+
+          <!-- Right: sidebar -->
+          <div class="side-col">
+
+            <div class="side-card">
+              <div class="side-card-title">Anmäl dig</div>
+              <p class="text-muted text-small" style="margin-bottom:12px">
+                Evenemanget kräver föranmälan. Välj en session ovan och logga in för att boka din plats.
+              </p>
+              <button class="btn btn-accent" style="width:100%" onclick="show('login')">Logga in för att anmäla dig</button>
+              <p class="text-muted text-small mt-8" style="text-align:center">
+                <a href="#" style="color:#1b2a4a">Har du inget konto? Registrera dig</a>
+              </p>
+            </div>
+
+            <div class="side-card">
+              <div class="side-card-title">Om arrangören</div>
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px">
+                <div style="width:36px;height:36px;background:#1b2a4a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.85rem">KL</div>
+                <div>
+                  <div style="font-weight:600;font-size:.875rem">Karl Lindgren</div>
+                  <div style="font-size:.77rem;color:#888">Arrangör sedan 2019</div>
+                </div>
+              </div>
+              <p style="font-size:.82rem;color:#666;line-height:1.5">
+                Erfaren spelledare med fokus på narrativt rollspel. Arrangerar regelbundet på Conclave och lokala spelkvällar.
+              </p>
+            </div>
+
+            <div class="side-card">
+              <div class="side-card-title">Praktisk info</div>
+              <div style="font-size:.84rem;color:#555;line-height:1.9">
+                <div>🎯 <strong>Kategori:</strong> Rollspel</div>
+                <div>👥 <strong>Platser per session:</strong> 5</div>
+                <div>⏱ <strong>Speltid:</strong> 4 timmar</div>
+                <div>🌐 <strong>Språk:</strong> Svenska</div>
+                <div>📊 <strong>Svårighetsgrad:</strong> Nybörjarvänlig</div>
+              </div>
+            </div>
+
+          </div><!-- /side-col -->
+        </div><!-- /two-col -->
+      </div><!-- /container -->
+
+    </div><!-- /view-event-detail -->
+
+
+    <!-- ═══════════════════════════════════════
+         VIEW: LOGIN
+    ═══════════════════════════════════════ -->
+    <div class="view" id="view-login">
+      <div class="container-sm">
+        <div style="text-align:center; margin-bottom:28px">
+          <div style="font-size:1.5rem;font-weight:800;color:#1b2a4a;margin-bottom:4px">
+            Logga in på <span style="color:#e8920a">Conclave</span>
+          </div>
+          <p class="text-muted text-small">Logga in för att registrera dig, arrangera evenemang och mer.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="form-group">
+              <label>E-postadress</label>
+              <input type="email" placeholder="anna@example.com" value="anna.lindstrom@example.com">
+            </div>
+            <div class="form-group">
+              <label>Lösenord</label>
+              <input type="password" placeholder="••••••••" value="••••••••">
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px" onclick="loginAndGo()">
+              Logga in
+            </button>
+            <p style="text-align:center;font-size:.8rem;margin-top:10px">
+              <a href="#" style="color:#888;text-decoration:none">Glömt lösenordet?</a>
+            </p>
+
+            <div class="divider-text">eller</div>
+
+            <button class="social-btn">
+              <div class="social-logo google-logo">G</div>
+              Fortsätt med Google
+            </button>
+            <button class="social-btn">
+              <div class="social-logo" style="background:#1877f2;color:#fff;font-size:.65rem">f</div>
+              Fortsätt med Facebook
+            </button>
+
+            <p style="text-align:center;font-size:.8rem;color:#888;margin-top:16px">
+              Har du inget konto? Registrering sker via Conclave-systemet –
+              <a href="#" style="color:#1b2a4a;font-weight:600">läs mer</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div><!-- /view-login -->
+
+
+    <!-- ═══════════════════════════════════════
+         VIEW: MINA SIDOR
+    ═══════════════════════════════════════ -->
+    <div class="view" id="view-mina-sidor">
+
+      <div class="greeting-banner">
+        <div class="greeting-inner">
+          <div class="greeting-title">Hej, Anna! 👋</div>
+          <div class="greeting-sub">Conclave 2026 · 25–27 april · Göteborg</div>
+        </div>
+      </div>
+
+      <div class="container" style="padding-top:28px">
+
+        <!-- ── Besökarregistrering ── -->
+        <div class="role-section">
+          <div class="role-section-header">
+            <div class="role-section-title">🎫 Besökarregistrering</div>
+            <span class="chip chip-green">Registrerad ✓</span>
+          </div>
+          <div class="status-section">
+            <div style="font-size:1.6rem">🎟</div>
+            <div class="status-section-info">
+              <div class="status-section-title">Helg-biljett</div>
+              <div class="status-section-sub">Fredag–Söndag · Ref: CV2026-1042</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="show('besökar-registrering')">Se detaljer</button>
+          </div>
+        </div>
+
+        <!-- ── Mina evenemang ── -->
+        <div class="role-section">
+          <div class="role-section-header">
+            <div class="role-section-title">🎲 Mina evenemang</div>
+            <span class="chip chip-blue">Arrangör</span>
+          </div>
+          <div class="card" style="margin-bottom:10px">
+            <div class="card-body no-pad">
+              <table class="mini-table">
+                <thead>
+                  <tr>
+                    <th>Titel</th>
+                    <th>Kategori</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Trollformlernas Borg</strong></td>
+                    <td><span class="chip cat-rollspel" style="font-size:.7rem">Rollspel</span></td>
+                    <td><span class="chip chip-orange">Under granskning</span></td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="show('mitt-evenemang')">Visa</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>OSR-grundkurs</strong></td>
+                    <td><span class="chip cat-seminarium" style="font-size:.7rem">Seminarium</span></td>
+                    <td><span class="chip chip-grey">Utkast</span></td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="show('skicka-in-evenemang')">Redigera</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="show('skicka-in-evenemang')">+ Skicka in nytt evenemang</button>
+        </div>
+
+        <!-- ── Min staffansökan ── -->
+        <div class="role-section">
+          <div class="role-section-header">
+            <div class="role-section-title">🙋 Min staffansökan</div>
+            <span class="chip chip-green">Accepterad ✓</span>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <p class="text-muted text-small" style="margin-bottom:14px">Du är tilldelad följande pass:</p>
+              <ul class="shift-list">
+                <li class="shift-item">
+                  <span class="shift-icon">🔑</span>
+                  <div>
+                    <div class="shift-station">Ingångsbevakning</div>
+                    <div class="shift-time">Fredag 16:00–20:00</div>
+                  </div>
+                </li>
+                <li class="shift-item">
+                  <span class="shift-icon">🎲</span>
+                  <div>
+                    <div class="shift-station">Spelbiblioteket</div>
+                    <div class="shift-time">Lördag 10:00–14:00</div>
+                  </div>
+                </li>
+                <li class="shift-item">
+                  <span class="shift-icon">🎲</span>
+                  <div>
+                    <div class="shift-station">Spelbiblioteket</div>
+                    <div class="shift-time">Söndag 12:00–16:00</div>
+                  </div>
+                </li>
+              </ul>
+              <p class="text-muted text-small mt-12">Frågor om dina pass? Kontakta bemanningskoordinator@conclave.se</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Mina sessionsregistreringar ── -->
+        <div class="role-section">
+          <div class="role-section-header">
+            <div class="role-section-title">📋 Mina sessionsregistreringar</div>
+          </div>
+          <div class="card">
+            <div class="card-body no-pad">
+              <table class="mini-table">
+                <thead><tr><th>Evenemang</th><th>Session</th><th>Plats</th><th></th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Skuggor över Mörkhaven</strong></td>
+                    <td>Lördag 14:00–18:00</td>
+                    <td>Sal A · Bord 3</td>
+                    <td><button class="btn btn-danger btn-sm">Avboka</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /container -->
+    </div><!-- /view-mina-sidor -->
+
+
+    <!-- ═══════════════════════════════════════
+         VIEW: BESÖKAR-REGISTRERING
+    ═══════════════════════════════════════ -->
+    <div class="view" id="view-besökar-registrering">
+      <div class="container-md">
+        <div class="breadcrumb" style="margin-top:12px">
+          <a onclick="show('mina-sidor')">Mina sidor</a>
+          <span>›</span>
+          Besökarregistrering
+        </div>
+
+        <h1 style="font-size:1.5rem;font-weight:800;color:#1b2a4a;margin-bottom:6px;margin-top:8px">Registrera dig som besökare</h1>
+        <p class="text-muted" style="margin-bottom:24px">Conclave 2026 · 25–27 april · Göteborg</p>
+
+        <div class="card">
+          <div class="card-header">Välj biljetttyp</div>
+          <div class="card-body">
+            <div class="radio-card-group">
+              <label class="radio-card selected" onclick="selectRadio(this)">
+                <input type="radio" name="ticket" checked>
+                <div>
+                  <div class="radio-card-label">Helg-biljett</div>
+                  <div class="radio-card-desc">Fredag 16:00 till Söndag 18:00 · Tillgång till allt</div>
+                </div>
+                <div class="radio-card-price">250 kr</div>
+              </label>
+              <label class="radio-card" onclick="selectRadio(this)">
+                <input type="radio" name="ticket">
+                <div>
+                  <div class="radio-card-label">Dagsbiljett – Fredag</div>
+                  <div class="radio-card-desc">Fredag 16:00–23:00</div>
+                </div>
+                <div class="radio-card-price">100 kr</div>
+              </label>
+              <label class="radio-card" onclick="selectRadio(this)">
+                <input type="radio" name="ticket">
+                <div>
+                  <div class="radio-card-label">Dagsbiljett – Lördag</div>
+                  <div class="radio-card-desc">Lördag 10:00–23:00</div>
+                </div>
+                <div class="radio-card-price">150 kr</div>
+              </label>
+              <label class="radio-card" onclick="selectRadio(this)">
+                <input type="radio" name="ticket">
+                <div>
+                  <div class="radio-card-label">Dagsbiljett – Söndag</div>
+                  <div class="radio-card-desc">Söndag 10:00–18:00</div>
+                </div>
+                <div class="radio-card-price">100 kr</div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            Kontaktuppgifter
+            <span style="margin-left:auto">
+              <a href="#" style="font-size:.8rem;color:#1b2a4a">Redigera profil</a>
+            </span>
+          </div>
+          <div class="card-body">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px">
+              <div class="form-group">
+                <label>Förnamn</label>
+                <input type="text" value="Anna" readonly style="background:#f8f9fa;color:#888">
+              </div>
+              <div class="form-group">
+                <label>Efternamn</label>
+                <input type="text" value="Lindström" readonly style="background:#f8f9fa;color:#888">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>E-postadress</label>
+              <input type="email" value="anna.lindstrom@example.com" readonly style="background:#f8f9fa;color:#888">
+            </div>
+            <div class="form-group">
+              <label>Telefon (valfritt)</label>
+              <input type="text" value="+46 70 123 45 67" readonly style="background:#f8f9fa;color:#888">
+            </div>
+            <p class="form-hint">Kontaktuppgifter hämtas från din profil. Uppdatera via "Redigera profil" ovan.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="checkbox-item" style="margin-bottom:12px">
+              <input type="checkbox" id="terms" checked>
+              <label for="terms" style="font-size:.875rem">
+                Jag godkänner <a href="#" style="color:#1b2a4a">konventets villkor och regler</a>
+              </label>
+            </div>
+            <div class="alert alert-info">
+              <strong>Betalning:</strong> Betalning sker separat. Du erhåller betalningsinstruktioner via e-post efter registrering.
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px">
+          <button class="btn btn-ghost" onclick="show('mina-sidor')">Avbryt</button>
+          <button class="btn btn-accent" onclick="show('mina-sidor')">Slutför registrering →</button>
+        </div>
+
+      </div><!-- /container-md -->
+    </div><!-- /view-besökar-registrering -->
+
+
+    <!-- ═══════════════════════════════════════
+         VIEW: SKICKA IN EVENEMANG
+    ═══════════════════════════════════════ -->
+    <div class="view" id="view-skicka-in-evenemang">
+      <div class="container-md">
+        <div class="breadcrumb" style="margin-top:12px">
+          <a onclick="show('mina-sidor')">Mina sidor</a>
+          <span>›</span>
+          Skicka in evenemang
+        </div>
+
+        <h1 style="font-size:1.5rem;font-weight:800;color:#1b2a4a;margin-bottom:6px;margin-top:8px">Skicka in ett evenemang</h1>
+        <p class="text-muted" style="margin-bottom:24px">Conclave 2026 · Arrangörsformulär</p>
+
+        <div class="card">
+          <div class="card-header">Grundinformation</div>
+          <div class="card-body">
+            <div class="form-group">
+              <label>Titel *</label>
+              <input type="text" placeholder="Ge evenemanget ett tydligt och inbjudande namn" value="Trollformlernas Borg">
+            </div>
+            <div class="form-group">
+              <label>Kategori *</label>
+              <select>
+                <option>Rollspel</option>
+                <option>LARP</option>
+                <option>Brädspel</option>
+                <option>Seminarium</option>
+                <option>Barn &amp; Familj</option>
+                <option>Övrigt</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Beskrivning *</label>
+              <textarea style="min-height:130px">En intensiv dungeoncrawl i klassisk OSR-anda för 4–6 spelare. Karaktärsskapande ingår som del av upplevelsen. Dödlighet är möjlig – förbered dig!</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Registreringstyp</div>
+          <div class="card-body">
+            <div class="radio-card-group">
+              <label class="radio-card selected" onclick="selectRadio(this)">
+                <input type="radio" name="regtype" checked>
+                <div>
+                  <div class="radio-card-label">Föranmälan</div>
+                  <div class="radio-card-desc">Deltagarna anmäler sig i förväg. Du anger max antal platser per session.</div>
+                </div>
+              </label>
+              <label class="radio-card" onclick="selectRadio(this)">
+                <input type="radio" name="regtype">
+                <div>
+                  <div class="radio-card-label">Drop-in</div>
+                  <div class="radio-card-desc">Ingen föranmälan – deltagarna dyker bara upp. Passar för öppna aktiviteter.</div>
+                </div>
+              </label>
+              <label class="radio-card" onclick="selectRadio(this)">
+                <input type="radio" name="regtype">
+                <div>
+                  <div class="radio-card-label">Kombinerat</div>
+                  <div class="radio-card-desc">Vissa platser är föranmälda, resten är drop-in.</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Medarrangörer</div>
+          <div class="card-body">
+            <p class="text-muted text-small" style="margin-bottom:12px">Lägg till andra arrangörer som delar ansvaret för evenemanget.</p>
+            <div class="tag-list" id="co-organizer-tags">
+              <span class="tag">Björn Karlsson <span class="tag-remove" onclick="removeTag(this)">×</span></span>
+              <span class="tag">Lisa Nilsson <span class="tag-remove" onclick="removeTag(this)">×</span></span>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:10px">
+              <input type="text" placeholder="Sök person..." style="padding:8px 12px;border:1.5px solid #ddd;border-radius:6px;font-size:.875rem;flex:1">
+              <button class="btn btn-ghost btn-sm">Lägg till</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Sessionönskemål</div>
+          <div class="card-body">
+            <p class="text-muted text-small" style="margin-bottom:12px">Ange önskade tider för ditt evenemang. Arrangörsteamet schemalägger utifrån dina önskemål.</p>
+
+            <!-- Existing wishes table -->
+            <table class="wish-table" style="margin-bottom:14px">
+              <thead>
+                <tr>
+                  <th>Dag</th>
+                  <th>Start</th>
+                  <th>Slut</th>
+                  <th>Kommentar</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Lördag</td>
+                  <td>14:00</td>
+                  <td>18:00</td>
+                  <td><span class="text-muted">–</span></td>
+                  <td><button class="btn btn-danger btn-sm">Ta bort</button></td>
+                </tr>
+                <tr>
+                  <td>Söndag</td>
+                  <td>10:00</td>
+                  <td>14:00</td>
+                  <td>Helst inte tidig morgon</td>
+                  <td><button class="btn btn-danger btn-sm">Ta bort</button></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Add wish row -->
+            <div style="background:#f8f9fa;border:1px solid #eee;border-radius:6px;padding:14px">
+              <p style="font-size:.8rem;font-weight:600;color:#666;margin-bottom:10px">Lägg till önskemål</p>
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; align-items:end">
+                <div class="form-group" style="margin-bottom:0">
+                  <label>Dag</label>
+                  <select>
+                    <option>Fredag 25/4</option>
+                    <option>Lördag 26/4</option>
+                    <option selected>Söndag 27/4</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                  <label>Starttid</label>
+                  <input type="time" value="10:00">
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                  <label>Sluttid</label>
+                  <input type="time" value="14:00">
+                </div>
+              </div>
+              <div style="margin-top:10px">
+                <button class="btn btn-ghost btn-sm">+ Lägg till</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="alert alert-info" style="margin-top:8px">
+          Efter inskickning granskas ditt evenemang av arrangörsteamet. Du kan bli kontaktad om kompletteringar behövs.
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; margin-bottom:32px">
+          <button class="btn btn-ghost" onclick="show('mina-sidor')">Spara som utkast</button>
+          <button class="btn btn-accent">Skicka in för granskning →</button>
+        </div>
+
+      </div><!-- /container-md -->
+    </div><!-- /view-skicka-in-evenemang -->
+
+
+    <!-- ═══════════════════════════════════════
+         VIEW: MITT EVENEMANG (under granskning)
+    ═══════════════════════════════════════ -->
+    <div class="view" id="view-mitt-evenemang">
+      <div class="container-md">
+        <div class="breadcrumb" style="margin-top:12px">
+          <a onclick="show('mina-sidor')">Mina sidor</a>
+          <span>›</span>
+          <a onclick="show('mina-sidor')">Mina evenemang</a>
+          <span>›</span>
+          Trollformlernas Borg
+        </div>
+
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:12px; margin-bottom:6px">
+          <h1 style="font-size:1.5rem;font-weight:800;color:#1b2a4a">Trollformlernas Borg</h1>
+          <span class="chip chip-orange">Under granskning</span>
+          <span class="chip cat-rollspel">Rollspel</span>
+        </div>
+        <p class="text-muted" style="margin-bottom:20px">Skickades in 8 april 2026</p>
+
+        <!-- Admin comment -->
+        <div class="alert alert-comment">
+          <div style="font-weight:700;margin-bottom:5px;color:#5d4037">💬 Kommentar från arrangörsteamet</div>
+          <p style="font-size:.875rem;line-height:1.6">
+            Kan du förtydliga hur lång tid varje session tar och om det är möjligt att spela sessionen utan bakgrundskunskap från tidigare äventyr?
+            Vi behöver också veta om karaktärsblad tillhandahålls eller om deltagarna skapar sina egna.
+          </p>
+          <p style="font-size:.77rem;color:#888;margin-top:8px">Skickades av arrangörsteamet · 9 april 2026</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Evenemangsinfo</div>
+          <div class="card-body" style="color:#444;font-size:.9rem;line-height:1.7">
+            <p><strong>Kategori:</strong> Rollspel</p>
+            <p style="margin-top:10px"><strong>Beskrivning:</strong></p>
+            <p style="margin-top:6px">
+              En intensiv dungeoncrawl i klassisk OSR-anda för 4–6 spelare. Karaktärsskapande ingår som del av upplevelsen.
+              Dödlighet är möjlig – förbered dig!
+            </p>
+            <p style="margin-top:12px"><strong>Registreringstyp:</strong> Föranmälan</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Sessionönskemål</div>
+          <div class="card-body" style="padding-bottom:4px">
+            <table class="wish-table">
+              <thead>
+                <tr><th>Dag</th><th>Start</th><th>Slut</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Lördag</td><td>14:00</td><td>18:00</td>
+                  <td><span class="chip chip-grey">Önskemål</span></td>
+                </tr>
+                <tr>
+                  <td>Söndag</td><td>10:00</td><td>14:00</td>
+                  <td><span class="chip chip-grey">Önskemål</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="alert alert-warning">
+          Evenemanget är under granskning och kan inte redigeras. Dra tillbaka till utkast för att göra ändringar.
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; margin-bottom:32px">
+          <button class="btn btn-ghost" onclick="show('mina-sidor')">← Tillbaka</button>
+          <button class="btn btn-secondary">Dra tillbaka till utkast</button>
+        </div>
+
+      </div><!-- /container-md -->
+    </div><!-- /view-mitt-evenemang -->
+
+
+    <!-- ═══════════════════════════════════════
+         VIEW: STAFFANSÖKAN
+    ═══════════════════════════════════════ -->
+    <div class="view" id="view-staff-ansökan">
+      <div class="container-md">
+        <div class="breadcrumb" style="margin-top:12px">
+          <a onclick="show('mina-sidor')">Mina sidor</a>
+          <span>›</span>
+          Staffansökan
+        </div>
+
+        <h1 style="font-size:1.5rem;font-weight:800;color:#1b2a4a;margin-bottom:6px;margin-top:8px">Ansök som funktionär</h1>
+        <p class="text-muted" style="margin-bottom:24px">Conclave 2026 · Staffansökan</p>
+
+        <div class="card">
+          <div class="card-body">
+            <p style="font-size:.9rem;line-height:1.7;color:#444">
+              Som funktionär på Conclave hjälper du till att genomföra konventet. Arbetsuppgifterna varierar –
+              allt från ingångsbevakning och rumsöversikt till att hjälpa arrangörer och besökare att hitta rätt.
+              Du arbetar pass om ca 4 timmar och får tillgång till konventet utanför dina pass.
+            </p>
+            <p style="font-size:.875rem;color:#888;margin-top:8px">
+              Funktionärer erbjuds reducerat biljettpris som tack för hjälpen.
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Berätta om ditt intresse</div>
+          <div class="card-body">
+            <div class="form-group">
+              <label>Varför vill du vara funktionär? (valfritt)</label>
+              <textarea placeholder="Berätta lite om dig själv och varför du vill hjälpa till...">Har volontärarbetat på spelkonvent förut och älskar stämningen. Kan ta initiativ och hjälpa folk att hitta rätt.</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Önskade stationer</div>
+          <div class="card-body">
+            <p class="text-muted text-small" style="margin-bottom:14px">Välj de stationer du helst vill arbeta på. Inget krav – du kan väljas till annan station.</p>
+            <div class="checkbox-group">
+              <label class="checkbox-item">
+                <input type="checkbox" checked>
+                <span>Spelbiblioteket – hjälp besökare hitta och låna spel</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox">
+                <span>Ingångsbevakning – ta emot besökare och kontrollera biljetter</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" checked>
+                <span>Evenemangsassistent – stöd vid pågående evenemang</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox">
+                <span>Informationsdisk – svara på frågor och lotsa besökare</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox">
+                <span>Teknik &amp; AV – hantera projektorer, ljud och teknik</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox">
+                <span>Barn &amp; Familj-stationen – stöd vid familjeaktiviteter</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">Tillgänglighet</div>
+          <div class="card-body">
+            <p class="text-muted text-small" style="margin-bottom:14px">Vilka dagar kan du arbeta? Välj alla tillämpliga.</p>
+            <div class="checkbox-group">
+              <label class="checkbox-item">
+                <input type="checkbox" checked>
+                <span>Fredag 25 april</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" checked>
+                <span>Lördag 26 april</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox">
+                <span>Söndag 27 april</span>
+              </label>
+            </div>
+            <p class="form-hint mt-8">Du tilldelas normalt 2–3 pass under konventet baserat på din tillgänglighet.</p>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; margin-bottom:32px">
+          <button class="btn btn-ghost" onclick="show('mina-sidor')">Avbryt</button>
+          <button class="btn btn-accent">Skicka in ansökan →</button>
+        </div>
+
+      </div><!-- /container-md -->
+    </div><!-- /view-staff-ansökan -->
+
+  </div><!-- /app-content -->
+</div><!-- /app-wrapper -->
+
+<script>
+// ── Screen navigation ──────────────────────────────────────────────────
+
+const LOGGED_IN_SCREENS = [
+  'mina-sidor','besökar-registrering','skicka-in-evenemang','mitt-evenemang','staff-ansökan'
+];
+
+function show(screenId) {
+  // Hide all views
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+
+  // Show target view
+  const target = document.getElementById('view-' + screenId);
+  if (target) {
+    target.classList.add('active');
+    document.querySelector('.app-content').scrollTop = 0;
+  }
+
+  // Update demo nav active state
+  document.querySelectorAll('.demo-nav a').forEach(a => a.classList.remove('active'));
+  const navLink = document.getElementById('link-' + screenId);
+  if (navLink) navLink.classList.add('active');
+
+  // Update top nav active state
+  document.querySelectorAll('.topnav-links a').forEach(a => a.classList.remove('active'));
+  if (screenId === 'program' || screenId === 'event-detail') {
+    document.getElementById('nav-program').classList.add('active');
+  }
+
+  // Swap auth state in top nav
+  const isLoggedIn = LOGGED_IN_SCREENS.includes(screenId);
+  document.getElementById('topnav-guest').style.display = isLoggedIn ? 'none' : 'flex';
+  document.getElementById('topnav-user').style.display  = isLoggedIn ? 'flex' : 'none';
+}
+
+// ── Day tabs ────────────────────────────────────────────────────────────
+
+function setDayTab(el) {
+  document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── Category filter chips ──────────────────────────────────────────────
+
+function toggleChip(el) {
+  // Only one active at a time (or deselect)
+  const wasActive = el.classList.contains('active');
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  if (!wasActive) el.classList.add('active');
+}
+
+// ── Session row expand/collapse ────────────────────────────────────────
+
+function toggleSession(headerEl) {
+  const body = headerEl.nextElementSibling;
+  const arrow = headerEl.querySelector('div:last-child');
+  if (body && body.classList.contains('session-body')) {
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+  }
+}
+
+// ── Radio card selection ───────────────────────────────────────────────
+
+function selectRadio(labelEl) {
+  const group = labelEl.closest('.radio-card-group');
+  if (group) {
+    group.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+  }
+  labelEl.classList.add('selected');
+}
+
+// ── Tag remove ─────────────────────────────────────────────────────────
+
+function removeTag(spanEl) {
+  spanEl.closest('.tag').remove();
+}
+
+// ── Login demo ─────────────────────────────────────────────────────────
+
+function loginAndGo() {
+  show('mina-sidor');
+}
+
+// ── Initial state ──────────────────────────────────────────────────────
+
+show('hem');
+</script>
+</body>
+</html>

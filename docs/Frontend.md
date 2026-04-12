@@ -275,36 +275,163 @@ API-data.
 ## Publika appen (`projects/public`)
 
 > Appen är ännu inte påbörjad. Principerna nedan är avsiktsförklaringar
-> som kan justeras när implementation börjar.
+> som kan justeras när implementation börjar. Se `docs/public-mockup.html`
+> för interaktiv skissbild av alla skärmar.
 
 ### Syfte och målgrupp
 Besökar-/arrangörs-/staffsida riktad mot konventionens deltagare. Stylas
 enligt konventionens profil, inte ett generellt admin-UI. Mobilanpassning
 är ett primärkrav.
 
-### Planerade avvikelser från admin-appen
+---
 
-| Område | Admin | Publik |
+### Routing
+
+```
+/                          → HemComponent              (publik)
+/program                   → ProgramComponent           (publik)
+/program/:id               → EventDetailComponent       (publik)
+/login                     → LoginComponent             (publik)
+/mina-sidor                → MinaSidorComponent         (authGuard)
+/mina-sidor/registrering   → VisitorRegistrationComponent (authGuard)
+/mina-sidor/evenemang/nytt → SubmitEventComponent       (authGuard)
+/mina-sidor/evenemang/:id  → MyEventComponent           (authGuard)
+/mina-sidor/staffansökan   → StaffApplicationComponent  (authGuard)
+```
+
+---
+
+### Shell och navigation
+
+`ShellComponent` med `mat-toolbar` som app-topnav (konventionsbrandad).
+Inga sidomenyer – allt navigeras via topnav och `routerLink`.
+
+- Publika routes (`/`, `/program`, `/program/:id`) är tillgängliga utan token.
+- `authGuard` (från shared) skyddar alla `/mina-sidor/**`-routes och
+  redirectar till `/login` om inget token finns.
+- Ingen `adminGuard` används i publika appen.
+
+**Auth-tillstånd i topnav:**
+- Ej inloggad: visar "Logga in"-knapp
+- Inloggad: visar "Mina sidor"-länk + användarnamn-chip med dropdown
+- Använder `AuthService.isAuthenticated` (signal) från shared-biblioteket
+
+---
+
+### Rolldetektering ("Mina sidor")
+
+Den publika appen har inga formella roller i JWT-meningen. En användares
+deltagande avgör vilka sektioner som visas:
+
+| Roll | Källa |
+|------|-------|
+| **Besökare** | `GET /editions/{id}/my-visitor-registration` → ej null |
+| **Arrangör** | `GET /editions/{id}/my-events` → ej tom lista |
+| **Funktionär** | `GET /editions/{id}/my-staff-application` → ej null |
+
+`MinaSidorComponent` laddar alla tre parallellt i `ngOnInit`. Varje sektion
+visar en CTA-card om data är null/tom.
+
+---
+
+### Skeleton loading
+
+Använd CSS skeleton shimmer i stället för `mat-spinner`. Definieras som
+global utility-klass i `styles.scss`:
+
+```scss
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+```
+
+---
+
+### Konventionsbranding
+
+Temat konfigureras via CSS custom properties i `styles.scss`:
+
+```scss
+:root {
+  --brand-primary: #{$brand-primary};  // t.ex. #1b2a4a
+  --brand-accent:  #{$brand-accent};   // t.ex. #e8920a
+}
+```
+
+Angular Material custom theme bygger på dessa variabler. Värden sätts per
+deploy via `environment.ts` → `environment.brandPrimary` /
+`environment.brandAccent`.
+
+---
+
+### Tenant och edition-kontext
+
+Den publika appen visar alltid den aktiva/publicerade upplagan. Inget
+`EditionContextService` med val bland upplagor (till skillnad från admin).
+
+**EditionService** (singleton, `providedIn: 'root'`):
+- Laddar aktiv upplaga vid app-start via `APP_INITIALIZER`
+- Exponerar `editionId` som signal
+- Andra services läser `editionService.editionId()` i stället för att
+  skicka ID som parameter
+
+---
+
+### Publika API-anrop (utan auth)
+
+Feed-endpointarna används för offentligt innehåll:
+
+| Endpoint | Används av |
+|----------|-----------|
+| `GET /feed/editions/{id}` | Landningssida, program-lista |
+| `GET /feed/events/{id}` | Evenemangsdetalj |
+
+Dessa returnerar enbart publicerade data och kräver inget token.
+
+---
+
+### Komponentmönster
+
+Samma standalone-komponentmönster som admin. Avvikelser:
+
+| Aspekt | Admin | Publik |
 |--------|-------|--------|
-| Tema | Angular Material standard | Konventionsbrandad (anpassad palette) |
+| Layout | Sidenav + sidebar | Top nav, full-width content |
+| Laddning | `mat-spinner` | Skeleton shimmer |
+| Formulär | Inline på sidan | Egna route-baserade formulärsidor |
+| Auth | Alltid inloggad | Blandat – publik/skyddad |
 | Responsivitet | Desktop-first | Mobile-first |
-| Auth | Alltid inloggad (admin) | Blandat – läsvyer är publika, formulär kräver inloggning |
-| Formulär | Inline på sidan | Möjligen egna rout-baserade formulär-sidor |
-| State | Signals + lokal state | Samma: Signals, ingen NgRx |
-| Laddningstillstånd | Spinner | Skeleton-loading (bättre UX för publik) |
-| Fel | Inline felmeddelande | Troligen inline, men mer genomtänkt UX |
+| Tema | Material standard | Konventionsbrandad via CSS-variabler |
+| State | Signals + lokal | Samma + `EditionService` singleton |
 
-### Autentisering
-- Publika GET-endpoints kräver ingen token
-- Registrerings- och ansökningsflöden kräver inloggning (samma JWT-mekanism)
-- Ingen `adminGuard` – guard baseras på autentisering, ej admin-roll
+**Formulärflöde** – skickade formulär navigerar med `router.navigate`
+snarare än inline-reset. Bekräftelse visas som separat vy eller alert.
+
+**Mobil-first CSS** – `max-width`-containers, `flex-direction: column` på
+smala skärmar, generösa touch-targets (min 44px höjd på knappar).
+
+---
 
 ### Strukturplan
+
 ```
 features/
-  program/         – evenemangsschema (publik, ingen auth)
-  register/        – besökarregistrering (auth krävs)
-  apply-staff/     – staffansökan (auth krävs)
-  submit-event/    – arrangörsflöde (auth krävs)
-  my-registrations/– mina registreringar
+  hem/               – landningssida (publik)
+  program/           – evenemangslista + filtrering (publik)
+  event-detail/      – evenemangsdetalj + sessioner (publik)
+  auth/              – login-formulär (publik)
+  mina-sidor/
+    hub/             – MinaSidorComponent: alla tre rollsektioner parallellt
+    besökarregistrering/ – VisitorRegistrationComponent (authGuard)
+    evenemang/
+      submit/        – SubmitEventComponent (authGuard)
+      detail/        – MyEventComponent (authGuard)
+    staff/           – StaffApplicationComponent (authGuard)
 ```
