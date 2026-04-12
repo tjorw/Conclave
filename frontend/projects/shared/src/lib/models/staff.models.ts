@@ -2,6 +2,7 @@ export interface ShiftSummaryDto {
   id: string;
   stationId: string;
   responsibleId: string;
+  responsibleName: string | null;
   start: string;
   end: string;
   minPersons: number;
@@ -14,6 +15,7 @@ export interface ShiftDto {
   id: string;
   stationId: string;
   responsibleId: string;
+  responsibleName: string | null;
   start: string;
   end: string;
   minPersons: number;
@@ -25,7 +27,17 @@ export interface ShiftDto {
 export interface StaffAssignmentDto {
   id: string;
   personId: string;
-  assignedById: string;
+  personName: string | null;
   status: string;
   assignedAt: string;
+}
+
+export interface StaffApplicationSummaryDto {
+  id: string;
+  personId: string;
+  personName: string | null;
+  interestDescription: string;
+  status: string;
+  createdAt: string;
+  stationPreferenceIds: string[];
 }

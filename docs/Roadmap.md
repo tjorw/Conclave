@@ -32,6 +32,7 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 - **API-förbättringar** – CORS-policy för Angular-apparna, SystemDb/IdentityDb auto-migreras vid uppstart, ConventionDb auto-migreras vid provisioning
 - **3.1.4 Konventionsstruktur** – Upplagehantering, lokaler, funktionsområden, kategorier med full CRUD; aktiv upplaga i sessionStorage-kontext; tabbar och tabelllistningar
 - **3.1.5 Personregister** – Personlista med sökning, skapa/redigera/avaktivera/återaktivera; admin-flagga; standardmönster för listningssidor dokumenterat
+- **3.1.7 Bemanningshantering** – Passöversikt per station, skapa/ställa in pass, tilldela/bekräfta/avslå/avboka tilldelningar, staffansökningslista med acceptera/avslå; `GET /editions/{id}/staff-applications` implementerad
 
 ### Ej klar
 Se faserna nedan.
@@ -157,11 +158,14 @@ Rollbaserad app för konventionsadministratörer. Kräver `is_admin`-claim.
 #### 3.1.6b Evenemangsflöde – genomgång och förfining
 Draftprocessen fungerar tekniskt men speglar inte fullt ut hur flödet ska fungera ur arrangörens och adminens perspektiv. Kräver ett dedikerat arbetspass där flödet beskrivs i detalj och implementationen justeras därefter.
 
-#### 3.1.7 Bemanningshantering
-- Passöversikt per station: `GET /stations/{id}/shifts`
-- Skapa pass, tilldela/bekräfta/avslå tilldelningar
-- Staffansökanslista: acceptera/avslå
-- *Kräver ny backend-endpoint:* `GET /editions/{id}/staff-applications`
+#### ~~3.1.7 Bemanningshantering~~ ✓ Klar
+- ~~Passöversikt per station: `GET /stations/{id}/shifts`~~
+- ~~Skapa pass, tilldela/bekräfta/avslå tilldelningar~~
+- ~~Staffansökanslista: acceptera/avslå~~
+- ~~`GET /editions/{id}/staff-applications` implementerad~~
+
+#### 3.1.7b Bemanningsvy – genomgång och förfining
+Bemanningsvyn fungerar tekniskt men behöver ett dedikerat arbetspass för att genomarbeta flödet ur bemanningskoordinatorns perspektiv – liknande 3.1.6b för evenemangsflödet.
 
 #### 3.1.8 Registreringsöversikt
 - Biljettyper: skapa, visa
@@ -222,7 +226,7 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 |----------|-----------|------|
 | `GET /me/profile` | 3.2.2 profilvy | Autentiserad |
 | `GET /editions/{id}/persons` | 3.1.5 personregister | IsAdmin |
-| `GET /editions/{id}/staff-applications` | 3.1.7 bemanningshantering | IsAdmin |
+| ~~`GET /editions/{id}/staff-applications`~~ | ~~3.1.7 bemanningshantering~~ ✓ Klar | IsAdmin |
 | `GET /editions/{id}/visitor-registrations` | 3.1.8 registreringsöversikt | IsAdmin |
 | `GET /editions/{id}/ticket-types` | 3.1.8 biljettyper | Publik |
 | `GET /editions/{id}/my-visitor-registration` | 3.2.4 besökarregistrering | Autentiserad |
@@ -248,6 +252,7 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 ## Nästa konkreta steg (förslag)
 
 1. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
-2. **Fas 3.1.7–3.1.8** – Bemanningshantering, registreringsöversikt
-3. **Fas 3.2** – Publik vy
-4. **Pre-produktion** – Skydda provisioning-endpoint + domänbaserad tenant-routing
+2. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
+3. **Fas 3.1.8** – Registreringsöversikt
+4. **Fas 3.2** – Publik vy
+5. **Pre-produktion** – Skydda provisioning-endpoint + domänbaserad tenant-routing

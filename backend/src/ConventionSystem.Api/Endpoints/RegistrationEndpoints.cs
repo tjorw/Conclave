@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
+using ConventionSystem.Application.Staff.Queries.ListStaffApplications;
 using ConventionSystem.Application.Registration.Commands.AddAvailability;
 using ConventionSystem.Application.Registration.Commands.AddStationPreference;
 using ConventionSystem.Application.Registration.Commands.CancelSessionRegistration;
@@ -150,6 +151,12 @@ public static class RegistrationEndpoints
                 await sender.Send(new CancelSessionRegistrationCommand(registrationId), ct);
                 return Results.NoContent();
             }).RequireAuthorization();
+
+        // UC-SA007: Lista staffansökningar per upplaga
+        app.MapGet("/editions/{editionId:guid}/staff-applications",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListStaffApplicationsQuery(editionId), ct)))
+            .RequireAuthorization();
 
         return app;
     }

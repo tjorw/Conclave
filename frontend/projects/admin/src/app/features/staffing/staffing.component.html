@@ -1,0 +1,244 @@
+<mat-tab-group (selectedTabChange)="$event.index === 1 && onApplicationsTabSelected()">
+
+  <!-- ── PASS ──────────────────────────────────────────────────────────── -->
+  <mat-tab label="Pass">
+    @if (loading()) {
+      <div class="spinner-center"><mat-spinner diameter="48" /></div>
+    } @else if (!editionCtx.activeEdition()) {
+      <p class="muted-info">Välj en upplaga i verktygsfältet för att se pass.</p>
+    } @else {
+
+      @if (error()) { <div class="error-banner">{{ error() }}</div> }
+
+      @for (area of staffAreas; track area.id) {
+        <div class="area-section">
+          <h2 class="area-title">{{ area.name }}</h2>
+
+          @for (station of stationsForArea(area.id); track station.id) {
+            <mat-card class="station-card">
+              <mat-card-header>
+                <mat-card-title>{{ station.name }}</mat-card-title>
+                @if (station.description) {
+                  <mat-card-subtitle>{{ station.description }}</mat-card-subtitle>
+                }
+              </mat-card-header>
+              <mat-card-content class="no-pad">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Start</th><th>Slut</th><th>Ansvarig</th>
+                      <th>Min</th><th>Max</th><th>Tilldelade</th><th>Status</th>
+                      <th class="actions-col"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (shift of shiftsByStation()[station.id]; track shift.id) {
+                      <tr [class.selected-row]="selectedShift()?.id === shift.id"
+                          (click)="selectShift(shift.id)" style="cursor:pointer">
+                        <td>{{ shift.start | date:'yyyy-MM-dd HH:mm' }}</td>
+                        <td>{{ shift.end | date:'HH:mm' }}</td>
+                        <td>{{ shift.responsibleName ?? shift.responsibleId }}</td>
+                        <td>{{ shift.minPersons }}</td>
+                        <td>{{ shift.maxPersons }}</td>
+                        <td>{{ shift.activeAssignmentCount }}</td>
+                        <td><span class="chip chip-grey">{{ shiftStatusLabel(shift.status) }}</span></td>
+                        <td class="row-actions" (click)="$event.stopPropagation()">
+                          <mat-icon class="expand-icon">
+                            {{ selectedShift()?.id === shift.id ? 'expand_less' : 'expand_more' }}
+                          </mat-icon>
+                        </td>
+                      </tr>
+
+                      <!-- Detaljpanel -->
+                      @if (selectedShift()?.id === shift.id) {
+                        <tr class="detail-row">
+                          <td colspan="8">
+                            @if (shiftLoading()) {
+                              <div class="spinner-center"><mat-spinner diameter="32" /></div>
+                            } @else if (selectedShift(); as s) {
+                              <div class="shift-detail">
+
+                                <div class="shift-detail-actions">
+                                  <button mat-stroked-button color="warn" (click)="cancelShift(s.id)" [disabled]="saving() || s.status === 'Cancelled'">
+                                    <mat-icon>cancel</mat-icon> Ställ in pass
+                                  </button>
+                                </div>
+
+                                <h4 class="section-label">Tilldelningar</h4>
+                                <table class="data-table inner-table">
+                                  <thead>
+                                    <tr><th>Person</th><th>Status</th><th>Tilldelad</th><th class="actions-col"></th></tr>
+                                  </thead>
+                                  <tbody>
+                                    @for (a of s.assignments; track a.id) {
+                                      <tr>
+                                        <td>{{ a.personName ?? a.personId }}</td>
+                                        <td><span class="chip chip-grey">{{ assignmentStatusLabel(a.status) }}</span></td>
+                                        <td>{{ a.assignedAt | date:'yyyy-MM-dd HH:mm' }}</td>
+                                        <td class="row-actions">
+                                          @if (a.status === 'Pending') {
+                                            <button mat-icon-button color="primary" (click)="confirmAssignment(a.id)"
+                                              matTooltip="Bekräfta" [disabled]="saving()">
+                                              <mat-icon>check</mat-icon>
+                                            </button>
+                                            <button mat-icon-button color="warn" (click)="rejectAssignment(a.id)"
+                                              matTooltip="Avslå" [disabled]="saving()">
+                                              <mat-icon>close</mat-icon>
+                                            </button>
+                                          }
+                                          @if (a.status === 'Confirmed') {
+                                            <button mat-icon-button color="warn" (click)="cancelAssignment(a.id)"
+                                              matTooltip="Avboka" [disabled]="saving()">
+                                              <mat-icon>person_remove</mat-icon>
+                                            </button>
+                                          }
+                                        </td>
+                                      </tr>
+                                    } @empty {
+                                      <tr><td colspan="4" class="empty-cell">Inga tilldelningar.</td></tr>
+                                    }
+                                  </tbody>
+                                </table>
+
+                                <!-- Tilldela person -->
+                                @if (s.status !== 'Cancelled') {
+                                  <div class="assign-form">
+                                    <form [formGroup]="assignForm" class="form-row">
+                                      <mat-form-field appearance="outline">
+                                        <mat-label>Tilldela person</mat-label>
+                                        <mat-select formControlName="personId">
+                                          @for (p of persons(); track p.id) {
+                                            <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                                          }
+                                        </mat-select>
+                                      </mat-form-field>
+                                      <button mat-flat-button color="primary" (click)="assignPerson()"
+                                        [disabled]="assignForm.invalid || saving()">
+                                        Tilldela
+                                      </button>
+                                    </form>
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    } @empty {
+                      @if (createShiftForStation() !== station.id) {
+                        <tr><td colspan="8" class="empty-cell">Inga pass skapade.</td></tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+
+                <!-- Skapa pass -->
+                @if (createShiftForStation() === station.id) {
+                  <div class="create-shift-form">
+                    <form [formGroup]="createShiftForm" class="form-row">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Ansvarig</mat-label>
+                        <mat-select formControlName="responsibleId">
+                          @for (p of persons(); track p.id) {
+                            <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                          }
+                        </mat-select>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="field-dt">
+                        <mat-label>Start</mat-label>
+                        <input matInput type="datetime-local" formControlName="startTime" />
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="field-dt">
+                        <mat-label>Slut</mat-label>
+                        <input matInput type="datetime-local" formControlName="endTime" />
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="field-sm">
+                        <mat-label>Min</mat-label>
+                        <input matInput type="number" min="1" formControlName="minPersons" />
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="field-sm">
+                        <mat-label>Max</mat-label>
+                        <input matInput type="number" min="1" formControlName="maxPersons" />
+                      </mat-form-field>
+                    </form>
+                    <div class="form-actions">
+                      <button mat-button (click)="cancelCreateShift()">Avbryt</button>
+                      <button mat-flat-button color="primary" (click)="submitCreateShift()"
+                        [disabled]="createShiftForm.invalid || saving()">
+                        @if (saving()) { <mat-spinner diameter="18" /> } @else { Skapa pass }
+                      </button>
+                    </div>
+                  </div>
+                }
+              </mat-card-content>
+              <mat-card-actions>
+                <button mat-stroked-button (click)="openCreateShift(station.id)" [disabled]="saving()">
+                  <mat-icon>add</mat-icon> Lägg till pass
+                </button>
+              </mat-card-actions>
+            </mat-card>
+          }
+        </div>
+      } @empty {
+        <p class="muted-info">Inga funktionsområden finns för denna upplaga.</p>
+      }
+    }
+  </mat-tab>
+
+  <!-- ── STAFFANSÖKNINGAR ───────────────────────────────────────────────── -->
+  <mat-tab label="Ansökningar">
+    @if (!applicationsLoaded()) {
+      <div class="spinner-center"><mat-spinner diameter="48" /></div>
+    } @else {
+      @if (error()) { <div class="error-banner">{{ error() }}</div> }
+
+      <mat-card class="content-card">
+        <mat-card-content class="no-pad">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Person</th><th>Intressebeskrivning</th>
+                <th>Stationsönskemål</th><th>Inskickad</th><th>Status</th>
+                <th class="actions-col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (app of applications(); track app.id) {
+                <tr>
+                  <td>{{ app.personName ?? app.personId }}</td>
+                  <td class="description-cell">{{ app.interestDescription }}</td>
+                  <td>
+                    @for (sid of app.stationPreferenceIds; track sid) {
+                      <span class="chip chip-grey station-chip">{{ stationName(sid) }}</span>
+                    }
+                  </td>
+                  <td>{{ app.createdAt | date:'yyyy-MM-dd' }}</td>
+                  <td>
+                    <span class="chip {{ app.status === 'Accepted' ? 'chip-green' : app.status === 'Rejected' ? 'chip-red' : 'chip-grey' }}">
+                      {{ applicationStatusLabel(app.status) }}
+                    </span>
+                  </td>
+                  <td class="row-actions">
+                    @if (app.status === 'Received') {
+                      <button mat-flat-button color="primary" (click)="acceptApplication(app.id)"
+                        [disabled]="saving()" matTooltip="Acceptera">
+                        <mat-icon>check</mat-icon>
+                      </button>
+                      <button mat-stroked-button color="warn" (click)="rejectApplication(app.id)"
+                        [disabled]="saving()" matTooltip="Avslå">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="6" class="empty-cell">Inga ansökningar mottagna.</td></tr>
+              }
+            </tbody>
+          </table>
+        </mat-card-content>
+      </mat-card>
+    }
+  </mat-tab>
+
+</mat-tab-group>

@@ -44,6 +44,13 @@ export const routes: Routes = [
             m => m.EventDetailComponent
           ),
       },
+      {
+        path: 'staffing',
+        loadComponent: () =>
+          import('./features/staffing/staffing.component').then(
+            m => m.StaffingComponent
+          ),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Registration.Abstractions;
+using ConventionSystem.Application.Staff.Queries;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Enums;
@@ -21,6 +22,30 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
         => db.StaffApplications.AnyAsync(
             a => a.PersonId == personId && a.EditionId == editionId
               && a.Status != StaffApplicationStatus.Rejected, ct);
+
+    public async Task<IReadOnlyList<StaffApplicationSummaryDto>> ListByEditionIdAsync(EditionId editionId, CancellationToken ct = default)
+    {
+        var applications = await db.StaffApplications
+            .Include(a => a.StationPreferences)
+            .Where(a => a.EditionId == editionId)
+            .OrderBy(a => a.CreatedAt)
+            .ToListAsync(ct);
+
+        var personIds = applications.Select(a => a.PersonId).Distinct().ToHashSet();
+        var personNames = await db.Persons
+            .Where(p => personIds.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id, p => p.Name, ct);
+
+        return applications.Select(a => new StaffApplicationSummaryDto(
+            a.Id.Value,
+            a.PersonId.Value,
+            personNames.GetValueOrDefault(a.PersonId),
+            a.InterestDescription,
+            a.Status.ToString(),
+            a.CreatedAt,
+            a.StationPreferences.Select(p => p.StationId.Value).ToList()
+        )).ToList();
+    }
 
     public async Task AddAndSaveAsync(StaffApplication application, CancellationToken ct = default)
     {

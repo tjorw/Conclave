@@ -4,6 +4,7 @@ public record ShiftSummaryDto(
     Guid Id,
     Guid StationId,
     Guid ResponsibleId,
+    string? ResponsibleName,
     DateTime Start,
     DateTime End,
     int MinPersons,
@@ -15,6 +16,7 @@ public record ShiftDto(
     Guid Id,
     Guid StationId,
     Guid ResponsibleId,
+    string? ResponsibleName,
     DateTime Start,
     DateTime End,
     int MinPersons,
@@ -25,6 +27,15 @@ public record ShiftDto(
 public record StaffAssignmentDto(
     Guid Id,
     Guid PersonId,
-    Guid AssignedById,
+    string? PersonName,
     string Status,
     DateTimeOffset AssignedAt);
+
+public record StaffApplicationSummaryDto(
+    Guid Id,
+    Guid PersonId,
+    string? PersonName,
+    string InterestDescription,
+    string Status,
+    DateTimeOffset CreatedAt,
+    IReadOnlyList<Guid> StationPreferenceIds);
