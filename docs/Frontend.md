@@ -288,15 +288,17 @@ enligt konventionens profil, inte ett generellt admin-UI. Mobilanpassning
 ### Routing
 
 ```
-/                          → HemComponent              (publik)
-/program                   → ProgramComponent           (publik)
-/program/:id               → EventDetailComponent       (publik)
-/login                     → LoginComponent             (publik)
-/mina-sidor                → MinaSidorComponent         (authGuard)
-/mina-sidor/registrering   → VisitorRegistrationComponent (authGuard)
-/mina-sidor/evenemang/nytt → SubmitEventComponent       (authGuard)
-/mina-sidor/evenemang/:id  → MyEventComponent           (authGuard)
-/mina-sidor/staffansökan   → StaffApplicationComponent  (authGuard)
+/                                    → HemComponent                (publik)
+/program                             → ProgramComponent             (publik)
+/program/:id                         → EventDetailComponent         (publik)
+/login                               → LoginComponent               (publik)
+/mina-sidor                          → MinaSidorComponent           (authGuard)
+/mina-sidor/biljett                  → MinBiljettComponent          (authGuard)
+/mina-sidor/program                  → MittProgramComponent         (authGuard)
+/mina-sidor/arrangemang              → ArrangemangListComponent     (authGuard)
+/mina-sidor/arrangemang/nytt         → ArrangemangFormComponent     (authGuard)
+/mina-sidor/arrangemang/:id          → ArrangemangDetailComponent   (authGuard)
+/mina-sidor/bemanning                → MinBemanningComponent        (authGuard)
 ```
 
 ---
@@ -318,19 +320,35 @@ Inga sidomenyer – allt navigeras via topnav och `routerLink`.
 
 ---
 
-### Rolldetektering ("Mina sidor")
+### Mina sidor – navigationsstruktur
 
-Den publika appen har inga formella roller i JWT-meningen. En användares
-deltagande avgör vilka sektioner som visas:
+"Mina sidor" är en rollindelad yta. En person kan vara besökare, arrangör
+och funktionär simultant. Navigationen är alltid synlig med alla sektioner;
+varje sektion hanterar sitt eget tomma state med en tydlig CTA.
 
-| Roll | Källa |
-|------|-------|
-| **Besökare** | `GET /editions/{id}/my-visitor-registration` → ej null |
-| **Arrangör** | `GET /editions/{id}/my-events` → ej tom lista |
-| **Funktionär** | `GET /editions/{id}/my-staff-application` → ej null |
+```
+/mina-sidor
+  Min biljett              ← rollneutral (alla behöver en biljett)
+  ─ Som besökare ──────
+    Mitt program           ← sessioner man anmält sig till
+  ─ Som arrangör ──────
+    Mina arrangemang       ← lista + skapa/redigera
+  ─ Som funktionär ─────
+    Min bemanning          ← ansökan + tilldelade pass
+```
 
-`MinaSidorComponent` laddar alla tre parallellt i `ngOnInit`. Varje sektion
-visar en CTA-card om data är null/tom.
+**Rolldetektering** – den publika appen har inga formella roller i JWT-meningen.
+Varje sektionskomponent hämtar sin egen data och visar CTA om svaret är tomt:
+
+| Sektion | Backend-källa |
+|---------|---------------|
+| Min biljett | `GET /editions/{id}/my-visitor-registration` |
+| Mitt program | `GET /editions/{id}/my-session-registrations` |
+| Mina arrangemang | `GET /editions/{id}/my-events` |
+| Min bemanning | `GET /editions/{id}/my-staff-application` |
+
+`MinaSidorComponent` (hub) laddar alla fyra parallellt och visar ett
+kompakt statuskort per sektion med länk till respektive under-route.
 
 ---
 

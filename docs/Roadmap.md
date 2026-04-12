@@ -203,40 +203,49 @@ Se `docs/public-mockup.html` för interaktiv skissbild av alla skärmar.
 - Profilvy: visa och uppdatera namn/e-post/telefon
 - *Kräver ny backend-endpoint:* `GET /me/profile`, `PUT /me/profile`
 
-#### 3.2.4 Mina sidor – nav och hub
-- `MinaSidorComponent` laddar alla tre deltagandesektioner parallellt i `ngOnInit`
-- Tre sektioner visas alltid: Besökarregistrering, Mina evenemang, Min staffansökan
-- CTA-card visas per sektion om data är null/tom
-- Hälsningsbanner med konventionsnamn och inloggt användarnamn
+#### 3.2.4 Mina sidor – hub och navigationsstruktur
+- `MinaSidorComponent` (hub): hälsningsbanner + kompakta statuskort per sektion
+- Navigationsstruktur (alltid synlig, alla sektioner, CTA om tomt):
+  - **Min biljett** – rollneutral (alla som deltar behöver en biljett)
+  - *Som besökare:* **Mitt program** – sessioner man anmält sig till
+  - *Som arrangör:* **Mina arrangemang** – lista + skapa/redigera
+  - *Som funktionär:* **Min bemanning** – ansökan + tilldelade pass
+- Laddar alla fyra datasektioner parallellt i `ngOnInit`
 
-#### 3.2.5 Besökarregistrering
-- Biljettval via radio-cards med pris (Helg-biljett, Dagsbiljetter)
-- Kontaktuppgifter förifyllda från profil, skrivskyddade med länk till "Redigera profil"
-- Villkorscheckbox + info om separat betalning
+#### 3.2.5 Min biljett
+- Visar biljetttyp, referensnummer och betalningsstatus om registrerad
+- Tomt state: biljettval via radio-cards (Helg-biljett, Dagsbiljetter), kontaktuppgifter
+  förifyllda från profil, villkorscheckbox, info om separat betalning
 - `POST /editions/{id}/visitor-registrations` vid submit
-- Bekräftelse-vy efter submit
 - *Kräver ny backend-endpoint:* `GET /editions/{id}/my-visitor-registration`
 
-#### 3.2.6 Arrangörsflöde
-- Skapa/redigera evenemang: titel, kategori, beskrivning, registreringstyp (radio-cards), medarrangörer (tag-chips)
-- Sessionönskemål: tabell med dag/start/slut-rader + lägg-till-rad
-- Skicka in för granskning (`POST /events/{id}/submit`)
-- `MyEventComponent`: visar status, adminkommentar (gul alert), "Dra tillbaka till utkast"-knapp
-- Redigeringsformulär visas om status=Draft
+#### 3.2.6 Mitt program (som besökare)
+- Lista sessioner man anmält sig till: evenemang, tid, lokal, platsnummer
+- Avbokning direkt från listan
+- Tomt state: uppmaning att bläddra i `/program`
+- *Kräver ny backend-endpoint:* `GET /editions/{id}/my-session-registrations`
+
+#### 3.2.7 Mina arrangemang (som arrangör)
+- Lista med alla egna arrangemang: titel, kategori, antal sessioner, status
+- "Nytt arrangemang"-knapp i list-header
+- Tomt state: formulär direkt inbäddat (eller länk till `/mina-sidor/arrangemang/nytt`)
+- Formulär: titel, kategori, beskrivning, registreringstyp, sessionönskemål
+- Skicka in för granskning (`POST /events/{id}/submit`), dra tillbaka till utkast
+- Detaljvy visar adminkommentar (gul alert) och status-chip
 - *Kräver ny backend-endpoint:* `GET /editions/{id}/my-events`
 
-#### 3.2.7 Staffansökan
-- Ansökningsformulär: fritexter-motivering, checkbox-lista med stationer, tillgänglighets-checkboxar (Fre/Lör/Sön)
+#### 3.2.8 Min bemanning (som funktionär)
+- Ansökningsformulär: fritextmotivering, stationspreferenser, tillgänglighet (Fre/Lör/Sön)
 - `POST /editions/{id}/staff-applications` vid submit
 - Statusvy om ansökan redan finns: chip-status + tilldelade pass-lista
 - *Kräver ny backend-endpoint:* `GET /editions/{id}/my-staff-application`
 
-#### 3.2.8 Sessionsregistrering
+#### 3.2.9 Sessionsregistrering
 - Anmäl till enskild session direkt från evenemangsdetalj-sidan
 - Kapacitetsindikator (grön/orange/röd beroende på fyllnadsgrad)
 - `POST /sessions/{id}/registrations` vid anmälan
 - Avboka: `DELETE /session-registrations/{id}`
-- Mina sessionsregistreringar visas i "Mina sidor"-hubben
+- Anmälda sessioner syns under "Mitt program"
 
 ---
 

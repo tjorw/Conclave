@@ -623,7 +623,17 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
 .google-logo { background: #fff; color: #ea4335; border: 1px solid #eee; }
 
 /* Mina sidor role sections */
-.role-section { margin-bottom: 28px; }
+.role-section { margin-bottom: 20px; }
+.role-group-label {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #999;
+  margin: 24px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eee;
+}
 .role-section-header {
   display: flex;
   align-items: center;
@@ -693,10 +703,14 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
 
   <div class="demo-section">Inloggad – Mina sidor</div>
   <a onclick="show('mina-sidor')" id="link-mina-sidor">👤 Mina sidor (hub)</a>
-  <a onclick="show('besökar-registrering')" id="link-besökar-registrering">🎫 Besökarregistrering</a>
-  <a onclick="show('skicka-in-evenemang')" id="link-skicka-in-evenemang">📝 Skicka in evenemang</a>
-  <a onclick="show('mitt-evenemang')" id="link-mitt-evenemang">🔍 Mitt evenemang</a>
-  <a onclick="show('staff-ansökan')" id="link-staff-ansökan">🙋 Staffansökan</a>
+  <a onclick="show('min-biljett')" id="link-min-biljett">🎫 Min biljett</a>
+  <div class="demo-nav-sub" style="padding:4px 12px;font-size:.7rem;opacity:.6">Som besökare</div>
+  <a onclick="show('mitt-program')" id="link-mitt-program">📋 Mitt program</a>
+  <div class="demo-nav-sub" style="padding:4px 12px;font-size:.7rem;opacity:.6">Som arrangör</div>
+  <a onclick="show('mina-arrangemang')" id="link-mina-arrangemang">🎲 Mina arrangemang</a>
+  <a onclick="show('nytt-arrangemang')" id="link-nytt-arrangemang">✏️ Nytt / redigera arrangemang</a>
+  <div class="demo-nav-sub" style="padding:4px 12px;font-size:.7rem;opacity:.6">Som funktionär</div>
+  <a onclick="show('min-bemanning')" id="link-min-bemanning">🙋 Min bemanning</a>
 </nav>
 
 <!-- ═══════════════════════════════════════════════════════
@@ -748,7 +762,7 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
             Tre dagar. Hundratals evenemang. En gemenskap.
           </p>
           <div class="btn-group" style="justify-content:center; gap:12px">
-            <button class="btn btn-accent btn-lg" onclick="show('besökar-registrering')">Registrera dig</button>
+            <button class="btn btn-accent btn-lg" onclick="show('min-biljett')">Registrera dig</button>
             <button class="btn btn-secondary btn-lg" style="border-color:rgba(255,255,255,.5);color:#fff" onclick="show('program')">Se program</button>
           </div>
         </div>
@@ -763,7 +777,7 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
             <div class="cta-icon">🎫</div>
             <div class="cta-title">Bli besökare</div>
             <div class="cta-desc">Köp din biljett och ta del av hela programmet. Helg- och dagsbiljetter finns.</div>
-            <button class="btn btn-accent" onclick="show('besökar-registrering')">Registrera dig</button>
+            <button class="btn btn-accent" onclick="show('min-biljett')">Registrera dig</button>
           </div>
           <div class="cta-card">
             <div class="cta-icon">🎲</div>
@@ -1216,11 +1230,11 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
 
       <div class="container" style="padding-top:28px">
 
-        <!-- ── Besökarregistrering ── -->
+        <!-- ── Min biljett (rollneutral) ── -->
         <div class="role-section">
           <div class="role-section-header">
-            <div class="role-section-title">🎫 Besökarregistrering</div>
-            <span class="chip chip-green">Registrerad ✓</span>
+            <div class="role-section-title">🎫 Min biljett</div>
+            <span class="chip chip-green">Aktiv ✓</span>
           </div>
           <div class="status-section">
             <div style="font-size:1.6rem">🎟</div>
@@ -1228,51 +1242,74 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
               <div class="status-section-title">Helg-biljett</div>
               <div class="status-section-sub">Fredag–Söndag · Ref: CV2026-1042</div>
             </div>
-            <button class="btn btn-ghost btn-sm" onclick="show('besökar-registrering')">Se detaljer</button>
+            <button class="btn btn-ghost btn-sm" onclick="show('min-biljett')">Se detaljer</button>
           </div>
         </div>
 
-        <!-- ── Mina evenemang ── -->
+        <!-- ── SOM BESÖKARE ── -->
+        <div class="role-group-label">Som besökare</div>
+
         <div class="role-section">
           <div class="role-section-header">
-            <div class="role-section-title">🎲 Mina evenemang</div>
-            <span class="chip chip-blue">Arrangör</span>
+            <div class="role-section-title">📋 Mitt program</div>
+          </div>
+          <div class="card">
+            <div class="card-body no-pad">
+              <table class="mini-table">
+                <thead><tr><th>Evenemang</th><th>Session</th><th>Lokal</th><th></th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Skuggor över Mörkhaven</strong></td>
+                    <td>Lördag 14:00–18:00</td>
+                    <td>Sal A</td>
+                    <td><button class="btn btn-danger btn-sm">Avboka</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SOM ARRANGÖR ── -->
+        <div class="role-group-label">Som arrangör</div>
+
+        <div class="role-section">
+          <div class="role-section-header">
+            <div class="role-section-title">🎲 Mina arrangemang</div>
+            <span class="chip chip-blue">2 st</span>
           </div>
           <div class="card" style="margin-bottom:10px">
             <div class="card-body no-pad">
               <table class="mini-table">
                 <thead>
-                  <tr>
-                    <th>Titel</th>
-                    <th>Kategori</th>
-                    <th>Status</th>
-                    <th></th>
-                  </tr>
+                  <tr><th>Titel</th><th>Kategori</th><th>Status</th><th></th></tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td><strong>Trollformlernas Borg</strong></td>
                     <td><span class="chip cat-rollspel" style="font-size:.7rem">Rollspel</span></td>
                     <td><span class="chip chip-orange">Under granskning</span></td>
-                    <td><button class="btn btn-ghost btn-sm" onclick="show('mitt-evenemang')">Visa</button></td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="show('mina-arrangemang')">Visa</button></td>
                   </tr>
                   <tr>
                     <td><strong>OSR-grundkurs</strong></td>
                     <td><span class="chip cat-seminarium" style="font-size:.7rem">Seminarium</span></td>
                     <td><span class="chip chip-grey">Utkast</span></td>
-                    <td><button class="btn btn-ghost btn-sm" onclick="show('skicka-in-evenemang')">Redigera</button></td>
+                    <td><button class="btn btn-ghost btn-sm" onclick="show('nytt-arrangemang')">Redigera</button></td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
-          <button class="btn btn-secondary btn-sm" onclick="show('skicka-in-evenemang')">+ Skicka in nytt evenemang</button>
+          <button class="btn btn-secondary btn-sm" onclick="show('nytt-arrangemang')">+ Nytt arrangemang</button>
         </div>
 
-        <!-- ── Min staffansökan ── -->
+        <!-- ── SOM FUNKTIONÄR ── -->
+        <div class="role-group-label">Som funktionär</div>
+
         <div class="role-section">
           <div class="role-section-header">
-            <div class="role-section-title">🙋 Min staffansökan</div>
+            <div class="role-section-title">🙋 Min bemanning</div>
             <span class="chip chip-green">Accepterad ✓</span>
           </div>
           <div class="card">
@@ -1293,37 +1330,8 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
                     <div class="shift-time">Lördag 10:00–14:00</div>
                   </div>
                 </li>
-                <li class="shift-item">
-                  <span class="shift-icon">🎲</span>
-                  <div>
-                    <div class="shift-station">Spelbiblioteket</div>
-                    <div class="shift-time">Söndag 12:00–16:00</div>
-                  </div>
-                </li>
               </ul>
-              <p class="text-muted text-small mt-12">Frågor om dina pass? Kontakta bemanningskoordinator@conclave.se</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── Mina sessionsregistreringar ── -->
-        <div class="role-section">
-          <div class="role-section-header">
-            <div class="role-section-title">📋 Mina sessionsregistreringar</div>
-          </div>
-          <div class="card">
-            <div class="card-body no-pad">
-              <table class="mini-table">
-                <thead><tr><th>Evenemang</th><th>Session</th><th>Plats</th><th></th></tr></thead>
-                <tbody>
-                  <tr>
-                    <td><strong>Skuggor över Mörkhaven</strong></td>
-                    <td>Lördag 14:00–18:00</td>
-                    <td>Sal A · Bord 3</td>
-                    <td><button class="btn btn-danger btn-sm">Avboka</button></td>
-                  </tr>
-                </tbody>
-              </table>
+              <button class="btn btn-ghost btn-sm" onclick="show('min-bemanning')" style="margin-top:10px">Visa alla pass</button>
             </div>
           </div>
         </div>
@@ -1333,17 +1341,94 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
 
 
     <!-- ═══════════════════════════════════════
-         VIEW: BESÖKAR-REGISTRERING
+         VIEW: MITT PROGRAM (som besökare)
     ═══════════════════════════════════════ -->
-    <div class="view" id="view-besökar-registrering">
+    <div class="view" id="view-mitt-program">
       <div class="container-md">
         <div class="breadcrumb" style="margin-top:12px">
           <a onclick="show('mina-sidor')">Mina sidor</a>
           <span>›</span>
-          Besökarregistrering
+          Mitt program
+        </div>
+        <h1 style="font-size:1.5rem;font-weight:800;color:#1b2a4a;margin:8px 0 20px">Mitt program</h1>
+        <div class="card">
+          <div class="card-body no-pad">
+            <table class="mini-table">
+              <thead><tr><th>Evenemang</th><th>Session</th><th>Lokal</th><th>Plats</th><th></th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><strong>Skuggor över Mörkhaven</strong></td>
+                  <td>Lördag 14:00–18:00</td>
+                  <td>Sal A</td>
+                  <td>Bord 3</td>
+                  <td><button class="btn btn-danger btn-sm">Avboka</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="text-muted text-small" style="margin-top:16px">
+          Anmäl dig till fler evenemang via <a onclick="show('program')" style="color:#1b2a4a;cursor:pointer">programsidan</a>.
+        </p>
+      </div>
+    </div><!-- /view-mitt-program -->
+
+
+    <!-- ═══════════════════════════════════════
+         VIEW: MINA ARRANGEMANG (lista)
+    ═══════════════════════════════════════ -->
+    <div class="view" id="view-mina-arrangemang">
+      <div class="container-md">
+        <div class="breadcrumb" style="margin-top:12px">
+          <a onclick="show('mina-sidor')">Mina sidor</a>
+          <span>›</span>
+          Mina arrangemang
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:8px 0 20px">
+          <h1 style="font-size:1.5rem;font-weight:800;color:#1b2a4a;margin:0">Mina arrangemang</h1>
+          <button class="btn btn-accent btn-sm" onclick="show('nytt-arrangemang')">+ Nytt arrangemang</button>
+        </div>
+        <div class="card">
+          <div class="card-body no-pad">
+            <table class="mini-table">
+              <thead>
+                <tr><th>Titel</th><th>Kategori</th><th>Sessioner</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Trollformlernas Borg</strong></td>
+                  <td><span class="chip cat-rollspel" style="font-size:.7rem">Rollspel</span></td>
+                  <td>2 st</td>
+                  <td><span class="chip chip-orange">Under granskning</span></td>
+                  <td><button class="btn btn-ghost btn-sm" onclick="show('arrangemang-detalj')">Öppna</button></td>
+                </tr>
+                <tr>
+                  <td><strong>OSR-grundkurs</strong></td>
+                  <td><span class="chip cat-seminarium" style="font-size:.7rem">Seminarium</span></td>
+                  <td>1 st</td>
+                  <td><span class="chip chip-grey">Utkast</span></td>
+                  <td><button class="btn btn-ghost btn-sm" onclick="show('nytt-arrangemang')">Redigera</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /view-mina-arrangemang -->
+
+
+    <!-- ═══════════════════════════════════════
+         VIEW: MIN BILJETT
+    ═══════════════════════════════════════ -->
+    <div class="view" id="view-min-biljett">
+      <div class="container-md">
+        <div class="breadcrumb" style="margin-top:12px">
+          <a onclick="show('mina-sidor')">Mina sidor</a>
+          <span>›</span>
+          Min biljett
         </div>
 
-        <h1 style="font-size:1.5rem;font-weight:800;color:#1b2a4a;margin-bottom:6px;margin-top:8px">Registrera dig som besökare</h1>
+        <h1 style="font-size:1.5rem;font-weight:800;color:#1b2a4a;margin-bottom:6px;margin-top:8px">Min biljett – Conclave 2026</h1>
         <p class="text-muted" style="margin-bottom:24px">Conclave 2026 · 25–27 april · Göteborg</p>
 
         <div class="card">
@@ -1436,18 +1521,20 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
         </div>
 
       </div><!-- /container-md -->
-    </div><!-- /view-besökar-registrering -->
+    </div><!-- /view-min-biljett -->
 
 
     <!-- ═══════════════════════════════════════
-         VIEW: SKICKA IN EVENEMANG
+         VIEW: NYTT / REDIGERA ARRANGEMANG
     ═══════════════════════════════════════ -->
-    <div class="view" id="view-skicka-in-evenemang">
+    <div class="view" id="view-nytt-arrangemang">
       <div class="container-md">
         <div class="breadcrumb" style="margin-top:12px">
           <a onclick="show('mina-sidor')">Mina sidor</a>
           <span>›</span>
-          Skicka in evenemang
+          <a onclick="show('mina-arrangemang')">Mina arrangemang</a>
+          <span>›</span>
+          Nytt arrangemang
         </div>
 
         <h1 style="font-size:1.5rem;font-weight:800;color:#1b2a4a;margin-bottom:6px;margin-top:8px">Skicka in ett evenemang</h1>
@@ -1595,13 +1682,13 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
         </div>
 
       </div><!-- /container-md -->
-    </div><!-- /view-skicka-in-evenemang -->
+    </div><!-- /view-nytt-arrangemang -->
 
 
     <!-- ═══════════════════════════════════════
-         VIEW: MITT EVENEMANG (under granskning)
+         VIEW: ARRANGEMANG-DETALJ (under granskning)
     ═══════════════════════════════════════ -->
-    <div class="view" id="view-mitt-evenemang">
+    <div class="view" id="view-arrangemang-detalj">
       <div class="container-md">
         <div class="breadcrumb" style="margin-top:12px">
           <a onclick="show('mina-sidor')">Mina sidor</a>
@@ -1672,22 +1759,22 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
         </div>
 
       </div><!-- /container-md -->
-    </div><!-- /view-mitt-evenemang -->
+    </div><!-- /view-arrangemang-detalj -->
 
 
     <!-- ═══════════════════════════════════════
-         VIEW: STAFFANSÖKAN
+         VIEW: MIN BEMANNING
     ═══════════════════════════════════════ -->
-    <div class="view" id="view-staff-ansökan">
+    <div class="view" id="view-min-bemanning">
       <div class="container-md">
         <div class="breadcrumb" style="margin-top:12px">
           <a onclick="show('mina-sidor')">Mina sidor</a>
           <span>›</span>
-          Staffansökan
+          Min bemanning
         </div>
 
         <h1 style="font-size:1.5rem;font-weight:800;color:#1b2a4a;margin-bottom:6px;margin-top:8px">Ansök som funktionär</h1>
-        <p class="text-muted" style="margin-bottom:24px">Conclave 2026 · Staffansökan</p>
+        <p class="text-muted" style="margin-bottom:24px">Conclave 2026 · Min bemanning</p>
 
         <div class="card">
           <div class="card-body">
@@ -1773,7 +1860,7 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
         </div>
 
       </div><!-- /container-md -->
-    </div><!-- /view-staff-ansökan -->
+    </div><!-- /view-min-bemanning -->
 
   </div><!-- /app-content -->
 </div><!-- /app-wrapper -->
@@ -1782,7 +1869,7 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
 // ── Screen navigation ──────────────────────────────────────────────────
 
 const LOGGED_IN_SCREENS = [
-  'mina-sidor','besökar-registrering','skicka-in-evenemang','mitt-evenemang','staff-ansökan'
+  'mina-sidor','min-biljett','mitt-program','mina-arrangemang','nytt-arrangemang','arrangemang-detalj','min-bemanning'
 ];
 
 function show(screenId) {
