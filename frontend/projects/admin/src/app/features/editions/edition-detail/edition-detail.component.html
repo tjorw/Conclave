@@ -22,7 +22,15 @@
         <mat-icon>edit</mat-icon>
       </button>
     </div>
-    <p class="page-subtitle">{{ formatDate(e.start) }} – {{ formatDate(e.end) }}</p>
+    <div class="page-meta">
+      <span class="meta-item"><mat-icon>calendar_today</mat-icon>{{ formatDate(e.start) }} – {{ formatDate(e.end) }}</span>
+      @if (e.staffCoordinatorId) {
+        <span class="meta-item"><mat-icon>manage_accounts</mat-icon>Staff: {{ personName(e.staffCoordinatorId) }}</span>
+      }
+      @if (e.eventCoordinatorId) {
+        <span class="meta-item"><mat-icon>event</mat-icon>Evenemang: {{ personName(e.eventCoordinatorId) }}</span>
+      }
+    </div>
   </div>
 
   <!-- ── Redigera upplaga ── -->
