@@ -41,3 +41,23 @@
 .active-link {
   background: rgba(0, 0, 0, 0.08);
 }
+
+.edition-picker {
+  margin-right: 8px;
+
+  // Anpassa till toolbar-höjden och det inverterade färgschemat
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  ::ng-deep .mat-mdc-select-value,
+  ::ng-deep .mat-mdc-select-arrow {
+    color: white;
+  }
+
+  ::ng-deep .mdc-notched-outline__leading,
+  ::ng-deep .mdc-notched-outline__notch,
+  ::ng-deep .mdc-notched-outline__trailing {
+    border-color: rgba(255, 255, 255, 0.5) !important;
+  }
+}

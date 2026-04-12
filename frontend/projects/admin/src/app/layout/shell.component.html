@@ -19,6 +19,19 @@
         <mat-icon>menu</mat-icon>
       </button>
       <span class="toolbar-spacer"></span>
+      @if (editionContext.editions().length > 0) {
+        <mat-form-field appearance="outline" class="edition-picker" subscriptSizing="dynamic">
+          <mat-select
+            [value]="editionContext.activeEdition()?.id"
+            (selectionChange)="onEditionChange($event.value)"
+            aria-label="Välj upplaga"
+          >
+            @for (edition of editionContext.editions(); track edition.id) {
+              <mat-option [value]="edition.id">{{ edition.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
       <button mat-button (click)="logout()">
         <mat-icon>logout</mat-icon>
         Logga ut
