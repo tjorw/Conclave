@@ -3,5 +3,5 @@ import { Environment } from 'shared';
 export const environment: Environment = {
   production: false,
   apiBaseUrl: 'http://localhost:5127',
-  conventionId: '00000000-0000-0000-0000-000000000000', // ersätt med ditt lokala conventionId
+  conventionId: '019D7D4C-7E1D-7648-86F6-685AD8CCAB5E', // ersätt med ditt lokala conventionId
 };

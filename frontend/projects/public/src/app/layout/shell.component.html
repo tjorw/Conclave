@@ -1,0 +1,47 @@
+<div class="shell">
+
+  <!-- ── Topnavigering ──────────────────────────────────────────────────── -->
+  <nav class="topnav">
+    <div class="topnav-inner">
+
+      <a class="brand" routerLink="/">
+        <span class="brand-name">{{ editionSvc.conventionName() }}</span>
+        @if (editionSvc.editionYear()) {
+          <span class="brand-year">{{ editionSvc.editionYear() }}</span>
+        }
+      </a>
+
+      <div class="nav-links">
+        <a mat-button routerLink="/program" routerLinkActive="nav-active">Program</a>
+      </div>
+
+      <div class="nav-actions">
+        @if (auth.isLoggedIn()) {
+          <a mat-button routerLink="/mina-sidor" routerLinkActive="nav-active">
+            <mat-icon>person</mat-icon>
+            Mina sidor
+          </a>
+          <button mat-stroked-button class="logout-btn" (click)="logout()">
+            Logga ut
+          </button>
+        } @else {
+          <a mat-flat-button routerLink="/login" class="login-btn">Logga in</a>
+        }
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- ── Sidinnehåll ────────────────────────────────────────────────────── -->
+  <main class="main-content">
+    <router-outlet />
+  </main>
+
+  <!-- ── Sidfot ─────────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>{{ editionSvc.conventionName() }} · Powered by Conclave</span>
+    </div>
+  </footer>
+
+</div>

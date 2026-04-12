@@ -1,7 +1,76 @@
-@import '@angular/material/prebuilt-themes/azure-blue.css';
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+// ── Konventionsbranding via CSS custom properties ──────────────────────────
+// Dessa kan åsidosättas per driftsättning för olika konventioner.
+:root {
+  --brand-primary:       #1b2a4a;
+  --brand-primary-light: #2a3d6b;
+  --brand-primary-dark:  #0f1a2e;
+  --brand-accent:        #e8920a;
+  --brand-accent-light:  #f0a832;
+  --brand-bg:            #f8f9fa;
+  --brand-surface:       #ffffff;
+  --brand-text:          #212121;
+  --brand-text-muted:    #757575;
+  --brand-border:        #e0e0e0;
+}
 
 html, body {
   height: 100%;
   margin: 0;
   font-family: Roboto, 'Helvetica Neue', sans-serif;
+  background: var(--brand-bg);
+  color: var(--brand-text);
 }
+
+// ── Skeleton shimmer ───────────────────────────────────────────────────────
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  display: block;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ── Chip-statusar ──────────────────────────────────────────────────────────
+.chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: .75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.chip-green  { background: #e8f5e9; color: #2e7d32; }
+.chip-orange { background: #fff3e0; color: #e65100; }
+.chip-red    { background: #ffebee; color: #c62828; }
+.chip-blue   { background: #e3f2fd; color: #1565c0; }
+.chip-grey   { background: #f0f0f0; color: #616161; }
+.chip-purple { background: #f3e5f5; color: #6a1b9a; }
+
+// ── Layout-hjälpare ────────────────────────────────────────────────────────
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.page-section {
+  padding: 48px 0;
+}
+
+.error-banner {
+  background: #ffebee;
+  color: #c62828;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: .875rem;
+}
+
+.full-width { width: 100%; }

@@ -1,0 +1,119 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Topnav ─────────────────────────────────────────────────────────────────
+
+.topnav {
+  background: var(--brand-primary);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
+}
+
+.topnav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand {
+  text-decoration: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-right: 24px;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .01em;
+}
+
+.brand-year {
+  font-size: .85rem;
+  color: var(--brand-accent);
+  font-weight: 500;
+}
+
+.nav-links {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+}
+
+.nav-links a,
+.nav-actions a {
+  color: rgba(255, 255, 255, .8) !important;
+
+  &.nav-active {
+    color: #fff !important;
+    font-weight: 500;
+    background: rgba(255, 255, 255, .1);
+  }
+
+  &:hover {
+    color: #fff !important;
+    background: rgba(255, 255, 255, .08);
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-btn {
+  background-color: var(--brand-accent) !important;
+  color: #fff !important;
+}
+
+.logout-btn {
+  color: rgba(255, 255, 255, .7) !important;
+  border-color: rgba(255, 255, 255, .3) !important;
+
+  &:hover {
+    color: #fff !important;
+    border-color: rgba(255, 255, 255, .6) !important;
+  }
+}
+
+// ── Innehåll och sidfot ────────────────────────────────────────────────────
+
+.main-content {
+  flex: 1;
+}
+
+.footer {
+  background: var(--brand-primary-dark);
+  color: rgba(255, 255, 255, .4);
+  padding: 20px 16px;
+  font-size: .8rem;
+  text-align: center;
+  margin-top: auto;
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}

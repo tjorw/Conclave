@@ -66,14 +66,19 @@ Demo-konventionen innehåller en publicerad upplaga med lokaler, funktionsområd
 
 #### Steg 3 – Konfigurera frontend-miljön
 
-`environment.ts` är gitignorerad (innehåller lokalt `conventionId`). Kopiera exempelfilen och fyll i GUID:t från konsolen:
+`environment.ts` är gitignorerad (innehåller lokalt `conventionId`). Kopiera exempelfilerna och fyll i GUID:t från konsolen:
 
 ```bash
+# Admin-app
 cp frontend/projects/admin/src/environments/environment.ts.example \
    frontend/projects/admin/src/environments/environment.ts
+
+# Publik app
+cp frontend/projects/public/src/environments/environment.ts.example \
+   frontend/projects/public/src/environments/environment.ts
 ```
 
-Öppna sedan filen och ersätt placeholder-värdet:
+Öppna båda filerna och ersätt placeholder-värdet med konventions-ID:t från konsolen:
 
 ```typescript
 conventionId: '<GUID från konsolen>',
@@ -86,13 +91,19 @@ cd frontend
 npm install
 ```
 
-#### Steg 5 – Starta admin-appen
+#### Steg 5 – Starta apparna
 
 ```bash
+# Admin-app (port 4200)
 ng serve admin
+
+# Publik app (port 4201, i separat terminal)
+ng serve public
 ```
 
-Öppna `http://localhost:4200` – logga in med e-postadressen och lösenordet från steg 5.
+Öppna `http://localhost:4200` för admin-appen – logga in med `admin@demo.se / Admin123!`
+
+Öppna `http://localhost:4201` för den publika appen.
 
 ---
 
@@ -104,6 +115,9 @@ dotnet run --project backend/src/ConventionSystem.Api
 
 # Terminal 2 – Admin-app
 cd frontend && ng serve admin
+
+# Terminal 3 – Publik app (vid behov)
+cd frontend && ng serve public
 ```
 
 ---
@@ -143,9 +157,9 @@ dotnet test backend/ConventionSystem.sln
 │       └── ConventionSystem.Integration.Tests/
 ├── frontend/
 │   └── projects/
-│       ├── admin/     # Admin-app (Angular Material)
-│       ├── public/    # Publik vy (Angular Material)
-│       └── shared/    # Delat bibliotek: API-typer, auth, interceptors
+│       ├── admin/     # Admin-app – rollbaserad, port 4200 (Angular Material)
+│       ├── public/    # Publik vy – konventionsbrandad, port 4201 (Angular Material)
+│       └── shared/    # Delat bibliotek: API-typer, tjänster, auth, interceptors
 └── docs/
 ```
 

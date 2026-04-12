@@ -1,0 +1,32 @@
+.hero {
+  background: linear-gradient(135deg, var(--brand-primary-dark) 0%, var(--brand-primary) 60%, var(--brand-primary-light) 100%);
+  color: #fff;
+  padding: 100px 16px;
+  text-align: center;
+}
+
+.hero-inner {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 300;
+  letter-spacing: .02em;
+  margin: 0 0 12px;
+}
+
+.hero-sub {
+  font-size: 1.1rem;
+  opacity: .75;
+  margin: 0 0 32px;
+}
+
+.hero-cta {
+  background-color: var(--brand-accent) !important;
+  color: #fff !important;
+  padding: 0 32px;
+  height: 48px;
+  font-size: 1rem;
+}
