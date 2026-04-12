@@ -1,3 +1,4 @@
+using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Convention.Commands.AddAdministrator;
 using ConventionSystem.Application.Convention.Commands.CreateConvention;
 using ConventionSystem.Application.Convention.Queries.GetConvention;
@@ -37,7 +38,7 @@ public static class ConventionEndpoints
             {
                 await sender.Send(new AddAdministratorCommand(conventionId, request.PersonId), ct);
                 return Results.NoContent();
-            }).RequireAuthorization("IsAdmin");
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         var editions = app.MapGroup("/editions");
 

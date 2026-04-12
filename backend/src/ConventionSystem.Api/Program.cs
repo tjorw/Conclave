@@ -1,3 +1,4 @@
+using ConventionSystem.Api.Auth;
 using ConventionSystem.Application;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Api.DevData;
@@ -41,8 +42,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("IsAdmin", policy =>
-        policy.RequireClaim("is_admin", "true"));
+    options.AddPolicy(AuthConstants.Policies.IsAdmin, policy =>
+        policy.RequireClaim(AuthConstants.Claims.IsAdmin, "true"));
 });
 
 builder.Services.AddCors(options =>

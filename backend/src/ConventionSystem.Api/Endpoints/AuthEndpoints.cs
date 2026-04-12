@@ -1,3 +1,4 @@
+using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Infrastructure.Identity;
@@ -89,9 +90,9 @@ public static class AuthEndpoints
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
 
-        List<Claim> claims = [new Claim("person_id", personId.ToString())];
+        List<Claim> claims = [new Claim(AuthConstants.Claims.PersonId, personId.ToString())];
         if (isAdmin)
-            claims.Add(new Claim("is_admin", "true"));
+            claims.Add(new Claim(AuthConstants.Claims.IsAdmin, "true"));
 
         var descriptor = new SecurityTokenDescriptor
         {

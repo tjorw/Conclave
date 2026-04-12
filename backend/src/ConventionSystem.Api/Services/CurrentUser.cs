@@ -1,3 +1,4 @@
+using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Domain.Convention.Ids;
 
@@ -9,7 +10,7 @@ public sealed class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICur
     {
         get
         {
-            var claim = httpContextAccessor.HttpContext?.User.FindFirst("person_id")
+            var claim = httpContextAccessor.HttpContext?.User.FindFirst(AuthConstants.Claims.PersonId)
                 ?? throw new UnauthorizedAccessException("Ingen inloggad användare hittades.");
 
             if (!Guid.TryParse(claim.Value, out var guid))
