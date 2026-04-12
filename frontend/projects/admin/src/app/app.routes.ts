@@ -27,6 +27,11 @@ export const routes: Routes = [
             m => m.EditionDetailComponent
           ),
       },
+      {
+        path: 'persons',
+        loadComponent: () =>
+          import('./features/persons/persons.component').then(m => m.PersonsComponent),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

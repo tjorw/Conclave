@@ -64,4 +64,5 @@ export interface PersonDto {
   email: string;
   phone: string | null;
   isActive: boolean;
+  isAdmin: boolean;
 }

@@ -114,50 +114,6 @@
   padding-top: 4px;
 }
 
-// ── Tabeller ──────────────────────────────────────────────
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 16px;
-
-  th {
-    text-align: left;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #999;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 10px 16px;
-    border-bottom: 2px solid #eee;
-    white-space: nowrap;
-  }
-
-  td {
-    padding: 10px 16px;
-    border-bottom: 1px solid #f2f2f2;
-    font-size: 0.875rem;
-    vertical-align: middle;
-  }
-
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #fafafa; }
-
-  .actions-col { width: 88px; }
-}
-
-.row-actions {
-  display: flex;
-  gap: 0;
-  justify-content: flex-end;
-
-  button {
-    width: 36px;
-    height: 36px;
-    line-height: 36px;
-  }
-}
-
 .muted { color: #bbb; }
 
 .station-list {

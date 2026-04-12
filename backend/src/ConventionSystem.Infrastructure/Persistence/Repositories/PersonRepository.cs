@@ -17,13 +17,22 @@ public sealed class PersonRepository(ConventionDbContext db) : IPersonRepository
     public Task<Person?> FindByEmailInConventionAsync(ConventionId conventionId, string email, CancellationToken ct = default)
         => db.Persons.FirstOrDefaultAsync(p => p.ConventionId == conventionId && p.Email == email, ct);
 
-    public Task<IReadOnlyList<PersonDto>> ListByConventionIdAsync(ConventionId conventionId, CancellationToken ct = default)
-        => db.Persons
+    public async Task<IReadOnlyList<PersonDto>> ListByConventionIdAsync(ConventionId conventionId, CancellationToken ct = default)
+    {
+        var adminIds = await db.Set<ConventionAdministrator>()
+            .Where(a => EF.Property<ConventionId>(a, "ConventionId") == conventionId)
+            .Select(a => a.PersonId)
+            .ToHashSetAsync(ct);
+
+        return await db.Persons
             .Where(p => p.ConventionId == conventionId)
             .OrderBy(p => p.Name)
-            .Select(p => new PersonDto(p.Id.Value, p.Name, p.Email, p.Phone, p.IsActive))
+            .Select(p => new { p.Id, p.Name, p.Email, p.Phone, p.IsActive })
             .ToListAsync(ct)
-            .ContinueWith(t => (IReadOnlyList<PersonDto>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+            .ContinueWith(t => (IReadOnlyList<PersonDto>)t.Result
+                .Select(p => new PersonDto(p.Id.Value, p.Name, p.Email, p.Phone, p.IsActive, adminIds.Contains(p.Id)))
+                .ToList(), TaskContinuationOptions.ExecuteSynchronously);
+    }
 
     public async Task AddAndSaveAsync(Person person, CancellationToken ct = default)
     {

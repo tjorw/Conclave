@@ -31,7 +31,8 @@ public static class ConventionEndpoints
             Results.Ok(await sender.Send(new ListEditionsQuery(conventionId), ct)));
 
         group.MapGet("/{conventionId:guid}/persons", async (Guid conventionId, ISender sender, CancellationToken ct) =>
-            Results.Ok(await sender.Send(new ListPersonsQuery(conventionId), ct)));
+            Results.Ok(await sender.Send(new ListPersonsQuery(conventionId), ct)))
+            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         group.MapPost("/{conventionId:guid}/administrators",
             async (Guid conventionId, AddAdministratorRequest request, ISender sender, CancellationToken ct) =>

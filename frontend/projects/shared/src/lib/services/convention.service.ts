@@ -70,6 +70,18 @@ export interface UpdateCategoryRequest {
   responsibleId: string;
 }
 
+export interface CreatePersonRequest {
+  name: string;
+  email: string;
+  phone?: string | null;
+}
+
+export interface UpdatePersonRequest {
+  name: string;
+  email: string;
+  phone?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ConventionService {
   private readonly http = inject(HttpClient);
@@ -171,5 +183,21 @@ export class ConventionService {
 
   removeCategory(editionId: string, categoryId: string) {
     return this.http.delete<void>(`${this.env.apiBaseUrl}/editions/${editionId}/categories/${categoryId}`);
+  }
+
+  createPerson(request: CreatePersonRequest) {
+    return this.http.post<{ id: string }>(`${this.base}/persons`, request);
+  }
+
+  updatePerson(personId: string, request: UpdatePersonRequest) {
+    return this.http.put<void>(`${this.env.apiBaseUrl}/persons/${personId}`, request);
+  }
+
+  deactivatePerson(personId: string) {
+    return this.http.delete<void>(`${this.env.apiBaseUrl}/persons/${personId}`);
+  }
+
+  reactivatePerson(personId: string) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/persons/${personId}/reactivate`, {});
   }
 }

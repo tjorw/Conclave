@@ -21,7 +21,7 @@ public record EditionDto(
     IReadOnlyList<StationDto> Stations,
     IReadOnlyList<CategoryDto> Categories);
 
-public record PersonDto(Guid Id, string Name, string Email, string? Phone, bool IsActive);
+public record PersonDto(Guid Id, string Name, string Email, string? Phone, bool IsActive, bool IsAdmin);
 
 public record VenueDto(Guid Id, string Name, string Building, string? Description);
 

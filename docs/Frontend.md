@@ -109,6 +109,84 @@ submit.
 
 ---
 
+### Listningssidor
+
+Standardmönstret för en listningssida i admin-appen. Avvikelser kräver
+motivering. Se `persons.component` som referensimplementation.
+
+#### Struktur
+
+```
+page-header          – rubrik + undertitel
+action-bar           – sökfält (vänster) + primärknapp (höger)
+[create-card]        – kollapsbar mat-card med skapaformulär (visas vid behov)
+mat-card > data-table – listning av entiteter
+```
+
+#### Komponentsignaler
+
+Utöver standardsignalerna `loading`, `error`, `saving` tillkommer:
+
+```typescript
+readonly items        = signal<FooDto[]>([]);
+readonly searchQuery  = signal('');
+readonly showCreateForm = signal(false);
+readonly editingItem  = signal<FooDto | null>(null);
+
+readonly filteredItems = computed(() => {
+  const q = this.searchQuery().toLowerCase();
+  return this.items().filter(i => !q || /* matchning på relevanta fält */);
+});
+```
+
+#### Sökning
+
+Klientsidessökning med `computed()` på redan laddad lista. Sökning sker på
+namn och e-post (eller motsvarande identifierande fält). Ingen debounce –
+direkt filtrering räcker för admin-listor.
+
+#### Skapa-formulär
+
+Dolt som default, visas via toggle-knapp. `mat-card` med `form-row`-grid
+(flex, `flex-wrap`). Återställs och stängs vid lyckat submit.
+
+#### Tabellen
+
+`<table class="data-table">` direkt inuti `<mat-card-content class="no-pad">`.
+Kolumner: identifierande fält (name, email etc.) → statuskolumn → tom
+actions-kolumn med `class="actions-col"`.
+
+Åtgärdsknappar samlas i `<td class="row-actions">` med `mat-icon-button`.
+Typiska åtgärder: edit (alltid) + kontextuell knapp (ta bort / avaktivera /
+återaktivera beroende på entitetens tillstånd).
+
+#### Inline-redigering
+
+Redigeringsformuläret visas som en extra `<tr class="edit-row">` direkt under
+den rad som redigeras. Raden visas via `editingItem()?.id === item.id`.
+Spara/avbryt-knappar ersätter de vanliga action-knapparna i samma rad (ej
+extra knappar utanför tabellen).
+
+```html
+@if (editingItem()?.id === item.id) {
+  <tr class="edit-row">
+    <td colspan="N">
+      <form [formGroup]="editForm" class="form-row"> … </form>
+    </td>
+  </tr>
+}
+```
+
+#### Tom lista
+
+```html
+@empty {
+  <tr><td colspan="N" class="empty-cell">Inga X tillagda ännu.</td></tr>
+}
+```
+
+---
+
 ### Felhantering
 
 Privat `handleError`-metod extraherar `ProblemDetails.detail` från API-svaret:
@@ -156,8 +234,18 @@ Använda komponenter:
 `mat-select`, `mat-chip`, `mat-expansion-panel`, `mat-progress-spinner`,
 `mat-tooltip`, `mat-sidenav`
 
-**SCSS per komponent** – stilar är komponentlokala. Inga globala utility-klasser.
+**SCSS per komponent** – stilar är i första hand komponentlokala. Undantaget
+är de globala utility-klasserna i `styles.scss` (se nedan).
 Inga CSS-ramverk (Tailwind etc.).
+
+**Globala utility-klasser** (definierade i `styles.scss`, används fritt i alla
+komponenter):
+
+| Klass | Syfte |
+|-------|-------|
+| `.data-table` | Standardtabell för listningar (se Listningssidor) |
+| `.row-actions` | Flex-container för edit/delete-knappar i tabellrad |
+| `.chip`, `.chip-green`, `.chip-grey`, `.chip-blue` | Statuspiller |
 
 **Responsivitet** – admin-appen är desktop-first. Formulär använder
 `flex-wrap` för att tåla smalare fönster, men mobil är inte ett krav.

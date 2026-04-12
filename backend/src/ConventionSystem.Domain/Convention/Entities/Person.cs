@@ -30,4 +30,6 @@ public sealed class Person : Entity<PersonId>
     }
 
     internal void Deactivate() => IsActive = false;
+
+    internal void Reactivate() => IsActive = true;
 }

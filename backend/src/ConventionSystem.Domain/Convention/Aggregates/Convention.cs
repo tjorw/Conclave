@@ -77,6 +77,16 @@ public sealed class Convention : AggregateRoot
         RaiseDomainEvent(new PersonDeactivated(person.Id, Id, DateTimeOffset.UtcNow));
     }
 
+    public void ReactivatePerson(Person person)
+    {
+        if (person.ConventionId != Id)
+            throw new InvalidOperationException("Personen tillhör inte denna konvention.");
+        if (person.IsActive)
+            throw new InvalidOperationException("Personen är redan aktiv.");
+        person.Reactivate();
+        RaiseDomainEvent(new PersonReactivated(person.Id, Id, DateTimeOffset.UtcNow));
+    }
+
     public Edition CreateEdition(string name, DatePeriod period, PersonId staffCoordinatorId, PersonId eventCoordinatorId)
         => new(EditionId.New(), Id, name, period, staffCoordinatorId, eventCoordinatorId);
 }

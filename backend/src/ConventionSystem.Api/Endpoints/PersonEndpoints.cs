@@ -1,6 +1,7 @@
 using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Convention.Commands.CreatePerson;
 using ConventionSystem.Application.Convention.Commands.DeactivatePerson;
+using ConventionSystem.Application.Convention.Commands.ReactivatePerson;
 using ConventionSystem.Application.Convention.Commands.UpdatePerson;
 using MediatR;
 
@@ -30,6 +31,13 @@ public static class PersonEndpoints
             async (Guid personId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new DeactivatePersonCommand(personId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapPost("/persons/{personId:guid}/reactivate",
+            async (Guid personId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new ReactivatePersonCommand(personId), ct);
                 return Results.NoContent();
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 

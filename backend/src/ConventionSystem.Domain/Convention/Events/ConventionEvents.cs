@@ -30,6 +30,11 @@ public record PersonDeactivated(
     ConventionId ConventionId,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
+public record PersonReactivated(
+    PersonId PersonId,
+    ConventionId ConventionId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public record AdministratorAdded(
     ConventionId ConventionId,
     PersonId PersonId,

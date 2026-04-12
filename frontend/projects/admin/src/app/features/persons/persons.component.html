@@ -1,0 +1,146 @@
+<div class="page-header">
+  <h1>Personer</h1>
+  <p class="subtitle">Alla registrerade personer i konventionen</p>
+</div>
+
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+<div class="action-bar">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput placeholder="Sök namn eller e-post…" (input)="onSearch($event)" />
+  </mat-form-field>
+  <span class="spacer"></span>
+  <button mat-flat-button color="primary" (click)="toggleCreateForm()">
+    <mat-icon>add</mat-icon>
+    Skapa person
+  </button>
+</div>
+
+@if (showCreateForm()) {
+  <mat-card class="create-card">
+    <mat-card-header>
+      <mat-card-title>Skapa ny person</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="createForm" class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Namn *</mat-label>
+          <input matInput formControlName="name" placeholder="För- och efternamn" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>E-post *</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="namn@example.com" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Telefon</mat-label>
+          <input matInput formControlName="phone" placeholder="Valfritt" />
+        </mat-form-field>
+      </form>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-button type="button" (click)="toggleCreateForm()">Avbryt</button>
+      <button mat-flat-button color="primary" (click)="create()"
+        [disabled]="createForm.invalid || saving()">
+        @if (saving()) { <mat-spinner diameter="18" /> } @else { Skapa }
+      </button>
+    </mat-card-actions>
+  </mat-card>
+}
+
+@if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else {
+  <mat-card>
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Namn</th>
+            <th>E-post</th>
+            <th>Telefon</th>
+            <th>Roller</th>
+            <th>Status</th>
+            <th class="actions-col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (person of filteredPersons(); track person.id) {
+            <tr [class.inactive-row]="!person.isActive">
+              <td><strong>{{ person.name }}</strong></td>
+              <td>{{ person.email }}</td>
+              <td>{{ person.phone ?? '–' }}</td>
+              <td>
+                @if (person.isAdmin) {
+                  <span class="chip chip-blue">Admin</span>
+                }
+              </td>
+              <td>
+                @if (person.isActive) {
+                  <span class="chip chip-green">Aktiv</span>
+                } @else {
+                  <span class="chip chip-grey">Inaktiv</span>
+                }
+              </td>
+              <td class="row-actions">
+                @if (editingPerson()?.id === person.id) {
+                  <button mat-icon-button color="primary" (click)="saveEdit()"
+                    [disabled]="editForm.invalid || saving()" matTooltip="Spara">
+                    <mat-icon>check</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="cancelEdit()" matTooltip="Avbryt">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                } @else {
+                  <button mat-icon-button (click)="startEdit(person)" matTooltip="Redigera">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  @if (person.isActive) {
+                    <button mat-icon-button color="warn" (click)="deactivate(person)"
+                      matTooltip="Avaktivera" [disabled]="saving()">
+                      <mat-icon>person_off</mat-icon>
+                    </button>
+                  } @else {
+                    <button mat-icon-button (click)="reactivate(person)"
+                      matTooltip="Återaktivera" [disabled]="saving()">
+                      <mat-icon>person</mat-icon>
+                    </button>
+                  }
+                }
+              </td>
+            </tr>
+            @if (editingPerson()?.id === person.id) {
+              <tr class="edit-row">
+                <td colspan="6">
+                  <form [formGroup]="editForm" (ngSubmit)="saveEdit()" class="form-row">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>Namn</mat-label>
+                      <input matInput formControlName="name" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>E-post</mat-label>
+                      <input matInput formControlName="email" type="email" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>Telefon</mat-label>
+                      <input matInput formControlName="phone" />
+                    </mat-form-field>
+                  </form>
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty-cell">
+                @if (searchQuery()) { Inga personer matchar sökningen. }
+                @else { Inga personer registrerade ännu. }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
+}

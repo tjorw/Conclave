@@ -126,4 +126,55 @@ public class ConventionPersonTests
 
         Assert.Throws<InvalidOperationException>(() => convention.DeactivatePerson(person));
     }
+
+    // --- ReactivatePerson ---
+
+    [Fact]
+    public void ReactivatePerson_InactivePerson_ActivatesIt()
+    {
+        var convention = CreateConvention();
+        var person = convention.CreatePerson("Anna", "anna@example.com");
+        convention.DeactivatePerson(person);
+        convention.ClearDomainEvents();
+
+        convention.ReactivatePerson(person);
+
+        Assert.True(person.IsActive);
+    }
+
+    [Fact]
+    public void ReactivatePerson_RaisesPersonReactivatedEvent()
+    {
+        var convention = CreateConvention();
+        var person = convention.CreatePerson("Anna", "anna@example.com");
+        convention.DeactivatePerson(person);
+        convention.ClearDomainEvents();
+
+        convention.ReactivatePerson(person);
+
+        var evt = convention.DomainEvents.OfType<PersonReactivated>().SingleOrDefault();
+        Assert.NotNull(evt);
+        Assert.Equal(person.Id, evt.PersonId);
+        Assert.Equal(convention.Id, evt.ConventionId);
+    }
+
+    [Fact]
+    public void ReactivatePerson_AlreadyActive_Throws()
+    {
+        var convention = CreateConvention();
+        var person = convention.CreatePerson("Anna", "anna@example.com");
+
+        Assert.Throws<InvalidOperationException>(() => convention.ReactivatePerson(person));
+    }
+
+    [Fact]
+    public void ReactivatePerson_PersonFromOtherConvention_Throws()
+    {
+        var convention = CreateConvention();
+        var otherConvention = CreateConvention();
+        var person = otherConvention.CreatePerson("Anna", "anna@example.com");
+        otherConvention.DeactivatePerson(person);
+
+        Assert.Throws<InvalidOperationException>(() => convention.ReactivatePerson(person));
+    }
 }
