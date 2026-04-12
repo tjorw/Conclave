@@ -11,7 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EventDto, EventService, EventVersionDto } from 'shared';
+import { EventDto, EventService } from 'shared';
 
 @Component({
   selector: 'app-event-detail',
@@ -53,7 +53,7 @@ export class EventDetailComponent implements OnInit {
   readonly editForm = this.fb.group({
     title:            ['', Validators.required],
     description:      ['', Validators.required],
-    registrationType: ['Free', Validators.required],
+    registrationType: ['DropIn', Validators.required],
     dropInRules:      [''],
   });
 
@@ -61,7 +61,7 @@ export class EventDetailComponent implements OnInit {
     description:     ['', Validators.required],
     durationMinutes: [60, [Validators.required, Validators.min(1)]],
     seats:           [20, [Validators.required, Validators.min(1)]],
-    startType:       ['Scheduled', Validators.required],
+    startType:       ['FixedTime', Validators.required],
   });
 
   ngOnInit(): void {
@@ -151,7 +151,17 @@ export class EventDetailComponent implements OnInit {
     });
   }
 
-  // ── Submit for review ───────────────────────────────────────────────────
+  // ── Lifecycle ───────────────────────────────────────────────────────────
+
+  returnToDraft(): void {
+    const ev = this.event();
+    if (!ev || this.saving()) return;
+    this.saving.set(true);
+    this.svc.returnToDraft(ev.id).subscribe({
+      next: () => { this.saving.set(false); this.reload(); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte återställa evenemanget till utkast.'); },
+    });
+  }
 
   submitForReview(): void {
     const ev = this.event();
@@ -173,13 +183,11 @@ export class EventDetailComponent implements OnInit {
   }
 
   private populateEditForm(e: EventDto): void {
-    const draft = e.draftVersion;
-    if (!draft) return;
     this.editForm.patchValue({
-      title:            draft.title ?? '',
-      description:      draft.description ?? '',
-      registrationType: draft.registrationType,
-      dropInRules:      draft.dropInRules ?? '',
+      title:            e.title ?? '',
+      description:      e.description ?? '',
+      registrationType: e.registrationType,
+      dropInRules:      e.dropInRules ?? '',
     });
   }
 
@@ -193,14 +201,14 @@ export class EventDetailComponent implements OnInit {
 
   registrationLabel(type: string): string {
     const map: Record<string, string> = {
-      Free: 'Fri entré', Registration: 'Anmälan krävs', DropIn: 'Drop-in',
+      DropIn: 'Drop-in', PreRegistration: 'Föranmälan', Combined: 'Kombinerat',
     };
     return map[type] ?? type;
   }
 
   startTypeLabel(type: string): string {
     const map: Record<string, string> = {
-      Scheduled: 'Schemalagd', OnDemand: 'Vid behov',
+      FixedTime: 'Fast tid', Rolling: 'Löpande', Tournament: 'Turneringsformat',
     };
     return map[type] ?? type;
   }

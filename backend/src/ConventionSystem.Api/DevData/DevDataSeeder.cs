@@ -32,24 +32,25 @@ public static class DevDataSeeder
         var sp = scope.ServiceProvider;
 
         var systemDb = sp.GetRequiredService<SystemDbContext>();
-        if (await systemDb.Tenants.AnyAsync(t => t.Slug == ConventionSlug))
-            return;
-
         var logger = appServices.GetRequiredService<ILogger<Program>>();
-        logger.LogInformation("Seeder: skapar demo-data...");
 
-        var conventionId = Guid.CreateVersion7();
+        // Migrera alltid – idempotent och nödvändigt vid nya migrationer
         var connStr = DeriveConnectionString(config, "ConventionDemo");
-
-        // Lös tenant-kontexten för scopet så att ConventionDbContext pekar rätt
-        var tenantContext = sp.GetRequiredService<TenantContext>();
-        tenantContext.Resolve(conventionId, connStr);
-
-        // Migrera konventionsdatabasen
         var dbOptions = new DbContextOptionsBuilder<ConventionDbContext>()
             .UseSqlServer(connStr).Options;
         await using (var db = new ConventionDbContext(dbOptions))
             await db.Database.MigrateAsync();
+
+        if (await systemDb.Tenants.AnyAsync(t => t.Slug == ConventionSlug))
+            return;
+
+        logger.LogInformation("Seeder: skapar demo-data...");
+
+        var conventionId = Guid.CreateVersion7();
+
+        // Lös tenant-kontexten för scopet så att ConventionDbContext pekar rätt
+        var tenantContext = sp.GetRequiredService<TenantContext>();
+        tenantContext.Resolve(conventionId, connStr);
 
         var sender = sp.GetRequiredService<ISender>();
 

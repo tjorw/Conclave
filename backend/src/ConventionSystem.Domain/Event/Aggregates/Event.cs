@@ -10,7 +10,7 @@ namespace ConventionSystem.Domain.Event.Aggregates;
 
 public sealed class Event : AggregateRoot
 {
-    private readonly List<EventVersion> _versions = [];
+    private readonly List<SessionRequest> _sessionRequests = [];
     private readonly List<Session> _sessions = [];
     private readonly List<CoOrganiser> _coOrganisers = [];
     private readonly List<EventComment> _comments = [];
@@ -19,11 +19,14 @@ public sealed class Event : AggregateRoot
     public EditionId EditionId { get; private set; }
     public CategoryId CategoryId { get; private set; }
     public PersonId LeadOrganiserId { get; private set; }
-    public EventVersionId? PublishedVersionId { get; private set; }
-    public EventVersionId? DraftVersionId { get; private set; }
     public EventStatus Status { get; private set; }
 
-    public IReadOnlyList<EventVersion> Versions => _versions.AsReadOnly();
+    public string Title { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
+    public RegistrationType RegistrationType { get; private set; }
+    public string? DropInRules { get; private set; }
+
+    public IReadOnlyList<SessionRequest> SessionRequests => _sessionRequests.AsReadOnly();
     public IReadOnlyList<Session> Sessions => _sessions.AsReadOnly();
     public IReadOnlyList<CoOrganiser> CoOrganisers => _coOrganisers.AsReadOnly();
     public IReadOnlyList<EventComment> Comments => _comments.AsReadOnly();
@@ -38,71 +41,105 @@ public sealed class Event : AggregateRoot
         LeadOrganiserId = leadOrganiserId;
         Status = EventStatus.Draft;
 
-        var initialVersion = new EventVersion(EventVersionId.New(), id);
-        _versions.Add(initialVersion);
-        DraftVersionId = initialVersion.Id;
-
         RaiseDomainEvent(new EventCreated(id, editionId, categoryId, leadOrganiserId, DateTimeOffset.UtcNow));
     }
 
-    public EventVersion GetDraftVersion()
+    private void EnsureNotCancelled()
     {
-        if (DraftVersionId is null)
-            throw new InvalidOperationException("Inga utkast finns för detta evenemang.");
-        return _versions.First(v => v.Id == DraftVersionId.Value);
+        if (Status == EventStatus.Cancelled)
+            throw new InvalidOperationException("Evenemanget är inställt och kan inte redigeras.");
     }
 
-    public EventVersion? GetPublishedVersion() =>
-        PublishedVersionId is null ? null : _versions.FirstOrDefault(v => v.Id == PublishedVersionId.Value);
+    public void EditTitle(string title)
+    {
+        EnsureNotCancelled();
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Titel får inte vara tom.", nameof(title));
+        Title = title;
+    }
+
+    public void EditDescription(string description)
+    {
+        EnsureNotCancelled();
+        if (string.IsNullOrWhiteSpace(description))
+            throw new ArgumentException("Beskrivning får inte vara tom.", nameof(description));
+        Description = description;
+    }
+
+    public void SetRegistrationType(RegistrationType registrationType, string? dropInRules = null)
+    {
+        EnsureNotCancelled();
+        RegistrationType = registrationType;
+        DropInRules = dropInRules;
+    }
+
+    public SessionRequest AddSessionRequest(string description, int durationMinutes, int seats, StartType startType)
+    {
+        EnsureNotCancelled();
+        if (durationMinutes <= 0)
+            throw new ArgumentException("Duration måste vara mer än 0 minuter.", nameof(durationMinutes));
+        var request = new SessionRequest(SessionRequestId.New(), description, durationMinutes, seats, startType);
+        _sessionRequests.Add(request);
+        return request;
+    }
+
+    public void RemoveSessionRequest(SessionRequestId requestId)
+    {
+        EnsureNotCancelled();
+        var request = _sessionRequests.FirstOrDefault(r => r.Id == requestId)
+            ?? throw new InvalidOperationException("Sessionönskemålet hittades inte.");
+        _sessionRequests.Remove(request);
+    }
 
     public void SubmitForReview()
     {
-        if (Status != EventStatus.Draft)
-            throw new InvalidOperationException("Evenemanget måste vara i utkastläge för att skickas in för granskning.");
+        if (Status == EventStatus.Cancelled)
+            throw new InvalidOperationException("Evenemanget är inställt.");
+        if (Status == EventStatus.UnderReview)
+            throw new InvalidOperationException("Evenemanget är redan under granskning.");
+        if (string.IsNullOrWhiteSpace(Title))
+            throw new InvalidOperationException("Evenemanget måste ha en titel.");
+        if (string.IsNullOrWhiteSpace(Description))
+            throw new InvalidOperationException("Evenemanget måste ha en beskrivning.");
 
-        var draft = GetDraftVersion();
-        if (string.IsNullOrWhiteSpace(draft.Title))
-            throw new InvalidOperationException("Evenemanget måste ha en titel innan det kan skickas in för granskning.");
-        if (string.IsNullOrWhiteSpace(draft.Description))
-            throw new InvalidOperationException("Evenemanget måste ha en beskrivning innan det kan skickas in för granskning.");
-
-        draft.SubmitForReview();
         Status = EventStatus.UnderReview;
-        RaiseDomainEvent(new EventSubmittedForReview(Id, draft.Id, DateTimeOffset.UtcNow));
+        RaiseDomainEvent(new EventSubmittedForReview(Id, DateTimeOffset.UtcNow));
     }
 
-    public void ApproveVersion(PersonId responsibleId)
+    public void Approve(PersonId responsibleId)
     {
-        if (Status != EventStatus.UnderReview)
-            throw new InvalidOperationException("Evenemanget är inte under granskning.");
+        if (Status == EventStatus.Cancelled)
+            throw new InvalidOperationException("Evenemanget är inställt.");
+        if (Status == EventStatus.Published)
+            throw new InvalidOperationException("Evenemanget är redan publicerat.");
+        if (string.IsNullOrWhiteSpace(Title))
+            throw new InvalidOperationException("Evenemanget måste ha en titel.");
+        if (string.IsNullOrWhiteSpace(Description))
+            throw new InvalidOperationException("Evenemanget måste ha en beskrivning.");
 
-        var draft = GetDraftVersion();
-        draft.Approve();
-        PublishedVersionId = draft.Id;
-        DraftVersionId = null;
         Status = EventStatus.Published;
-
-        RaiseDomainEvent(new VersionApproved(Id, draft.Id, LeadOrganiserId, responsibleId, draft.Title, DateTimeOffset.UtcNow));
+        RaiseDomainEvent(new EventApproved(Id, LeadOrganiserId, responsibleId, Title, DateTimeOffset.UtcNow));
     }
 
-    public void RejectVersion(PersonId responsibleId, string comment)
+    public void ReturnToDraft(PersonId performedById)
+    {
+        if (Status == EventStatus.Draft)
+            throw new InvalidOperationException("Evenemanget är redan i utkastläge.");
+
+        Status = EventStatus.Draft;
+    }
+
+    public EventComment Reject(PersonId responsibleId, string comment)
     {
         if (Status != EventStatus.UnderReview)
             throw new InvalidOperationException("Evenemanget är inte under granskning.");
 
-        var rejected = GetDraftVersion();
-        rejected.Reject();
-
-        _comments.Add(new EventComment(EventCommentId.New(), Id, rejected.Id, responsibleId, comment));
-
-        // Nytt utkast med kopierat innehåll så arrangören inte behöver börja om från noll
-        var newDraft = new EventVersion(EventVersionId.New(), Id,
-            rejected.Title, rejected.Description, rejected.RegistrationType, rejected.DropInRules);
-        _versions.Add(newDraft);
-        DraftVersionId = newDraft.Id;
         Status = EventStatus.Draft;
+        var eventComment = new EventComment(EventCommentId.New(), Id, responsibleId, comment);
+        _comments.Add(eventComment);
 
-        RaiseDomainEvent(new VersionRejected(Id, rejected.Id, LeadOrganiserId, responsibleId, rejected.Title, comment, DateTimeOffset.UtcNow));
+        RaiseDomainEvent(new EventRejected(Id, LeadOrganiserId, responsibleId, Title, comment, DateTimeOffset.UtcNow));
+        return eventComment;
     }
 
     public void CancelEvent(PersonId responsibleId)
@@ -139,10 +176,5 @@ public sealed class Event : AggregateRoot
         var coOrganiser = new CoOrganiser(personId);
         _coOrganisers.Add(coOrganiser);
         return coOrganiser;
-    }
-
-    public void AddComment(PersonId authorId, string text, EventVersionId? versionId = null)
-    {
-        _comments.Add(new EventComment(EventCommentId.New(), Id, versionId, authorId, text));
     }
 }

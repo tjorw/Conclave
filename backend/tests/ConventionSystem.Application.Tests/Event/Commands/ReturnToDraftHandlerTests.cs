@@ -1,31 +1,30 @@
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
-using ConventionSystem.Application.Event.Commands.ApproveVersion;
+using ConventionSystem.Application.Event.Commands.ReturnToDraft;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Event.Enums;
-using ConventionSystem.Domain.Event.Events;
 using ConventionSystem.Domain.Event.Ids;
 using NSubstitute;
 
 namespace ConventionSystem.Application.Tests.Event.Commands;
 
-public class ApproveVersionHandlerTests
+public class ReturnToDraftHandlerTests
 {
     private readonly IEventRepository _eventRepo = Substitute.For<IEventRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
-    private readonly ApproveVersionHandler _handler;
+    private readonly ReturnToDraftHandler _handler;
 
-    public ApproveVersionHandlerTests()
+    public ReturnToDraftHandlerTests()
     {
-        _handler = new ApproveVersionHandler(_eventRepo, _editionRepo, _conventionRepo, _currentUser);
+        _handler = new ReturnToDraftHandler(_eventRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
-    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person categoryResponsible,
-             Domain.Convention.Aggregates.Edition edition, Domain.Event.Aggregates.Event ev) Setup()
+    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person responsible,
+             Domain.Convention.Aggregates.Edition edition, Domain.Event.Aggregates.Event ev) Setup(EventStatus startStatus)
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
         var admin = convention.RegisterPerson("Admin", "admin@example.com");
@@ -41,7 +40,11 @@ public class ApproveVersionHandlerTests
         var ev = new Domain.Event.Aggregates.Event(EventId.New(), edition.Id, category.Id, organiser.Id);
         ev.EditTitle("Rollspel");
         ev.EditDescription("Beskrivning");
-        ev.SubmitForReview();
+
+        if (startStatus == EventStatus.UnderReview || startStatus == EventStatus.Published)
+            ev.SubmitForReview();
+        if (startStatus == EventStatus.Published)
+            ev.Approve(eventCoord.Id);
 
         _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _editionRepo.GetByIdWithCategoriesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
@@ -51,62 +54,57 @@ public class ApproveVersionHandlerTests
     }
 
     [Fact]
-    public async Task Handle_CategoryResponsible_EventBecomesPublished()
+    public async Task Handle_FromUnderReview_StatusBecomesDraft()
     {
-        var (_, responsible, _, ev) = Setup();
+        var (_, responsible, _, ev) = Setup(EventStatus.UnderReview);
         _currentUser.PersonId.Returns(responsible.Id);
 
-        await _handler.Handle(new ApproveVersionCommand(ev.Id.Value), default);
+        await _handler.Handle(new ReturnToDraftCommand(ev.Id.Value), default);
 
-        Assert.Equal(EventStatus.Published, ev.Status);
+        Assert.Equal(EventStatus.Draft, ev.Status);
     }
 
     [Fact]
-    public async Task Handle_CategoryResponsible_RaisesEventApprovedEvent()
+    public async Task Handle_FromPublished_StatusBecomesDraft()
     {
-        var (_, responsible, _, ev) = Setup();
-        ev.ClearDomainEvents();
+        var (_, responsible, _, ev) = Setup(EventStatus.Published);
         _currentUser.PersonId.Returns(responsible.Id);
 
-        await _handler.Handle(new ApproveVersionCommand(ev.Id.Value), default);
+        await _handler.Handle(new ReturnToDraftCommand(ev.Id.Value), default);
 
-        Assert.Single(ev.DomainEvents.OfType<EventApproved>());
+        Assert.Equal(EventStatus.Draft, ev.Status);
     }
 
     [Fact]
-    public async Task Handle_AlreadyPublished_Throws()
+    public async Task Handle_AlreadyDraft_Throws()
     {
-        var (_, responsible, _, ev) = Setup();
-        ev.Approve(responsible.Id);
-        _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        var (_, responsible, _, ev) = Setup(EventStatus.Draft);
         _currentUser.PersonId.Returns(responsible.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new ApproveVersionCommand(ev.Id.Value), default));
+            () => _handler.Handle(new ReturnToDraftCommand(ev.Id.Value), default));
     }
 
     [Fact]
-    public async Task Handle_FromDraft_EventBecomesPublished()
+    public async Task Handle_FromCancelled_StatusBecomesDraft()
     {
-        var (_, responsible, _, ev) = Setup();
-        // Återställ till Draft för att testa direktpublicering
-        ev.ReturnToDraft(responsible.Id);
-        _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        var (_, responsible, _, ev) = Setup(EventStatus.Draft);
+        ev.CancelEvent(responsible.Id);
         _currentUser.PersonId.Returns(responsible.Id);
 
-        await _handler.Handle(new ApproveVersionCommand(ev.Id.Value), default);
+        await _handler.Handle(new ReturnToDraftCommand(ev.Id.Value), default);
 
-        Assert.Equal(EventStatus.Published, ev.Status);
+        Assert.Equal(EventStatus.Draft, ev.Status);
     }
 
     [Fact]
     public async Task Handle_UnauthorisedPerson_Throws()
     {
-        var (convention, _, _, ev) = Setup();
+        var (convention, _, _, ev) = Setup(EventStatus.UnderReview);
         var outsider = convention.CreatePerson("Utomstående", "other@example.com");
         _currentUser.PersonId.Returns(outsider.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new ApproveVersionCommand(ev.Id.Value), default));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            () => _handler.Handle(new ReturnToDraftCommand(ev.Id.Value), default));
     }
 }

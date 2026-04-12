@@ -18,20 +18,14 @@ public record EventDto(
     Guid LeadOrganiserId,
     string? LeadOrganiserName,
     string Status,
-    IReadOnlyList<Guid> CoOrganiserIds,
-    EventVersionDto? PublishedVersion,
-    EventVersionDto? DraftVersion,
-    IReadOnlyList<SessionDto> Sessions);
-
-public record EventVersionDto(
-    Guid Id,
     string Title,
     string Description,
     string RegistrationType,
     string? DropInRules,
-    string Status,
-    DateTimeOffset CreatedAt,
-    IReadOnlyList<SessionRequestDto> SessionRequests);
+    IReadOnlyList<Guid> CoOrganiserIds,
+    IReadOnlyList<SessionRequestDto> SessionRequests,
+    IReadOnlyList<SessionDto> Sessions,
+    IReadOnlyList<EventCommentDto> Comments);
 
 public record SessionRequestDto(
     Guid Id,
@@ -48,3 +42,9 @@ public record SessionDto(
     int MaxSeats,
     string StartType,
     string Status);
+
+public record EventCommentDto(
+    Guid Id,
+    Guid AuthorId,
+    string Text,
+    DateTimeOffset CreatedAt);

@@ -13,26 +13,17 @@ public record EventCreated(
 
 public record EventSubmittedForReview(
     EventId EventId,
-    EventVersionId VersionId,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
-public record SessionCreated(
+public record EventApproved(
     EventId EventId,
-    SessionId SessionId,
-    VenueId VenueId,
-    DateTimeOffset OccurredAt) : IDomainEvent;
-
-public record VersionApproved(
-    EventId EventId,
-    EventVersionId VersionId,
     PersonId LeadOrganiserId,
     PersonId ReviewedById,
     string EventTitle,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
-public record VersionRejected(
+public record EventRejected(
     EventId EventId,
-    EventVersionId VersionId,
     PersonId LeadOrganiserId,
     PersonId ReviewedById,
     string EventTitle,
@@ -42,6 +33,12 @@ public record VersionRejected(
 public record EventCancelled(
     EventId EventId,
     PersonId ResponsibleId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record SessionCreated(
+    EventId EventId,
+    SessionId SessionId,
+    VenueId VenueId,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
 public record SessionDeactivated(

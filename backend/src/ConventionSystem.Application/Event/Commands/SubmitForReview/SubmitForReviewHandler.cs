@@ -9,7 +9,7 @@ public sealed class SubmitForReviewHandler(IEventRepository eventRepository)
 {
     public async Task Handle(SubmitForReviewCommand command, CancellationToken ct)
     {
-        var ev = await eventRepository.GetByIdWithDraftVersionAsync(new EventId(command.EventId), ct)
+        var ev = await eventRepository.GetByIdAsync(new EventId(command.EventId), ct)
             ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");
 
         ev.SubmitForReview();

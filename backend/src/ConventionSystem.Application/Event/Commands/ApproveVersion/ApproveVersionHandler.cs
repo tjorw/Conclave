@@ -18,7 +18,7 @@ public sealed class ApproveVersionHandler(
     {
         var performedById = currentUser.PersonId;
 
-        var ev = await eventRepository.GetByIdWithDraftVersionAsync(new EventId(command.EventId), ct)
+        var ev = await eventRepository.GetByIdAsync(new EventId(command.EventId), ct)
             ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");
 
         var edition = await editionRepository.GetByIdWithCategoriesAsync(ev.EditionId, ct)
@@ -31,7 +31,7 @@ public sealed class ApproveVersionHandler(
             && !edition.IsCategoryResponsible(ev.CategoryId, performedById))
             throw new InvalidOperationException("Utföraren har inte behörighet att godkänna evenemang i denna kategori.");
 
-        ev.ApproveVersion(performedById);
+        ev.Approve(performedById);
         await eventRepository.SaveAsync(ct);
     }
 }

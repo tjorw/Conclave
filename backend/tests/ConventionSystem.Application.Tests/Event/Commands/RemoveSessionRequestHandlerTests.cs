@@ -21,9 +21,9 @@ public class RemoveSessionRequestHandlerTests
     {
         var ev = new Domain.Event.Aggregates.Event(
             EventId.New(), EditionId.New(), CategoryId.New(), PersonId.New());
-        var request = ev.GetDraftVersion().AddSessionRequest("Beskrivning", 120, 4, StartType.FixedTime);
+        var request = ev.AddSessionRequest("Beskrivning", 120, 4, StartType.FixedTime);
         requestId = request.Id.Value;
-        _eventRepo.GetByIdWithDraftVersionAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _eventRepo.GetByIdWithSessionRequestsAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         return ev;
     }
 
@@ -34,7 +34,7 @@ public class RemoveSessionRequestHandlerTests
 
         await _handler.Handle(new RemoveSessionRequestCommand(ev.Id.Value, requestId), default);
 
-        Assert.Empty(ev.GetDraftVersion().SessionRequests);
+        Assert.Empty(ev.SessionRequests);
     }
 
     [Fact]
@@ -54,5 +54,15 @@ public class RemoveSessionRequestHandlerTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(new RemoveSessionRequestCommand(ev.Id.Value, Guid.NewGuid()), default));
+    }
+
+    [Fact]
+    public async Task Handle_CancelledEvent_Throws()
+    {
+        var ev = CreateDraftEventWithRequest(out var requestId);
+        ev.CancelEvent(PersonId.New());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _handler.Handle(new RemoveSessionRequestCommand(ev.Id.Value, requestId), default));
     }
 }

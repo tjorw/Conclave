@@ -4,12 +4,12 @@ using ConventionSystem.Domain.Event.Events;
 
 namespace ConventionSystem.Application.Event.DomainEventHandlers;
 
-public sealed class VersionApprovedEmailHandler(
+public sealed class EventApprovedEmailHandler(
     IPersonRepository personRepository,
     IEmailService emailService)
-    : IDomainEventHandler<VersionApproved>
+    : IDomainEventHandler<EventApproved>
 {
-    public async Task Handle(VersionApproved notification, CancellationToken ct)
+    public async Task Handle(EventApproved notification, CancellationToken ct)
     {
         var organiser = await personRepository.GetByIdAsync(notification.LeadOrganiserId, ct);
         if (organiser is null) return;
@@ -18,12 +18,12 @@ public sealed class VersionApprovedEmailHandler(
     }
 }
 
-public sealed class VersionRejectedEmailHandler(
+public sealed class EventRejectedEmailHandler(
     IPersonRepository personRepository,
     IEmailService emailService)
-    : IDomainEventHandler<VersionRejected>
+    : IDomainEventHandler<EventRejected>
 {
-    public async Task Handle(VersionRejected notification, CancellationToken ct)
+    public async Task Handle(EventRejected notification, CancellationToken ct)
     {
         var organiser = await personRepository.GetByIdAsync(notification.LeadOrganiserId, ct);
         if (organiser is null) return;

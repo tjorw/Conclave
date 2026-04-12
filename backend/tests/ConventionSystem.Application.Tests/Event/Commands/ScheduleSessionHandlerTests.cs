@@ -41,11 +41,10 @@ public class ScheduleSessionHandlerTests
         var venue = edition.CreateVenue("Sal A", "Byggnad 1");
 
         var ev = new Domain.Event.Aggregates.Event(EventId.New(), edition.Id, category.Id, organiser.Id);
-        var draft = ev.GetDraftVersion();
-        draft.EditTitle("Rollspel");
-        draft.EditDescription("Beskrivning");
+        ev.EditTitle("Rollspel");
+        ev.EditDescription("Beskrivning");
         ev.SubmitForReview();
-        ev.ApproveVersion(eventCoord.Id);
+        ev.Approve(eventCoord.Id);
 
         _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _editionRepo.GetByIdWithCategoriesAndVenuesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);

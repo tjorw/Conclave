@@ -21,12 +21,12 @@ public class EditEventDraftHandlerTests
     {
         var ev = new Domain.Event.Aggregates.Event(
             EventId.New(), EditionId.New(), CategoryId.New(), PersonId.New());
-        _eventRepo.GetByIdWithDraftVersionAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         return ev;
     }
 
     [Fact]
-    public async Task Handle_ValidCommand_UpdatesDraft()
+    public async Task Handle_ValidCommand_UpdatesEvent()
     {
         var ev = CreateDraftEvent();
 
@@ -34,10 +34,9 @@ public class EditEventDraftHandlerTests
             new EditEventDraftCommand(ev.Id.Value, "Rollspel för nybörjare",
                 "En beskrivning", RegistrationType.PreRegistration, null), default);
 
-        var draft = ev.GetDraftVersion();
-        Assert.Equal("Rollspel för nybörjare", draft.Title);
-        Assert.Equal("En beskrivning", draft.Description);
-        Assert.Equal(RegistrationType.PreRegistration, draft.RegistrationType);
+        Assert.Equal("Rollspel för nybörjare", ev.Title);
+        Assert.Equal("En beskrivning", ev.Description);
+        Assert.Equal(RegistrationType.PreRegistration, ev.RegistrationType);
     }
 
     [Fact]
@@ -64,11 +63,22 @@ public class EditEventDraftHandlerTests
     [Fact]
     public async Task Handle_EventNotFound_Throws()
     {
-        _eventRepo.GetByIdWithDraftVersionAsync(Arg.Any<EventId>(), Arg.Any<CancellationToken>())
+        _eventRepo.GetByIdAsync(Arg.Any<EventId>(), Arg.Any<CancellationToken>())
             .Returns((Domain.Event.Aggregates.Event?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(
                 new EditEventDraftCommand(Guid.NewGuid(), "Titel", "Beskrivning", RegistrationType.PreRegistration, null), default));
+    }
+
+    [Fact]
+    public async Task Handle_CancelledEvent_Throws()
+    {
+        var ev = CreateDraftEvent();
+        ev.CancelEvent(PersonId.New());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _handler.Handle(
+                new EditEventDraftCommand(ev.Id.Value, "Titel", "Beskrivning", RegistrationType.PreRegistration, null), default));
     }
 }

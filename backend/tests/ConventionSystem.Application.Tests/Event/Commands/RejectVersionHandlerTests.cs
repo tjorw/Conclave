@@ -39,12 +39,11 @@ public class RejectVersionHandlerTests
         var category = edition.CreateCategory("Rollspel", eventCoord.Id);
 
         var ev = new Domain.Event.Aggregates.Event(EventId.New(), edition.Id, category.Id, organiser.Id);
-        var draft = ev.GetDraftVersion();
-        draft.EditTitle("Rollspel");
-        draft.EditDescription("Beskrivning");
+        ev.EditTitle("Rollspel");
+        ev.EditDescription("Beskrivning");
         ev.SubmitForReview();
 
-        _eventRepo.GetByIdWithDraftVersionAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _editionRepo.GetByIdWithCategoriesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
 
@@ -63,19 +62,19 @@ public class RejectVersionHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ValidCommand_NewDraftIsCreated()
+    public async Task Handle_ValidCommand_CommentIsAdded()
     {
         var (_, responsible, _, ev) = Setup();
         _currentUser.PersonId.Returns(responsible.Id);
-        var versionCountBefore = ev.Versions.Count;
 
         await _handler.Handle(new RejectVersionCommand(ev.Id.Value, "Behöver förbättras."), default);
 
-        Assert.Equal(versionCountBefore + 1, ev.Versions.Count);
+        Assert.Single(ev.Comments);
+        Assert.Equal("Behöver förbättras.", ev.Comments[0].Text);
     }
 
     [Fact]
-    public async Task Handle_ValidCommand_RaisesVersionRejectedEvent()
+    public async Task Handle_ValidCommand_RaisesEventRejectedEvent()
     {
         var (_, responsible, _, ev) = Setup();
         ev.ClearDomainEvents();
@@ -83,7 +82,7 @@ public class RejectVersionHandlerTests
 
         await _handler.Handle(new RejectVersionCommand(ev.Id.Value, "Kommentar."), default);
 
-        Assert.Single(ev.DomainEvents.OfType<VersionRejected>());
+        Assert.Single(ev.DomainEvents.OfType<EventRejected>());
     }
 
     [Fact]

@@ -21,7 +21,7 @@ public class AddSessionRequestHandlerTests
     {
         var ev = new Domain.Event.Aggregates.Event(
             EventId.New(), EditionId.New(), CategoryId.New(), PersonId.New());
-        _eventRepo.GetByIdWithDraftVersionAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _eventRepo.GetByIdWithSessionRequestsAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         return ev;
     }
 
@@ -37,14 +37,14 @@ public class AddSessionRequestHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ValidCommand_AddsRequestToDraft()
+    public async Task Handle_ValidCommand_AddsRequestToEvent()
     {
         var ev = CreateDraftEvent();
 
         await _handler.Handle(
             new AddSessionRequestCommand(ev.Id.Value, "Beskrivning", 120, 4, StartType.Rolling), default);
 
-        Assert.Single(ev.GetDraftVersion().SessionRequests);
+        Assert.Single(ev.SessionRequests);
     }
 
     [Fact]
@@ -60,11 +60,22 @@ public class AddSessionRequestHandlerTests
     [Fact]
     public async Task Handle_EventNotFound_Throws()
     {
-        _eventRepo.GetByIdWithDraftVersionAsync(Arg.Any<EventId>(), Arg.Any<CancellationToken>())
+        _eventRepo.GetByIdWithSessionRequestsAsync(Arg.Any<EventId>(), Arg.Any<CancellationToken>())
             .Returns((Domain.Event.Aggregates.Event?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(
                 new AddSessionRequestCommand(Guid.NewGuid(), "Beskrivning", 120, 4, StartType.FixedTime), default));
+    }
+
+    [Fact]
+    public async Task Handle_CancelledEvent_Throws()
+    {
+        var ev = CreateDraftEvent();
+        ev.CancelEvent(PersonId.New());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _handler.Handle(
+                new AddSessionRequestCommand(ev.Id.Value, "Beskrivning", 120, 4, StartType.FixedTime), default));
     }
 }

@@ -27,11 +27,10 @@ public class EventCancelledHandlerTests
     {
         var responsible = PersonId.New();
         var ev = new Domain.Event.Aggregates.Event(EventId.New(), EditionId.New(), CategoryId.New(), responsible);
-        var draft = ev.GetDraftVersion();
-        draft.EditTitle("Rollspel");
-        draft.EditDescription("Beskrivning");
+        ev.EditTitle("Rollspel");
+        ev.EditDescription("Beskrivning");
         ev.SubmitForReview();
-        ev.ApproveVersion(responsible);
+        ev.Approve(responsible);
 
         var session = ev.CreateSession(
             VenueId.New(),

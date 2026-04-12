@@ -9,10 +9,10 @@ public sealed class RemoveSessionRequestHandler(IEventRepository eventRepository
 {
     public async Task Handle(RemoveSessionRequestCommand command, CancellationToken ct)
     {
-        var ev = await eventRepository.GetByIdWithDraftVersionAsync(new EventId(command.EventId), ct)
+        var ev = await eventRepository.GetByIdWithSessionRequestsAsync(new EventId(command.EventId), ct)
             ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");
 
-        ev.GetDraftVersion().RemoveSessionRequest(new SessionRequestId(command.SessionRequestId));
+        ev.RemoveSessionRequest(new SessionRequestId(command.SessionRequestId));
         await eventRepository.SaveAsync(ct);
     }
 }

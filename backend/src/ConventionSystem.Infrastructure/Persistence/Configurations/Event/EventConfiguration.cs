@@ -32,32 +32,28 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
             .HasConversion(id => id.Value, value => new PersonId(value))
             .HasColumnName("lead_organiser_id");
 
-        builder.Property(e => e.PublishedVersionId)
-            .HasConversion(id => id!.Value.Value, value => (EventVersionId?)new EventVersionId(value))
-            .HasColumnName("published_version_id");
-
-        builder.Property(e => e.DraftVersionId)
-            .HasConversion(id => id!.Value.Value, value => (EventVersionId?)new EventVersionId(value))
-            .HasColumnName("draft_version_id");
-
         builder.Property(e => e.Status)
             .HasConversion<string>()
             .HasMaxLength(50);
 
-        // Cirkulär referens – nullable FK:er till EventVersion, ingen kaskad
-        builder.HasOne<EventVersion>()
-            .WithMany()
-            .HasForeignKey(e => e.PublishedVersionId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.NoAction);
+        builder.Property(e => e.Title)
+            .HasMaxLength(300)
+            .IsRequired(false);
 
-        builder.HasOne<EventVersion>()
-            .WithMany()
-            .HasForeignKey(e => e.DraftVersionId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.NoAction);
+        builder.Property(e => e.Description)
+            .HasMaxLength(5000)
+            .IsRequired(false);
 
-        builder.HasMany(e => e.Versions)
+        builder.Property(e => e.RegistrationType)
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasColumnName("registration_type");
+
+        builder.Property(e => e.DropInRules)
+            .HasMaxLength(2000)
+            .HasColumnName("drop_in_rules");
+
+        builder.HasMany(e => e.SessionRequests)
             .WithOne()
             .HasForeignKey("EventId")
             .IsRequired()
@@ -80,7 +76,7 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Navigation(e => e.Versions).HasField("_versions");
+        builder.Navigation(e => e.SessionRequests).HasField("_sessionRequests");
         builder.Navigation(e => e.Sessions).HasField("_sessions");
         builder.Navigation(e => e.CoOrganisers).HasField("_coOrganisers");
         builder.Navigation(e => e.Comments).HasField("_comments");
@@ -123,10 +119,6 @@ public sealed class EventCommentConfiguration : IEntityTypeConfiguration<EventCo
         builder.Property(c => c.EventId)
             .HasConversion(id => id.Value, value => new EventId(value))
             .HasColumnName("event_id");
-
-        builder.Property(c => c.VersionId)
-            .HasConversion(id => id!.Value.Value, value => (EventVersionId?)new EventVersionId(value))
-            .HasColumnName("version_id");
 
         builder.Property(c => c.AuthorId)
             .HasConversion(id => id.Value, value => new PersonId(value))
@@ -175,5 +167,33 @@ public sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
 
         builder.HasIndex(s => s.VenueId).HasDatabaseName("IX_sessions_venue_id");
         builder.HasIndex("EventId").HasDatabaseName("IX_sessions_event_id");
+    }
+}
+
+public sealed class SessionRequestConfiguration : IEntityTypeConfiguration<SessionRequest>
+{
+    public void Configure(EntityTypeBuilder<SessionRequest> builder)
+    {
+        builder.ToTable("session_requests");
+
+        builder.HasKey(r => r.Id);
+        builder.Property(r => r.Id)
+            .HasConversion(id => id.Value, value => new SessionRequestId(value))
+            .HasDefaultValueSql("newsequentialid()");
+
+        builder.Property(r => r.Description).HasMaxLength(1000).IsRequired();
+
+        builder.Property(r => r.RequestedDurationMinutes)
+            .HasColumnName("requested_duration_minutes");
+
+        builder.Property(r => r.RequestedSeats)
+            .HasColumnName("requested_seats");
+
+        builder.Property(r => r.StartType)
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasColumnName("start_type");
+
+        builder.HasIndex("EventId").HasDatabaseName("IX_session_requests_event_id");
     }
 }

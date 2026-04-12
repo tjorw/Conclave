@@ -7,6 +7,7 @@ using ConventionSystem.Application.Event.Commands.DeactivateSession;
 using ConventionSystem.Application.Event.Commands.EditEventDraft;
 using ConventionSystem.Application.Event.Commands.RejectVersion;
 using ConventionSystem.Application.Event.Commands.RemoveSessionRequest;
+using ConventionSystem.Application.Event.Commands.ReturnToDraft;
 using ConventionSystem.Application.Event.Commands.ScheduleSession;
 using ConventionSystem.Application.Event.Commands.SubmitForReview;
 using ConventionSystem.Application.Event.Queries.GetEvent;
@@ -40,7 +41,7 @@ public static class EventEndpoints
             }).RequireAuthorization();
 
         // UC-EV002 – Redigera evenemangsutkast
-        app.MapPut("/events/{eventId:guid}/draft",
+        app.MapPut("/events/{eventId:guid}",
             async (Guid eventId, EditEventDraftRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(
@@ -50,7 +51,7 @@ public static class EventEndpoints
             }).RequireAuthorization();
 
         // UC-EV003 – Lägg till sessionönskemål
-        app.MapPost("/events/{eventId:guid}/draft/session-requests",
+        app.MapPost("/events/{eventId:guid}/session-requests",
             async (Guid eventId, AddSessionRequestRequest request, ISender sender, CancellationToken ct) =>
             {
                 var id = await sender.Send(
@@ -60,7 +61,7 @@ public static class EventEndpoints
             }).RequireAuthorization();
 
         // UC-EV004 – Ta bort sessionönskemål
-        app.MapDelete("/events/{eventId:guid}/draft/session-requests/{requestId:guid}",
+        app.MapDelete("/events/{eventId:guid}/session-requests/{requestId:guid}",
             async (Guid eventId, Guid requestId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new RemoveSessionRequestCommand(eventId, requestId), ct);
@@ -88,6 +89,14 @@ public static class EventEndpoints
             async (Guid eventId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new ApproveVersionCommand(eventId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization();
+
+        // UC-EV008b – Återställ till utkast (admin)
+        app.MapPost("/events/{eventId:guid}/return-to-draft",
+            async (Guid eventId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new ReturnToDraftCommand(eventId), ct);
                 return Results.NoContent();
             }).RequireAuthorization();
 

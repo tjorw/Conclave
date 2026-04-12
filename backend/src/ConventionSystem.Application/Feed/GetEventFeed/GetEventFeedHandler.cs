@@ -14,7 +14,7 @@ public sealed class GetEventFeedHandler(
     public async Task<EventFeedDto?> Handle(GetEventFeedQuery query, CancellationToken ct)
     {
         var ev = await eventRepository.GetProjectedByIdAsync(new EventId(query.EventId), ct);
-        if (ev is null || ev.PublishedVersion is null) return null;
+        if (ev is null || ev.Status != "Published") return null;
 
         var edition = await editionRepository.GetProjectedByIdAsync(new EditionId(ev.EditionId), ct);
 
@@ -39,10 +39,10 @@ public sealed class GetEventFeedHandler(
             ev.EditionId,
             ev.CategoryId,
             categoryName,
-            ev.PublishedVersion.Title,
-            ev.PublishedVersion.Description,
-            ev.PublishedVersion.RegistrationType,
-            ev.PublishedVersion.DropInRules,
+            ev.Title,
+            ev.Description,
+            ev.RegistrationType,
+            ev.DropInRules,
             sessions);
     }
 }

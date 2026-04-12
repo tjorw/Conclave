@@ -9,7 +9,7 @@
       <mat-icon>arrow_back</mat-icon> Evenemang
     </a>
     <div class="title-row">
-      <h1 class="page-title">{{ e.draftVersion?.title ?? e.publishedVersion?.title ?? '(Inget namn)' }}</h1>
+      <h1 class="page-title">{{ e.title || '(Inget namn)' }}</h1>
       <span class="chip {{ e.status === 'UnderReview' ? 'chip-orange' : e.status === 'Published' ? 'chip-green' : 'chip-grey' }}">
         {{ statusLabel(e.status) }}
       </span>
@@ -23,237 +23,180 @@
     <div class="error-banner">{{ error() }}</div>
   }
 
-  <!-- Åtgärdsfält -->
-  @if (e.status !== 'Cancelled') {
+  <!-- Livscykelkontroll -->
+  @if (!showRejectForm()) {
     <div class="action-bar">
-      @if (e.status === 'Draft') {
-        <button mat-flat-button color="primary" (click)="submitForReview()" [disabled]="saving()">
-          <mat-icon>send</mat-icon>
-          Skicka in för granskning
+      <button mat-stroked-button (click)="returnToDraft()"
+        [disabled]="saving() || e.status === 'Draft'">
+        <mat-icon>undo</mat-icon>
+        Utkast
+      </button>
+      <button mat-stroked-button (click)="submitForReview()"
+        [disabled]="saving() || e.status === 'UnderReview' || e.status === 'Cancelled'">
+        <mat-icon>rate_review</mat-icon>
+        Under granskning
+      </button>
+      <button mat-flat-button color="primary" (click)="approve()"
+        [disabled]="saving() || e.status === 'Published' || e.status === 'Cancelled'">
+        <mat-icon>check_circle</mat-icon>
+        Publicera
+      </button>
+      <span class="spacer"></span>
+      @if (e.status === 'UnderReview') {
+        <button mat-stroked-button (click)="openRejectForm()" [disabled]="saving()">
+          <mat-icon>comment</mat-icon>
+          Avvisa med kommentar
         </button>
       }
-      @if (e.status === 'UnderReview' && !showRejectForm()) {
-        <button mat-flat-button color="primary" (click)="approve()" [disabled]="saving()">
-          <mat-icon>check_circle</mat-icon>
-          Godkänn
-        </button>
-        <button mat-stroked-button color="warn" (click)="openRejectForm()" [disabled]="saving()">
-          <mat-icon>cancel</mat-icon>
-          Avvisa
-        </button>
-      }
-      @if (!showRejectForm()) {
-        <span class="spacer"></span>
-        <button mat-stroked-button color="warn" (click)="cancelEvent()" [disabled]="saving()">
-          <mat-icon>event_busy</mat-icon>
-          Ställ in evenemang
-        </button>
-      }
+      <button mat-stroked-button color="warn" (click)="cancelEvent()"
+        [disabled]="saving() || e.status === 'Cancelled'">
+        <mat-icon>event_busy</mat-icon>
+        Ställ in
+      </button>
     </div>
-
-    @if (showRejectForm()) {
-      <mat-card class="reject-card">
-        <mat-card-header><mat-card-title>Avvisa evenemang</mat-card-title></mat-card-header>
-        <mat-card-content>
-          <p class="reject-hint">Ange en kommentar som förklarar varför evenemanget avvisas. Arrangören kan se kommentaren.</p>
-          <form [formGroup]="rejectForm">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Kommentar *</mat-label>
-              <textarea matInput formControlName="comment" rows="4"
-                placeholder="Beskriv vad som behöver ändras…"></textarea>
-            </mat-form-field>
-          </form>
-        </mat-card-content>
-        <mat-card-actions align="end">
-          <button mat-button (click)="cancelReject()">Avbryt</button>
-          <button mat-flat-button color="warn" (click)="submitReject()"
-            [disabled]="rejectForm.invalid || saving()">
-            @if (saving()) { <mat-spinner diameter="18" /> } @else { Skicka avvisning }
-          </button>
-        </mat-card-actions>
-      </mat-card>
-    }
   }
 
-  <!-- Redigerbart utkast (Draft) -->
-  @if (e.status === 'Draft' && e.draftVersion; as draft) {
-    <mat-card class="content-card">
-      <mat-card-header>
-        <mat-card-title>Utkast</mat-card-title>
-        <mat-card-subtitle>Skapad {{ draft.createdAt | date:'yyyy-MM-dd HH:mm' }}</mat-card-subtitle>
-      </mat-card-header>
+  @if (showRejectForm()) {
+    <mat-card class="reject-card">
+      <mat-card-header><mat-card-title>Avvisa evenemang</mat-card-title></mat-card-header>
       <mat-card-content>
-        <form [formGroup]="editForm" class="edit-form">
+        <p class="reject-hint">Ange en kommentar som förklarar varför evenemanget avvisas. Arrangören kan se kommentaren.</p>
+        <form [formGroup]="rejectForm">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Titel</mat-label>
-            <input matInput formControlName="title" placeholder="Evenemangets titel" />
+            <mat-label>Kommentar *</mat-label>
+            <textarea matInput formControlName="comment" rows="4"
+              placeholder="Beskriv vad som behöver ändras…"></textarea>
           </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Beskrivning</mat-label>
-            <textarea matInput formControlName="description" rows="6"
-              placeholder="Beskriv evenemanget…"></textarea>
-          </mat-form-field>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Registreringstyp</mat-label>
-              <mat-select formControlName="registrationType">
-                <mat-option value="Free">Fri entré</mat-option>
-                <mat-option value="Registration">Anmälan krävs</mat-option>
-                <mat-option value="DropIn">Drop-in</mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            @if (editForm.get('registrationType')?.value === 'DropIn') {
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Drop-in-regler</mat-label>
-                <input matInput formControlName="dropInRules" placeholder="Beskriv hur drop-in fungerar" />
-              </mat-form-field>
-            }
-          </div>
         </form>
       </mat-card-content>
       <mat-card-actions align="end">
-        <button mat-flat-button color="primary" (click)="saveEdit()"
-          [disabled]="editForm.invalid || saving()">
-          @if (saving()) { <mat-spinner diameter="18" /> } @else { Spara ändringar }
+        <button mat-button (click)="cancelReject()">Avbryt</button>
+        <button mat-flat-button color="warn" (click)="submitReject()"
+          [disabled]="rejectForm.invalid || saving()">
+          @if (saving()) { <mat-spinner diameter="18" /> } @else { Skicka avvisning }
         </button>
       </mat-card-actions>
     </mat-card>
+  }
 
-    <!-- Sessionönskemål -->
-    <mat-card class="content-card">
-      <mat-card-header>
-        <mat-card-title>Sessionönskemål</mat-card-title>
-      </mat-card-header>
-      <mat-card-content class="no-pad">
-        <table class="data-table">
-          <thead>
-            <tr><th>Beskrivning</th><th>Längd (min)</th><th>Platser</th><th>Starttyp</th><th class="actions-col"></th></tr>
-          </thead>
-          <tbody>
-            @for (req of draft.sessionRequests; track req.id) {
-              <tr>
-                <td>{{ req.description || '–' }}</td>
-                <td>{{ req.durationMinutes }}</td>
-                <td>{{ req.seats }}</td>
-                <td>{{ startTypeLabel(req.startType) }}</td>
-                <td class="row-actions">
-                  <button mat-icon-button color="warn" (click)="removeSessionRequest(req.id)"
-                    matTooltip="Ta bort" [disabled]="saving()">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </td>
-              </tr>
-            } @empty {
-              @if (!showAddRequestForm()) {
-                <tr><td colspan="5" class="empty-cell">Inga sessionönskemål.</td></tr>
-              }
+  <!-- Detaljer -->
+  <mat-card class="content-card">
+    <mat-card-header>
+      <mat-card-title>Detaljer</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="editForm" class="edit-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Titel</mat-label>
+          <input matInput formControlName="title" placeholder="Evenemangets titel" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Beskrivning</mat-label>
+          <textarea matInput formControlName="description" rows="6"
+            placeholder="Beskriv evenemanget…"></textarea>
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Registreringstyp</mat-label>
+            <mat-select formControlName="registrationType">
+              <mat-option value="DropIn">Drop-in</mat-option>
+              <mat-option value="PreRegistration">Föranmälan</mat-option>
+              <mat-option value="Combined">Kombinerat</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          @if (editForm.get('registrationType')?.value === 'DropIn') {
+            <mat-form-field appearance="outline" class="flex-grow">
+              <mat-label>Drop-in-regler</mat-label>
+              <input matInput formControlName="dropInRules" placeholder="Beskriv hur drop-in fungerar" />
+            </mat-form-field>
+          }
+        </div>
+      </form>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-flat-button color="primary" (click)="saveEdit()"
+        [disabled]="editForm.invalid || saving()">
+        @if (saving()) { <mat-spinner diameter="18" /> } @else { Spara ändringar }
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Sessionönskemål -->
+  <mat-card class="content-card">
+    <mat-card-header>
+      <mat-card-title>Sessionönskemål</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr><th>Beskrivning</th><th>Längd (min)</th><th>Platser</th><th>Starttyp</th><th class="actions-col"></th></tr>
+        </thead>
+        <tbody>
+          @for (req of e.sessionRequests; track req.id) {
+            <tr>
+              <td>{{ req.description || '–' }}</td>
+              <td>{{ req.durationMinutes }}</td>
+              <td>{{ req.seats }}</td>
+              <td>{{ startTypeLabel(req.startType) }}</td>
+              <td class="row-actions">
+                <button mat-icon-button color="warn" (click)="removeSessionRequest(req.id)"
+                  matTooltip="Ta bort" [disabled]="saving()">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            @if (!showAddRequestForm()) {
+              <tr><td colspan="5" class="empty-cell">Inga sessionönskemål.</td></tr>
             }
-          </tbody>
-        </table>
+          }
+        </tbody>
+      </table>
 
-        @if (showAddRequestForm()) {
-          <div class="add-request-form">
-            <form [formGroup]="addRequestForm" class="form-row">
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Beskrivning</mat-label>
-                <input matInput formControlName="description" placeholder="Kort beskrivning av önskat sessionformat" />
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="field-sm">
-                <mat-label>Längd (min)</mat-label>
-                <input matInput formControlName="durationMinutes" type="number" min="1" />
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="field-sm">
-                <mat-label>Platser</mat-label>
-                <input matInput formControlName="seats" type="number" min="1" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Starttyp</mat-label>
-                <mat-select formControlName="startType">
-                  <mat-option value="Scheduled">Schemalagd</mat-option>
-                  <mat-option value="OnDemand">Vid behov</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </form>
-            <div class="add-request-actions">
-              <button mat-button (click)="toggleAddRequestForm()">Avbryt</button>
-              <button mat-flat-button color="primary" (click)="addSessionRequest()"
-                [disabled]="addRequestForm.invalid || saving()">
-                @if (saving()) { <mat-spinner diameter="18" /> } @else { Lägg till }
-              </button>
-            </div>
+      @if (showAddRequestForm()) {
+        <div class="add-request-form">
+          <form [formGroup]="addRequestForm" class="form-row">
+            <mat-form-field appearance="outline" class="flex-grow">
+              <mat-label>Beskrivning</mat-label>
+              <input matInput formControlName="description" placeholder="Kort beskrivning av önskat sessionformat" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="field-sm">
+              <mat-label>Längd (min)</mat-label>
+              <input matInput formControlName="durationMinutes" type="number" min="1" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="field-sm">
+              <mat-label>Platser</mat-label>
+              <input matInput formControlName="seats" type="number" min="1" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Starttyp</mat-label>
+              <mat-select formControlName="startType">
+                <mat-option value="FixedTime">Fast tid</mat-option>
+                <mat-option value="Rolling">Löpande</mat-option>
+                <mat-option value="Tournament">Turneringsformat</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </form>
+          <div class="add-request-actions">
+            <button mat-button (click)="toggleAddRequestForm()">Avbryt</button>
+            <button mat-flat-button color="primary" (click)="addSessionRequest()"
+              [disabled]="addRequestForm.invalid || saving()">
+              @if (saving()) { <mat-spinner diameter="18" /> } @else { Lägg till }
+            </button>
           </div>
-        }
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-stroked-button (click)="toggleAddRequestForm()" [disabled]="saving()">
-          <mat-icon>add</mat-icon>
-          Lägg till sessionönskemål
-        </button>
-      </mat-card-actions>
-    </mat-card>
-  }
-
-  <!-- Inskickad version (UnderReview – läsläge) -->
-  @if (e.status === 'UnderReview' && e.draftVersion; as draft) {
-    <mat-card class="content-card">
-      <mat-card-header>
-        <mat-card-title>Inskickad version</mat-card-title>
-        <mat-card-subtitle>Inskickad {{ draft.createdAt | date:'yyyy-MM-dd HH:mm' }}</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <h3 class="section-label">Beskrivning</h3>
-        <p class="description">{{ draft.description || '–' }}</p>
-
-        <h3 class="section-label">Registreringstyp</h3>
-        <p>{{ registrationLabel(draft.registrationType) }}
-          @if (draft.dropInRules) { <span class="muted"> – {{ draft.dropInRules }}</span> }
-        </p>
-
-        @if (draft.sessionRequests.length > 0) {
-          <h3 class="section-label">Sessionönskemål</h3>
-          <table class="data-table">
-            <thead>
-              <tr><th>Beskrivning</th><th>Längd (min)</th><th>Platser</th><th>Starttyp</th></tr>
-            </thead>
-            <tbody>
-              @for (req of draft.sessionRequests; track req.id) {
-                <tr>
-                  <td>{{ req.description || '–' }}</td>
-                  <td>{{ req.durationMinutes }}</td>
-                  <td>{{ req.seats }}</td>
-                  <td>{{ startTypeLabel(req.startType) }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        } @else {
-          <p class="muted">Inga sessionönskemål.</p>
-        }
-      </mat-card-content>
-    </mat-card>
-  }
-
-  <!-- Publicerad version -->
-  @if (e.publishedVersion; as pub) {
-    <mat-card class="content-card">
-      <mat-card-header>
-        <mat-card-title>Publicerad version</mat-card-title>
-        <mat-card-subtitle>Publicerad {{ pub.createdAt | date:'yyyy-MM-dd' }}</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <h3 class="section-label">Beskrivning</h3>
-        <p class="description">{{ pub.description || '–' }}</p>
-
-        <h3 class="section-label">Registreringstyp</h3>
-        <p>{{ registrationLabel(pub.registrationType) }}
-          @if (pub.dropInRules) { <span class="muted"> – {{ pub.dropInRules }}</span> }
-        </p>
-      </mat-card-content>
-    </mat-card>
-  }
+        </div>
+      }
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-stroked-button (click)="toggleAddRequestForm()" [disabled]="saving()">
+        <mat-icon>add</mat-icon>
+        Lägg till sessionönskemål
+      </button>
+    </mat-card-actions>
+  </mat-card>
 
   <!-- Schemalagda sessioner -->
   @if (e.sessions.length > 0) {

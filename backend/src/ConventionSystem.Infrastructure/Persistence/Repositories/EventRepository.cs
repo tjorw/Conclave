@@ -10,38 +10,16 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
 {
     public async Task AddAndSaveAsync(Domain.Event.Aggregates.Event ev, CancellationToken ct = default)
     {
-        // EF Core kan inte lösa insert-ordningen när en cirkulär FK-cykel innehåller
-        // ett obligatoriskt beroende. Här är cykeln:
-        //   EventVersion.event_id (required) → events
-        //   Event.draft_version_id (optional) → event_versions
-        //
-        // Lösning: spara Event med draft_version_id = null i steg 1 (EF Core infogar då
-        // Event före EventVersion), sätt sedan draft_version_id i steg 2.
-        await using var tx = await db.Database.BeginTransactionAsync(ct);
-
         db.Events.Add(ev);
-
-        var draftId = ev.DraftVersionId;
-        db.Entry(ev).Property(e => e.DraftVersionId).CurrentValue = null;
-
         await db.SaveChangesAsync(ct);
-
-        if (draftId is not null)
-        {
-            db.Entry(ev).Property(e => e.DraftVersionId).CurrentValue = draftId;
-            await db.SaveChangesAsync(ct);
-        }
-
-        await tx.CommitAsync(ct);
     }
 
     public Task<Domain.Event.Aggregates.Event?> GetByIdAsync(EventId id, CancellationToken ct = default)
         => db.Events.FirstOrDefaultAsync(e => e.Id == id, ct);
 
-    public Task<Domain.Event.Aggregates.Event?> GetByIdWithDraftVersionAsync(EventId id, CancellationToken ct = default)
+    public Task<Domain.Event.Aggregates.Event?> GetByIdWithSessionRequestsAsync(EventId id, CancellationToken ct = default)
         => db.Events
-            .Include(e => e.Versions)
-                .ThenInclude(v => v.SessionRequests)
+            .Include(e => e.SessionRequests)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public Task<Domain.Event.Aggregates.Event?> GetByIdWithCoOrganisersAsync(EventId id, CancellationToken ct = default)
@@ -54,15 +32,16 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .Include(e => e.Sessions)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
+    public void MarkAsAdded<T>(T entity) where T : class
+        => db.Entry(entity).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+
     public async Task<IReadOnlyList<EventSummaryDto>> ListByEditionIdAsync(EditionId id, CancellationToken ct = default)
     {
         var events = await db.Events
-            .Include(e => e.Versions)
             .Include(e => e.Sessions)
             .Where(e => e.EditionId == id)
             .ToListAsync(ct);
 
-        // Cross-context join: kategorier och arrangörsnamn via delad DB
         var categoryNames = await db.Categories
             .Where(c => EF.Property<EditionId>(c, "EditionId") == id)
             .ToDictionaryAsync(c => c.Id, c => c.Name, ct);
@@ -72,34 +51,26 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .Where(p => organiserIds.Contains(p.Id))
             .ToDictionaryAsync(p => p.Id, p => p.Name, ct);
 
-        return events.Select(e =>
-        {
-            var displayVersion = e.PublishedVersionId.HasValue
-                ? e.Versions.FirstOrDefault(v => v.Id == e.PublishedVersionId.Value)
-                : e.DraftVersionId.HasValue
-                    ? e.Versions.FirstOrDefault(v => v.Id == e.DraftVersionId.Value)
-                    : null;
-
-            return new EventSummaryDto(
-                e.Id.Value,
-                e.EditionId.Value,
-                e.CategoryId.Value,
-                categoryNames.GetValueOrDefault(e.CategoryId),
-                e.LeadOrganiserId.Value,
-                organiserNames.GetValueOrDefault(e.LeadOrganiserId),
-                e.Status.ToString(),
-                displayVersion?.Title,
-                e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active));
-        }).ToList();
+        return events.Select(e => new EventSummaryDto(
+            e.Id.Value,
+            e.EditionId.Value,
+            e.CategoryId.Value,
+            categoryNames.GetValueOrDefault(e.CategoryId),
+            e.LeadOrganiserId.Value,
+            organiserNames.GetValueOrDefault(e.LeadOrganiserId),
+            e.Status.ToString(),
+            string.IsNullOrEmpty(e.Title) ? null : e.Title,
+            e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active)
+        )).ToList();
     }
 
     public async Task<EventDto?> GetProjectedByIdAsync(EventId id, CancellationToken ct = default)
     {
         var ev = await db.Events
-            .Include(e => e.Versions)
-                .ThenInclude(v => v.SessionRequests)
+            .Include(e => e.SessionRequests)
             .Include(e => e.Sessions)
             .Include(e => e.CoOrganisers)
+            .Include(e => e.Comments)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
         if (ev is null) return null;
@@ -109,22 +80,6 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .Select(p => p.Name)
             .FirstOrDefaultAsync(ct);
 
-        EventVersionDto MapVersion(Domain.Event.Entities.EventVersion v) => new(
-            v.Id.Value, v.Title, v.Description,
-            v.RegistrationType.ToString(), v.DropInRules, v.Status.ToString(),
-            v.CreatedAt,
-            v.SessionRequests.Select(r => new SessionRequestDto(
-                r.Id.Value, r.Description, r.RequestedDurationMinutes,
-                r.RequestedSeats, r.StartType.ToString())).ToList());
-
-        var publishedVersion = ev.PublishedVersionId.HasValue
-            ? ev.Versions.FirstOrDefault(v => v.Id == ev.PublishedVersionId.Value)
-            : null;
-
-        var draftVersion = ev.DraftVersionId.HasValue
-            ? ev.Versions.FirstOrDefault(v => v.Id == ev.DraftVersionId.Value)
-            : null;
-
         return new EventDto(
             ev.Id.Value,
             ev.EditionId.Value,
@@ -132,13 +87,20 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             ev.LeadOrganiserId.Value,
             organiserName,
             ev.Status.ToString(),
+            ev.Title,
+            ev.Description,
+            ev.RegistrationType.ToString(),
+            ev.DropInRules,
             ev.CoOrganisers.Select(c => c.PersonId.Value).ToList(),
-            publishedVersion is not null ? MapVersion(publishedVersion) : null,
-            draftVersion is not null ? MapVersion(draftVersion) : null,
+            ev.SessionRequests.Select(r => new SessionRequestDto(
+                r.Id.Value, r.Description, r.RequestedDurationMinutes,
+                r.RequestedSeats, r.StartType.ToString())).ToList(),
             ev.Sessions.Select(s => new SessionDto(
                 s.Id.Value, s.VenueId.Value,
                 s.TimeSlot.Start, s.TimeSlot.End,
-                s.MaxSeats, s.StartType.ToString(), s.Status.ToString())).ToList());
+                s.MaxSeats, s.StartType.ToString(), s.Status.ToString())).ToList(),
+            ev.Comments.Select(c => new EventCommentDto(
+                c.Id.Value, c.AuthorId.Value, c.Text, c.CreatedAt)).ToList());
     }
 
     public Task SaveAsync(CancellationToken ct = default)

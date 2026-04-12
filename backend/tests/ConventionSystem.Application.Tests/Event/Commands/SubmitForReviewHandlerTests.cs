@@ -21,11 +21,10 @@ public class SubmitForReviewHandlerTests
     {
         var ev = new Domain.Event.Aggregates.Event(
             EventId.New(), EditionId.New(), CategoryId.New(), PersonId.New());
-        var draft = ev.GetDraftVersion();
-        draft.EditTitle("Rollspel för alla");
-        draft.EditDescription("En spännande session.");
-        draft.SetRegistrationType(RegistrationType.PreRegistration);
-        _eventRepo.GetByIdWithDraftVersionAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        ev.EditTitle("Rollspel för alla");
+        ev.EditDescription("En spännande session.");
+        ev.SetRegistrationType(RegistrationType.PreRegistration);
+        _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         return ev;
     }
 
@@ -37,16 +36,6 @@ public class SubmitForReviewHandlerTests
         await _handler.Handle(new SubmitForReviewCommand(ev.Id.Value), default);
 
         Assert.Equal(EventStatus.UnderReview, ev.Status);
-    }
-
-    [Fact]
-    public async Task Handle_ValidCommand_DraftVersionIsUnderReview()
-    {
-        var ev = CreateReadyEvent();
-
-        await _handler.Handle(new SubmitForReviewCommand(ev.Id.Value), default);
-
-        Assert.Equal(VersionStatus.UnderReview, ev.GetDraftVersion().Status);
     }
 
     [Fact]
@@ -65,8 +54,8 @@ public class SubmitForReviewHandlerTests
     {
         var ev = new Domain.Event.Aggregates.Event(
             EventId.New(), EditionId.New(), CategoryId.New(), PersonId.New());
-        ev.GetDraftVersion().EditDescription("Beskrivning");
-        _eventRepo.GetByIdWithDraftVersionAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        ev.EditDescription("Beskrivning");
+        _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(new SubmitForReviewCommand(ev.Id.Value), default));
@@ -77,7 +66,7 @@ public class SubmitForReviewHandlerTests
     {
         var ev = CreateReadyEvent();
         ev.SubmitForReview();
-        _eventRepo.GetByIdWithDraftVersionAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(new SubmitForReviewCommand(ev.Id.Value), default));

@@ -17,21 +17,14 @@ export interface EventDto {
   leadOrganiserId: string;
   leadOrganiserName: string | null;
   status: string;
-  coOrganiserIds: string[];
-  publishedVersion: EventVersionDto | null;
-  draftVersion: EventVersionDto | null;
-  sessions: SessionDto[];
-}
-
-export interface EventVersionDto {
-  id: string;
   title: string;
   description: string;
   registrationType: string;
   dropInRules: string | null;
-  status: string;
-  createdAt: string;
+  coOrganiserIds: string[];
   sessionRequests: SessionRequestDto[];
+  sessions: SessionDto[];
+  comments: EventCommentDto[];
 }
 
 export interface SessionRequestDto {

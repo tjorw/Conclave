@@ -42,11 +42,10 @@ public class DeactivateSessionHandlerTests
         var venue = edition.CreateVenue("Sal A", "Byggnad 1");
 
         var ev = new Domain.Event.Aggregates.Event(EventId.New(), edition.Id, category.Id, organiser.Id);
-        var draft = ev.GetDraftVersion();
-        draft.EditTitle("Rollspel");
-        draft.EditDescription("Beskrivning");
+        ev.EditTitle("Rollspel");
+        ev.EditDescription("Beskrivning");
         ev.SubmitForReview();
-        ev.ApproveVersion(eventCoord.Id);
+        ev.Approve(eventCoord.Id);
 
         var timeSlot = new TimeSlot(new DateTime(2027, 3, 1, 10, 0, 0), new DateTime(2027, 3, 1, 14, 0, 0));
         var session = ev.CreateSession(venue.Id, timeSlot, 20, StartType.FixedTime);

@@ -48,21 +48,28 @@ export class EventService {
 
   updateDraft(eventId: string, title: string, description: string, registrationType: string, dropInRules: string | null) {
     return this.http.put<void>(
-      `${this.env.apiBaseUrl}/events/${eventId}/draft`,
+      `${this.env.apiBaseUrl}/events/${eventId}`,
       { title, description, registrationType, dropInRules }
     );
   }
 
   addSessionRequest(eventId: string, description: string, durationMinutes: number, seats: number, startType: string) {
     return this.http.post<{ id: string }>(
-      `${this.env.apiBaseUrl}/events/${eventId}/draft/session-requests`,
+      `${this.env.apiBaseUrl}/events/${eventId}/session-requests`,
       { description, durationMinutes, seats, startType }
     );
   }
 
   removeSessionRequest(eventId: string, requestId: string) {
     return this.http.delete<void>(
-      `${this.env.apiBaseUrl}/events/${eventId}/draft/session-requests/${requestId}`
+      `${this.env.apiBaseUrl}/events/${eventId}/session-requests/${requestId}`
+    );
+  }
+
+  returnToDraft(eventId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/return-to-draft`,
+      {}
     );
   }
 
