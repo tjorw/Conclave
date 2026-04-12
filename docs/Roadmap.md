@@ -284,6 +284,25 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 
 ---
 
+## Fas 4 – Demo och driftsättning
+
+### 4.1 Demo-deploy (ett fiktivt konvent)
+- Bygg-pipeline: Angular-appar (admin + publik) byggs in i `wwwroot` som en del av .NET publish-steget
+- En SQL Server-instans med tre databaser (SystemRegistry, Identity, ett demo-konvent)
+- Self-contained .NET-publish deployad till en host (VPS, Azure App Service eller liknande)
+- Seed-script för fiktivt demo-konvent med exempeldata
+- Hemligheter via miljövariabler eller Key Vault (ej `appsettings`)
+
+### 4.2 Konvent-onboarding (självbetjäning)
+Idag skapas konvent via `POST /system/conventions` – ett oskyddat, manuellt API-anrop. Inför produktion ska det finnas ett riktigt onboarding-flöde:
+- Registreringsformulär för nytt konvent (namn, slug, kontakt-e-post)
+- Systemadmin-vy för att godkänna/avvisa nya konvent
+- Automatiserad databas-provisionering vid godkännande
+- Välkomstmejl med inloggningsuppgifter för konventets admin
+- *Beroende:* kräver att `POST /system/conventions` skyddas (se teknisk skuld) och att domänbaserad tenant-routing är klar
+
+---
+
 ## Nästa konkreta steg (förslag)
 
 1. **Fas 3.2.3** – Inloggning och profil för publika appen (formulär, social login-platshållare, profilvy)
@@ -292,3 +311,4 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 4. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
 5. **Fas 3.2.4** – Besökarregistrering (publik vy)
 6. **Pre-produktion** – Skydda provisioning-endpoint + domänbaserad tenant-routing
+7. **Fas 4.1** – Demo-deploy med fiktivt konvent
