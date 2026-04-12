@@ -86,7 +86,6 @@ app.UseHttpsRedirection();
 app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseRouting();
 app.UseMiddleware<TenantMiddleware>();
 
 app.MapAuthEndpoints();
