@@ -6,6 +6,7 @@ public record EventSummaryDto(
     Guid CategoryId,
     string? CategoryName,
     Guid LeadOrganiserId,
+    string? LeadOrganiserName,
     string Status,
     string? Title,
     int SessionCount);
@@ -15,6 +16,7 @@ public record EventDto(
     Guid EditionId,
     Guid CategoryId,
     Guid LeadOrganiserId,
+    string? LeadOrganiserName,
     string Status,
     IReadOnlyList<Guid> CoOrganiserIds,
     EventVersionDto? PublishedVersion,
@@ -27,7 +29,16 @@ public record EventVersionDto(
     string Description,
     string RegistrationType,
     string? DropInRules,
-    string Status);
+    string Status,
+    DateTimeOffset CreatedAt,
+    IReadOnlyList<SessionRequestDto> SessionRequests);
+
+public record SessionRequestDto(
+    Guid Id,
+    string Description,
+    int DurationMinutes,
+    int Seats,
+    string StartType);
 
 public record SessionDto(
     Guid Id,

@@ -1,0 +1,119 @@
+<div class="page-header">
+  <h1>Evenemang</h1>
+  <p class="subtitle">Granskning och hantering av evenemang</p>
+</div>
+
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+<div class="action-bar">
+  <mat-button-toggle-group [value]="filter()" (change)="filter.set($event.value)">
+    <mat-button-toggle value="UnderReview">
+      Under granskning <span class="count-badge">{{ counts().underReview }}</span>
+    </mat-button-toggle>
+    <mat-button-toggle value="Published">
+      Publicerade <span class="count-badge">{{ counts().published }}</span>
+    </mat-button-toggle>
+    <mat-button-toggle value="Draft">
+      Utkast <span class="count-badge">{{ counts().draft }}</span>
+    </mat-button-toggle>
+    <mat-button-toggle value="Cancelled">
+      Inställda <span class="count-badge">{{ counts().cancelled }}</span>
+    </mat-button-toggle>
+    <mat-button-toggle value="All">
+      Alla <span class="count-badge">{{ counts().all }}</span>
+    </mat-button-toggle>
+  </mat-button-toggle-group>
+  <span class="spacer"></span>
+  <button mat-flat-button color="primary" (click)="toggleCreateForm()">
+    <mat-icon>add</mat-icon>
+    Skapa evenemang
+  </button>
+</div>
+
+@if (showCreateForm()) {
+  <mat-card class="create-card">
+    <mat-card-header>
+      <mat-card-title>Skapa nytt evenemang</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="createForm" class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Kategori *</mat-label>
+          <mat-select formControlName="categoryId">
+            @for (cat of categories(); track cat.id) {
+              <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Huvudarrangör *</mat-label>
+          <mat-select formControlName="leadOrganiserId">
+            @for (person of persons(); track person.id) {
+              <mat-option [value]="person.id">{{ person.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </form>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-button type="button" (click)="toggleCreateForm()">Avbryt</button>
+      <button mat-flat-button color="primary" (click)="create()"
+        [disabled]="createForm.invalid || saving()">
+        @if (saving()) { <mat-spinner diameter="18" /> } @else { Skapa }
+      </button>
+    </mat-card-actions>
+  </mat-card>
+}
+
+@if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else {
+  <mat-card>
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Titel</th>
+            <th>Kategori</th>
+            <th>Arrangör</th>
+            <th>Sessioner</th>
+            <th>Status</th>
+            <th class="actions-col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (event of filteredEvents(); track event.id) {
+            <tr class="clickable-row" (click)="openEvent(event.id)">
+              <td><strong>{{ event.title ?? '(Inget namn)' }}</strong></td>
+              <td>{{ event.categoryName ?? '–' }}</td>
+              <td>{{ event.leadOrganiserName ?? '–' }}</td>
+              <td>{{ event.sessionCount }}</td>
+              <td>
+                <span class="chip {{ statusChipClass(event.status) }}">
+                  {{ statusLabel(event.status) }}
+                </span>
+              </td>
+              <td class="row-actions" (click)="$event.stopPropagation()">
+                <button mat-icon-button (click)="openEvent(event.id)" matTooltip="Öppna">
+                  <mat-icon>open_in_new</mat-icon>
+                </button>
+                @if (event.status !== 'Cancelled') {
+                  <button mat-icon-button color="warn" (click)="cancelEvent(event)"
+                    matTooltip="Ställ in" [disabled]="saving()">
+                    <mat-icon>event_busy</mat-icon>
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty-cell">Inga evenemang i denna kategori.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
+}

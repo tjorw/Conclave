@@ -1,0 +1,62 @@
+.action-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  .spacer { flex: 1; }
+}
+
+.create-card {
+  margin-bottom: 16px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+
+  mat-form-field { flex: 1; min-width: 200px; }
+}
+
+.count-badge {
+  display: inline-block;
+  background: rgba(0,0,0,0.1);
+  border-radius: 10px;
+  padding: 0 6px;
+  font-size: 0.75rem;
+  margin-left: 4px;
+  line-height: 18px;
+}
+
+.chip-orange { background: #fff3e0; color: #e65100; }
+
+.clickable-row {
+  cursor: pointer;
+  &:hover td { background: #f5f5f5; }
+}
+
+.no-pad { padding: 0; }
+
+.spinner-center {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.empty-cell {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 32px 16px;
+}
+
+.error-banner {
+  background: #fdecea;
+  color: #b71c1c;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
