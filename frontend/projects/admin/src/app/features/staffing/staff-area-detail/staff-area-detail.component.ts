@@ -12,7 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditionContextService } from '../../../services/edition-context.service';
 import {
-  ConventionService, EditionDto, PersonDto, ShiftDto, ShiftSummaryDto,
+  ConventionService, DateTimeRangeComponent, EditionDto, PersonDto, ShiftDto, ShiftSummaryDto,
   StaffService, StaffAreaDto, StationDto,
 } from 'shared';
 import { MatDividerModule } from '@angular/material/divider';
@@ -25,6 +25,7 @@ import { MatDividerModule } from '@angular/material/divider';
     ReactiveFormsModule,
     MatButtonModule,
     MatCardModule,
+    DateTimeRangeComponent,
     MatDividerModule,
     MatFormFieldModule,
     MatIconModule,
@@ -307,4 +308,7 @@ export class StaffAreaDetailComponent {
     const map: Record<string, string> = { Open: 'Öppet', Full: 'Fullt', Cancelled: 'Inställt' };
     return map[status] ?? status;
   }
+
+  get shiftMin(): string | undefined { return this.edition()?.start.slice(0, 16); }
+  get shiftMax(): string | undefined { return this.edition()?.end.slice(0, 16); }
 }

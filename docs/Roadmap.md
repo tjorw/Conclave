@@ -363,3 +363,20 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 5. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
 6. **Fas 3.2.4** – Mina sidor – hub och navigationsstruktur
 7. **Fas 4.1** – Demo-deploy med fiktivt konvent
+
+
+---
+## UX Justeringar
+Uppdatera även frontenddokumentationen där dessa fixar görs.
+
+### UX001 Datum och tid i formulär
+**I administrationsgränssnittet**
+* Gränssnittet skall hjälpa till med att:
+  * om slutdatum inte är satt: utifrån en input parameter till controllen sätta slutdatum/tid med den offseten. ex 1h.
+  * om sluttiden är satt och man justerar starttiden, så skall sluttiden justeras med motsvarande
+  * göra det emklare att endast väla de datum som är mellan start och slut på konventet.
+  
+### UX002 Datum och tid i listor
+* Sortera tabeller som innehåller start och sluttid efter starttid i fallande ordning som standard
+  
+

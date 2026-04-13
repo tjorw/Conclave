@@ -259,14 +259,11 @@
                               }
                             </mat-select>
                           </mat-form-field>
-                          <mat-form-field appearance="outline">
-                            <mat-label>Start</mat-label>
-                            <input matInput type="datetime-local" formControlName="startTime" />
-                          </mat-form-field>
-                          <mat-form-field appearance="outline">
-                            <mat-label>Slut</mat-label>
-                            <input matInput type="datetime-local" formControlName="endTime" />
-                          </mat-form-field>
+                          <app-date-time-range
+                            [group]="sessionForm"
+                            [defaultDurationMinutes]="120"
+                            [min]="sessionMin"
+                            [max]="sessionMax" />
                           <mat-form-field appearance="outline">
                             <mat-label>Max platser</mat-label>
                             <input matInput type="number" formControlName="maxSeats" />
@@ -305,14 +302,11 @@
                     }
                   </mat-select>
                 </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>Start</mat-label>
-                  <input matInput type="datetime-local" formControlName="startTime" />
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>Slut</mat-label>
-                  <input matInput type="datetime-local" formControlName="endTime" />
-                </mat-form-field>
+                <app-date-time-range
+                  [group]="sessionForm"
+                  [defaultDurationMinutes]="120"
+                  [min]="sessionMin"
+                  [max]="sessionMax" />
                 <mat-form-field appearance="outline">
                   <mat-label>Max platser</mat-label>
                   <input matInput type="number" formControlName="maxSeats" />

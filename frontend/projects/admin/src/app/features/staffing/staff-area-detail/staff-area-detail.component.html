@@ -205,14 +205,11 @@
                   }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field appearance="outline" class="field-dt">
-                <mat-label>Start</mat-label>
-                <input matInput type="datetime-local" formControlName="startTime" />
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="field-dt">
-                <mat-label>Slut</mat-label>
-                <input matInput type="datetime-local" formControlName="endTime" />
-              </mat-form-field>
+              <app-date-time-range
+                [group]="createShiftForm"
+                [defaultDurationMinutes]="60"
+                [min]="shiftMin"
+                [max]="shiftMax" />
               <mat-form-field appearance="outline" class="field-sm">
                 <mat-label>Min</mat-label>
                 <input matInput type="number" min="1" formControlName="minPersons" />

@@ -13,7 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { CategoryDto, ConventionService, EventDto, EventService, VenueDto } from 'shared';
+import { CategoryDto, ConventionService, DateTimeRangeComponent, EditionDto, EventDto, EventService, VenueDto } from 'shared';
 import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
 
 @Component({
@@ -32,6 +32,7 @@ import { ChangeCategoryDialogComponent } from './change-category-dialog.componen
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    DateTimeRangeComponent,
     MatTabsModule,
     MatTooltipModule,
   ],
@@ -47,6 +48,7 @@ export class EventDetailComponent implements OnInit {
   private readonly dialog     = inject(MatDialog);
 
   readonly event      = signal<EventDto | null>(null);
+  readonly edition    = signal<EditionDto | null>(null);
   readonly venues     = signal<VenueDto[]>([]);
   readonly categories = signal<CategoryDto[]>([]);
   readonly loading    = signal(true);
@@ -92,6 +94,7 @@ export class EventDetailComponent implements OnInit {
         this.populateEditForm(e);
         this.conSvc.getEdition(e.editionId).subscribe({
           next: ed => {
+            this.edition.set(ed);
             this.venues.set(ed.venues);
             this.categories.set(ed.categories);
           },
@@ -327,6 +330,9 @@ export class EventDetailComponent implements OnInit {
     const map: Record<string, string> = { Active: 'Aktiv', Inactive: 'Inaktiv' };
     return map[status] ?? status;
   }
+
+  get sessionMin(): string | undefined { return this.edition()?.start.slice(0, 16); }
+  get sessionMax(): string | undefined { return this.edition()?.end.slice(0, 16); }
 
   venueName(venueId: string): string {
     return this.venues().find(v => v.id === venueId)?.name ?? venueId;

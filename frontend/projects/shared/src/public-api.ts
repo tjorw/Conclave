@@ -28,3 +28,6 @@ export * from './lib/services/feed.service';
 // Guards
 export * from './lib/guards/auth.guard';
 export * from './lib/guards/admin.guard';
+
+// Components
+export * from './lib/components/date-time-range.component';
