@@ -41,6 +41,7 @@ public sealed class AssignPersonToShiftHandler(
             throw new InvalidOperationException("Personen tillhör inte denna konvention.");
 
         var assignment = shift.AssignPerson(personId, performedById);
+        shiftRepository.MarkAsAdded(assignment);
         await shiftRepository.SaveAsync(ct);
 
         return assignment.Id.Value;
