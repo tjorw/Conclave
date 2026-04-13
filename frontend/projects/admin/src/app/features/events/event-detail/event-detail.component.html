@@ -21,9 +21,9 @@
         {{ e.categoryName ?? e.categoryId }}
         @if (e.categoryResponsibleName) { · {{ e.categoryResponsibleName }} }
         @if (e.status !== 'Cancelled') {
-          <button mat-icon-button class="meta-edit-btn" (click)="openChangeCategoryDialog()"
-            matTooltip="Byt kategori" [disabled]="saving()">
-            <mat-icon>edit</mat-icon>
+          <button mat-stroked-button class="meta-edit-btn" (click)="openChangeCategoryDialog()"
+            [disabled]="saving()">
+            Byt
           </button>
         }
       </span>
