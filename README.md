@@ -4,13 +4,56 @@ System för att administrera, annonsera, registrera och driva hobbymässor (tabl
 
 ## Teknikstack
 
-- **Backend:** .NET 9, C#
-- **Arkitektur:** Clean Architecture med DDD (Domain-Driven Design)
-- **ORM:** Entity Framework Core
-- **Databas:** SQL Server (deploy-per-konvention – en databas per instans, `dbo`-schema för domändata, `identity`-schema för ASP.NET Identity)
-- **Frontend:** Angular (admin-app + publik vy)
-- **Auth:** ASP.NET Identity med JWT
-- **API:** REST, minimal API
+| Lager | Teknologi |
+|---|---|
+| Backend | [.NET 9](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview), C# – Clean Architecture med DDD |
+| ORM | [Entity Framework Core 9](https://learn.microsoft.com/en-us/ef/core/) |
+| Databas | SQL Server – en databas per deploy (`dbo` för domändata, `identity` för ASP.NET Identity) |
+| Frontend | [Angular 21](https://angular.dev/) – admin-app + publik vy, standalone components, signals |
+| UI-bibliotek | [Angular Material 21](https://material.angular.io/) (Material Design 3) |
+| Auth | [ASP.NET Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity) med JWT |
+| API | REST, [Minimal API](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/overview) |
+
+## Beroenden
+
+### Backend (NuGet)
+
+| Paket | Version | Syfte |
+|---|---|---|
+| [MediatR](https://github.com/jbogard/MediatR) | 14 | CQRS – kommando- och frågedistribution |
+| [Microsoft.EntityFrameworkCore.SqlServer](https://learn.microsoft.com/en-us/ef/core/) | 9 | SQL Server-provider för EF Core |
+| [Microsoft.AspNetCore.Identity.EntityFrameworkCore](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity) | 9 | Användarhantering och lösenordshashning |
+| [Microsoft.AspNetCore.Authentication.JwtBearer](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/jwt-authn) | 9 | JWT-validering |
+| [Microsoft.AspNetCore.OpenApi](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi) | 9 | OpenAPI-dokumentation |
+
+### Frontend (npm)
+
+| Paket | Version | Syfte |
+|---|---|---|
+| [@angular/core](https://angular.dev/) | 21 | SPA-ramverk – standalone components, signals, control flow |
+| [@angular/material](https://material.angular.io/) | 21 | UI-komponentbibliotek (Material Design 3) |
+| [@angular/cdk](https://material.angular.io/cdk/categories) | 21 | Layouthjälpare, drag/drop, virtual scrolling |
+| [rxjs](https://rxjs.dev/) | 7.8 | Reaktiva strömmar (minimal – signals prioriteras i templates) |
+| [typescript](https://www.typescriptlang.org/) | 5.9 | Typsäker JavaScript (strict null checks) |
+
+### Tester
+
+| Paket | Version | Syfte |
+|---|---|---|
+| [xUnit](https://xunit.net/) | 2.9 | Testramverk för .NET (domän- och applikationstester) |
+| [NSubstitute](https://nsubstitute.github.io/) | 5 | Mock-bibliotek för handlertester |
+| [Testcontainers.MsSql](https://dotnet.testcontainers.org/) | 3 | SQL Server-container för integrationstester |
+| [Vitest](https://vitest.dev/) | 4 | Testramverk för Angular/TypeScript |
+
+### Designprinciper och arkitekturmönster
+
+| Princip | Källa |
+|---|---|
+| [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) | Robert C. Martin – lager med beroende strikt inåt |
+| [Domain-Driven Design (DDD)](https://www.domainlanguage.com/ddd/) | Eric Evans – aggregat, value objects, bounded contexts, domain events |
+| [CQRS](https://martinfowler.com/bliki/CQRS.html) | Martin Fowler – separata modeller för läsning och skrivning |
+| [Repository Pattern](https://martinfowler.com/eaaCatalog/repository.html) | Martin Fowler – dataåtkomst bakom interface utan läckage av persistensteknik |
+| [Conventional Commits](https://www.conventionalcommits.org/) | Strukturerade commit-meddelanden med type och scope |
 
 ## Kom igång
 
@@ -18,11 +61,11 @@ System för att administrera, annonsera, registrera och driva hobbymässor (tabl
 
 | Verktyg | Version | Används till |
 |---------|---------|--------------|
-| .NET SDK | 9.0 | Backend API |
+| [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) | 9.0 | Backend API |
 | SQL Server | valfri lokal instans | Konventionsdatabas (dbo + identity-schema) |
-| Node.js | 22+ | Angular frontend |
-| Angular CLI | 21+ | Bygga och köra Angular-apparna |
-| Docker Desktop | senaste | Integrationstester (SQL Server-container) |
+| [Node.js](https://nodejs.org/) | 22+ | Angular frontend |
+| [Angular CLI](https://angular.dev/tools/cli) | 21+ | Bygga och köra Angular-apparna |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | senaste | Integrationstester (SQL Server-container) |
 
 Docker Desktop krävs bara för integrationstesterna. Testcontainers startar en SQL Server-container automatiskt; ingen lokal SQL Server-installation behövs för CI. SQL Server-imagen (`mcr.microsoft.com/mssql/server`, ~600 MB) hämtas första gången.
 
@@ -148,8 +191,8 @@ dotnet test backend/ConventionSystem.sln
 │   │   │   ├── Event/
 │   │   │   ├── Registration/
 │   │   │   └── Staff/
-│   │   ├── ConventionSystem.Infrastructure/  # EF Core, repositories, identity, extern auth, e-post
-│   │   └── ConventionSystem.Api/             # Minimal API-endpoints
+│   │   ├── ConventionSystem.Infrastructure/  # EF Core, repositories, identity, e-post
+│   │   └── ConventionSystem.Api/             # Minimal API-endpoints, feed-endpoints
 │   └── tests/
 │       ├── ConventionSystem.Domain.Tests/
 │       ├── ConventionSystem.Application.Tests/
@@ -160,6 +203,10 @@ dotnet test backend/ConventionSystem.sln
 │       ├── public/    # Publik vy – konventionsbrandad, port 4201 (Angular Material)
 │       └── shared/    # Delat bibliotek: API-typer, tjänster, auth, interceptors
 └── docs/
+    ├── Backend.md      # Arkitekturprinciper och kodmönster per lager
+    ├── Frontend.md     # Angular-konventioner och komponentmönster
+    ├── UseCases.md     # Alla use cases med acceptanskriterier
+    └── Roadmap.md      # Implementationsstatus och faser
 ```
 
 Beroendet pekar alltid inåt: Infrastructure → Application → Domain.
@@ -177,11 +224,13 @@ Tre infrastrukturskikt:
 ### Clean Architecture-lager
 
 ```
-① Presentation  – Controllers, minimal API, feed-endpoints
-② Application   – Use cases, commands, queries (CQRS), validering
+① Presentation  – Minimal API-endpoints, feed-endpoints
+② Application   – Use cases, commands, queries (CQRS med MediatR), validering
 ③ Domain        – Convention | Event | Registration | Staff
-④ Infrastructure – EF Core, repositories, identity, extern auth, e-post
+④ Infrastructure – EF Core, repositories, identity, e-post
 ```
+
+Beroendet pekar alltid inåt. Infrastructure implementerar interface definierade i Application. Domain har inga externa beroenden.
 
 ## Domänmodell
 
@@ -257,7 +306,7 @@ Contexts läser id-referenser från varandra men anropar aldrig varandras aggreg
 
 ## Domain events
 
-Domain events dispatchar via MediatR efter lyckad `SaveChanges` och loggas alltid till `domain_event_log`-tabellen i samma transaktion. Skapa en handler genom att implementera `IDomainEventHandler<T>`:
+Domain events dispatchar via [MediatR](https://github.com/jbogard/MediatR) efter lyckad `SaveChanges` och loggas alltid till `domain_event_log`-tabellen i samma transaktion. Skapa en handler genom att implementera `IDomainEventHandler<T>`:
 
 ```csharp
 public class EditionPublishedHandler : IDomainEventHandler<EditionPublished>

@@ -10,19 +10,34 @@ Den här filen styr hur Claude Code arbetar i det här projektet.
 ## Teknikstack
 
 - **Backend:** .NET 9, C# – Clean Architecture med DDD. Se `docs/Backend.md` för arkitekturprinciper och kodmönster.
-- **ORM:** Entity Framework Core
+- **ORM:** Entity Framework Core 9
 - **Databas:** SQL Server (deploy-per-konvention – en databas per instans, `dbo`-schema för domändata, `identity`-schema för ASP.NET Identity)
-- **Frontend:** Angular (separata appar för admin och publik vy) – se `docs/Frontend.md` för arkitekturprinciper
-- **Auth:** ASP.NET Identity med stöd för social inloggning (OAuth)
+- **Frontend:** Angular 21 (admin-app + publik vy) – standalone components, signals, reactive forms, Angular Material – se `docs/Frontend.md` för arkitekturprinciper
+- **Auth:** ASP.NET Identity med JWT (stöd för OAuth planerat)
 - **API:** REST, minimal API-endpoints
 
 ## Byggkommandon
+
+### Backend
 
 ```bash
 dotnet build backend/ConventionSystem.sln
 dotnet test backend/ConventionSystem.sln
 dotnet test backend/ConventionSystem.sln --filter "FullyQualifiedName~Convention"   # kör tester för ett specifikt bounded context
+dotnet test backend/ConventionSystem.sln --filter "FullyQualifiedName!~Integration" # hoppa över integrationstester
 dotnet run --project backend/src/ConventionSystem.Api
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install          # en gång – installera beroenden
+
+ng serve admin       # admin-app på http://localhost:4200
+ng serve public      # publik app på http://localhost:4201
+ng build             # bygg alla appar för produktion
+ng test              # kör Vitest-tester
 ```
 
 ## Lösningsstruktur
@@ -42,18 +57,22 @@ dotnet run --project backend/src/ConventionSystem.Api
 │   │   │   ├── Event/
 │   │   │   ├── Registration/
 │   │   │   └── Staff/
-│   │   ├── ConventionSystem.Infrastructure/  # EF Core, repositories, identity, extern auth, e-post
-│   │   └── ConventionSystem.Api/             # Controllers, minimal API-endpoints, feed-endpoints
+│   │   ├── ConventionSystem.Infrastructure/  # EF Core, repositories, identity, e-post
+│   │   └── ConventionSystem.Api/             # Minimal API-endpoints, feed-endpoints
 │   └── tests/
 │       ├── ConventionSystem.Domain.Tests/
 │       ├── ConventionSystem.Application.Tests/
 │       └── ConventionSystem.Integration.Tests/
 ├── frontend/
 │   └── projects/
-│       ├── admin/     # Admin-app (Angular Material)
-│       ├── public/    # Publik vy (Angular Material)
+│       ├── admin/     # Admin-app – rollbaserad, port 4200 (Angular Material)
+│       ├── public/    # Publik vy – konventionsbrandad, port 4201 (Angular Material)
 │       └── shared/    # Delat bibliotek: API-typer, auth, interceptors
 └── docs/
+    ├── Backend.md      # Kodkonventioner per lager, EF Core-regler, testmönster
+    ├── Frontend.md     # Angular-konventioner och komponentmönster
+    ├── UseCases.md     # Alla use cases med acceptanskriterier
+    └── Roadmap.md      # Implementationsstatus och faser
 ```
 
 ## Arkitektur
