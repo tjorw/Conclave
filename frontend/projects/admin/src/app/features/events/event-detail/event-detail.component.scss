@@ -40,6 +40,16 @@
   mat-icon { font-size: 16px; width: 16px; height: 16px; }
 }
 
+.meta-edit-btn {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  opacity: 0.6;
+
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+  &:hover { opacity: 1; }
+}
+
 .action-bar {
   display: flex;
   align-items: center;
@@ -64,6 +74,16 @@
 .content-card {
   margin-bottom: 16px;
 }
+
+.content-tabs {
+  margin-top: 4px;
+}
+
+.tab-card {
+  margin-top: 16px;
+}
+
+// ── Edit form ─────────────────────────────────────────────────────────────────
 
 .edit-form {
   display: flex;
@@ -91,17 +111,6 @@
     gap: 8px;
     padding: 8px 0 12px;
   }
-}
-
-.section-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #999;
-  margin: 16px 0 6px;
-
-  &:first-child { margin-top: 0; }
 }
 
 .description {
@@ -173,37 +182,4 @@
   justify-content: flex-end;
   gap: 8px;
   padding: 4px 0 12px;
-}
-
-.category-info {
-  display: flex;
-  gap: 32px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.category-field {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.category-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #999;
-}
-
-.category-value {
-  font-size: 0.95rem;
-}
-
-.category-change-form {
-  padding-top: 8px;
-  border-top: 1px solid #f0f0f0;
-  align-items: center;
-
-  mat-form-field { flex: 0 0 280px; }
 }

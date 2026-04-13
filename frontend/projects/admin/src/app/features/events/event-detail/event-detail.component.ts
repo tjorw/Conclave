@@ -5,13 +5,16 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CategoryDto, ConventionService, EventDto, EventService, VenueDto } from 'shared';
+import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
 
 @Component({
   selector: 'app-event-detail',
@@ -23,11 +26,13 @@ import { CategoryDto, ConventionService, EventDto, EventService, VenueDto } from
     MatButtonModule,
     MatCardModule,
     MatChipsModule,
+    MatDialogModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    MatTabsModule,
     MatTooltipModule,
   ],
   templateUrl: './event-detail.component.html',
@@ -39,6 +44,7 @@ export class EventDetailComponent implements OnInit {
   private readonly svc        = inject(EventService);
   private readonly conSvc     = inject(ConventionService);
   private readonly fb         = inject(FormBuilder);
+  private readonly dialog     = inject(MatDialog);
 
   readonly event      = signal<EventDto | null>(null);
   readonly venues     = signal<VenueDto[]>([]);
@@ -50,10 +56,6 @@ export class EventDetailComponent implements OnInit {
   readonly showAddRequestForm    = signal(false);
   readonly showAddSessionForm    = signal(false);
   readonly editingSessionId      = signal<string | null>(null);
-
-  readonly categoryForm = this.fb.group({
-    categoryId: ['', Validators.required],
-  });
 
   readonly rejectForm = this.fb.group({
     comment: ['', [Validators.required, Validators.minLength(5)]],
@@ -88,7 +90,6 @@ export class EventDetailComponent implements OnInit {
         this.event.set(e);
         this.loading.set(false);
         this.populateEditForm(e);
-        this.categoryForm.patchValue({ categoryId: e.categoryId });
         this.conSvc.getEdition(e.editionId).subscribe({
           next: ed => {
             this.venues.set(ed.venues);
@@ -102,14 +103,20 @@ export class EventDetailComponent implements OnInit {
 
   // ── Category ────────────────────────────────────────────────────────────
 
-  changeCategory(): void {
+  openChangeCategoryDialog(): void {
     const ev = this.event();
-    if (!ev || this.categoryForm.invalid || this.saving()) return;
-    const { categoryId } = this.categoryForm.getRawValue();
-    this.saving.set(true);
-    this.svc.changeCategory(ev.id, categoryId!).subscribe({
-      next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte byta kategori.'); },
+    if (!ev) return;
+    const ref = this.dialog.open(ChangeCategoryDialogComponent, {
+      width: '380px',
+      data: { currentCategoryId: ev.categoryId, categories: this.categories() },
+    });
+    ref.afterClosed().subscribe((newCategoryId: string | undefined) => {
+      if (!newCategoryId || newCategoryId === ev.categoryId) return;
+      this.saving.set(true);
+      this.svc.changeCategory(ev.id, newCategoryId).subscribe({
+        next: () => { this.saving.set(false); this.reload(); },
+        error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte byta kategori.'); },
+      });
     });
   }
 
