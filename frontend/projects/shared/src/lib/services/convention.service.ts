@@ -38,6 +38,11 @@ export interface CreateStationRequest {
   staffAreaId: string;
 }
 
+export interface UpdateStationRequest {
+  name: string;
+  description?: string | null;
+}
+
 export interface CreateCategoryRequest {
   name: string;
   description?: string | null;
@@ -144,6 +149,19 @@ export class ConventionService {
     return this.http.post<{ id: string }>(
       `${this.env.apiBaseUrl}/editions/${editionId}/stations`,
       request
+    );
+  }
+
+  updateStation(editionId: string, stationId: string, request: UpdateStationRequest) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/stations/${stationId}`,
+      request
+    );
+  }
+
+  removeStation(editionId: string, stationId: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/stations/${stationId}`
     );
   }
 

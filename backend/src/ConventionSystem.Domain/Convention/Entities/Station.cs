@@ -20,4 +20,12 @@ public sealed class Station : Entity<StationId>
         Name = name;
         Description = description;
     }
+
+    internal void Update(string name, string? description)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
+        Name = name;
+        Description = description;
+    }
 }

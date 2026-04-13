@@ -12,8 +12,35 @@
   color: #333;
 }
 
-.station-card {
+.station-card,
+.station-form-card {
   margin-bottom: 20px;
+}
+
+.station-header-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0;
+}
+
+.form-card-title {
+  font-size: .85rem;
+  font-weight: 500;
+  color: #555;
+  margin: 0 0 12px;
+}
+
+.station-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .field-name { min-width: 200px; flex: 1; }
+  .field-desc { min-width: 220px; flex: 2; }
+}
+
+.add-station-row {
+  margin-bottom: 24px;
 }
 
 .no-pad { padding: 0; }

@@ -15,6 +15,7 @@ import {
   ConventionService, EditionDto, PersonDto, ShiftDto, ShiftSummaryDto,
   StaffService, StaffAreaDto, StationDto,
 } from 'shared';
+import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-staff-area-detail',
@@ -24,6 +25,7 @@ import {
     ReactiveFormsModule,
     MatButtonModule,
     MatCardModule,
+    MatDividerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -54,6 +56,15 @@ export class StaffAreaDetailComponent {
   readonly shiftLoading    = signal(false);
 
   readonly persons = signal<PersonDto[]>([]);
+
+  // Stationshantering
+  readonly editingStation    = signal<StationDto | null>(null);
+  readonly addingStation     = signal(false);
+
+  readonly stationForm = this.fb.group({
+    name:        ['', Validators.required],
+    description: [''],
+  });
 
   readonly createShiftForStation = signal<string | null>(null);
 
@@ -129,6 +140,63 @@ export class StaffAreaDetailComponent {
 
   goBack(): void {
     this.router.navigate(['/staffing']);
+  }
+
+  // ── Stationer ─────────────────────────────────────────────────────────────
+
+  openAddStation(): void {
+    this.stationForm.reset({ name: '', description: '' });
+    this.addingStation.set(true);
+    this.editingStation.set(null);
+  }
+
+  openEditStation(station: StationDto): void {
+    this.stationForm.patchValue({ name: station.name, description: station.description ?? '' });
+    this.editingStation.set(station);
+    this.addingStation.set(false);
+  }
+
+  cancelStationForm(): void {
+    this.addingStation.set(false);
+    this.editingStation.set(null);
+  }
+
+  submitStation(): void {
+    if (this.stationForm.invalid || this.saving()) return;
+    const { name, description } = this.stationForm.getRawValue();
+    const editionId = this.editionCtx.activeEdition()?.id;
+    if (!editionId) return;
+
+    this.saving.set(true);
+    const editing = this.editingStation();
+
+    if (editing) {
+      this.conventionSvc.updateStation(editionId, editing.id, { name: name!, description: description || null }).subscribe({
+        next: () => { this.saving.set(false); this.cancelStationForm(); this.reloadEdition(); },
+        error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte uppdatera stationen.'); },
+      });
+    } else {
+      this.conventionSvc.createStation(editionId, { name: name!, description: description || null, staffAreaId: this.areaId() }).subscribe({
+        next: () => { this.saving.set(false); this.cancelStationForm(); this.reloadEdition(); },
+        error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte skapa stationen.'); },
+      });
+    }
+  }
+
+  removeStation(station: StationDto): void {
+    if (this.saving()) return;
+    const editionId = this.editionCtx.activeEdition()?.id;
+    if (!editionId) return;
+    this.saving.set(true);
+    this.conventionSvc.removeStation(editionId, station.id).subscribe({
+      next: () => { this.saving.set(false); this.reloadEdition(); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte ta bort stationen.'); },
+    });
+  }
+
+  private reloadEdition(): void {
+    const editionId = this.editionCtx.activeEdition()?.id;
+    if (editionId) this.loadEdition(editionId);
   }
 
   // ── Pass ──────────────────────────────────────────────────────────────────

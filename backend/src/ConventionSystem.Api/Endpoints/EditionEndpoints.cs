@@ -11,7 +11,9 @@ using ConventionSystem.Application.Convention.Commands.OpenRegistration;
 using ConventionSystem.Application.Convention.Commands.PublishEdition;
 using ConventionSystem.Application.Convention.Commands.RemoveCategory;
 using ConventionSystem.Application.Convention.Commands.RemoveStaffArea;
+using ConventionSystem.Application.Convention.Commands.RemoveStation;
 using ConventionSystem.Application.Convention.Commands.RemoveVenue;
+using ConventionSystem.Application.Convention.Commands.UpdateStation;
 using ConventionSystem.Application.Convention.Commands.UpdateCategory;
 using ConventionSystem.Application.Convention.Commands.UpdateEdition;
 using ConventionSystem.Application.Convention.Commands.UpdateStaffArea;
@@ -131,6 +133,20 @@ public static class EditionEndpoints
                 return Results.Created($"/stations/{id}", new { id });
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
+        app.MapPut("/editions/{editionId:guid}/stations/{stationId:guid}",
+            async (Guid editionId, Guid stationId, UpdateStationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateStationCommand(editionId, stationId, request.Name, request.Description), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapDelete("/editions/{editionId:guid}/stations/{stationId:guid}",
+            async (Guid editionId, Guid stationId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveStationCommand(editionId, stationId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
         app.MapPost("/editions/{editionId:guid}/venues",
             async (Guid editionId, CreateVenueRequest request, ISender sender, CancellationToken ct) =>
             {
@@ -165,6 +181,7 @@ public record UpdateVenueRequest(string Name, string Building, string? Descripti
 public record CreateStaffAreaRequest(string Name, string? Description, Guid ResponsibleId);
 public record UpdateStaffAreaRequest(string Name, string? Description, Guid ResponsibleId);
 public record CreateStationRequest(string Name, string? Description, Guid StaffAreaId);
+public record UpdateStationRequest(string Name, string? Description);
 public record CreateCategoryRequest(string Name, string? Description, Guid ResponsibleId);
 public record UpdateCategoryRequest(string Name, string? Description, Guid ResponsibleId);
 public record ChangeCategoryResponsibleRequest(Guid NewResponsibleId);

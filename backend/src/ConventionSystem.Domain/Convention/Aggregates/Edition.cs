@@ -110,6 +110,21 @@ public sealed class Edition : AggregateRoot
         return station;
     }
 
+    public void UpdateStation(StationId stationId, string name, string? description)
+    {
+        var station = _stations.FirstOrDefault(s => s.Id == stationId)
+            ?? throw new InvalidOperationException("Stationen hittades inte på denna upplaga.");
+        station.Update(name, description);
+    }
+
+    public Station RemoveStation(StationId stationId)
+    {
+        var station = _stations.FirstOrDefault(s => s.Id == stationId)
+            ?? throw new InvalidOperationException("Stationen hittades inte på denna upplaga.");
+        _stations.Remove(station);
+        return station;
+    }
+
     public Category CreateCategory(string name, PersonId responsibleId, string? description = null)
     {
         var category = new Category(CategoryId.New(), responsibleId, name, description);
