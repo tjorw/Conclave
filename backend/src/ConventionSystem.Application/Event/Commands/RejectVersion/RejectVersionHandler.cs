@@ -35,7 +35,6 @@ public sealed class RejectVersionHandler(
             throw new InvalidOperationException("Utföraren har inte behörighet att avvisa evenemang i denna kategori.");
 
         var comment = ev.Reject(performedById, command.Comment);
-        eventRepository.MarkAsAdded(comment);
         await eventRepository.SaveAsync(ct);
     }
 }

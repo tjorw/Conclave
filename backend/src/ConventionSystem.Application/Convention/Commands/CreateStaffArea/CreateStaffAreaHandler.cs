@@ -33,7 +33,6 @@ public sealed class CreateStaffAreaHandler(
             throw new InvalidOperationException("Ansvarig person tillhör inte denna konvention.");
 
         var staffArea = edition.CreateStaffArea(command.Name, responsibleId, command.Description);
-        editionRepository.MarkAsAdded(staffArea);
         await editionRepository.SaveAsync(ct);
 
         return staffArea.Id.Value;

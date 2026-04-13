@@ -17,7 +17,7 @@ public sealed class AvailabilityConfiguration : IEntityTypeConfiguration<Availab
         builder.HasKey(a => a.Id);
         builder.Property(a => a.Id)
             .HasConversion(id => id.Value, value => new AvailabilityId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.OwnsOne(a => a.TimeSlot, ts =>
         {
@@ -36,7 +36,7 @@ public sealed class StaffApplicationConfiguration : IEntityTypeConfiguration<Sta
         builder.HasKey(a => a.Id);
         builder.Property(a => a.Id)
             .HasConversion(id => id.Value, value => new StaffApplicationId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(a => a.PersonId)
             .HasConversion(id => id.Value, value => new PersonId(value))

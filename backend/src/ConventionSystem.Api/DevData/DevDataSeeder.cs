@@ -66,34 +66,22 @@ public static class DevDataSeeder
         var edition = convention.CreateEdition("Sommarcon 2026", period, staffCoord.Id, eventCoord.Id);
         await editionRepo.AddAndSaveAsync(edition);
 
-        // Lokaler (MarkAsAdded behövs eftersom EF Core inte autodetekterar ändringar i privata listor)
         var storaSalen = edition.CreateVenue("Stora salen", "Huvudbyggnaden", "Konventionets huvudsal");
-        editionRepo.MarkAsAdded(storaSalen);
         var spelrummet = edition.CreateVenue("Spelrummet", "Annexet", null);
-        editionRepo.MarkAsAdded(spelrummet);
 
         // Funktionsområden och stationer
         var reception = edition.CreateStaffArea("Reception", adminPerson.Id, "Välkomnande och ackreditering");
-        editionRepo.MarkAsAdded(reception);
         var nordingång = edition.CreateStation("Nordingång", reception.Id);
-        editionRepo.MarkAsAdded(nordingång);
         var söderingång = edition.CreateStation("Söderingång", reception.Id);
-        editionRepo.MarkAsAdded(söderingång);
 
         var spelsupport = edition.CreateStaffArea("Spelsupport", adminPerson.Id, "Hjälp med spel och evenemang");
-        editionRepo.MarkAsAdded(spelsupport);
         var salA = edition.CreateStation("Sal A", spelsupport.Id);
-        editionRepo.MarkAsAdded(salA);
         var salB = edition.CreateStation("Sal B", spelsupport.Id);
-        editionRepo.MarkAsAdded(salB);
 
         // Kategorier
         var rollspel = edition.CreateCategory("Rollspel", adminPerson.Id, "Pen & paper-rollspel");
-        editionRepo.MarkAsAdded(rollspel);
         var brädspel = edition.CreateCategory("Brädspel", adminPerson.Id, "Moderna och klassiska brädspel");
-        editionRepo.MarkAsAdded(brädspel);
         var lajv = edition.CreateCategory("Lajv", adminPerson.Id, "Levande rollspel");
-        editionRepo.MarkAsAdded(lajv);
 
         // Publicera upplagan
         edition.Publish(adminPerson.Id);

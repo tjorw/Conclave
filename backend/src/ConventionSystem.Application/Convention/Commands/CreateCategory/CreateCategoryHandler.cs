@@ -33,7 +33,6 @@ public sealed class CreateCategoryHandler(
             throw new InvalidOperationException("Ansvarig person tillhör inte denna konvention.");
 
         var category = edition.CreateCategory(command.Name, responsibleId, command.Description);
-        editionRepository.MarkAsAdded(category);
         await editionRepository.SaveAsync(ct);
 
         return category.Id.Value;

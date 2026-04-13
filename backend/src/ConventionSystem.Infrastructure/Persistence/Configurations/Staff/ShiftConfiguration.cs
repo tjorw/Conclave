@@ -17,7 +17,7 @@ public sealed class ShiftConfiguration : IEntityTypeConfiguration<Shift>
         builder.HasKey(s => s.Id);
         builder.Property(s => s.Id)
             .HasConversion(id => id.Value, value => new ShiftId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(s => s.StationId)
             .HasConversion(id => id.Value, value => new StationId(value))
@@ -64,7 +64,7 @@ public sealed class StaffAssignmentConfiguration : IEntityTypeConfiguration<Staf
         builder.HasKey(a => a.Id);
         builder.Property(a => a.Id)
             .HasConversion(id => id.Value, value => new StaffAssignmentId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(a => a.PersonId)
             .HasConversion(id => id.Value, value => new PersonId(value))

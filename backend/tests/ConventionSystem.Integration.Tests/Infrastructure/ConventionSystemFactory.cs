@@ -4,12 +4,16 @@ using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.Persistence;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Testcontainers.MsSql;
 
 namespace ConventionSystem.Integration.Tests.Infrastructure;
@@ -69,6 +73,11 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
         return convention.Id.Value;
     }
 
+    // JWT-nyckeln som används för att signera tokens i testerna.
+    // Måste sättas explicit via PostConfigure eftersom JWT-middleware läser sin nyckel
+    // vid uppstart (från builder.Configuration), INNAN factory:ns in-memory-config hinner appliceras.
+    internal const string TestJwtKey = "integration-test-secret-key-minimum-32-chars";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureAppConfiguration((_, config) =>
@@ -76,10 +85,25 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = _sql.GetConnectionString(),
-                ["Jwt:Key"] = "integration-test-secret-key-minimum-32-chars",
+                ["Jwt:Key"] = TestJwtKey,
                 ["Jwt:Issuer"] = "ConventionSystem",
                 ["Jwt:Audience"] = "ConventionSystem",
-                ["DevData:EnableSeeding"] = "false"
+                ["DevData:EnableSeeding"] = "false",
+                ["UseHttpsRedirect"] = "false"
+            });
+        });
+
+        // JWT-middleware konfigurerar sin IssuerSigningKey vid uppstart, innan in-memory-config
+        // är på plats. PostConfigure ser till att valideringsnyckeln matchar den som används
+        // av login-endpointen (som läser från IConfiguration vid request-tid).
+        builder.ConfigureTestServices(services =>
+        {
+            services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+            {
+                options.TokenValidationParameters.IssuerSigningKey =
+                    new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestJwtKey));
+                options.TokenValidationParameters.ValidIssuer = "ConventionSystem";
+                options.TokenValidationParameters.ValidAudience = "ConventionSystem";
             });
         });
     }

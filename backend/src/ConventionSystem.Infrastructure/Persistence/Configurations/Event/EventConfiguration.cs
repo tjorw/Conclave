@@ -18,7 +18,7 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
             .HasConversion(id => id.Value, value => new EventId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(e => e.EditionId)
             .HasConversion(id => id.Value, value => new EditionId(value))
@@ -114,7 +114,7 @@ public sealed class EventCommentConfiguration : IEntityTypeConfiguration<EventCo
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Id)
             .HasConversion(id => id.Value, value => new EventCommentId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(c => c.EventId)
             .HasConversion(id => id.Value, value => new EventId(value))
@@ -179,7 +179,7 @@ public sealed class SessionRequestConfiguration : IEntityTypeConfiguration<Sessi
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id)
             .HasConversion(id => id.Value, value => new SessionRequestId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(r => r.Description).HasMaxLength(1000).IsRequired();
 

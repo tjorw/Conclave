@@ -15,7 +15,7 @@ public sealed class ConventionConfiguration : IEntityTypeConfiguration<Domain.Co
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Id)
             .HasConversion(id => id.Value, value => new ConventionId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(c => c.Name).HasMaxLength(200).IsRequired();
         builder.Property(c => c.Slug).HasMaxLength(100).IsRequired();

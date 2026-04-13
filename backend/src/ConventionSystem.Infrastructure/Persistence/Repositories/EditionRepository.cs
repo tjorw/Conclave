@@ -84,9 +84,6 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
                 e.Categories.Select(c => new CategoryDto(c.Id.Value, c.Name, c.Description, c.ResponsibleId.Value)).ToList()))
             .FirstOrDefaultAsync(ct);
 
-    public void MarkAsAdded<T>(T entity) where T : class
-        => db.Entry(entity).State = Microsoft.EntityFrameworkCore.EntityState.Added;
-
     public void MarkAsRemoved<T>(T entity) where T : class
         => db.Entry(entity).State = Microsoft.EntityFrameworkCore.EntityState.Deleted;
 

@@ -14,7 +14,7 @@ public sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.HasKey(p => p.Id);
         builder.Property(p => p.Id)
             .HasConversion(id => id.Value, value => new PersonId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(p => p.ConventionId)
             .HasConversion(id => id.Value, value => new ConventionId(value))

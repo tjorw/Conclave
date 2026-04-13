@@ -16,7 +16,7 @@ public sealed class VisitorRegistrationConfiguration : IEntityTypeConfiguration<
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id)
             .HasConversion(id => id.Value, value => new VisitorRegistrationId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(r => r.PersonId)
             .HasConversion(id => id.Value, value => new PersonId(value))

@@ -16,7 +16,7 @@ public sealed class TicketConfiguration : IEntityTypeConfiguration<Ticket>
         builder.HasKey(t => t.Id);
         builder.Property(t => t.Id)
             .HasConversion(id => id.Value, value => new TicketId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(t => t.TicketTypeId)
             .HasConversion(id => id.Value, value => new TicketTypeId(value))

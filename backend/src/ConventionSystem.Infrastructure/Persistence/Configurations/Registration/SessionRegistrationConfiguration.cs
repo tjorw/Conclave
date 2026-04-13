@@ -17,7 +17,7 @@ public sealed class SessionRegistrationConfiguration : IEntityTypeConfiguration<
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id)
             .HasConversion(id => id.Value, value => new SessionRegistrationId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(r => r.SessionId)
             .HasConversion(id => id.Value, value => new SessionId(value))

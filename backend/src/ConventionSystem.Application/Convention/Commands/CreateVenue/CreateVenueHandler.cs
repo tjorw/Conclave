@@ -26,7 +26,6 @@ public sealed class CreateVenueHandler(
             throw new InvalidOperationException("Utföraren är inte administratör för denna konvention.");
 
         var venue = edition.CreateVenue(command.Name, command.Building, command.Description);
-        editionRepository.MarkAsAdded(venue);
         await editionRepository.SaveAsync(ct);
 
         return venue.Id.Value;

@@ -15,7 +15,6 @@ public sealed class AddSessionRequestHandler(IEventRepository eventRepository)
         var request = ev.AddSessionRequest(
             command.Description, command.DurationMinutes, command.Seats, command.StartType);
 
-        eventRepository.MarkAsAdded(request);
         await eventRepository.SaveAsync(ct);
         return request.Id.Value;
     }

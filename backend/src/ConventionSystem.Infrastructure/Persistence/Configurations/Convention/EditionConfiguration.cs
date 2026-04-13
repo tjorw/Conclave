@@ -16,7 +16,7 @@ public sealed class EditionConfiguration : IEntityTypeConfiguration<Edition>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
             .HasConversion(id => id.Value, value => new EditionId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(e => e.ConventionId)
             .HasConversion(id => id.Value, value => new ConventionId(value))
@@ -69,7 +69,7 @@ public sealed class VenueConfiguration : IEntityTypeConfiguration<Venue>
         builder.HasKey(v => v.Id);
         builder.Property(v => v.Id)
             .HasConversion(id => id.Value, value => new VenueId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(v => v.Name).HasMaxLength(200).IsRequired();
         builder.Property(v => v.Building).HasMaxLength(200).IsRequired();
@@ -86,7 +86,7 @@ public sealed class StaffAreaConfiguration : IEntityTypeConfiguration<StaffArea>
         builder.HasKey(sa => sa.Id);
         builder.Property(sa => sa.Id)
             .HasConversion(id => id.Value, value => new StaffAreaId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(sa => sa.ResponsibleId)
             .HasConversion(id => id.Value, value => new PersonId(value))
@@ -108,7 +108,7 @@ public sealed class StationConfiguration : IEntityTypeConfiguration<Station>
         builder.HasKey(s => s.Id);
         builder.Property(s => s.Id)
             .HasConversion(id => id.Value, value => new StationId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(s => s.StaffAreaId)
             .HasConversion(id => id.Value, value => new StaffAreaId(value))
@@ -131,7 +131,7 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Id)
             .HasConversion(id => id.Value, value => new CategoryId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(c => c.ResponsibleId)
             .HasConversion(id => id.Value, value => new PersonId(value))

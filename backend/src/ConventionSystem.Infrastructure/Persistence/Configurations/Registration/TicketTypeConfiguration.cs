@@ -16,7 +16,7 @@ public sealed class TicketTypeConfiguration : IEntityTypeConfiguration<TicketTyp
         builder.HasKey(t => t.Id);
         builder.Property(t => t.Id)
             .HasConversion(id => id.Value, value => new TicketTypeId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(t => t.EditionId)
             .HasConversion(id => id.Value, value => new EditionId(value))
@@ -50,7 +50,7 @@ public sealed class TicketPerkConfiguration : IEntityTypeConfiguration<TicketPer
         builder.HasKey(p => p.Id);
         builder.Property(p => p.Id)
             .HasConversion(id => id.Value, value => new TicketPerkId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(p => p.Description).HasMaxLength(500).IsRequired();
     }

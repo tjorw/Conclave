@@ -32,9 +32,6 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .Include(e => e.Sessions)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
-    public void MarkAsAdded<T>(T entity) where T : class
-        => db.Entry(entity).State = Microsoft.EntityFrameworkCore.EntityState.Added;
-
     public async Task<IReadOnlyList<EventSummaryDto>> ListByEditionIdAsync(EditionId id, CancellationToken ct = default)
     {
         var events = await db.Events

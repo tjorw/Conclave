@@ -81,9 +81,6 @@ public sealed class ShiftRepository(ConventionDbContext db) : IShiftRepository
                 a.AssignedAt)).ToList());
     }
 
-    public void MarkAsAdded<T>(T entity) where T : class
-        => db.Entry(entity).State = Microsoft.EntityFrameworkCore.EntityState.Added;
-
     public Task SaveAsync(CancellationToken ct = default)
         => db.SaveChangesAsync(ct);
 }

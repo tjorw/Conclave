@@ -29,7 +29,6 @@ public sealed class CreateStationHandler(
             throw new InvalidOperationException("Utföraren har inte behörighet att skapa stationer för detta funktionsområde.");
 
         var station = edition.CreateStation(command.Name, staffAreaId, command.Description);
-        editionRepository.MarkAsAdded(station);
         await editionRepository.SaveAsync(ct);
 
         return station.Id.Value;
