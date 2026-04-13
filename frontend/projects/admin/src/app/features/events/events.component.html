@@ -99,12 +99,6 @@
                 <button mat-icon-button (click)="openEvent(event.id)" matTooltip="Öppna">
                   <mat-icon>open_in_new</mat-icon>
                 </button>
-                @if (event.status !== 'Cancelled') {
-                  <button mat-icon-button color="warn" (click)="cancelEvent(event)"
-                    matTooltip="Ställ in" [disabled]="saving()">
-                    <mat-icon>event_busy</mat-icon>
-                  </button>
-                }
               </td>
             </tr>
           } @empty {
