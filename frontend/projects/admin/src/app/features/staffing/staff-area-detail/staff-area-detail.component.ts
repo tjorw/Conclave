@@ -120,7 +120,7 @@ export class StaffAreaDetailComponent {
     for (const station of stations) {
       this.svc.listShifts(station.id).subscribe({
         next: shifts => {
-          result[station.id] = shifts;
+          result[station.id] = shifts.slice().sort((a, b) => (a.start < b.start ? 1 : -1));
           if (--remaining === 0) { this.shiftsByStation.set({ ...result }); this.loading.set(false); }
         },
         error: () => {

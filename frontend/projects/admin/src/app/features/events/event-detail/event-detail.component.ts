@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -330,6 +330,10 @@ export class EventDetailComponent implements OnInit {
     const map: Record<string, string> = { Active: 'Aktiv', Inactive: 'Inaktiv' };
     return map[status] ?? status;
   }
+
+  readonly sortedSessions = computed(() =>
+    [...(this.event()?.sessions ?? [])].sort((a, b) => (a.start < b.start ? 1 : -1))
+  );
 
   get sessionMin(): string | undefined { return this.edition()?.start.slice(0, 16); }
   get sessionMax(): string | undefined { return this.edition()?.end.slice(0, 16); }

@@ -226,7 +226,7 @@
                 <tr><th>Start</th><th>Slut</th><th>Lokal</th><th>Max platser</th><th>Starttyp</th><th>Status</th><th></th></tr>
               </thead>
               <tbody>
-                @for (s of e.sessions; track s.id) {
+                @for (s of sortedSessions(); track s.id) {
                   <tr [class.editing-row]="editingSessionId() === s.id">
                     <td>{{ s.start | date:'yyyy-MM-dd HH:mm' }}</td>
                     <td>{{ s.end | date:'HH:mm' }}</td>
