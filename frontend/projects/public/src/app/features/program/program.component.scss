@@ -1,28 +1,47 @@
 .program-page {
-  padding: 40px 16px 60px;
+  padding: 28px 16px 48px;
+
+  @media (min-width: 768px) {
+    padding: 40px 16px 60px;
+  }
 }
 
 .page-header h1 {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 400;
   color: var(--brand-primary);
-  margin: 0 0 28px;
+  margin: 0 0 24px;
+
+  @media (min-width: 768px) {
+    font-size: 1.8rem;
+    margin-bottom: 28px;
+  }
 }
 
 // ── Dagfilter ──────────────────────────────────────────────────────────────
 
 .day-tabs {
   display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
+  gap: 0;
   border-bottom: 2px solid var(--brand-border);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  @media (min-width: 768px) {
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
 }
 
 .day-tab {
   background: none;
   border: none;
-  padding: 10px 18px;
+  padding: 12px 16px;
   font-size: .875rem;
   font-family: inherit;
   cursor: pointer;
@@ -32,6 +51,9 @@
   border-radius: 0;
   transition: color .15s;
   text-transform: capitalize;
+  white-space: nowrap;
+  min-height: 44px;
+  flex-shrink: 0;
 
   &:hover { color: var(--brand-primary); }
 
@@ -46,21 +68,37 @@
 
 .category-chips {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+
+  &::-webkit-scrollbar { display: none; }
+
+  @media (min-width: 768px) {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    margin-bottom: 20px;
+  }
 }
 
 .cat-chip {
   background: #f0f0f0;
   border: 1px solid transparent;
   border-radius: 20px;
-  padding: 4px 14px;
-  font-size: .8rem;
+  padding: 10px 16px;
+  font-size: .85rem;
   font-family: inherit;
   cursor: pointer;
   color: var(--brand-text-muted);
   transition: all .15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 
   &:hover { background: #e0e0e0; color: var(--brand-text); }
 
@@ -83,8 +121,17 @@
 
 .event-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 960px) {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
 }
 
 .event-card {

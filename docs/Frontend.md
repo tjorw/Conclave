@@ -320,6 +320,70 @@ Inga sidomenyer – allt navigeras via topnav och `routerLink`.
 
 ---
 
+### Responsivitet och Mobile First
+
+Den publika appen är **mobile first**: grundstilarna gäller för den minsta
+skärmen (320 px) och utökas uppåt med `@media (min-width: …)`.
+Skriv aldrig `@media (max-width: …)` – om det behövs är grundstilen fel.
+
+#### Brytpunkter
+
+| Namn | Bredd | Typisk enhet |
+|------|-------|--------------|
+| sm   | 480px | Stor telefon, liggande |
+| md   | 768px | Platta, liten desktop |
+| lg   | 1024px | Desktop |
+| xl   | 1200px | Bred skärm (max content-bredd) |
+
+```scss
+// ✓ Mobile first
+.element { font-size: 1.5rem; }
+@media (min-width: 768px) { .element { font-size: 2.5rem; } }
+
+// ✗ Desktop first – undvik
+.element { font-size: 2.5rem; }
+@media (max-width: 767px) { .element { font-size: 1.5rem; } }
+```
+
+#### Navigation – hamburgermeny
+
+Under `md` kollapsar topnav till hamburgermeny:
+
+- `.nav-links` och `.nav-actions` har `display: none` som default
+- En hamburgersknapp (`mat-icon-button`, ikon `menu`/`close`) visas med `margin-left: auto`
+- En `.mobile-menu` (dropdown direkt under topnav) öppnas via `menuOpen = signal(false)`
+  i `ShellComponent`
+- Menyn stängs när en länk klickas (`(click)="menuOpen.set(false)"`)
+- På `md+` är hamburgern `display: none` och nav-links/actions `display: flex`
+
+#### Touchmål
+
+Alla interaktiva element har minst **44 × 44 px** klickbar yta.
+Dag-tabs och kategori-chips: `min-height: 44px; padding: 10px 16px`.
+
+#### Grid-beteende
+
+| Element | Mobil (default) | md (768px+) | lg (1024px+) |
+|---------|-----------------|-------------|--------------|
+| CTA-grid (hem) | 1 kolumn | 2 kolumner | 3 kolumner (auto-fit) |
+| Event-grid (hem, program) | 1 kolumn | 2 kolumner | 3 kolumner (auto-fill) |
+| Event-detalj | Enkolumns (sidebar sist) | Tvåkolumns (1fr 280px) | — |
+
+#### Typografiskala
+
+| Element | Mobil | md+ |
+|---------|-------|-----|
+| Hero-titel | 2rem | 3rem |
+| Hero padding | 48px top / 60px bottom | 80px top / 100px bottom |
+| Evenemangstitel (detalj) | 1.5rem | 2rem |
+
+#### Horisontell scroll för filter
+
+Dag-tabs och kategori-chips: `overflow-x: auto; flex-wrap: nowrap` på mobil.
+Scrollbaren döljs (`scrollbar-width: none`). På `md+`: `flex-wrap: wrap`.
+
+---
+
 ### Mina sidor – navigationsstruktur
 
 "Mina sidor" är en rollindelad yta. En person kan vara besökare, arrangör

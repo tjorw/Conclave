@@ -4,13 +4,14 @@
   <nav class="topnav">
     <div class="topnav-inner">
 
-      <a class="brand" routerLink="/">
+      <a class="brand" routerLink="/" (click)="menuOpen.set(false)">
         <span class="brand-name">{{ editionSvc.conventionName() }}</span>
         @if (editionSvc.editionYear()) {
           <span class="brand-year">{{ editionSvc.editionYear() }}</span>
         }
       </a>
 
+      <!-- Desktop: nav-links och nav-actions -->
       <div class="nav-links">
         <a mat-button routerLink="/program" routerLinkActive="nav-active">Program</a>
       </div>
@@ -29,7 +30,30 @@
         }
       </div>
 
+      <!-- Mobil: hamburgersknapp -->
+      <button class="hamburger" (click)="menuOpen.set(!menuOpen())"
+        [attr.aria-label]="menuOpen() ? 'Stäng meny' : 'Öppna meny'">
+        <mat-icon>{{ menuOpen() ? 'close' : 'menu' }}</mat-icon>
+      </button>
+
     </div>
+
+    <!-- Mobil: dropdown-meny -->
+    @if (menuOpen()) {
+      <div class="mobile-menu">
+        <a routerLink="/program" routerLinkActive="nav-active"
+          (click)="menuOpen.set(false)">Program</a>
+        @if (auth.isLoggedIn()) {
+          <a routerLink="/mina-sidor" (click)="menuOpen.set(false)">
+            Mina sidor
+          </a>
+          <button (click)="logout()">Logga ut</button>
+        } @else {
+          <a class="mobile-login-btn" routerLink="/login"
+            (click)="menuOpen.set(false)">Logga in</a>
+        }
+      </div>
+    }
   </nav>
 
   <!-- ── Sidinnehåll ────────────────────────────────────────────────────── -->

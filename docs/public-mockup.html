@@ -60,7 +60,27 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
   flex-direction: column;
   overflow: hidden;
   background: #f8f9fa;
+  transition: max-width .3s;
 }
+.app-wrapper.mobile-viewport {
+  max-width: 390px;
+  border-right: 1px solid #ddd;
+  box-shadow: 4px 0 20px rgba(0,0,0,.1);
+}
+.app-wrapper.mobile-viewport .app-topnav { padding: 0 12px; height: 52px; }
+.app-wrapper.mobile-viewport .topnav-links,
+.app-wrapper.mobile-viewport .topnav-actions { display: none !important; }
+.app-wrapper.mobile-viewport .topnav-hamburger { display: flex !important; }
+.app-wrapper.mobile-viewport .topnav-mobile-menu { display: flex !important; }
+.app-wrapper.mobile-viewport .hero { padding: 48px 16px 60px; }
+.app-wrapper.mobile-viewport .hero-title { font-size: 2rem; }
+.app-wrapper.mobile-viewport .cta-grid { grid-template-columns: 1fr; }
+.app-wrapper.mobile-viewport .events-grid,
+.app-wrapper.mobile-viewport .event-grid { grid-template-columns: 1fr; }
+.app-wrapper.mobile-viewport .event-body { grid-template-columns: 1fr; }
+.app-wrapper.mobile-viewport .day-tabs { overflow-x: auto; flex-wrap: nowrap; }
+.app-wrapper.mobile-viewport .category-chips { overflow-x: auto; flex-wrap: nowrap; }
+.app-wrapper.mobile-viewport .program-grid { grid-template-columns: 1fr; }
 
 /* ═══════════════════════════════════════
    APP TOP NAVIGATION
@@ -695,6 +715,10 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
   <div class="demo-nav-logo">Publik vy · Mockup</div>
   <div class="demo-nav-sub">Conclave 2026 – demoväljare</div>
 
+  <div class="demo-section">Viewport</div>
+  <a onclick="setViewport('desktop')" id="link-desktop" class="active">🖥 Desktop</a>
+  <a onclick="setViewport('mobile')" id="link-mobile">📱 Mobil (390px)</a>
+
   <div class="demo-section">Publik (ej inloggad)</div>
   <a onclick="show('hem')" class="active" id="link-hem">🏠 Hem (landing page)</a>
   <a onclick="show('program')" id="link-program">📅 Program</a>
@@ -736,7 +760,22 @@ body { font-family: system-ui, -apple-system, sans-serif; display: flex; height:
         <span class="user-name">Anna L.</span>
       </div>
     </div>
+    <!-- Mobil hamburgersknapp (visas bara i mobilvy) -->
+    <button class="topnav-hamburger" onclick="toggleMobileMenu()" id="hamburger-btn"
+      style="display:none;margin-left:auto;background:none;border:none;color:#fff;cursor:pointer;
+             width:44px;height:44px;font-size:1.4rem;align-items:center;justify-content:center;border-radius:4px">
+      ☰
+    </button>
   </header>
+  <!-- Mobil dropdown-meny -->
+  <div class="topnav-mobile-menu" id="mobile-menu"
+    style="display:none;flex-direction:column;background:#0f1a2e;padding:8px 0 12px">
+    <a onclick="show('program');closeMobileMenu()"
+      style="display:block;padding:13px 20px;color:rgba(255,255,255,.85);text-decoration:none;font-size:1rem">Program</a>
+    <a onclick="show('login');closeMobileMenu()"
+      style="display:block;margin:8px 16px 0;padding:13px 20px;background:#e8920a;color:#fff;
+             text-decoration:none;font-size:1rem;border-radius:4px;text-align:center">Logga in</a>
+  </div>
 
   <!-- ══ SCROLLABLE CONTENT ══ -->
   <div class="app-content">
@@ -1948,6 +1987,39 @@ function removeTag(spanEl) {
 
 function loginAndGo() {
   show('mina-sidor');
+}
+
+// ── Viewport toggle ────────────────────────────────────────────────────────
+
+function setViewport(mode) {
+  const wrapper = document.querySelector('.app-wrapper');
+  const deskLink = document.getElementById('link-desktop');
+  const mobLink  = document.getElementById('link-mobile');
+  if (mode === 'mobile') {
+    wrapper.classList.add('mobile-viewport');
+    mobLink.classList.add('active');
+    deskLink.classList.remove('active');
+  } else {
+    wrapper.classList.remove('mobile-viewport');
+    closeMobileMenu();
+    deskLink.classList.add('active');
+    mobLink.classList.remove('active');
+  }
+}
+
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const btn  = document.getElementById('hamburger-btn');
+  const open = menu.style.display === 'flex';
+  menu.style.display = open ? 'none' : 'flex';
+  btn.textContent = open ? '☰' : '✕';
+}
+
+function closeMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const btn  = document.getElementById('hamburger-btn');
+  if (menu) { menu.style.display = 'none'; }
+  if (btn)  { btn.textContent = '☰'; }
 }
 
 // ── Initial state ──────────────────────────────────────────────────────

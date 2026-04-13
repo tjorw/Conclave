@@ -1,7 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from 'shared';
@@ -14,7 +13,6 @@ import { EditionService } from '../services/edition.service';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    MatToolbarModule,
     MatButtonModule,
     MatIconModule,
   ],
@@ -26,7 +24,10 @@ export class ShellComponent {
   readonly editionSvc = inject(EditionService);
   private readonly router = inject(Router);
 
+  readonly menuOpen = signal(false);
+
   logout(): void {
+    this.menuOpen.set(false);
     this.auth.logout();
     this.router.navigateByUrl('/');
   }
