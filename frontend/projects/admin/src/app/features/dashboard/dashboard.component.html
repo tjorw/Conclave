@@ -21,9 +21,15 @@
   } @else {
     <div class="editions-grid">
       @for (edition of editionContext.editions(); track edition.id) {
-        <mat-card class="edition-card" (click)="openEdition(edition.id)">
+        <mat-card class="edition-card" [class.edition-card--active]="edition.status === 'Published'"
+          (click)="openEdition(edition.id)">
           <mat-card-header>
-            <mat-card-title>{{ edition.name }}</mat-card-title>
+            <mat-card-title>
+              {{ edition.name }}
+              @if (edition.status === 'Published') {
+                <span class="active-badge">Aktiv</span>
+              }
+            </mat-card-title>
             <mat-card-subtitle>
               {{ formatDate(edition.start) }} – {{ formatDate(edition.end) }}
             </mat-card-subtitle>

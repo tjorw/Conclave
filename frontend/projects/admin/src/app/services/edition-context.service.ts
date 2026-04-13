@@ -23,8 +23,9 @@ export class EditionContextService {
       if (found) return found;
     }
 
-    // Default: senaste upplagan per startdatum
-    return [...editions].sort((a, b) => b.start.localeCompare(a.start))[0];
+    // Default: Published-upplagan om det finns en, annars senaste per startdatum
+    return editions.find(e => e.status === 'Published')
+      ?? [...editions].sort((a, b) => b.start.localeCompare(a.start))[0];
   });
 
   load(): void {

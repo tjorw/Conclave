@@ -43,7 +43,9 @@
             aria-label="Välj upplaga"
           >
             @for (edition of editionContext.editions(); track edition.id) {
-              <mat-option [value]="edition.id">{{ edition.name }}</mat-option>
+              <mat-option [value]="edition.id">
+                {{ edition.name }}{{ edition.status === 'Published' ? ' · Aktiv' : '' }}
+              </mat-option>
             }
           </mat-select>
         </mat-form-field>
