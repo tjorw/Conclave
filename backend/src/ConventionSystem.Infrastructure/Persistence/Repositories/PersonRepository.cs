@@ -2,11 +2,12 @@ using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Queries;
 using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConventionSystem.Infrastructure.Persistence.Repositories;
 
-public sealed class PersonRepository(ConventionDbContext db) : IPersonRepository
+public sealed class PersonRepository(ConventionDbContext db, ApplicationIdentityDbContext identityDb) : IPersonRepository
 {
     public Task<bool> EmailExistsInConventionAsync(ConventionId conventionId, string email, CancellationToken ct = default)
         => db.Persons.AnyAsync(p => p.ConventionId == conventionId && p.Email == email, ct);
@@ -24,14 +25,34 @@ public sealed class PersonRepository(ConventionDbContext db) : IPersonRepository
             .Select(a => a.PersonId)
             .ToHashSetAsync(ct);
 
-        return await db.Persons
+        var persons = await db.Persons
             .Where(p => p.ConventionId == conventionId)
             .OrderBy(p => p.Name)
             .Select(p => new { p.Id, p.Name, p.Email, p.Phone, p.IsActive })
-            .ToListAsync(ct)
-            .ContinueWith(t => (IReadOnlyList<PersonDto>)t.Result
-                .Select(p => new PersonDto(p.Id.Value, p.Name, p.Email, p.Phone, p.IsActive, adminIds.Contains(p.Id)))
-                .ToList(), TaskContinuationOptions.ExecuteSynchronously);
+            .ToListAsync(ct);
+
+        var personIdValues = persons.Select(p => p.Id.Value).ToList();
+
+        var accountMap = await identityDb.Users
+            .Where(u => u.PersonId != null && personIdValues.Contains(u.PersonId!.Value))
+            .Select(u => new
+            {
+                PersonId = u.PersonId!.Value,
+                IsLocked = u.LockoutEnd != null && u.LockoutEnd > DateTimeOffset.UtcNow
+            })
+            .ToDictionaryAsync(u => u.PersonId, ct);
+
+        return persons
+            .Select(p =>
+            {
+                var hasAccount = accountMap.TryGetValue(p.Id.Value, out var acc);
+                return new PersonDto(
+                    p.Id.Value, p.Name, p.Email, p.Phone, p.IsActive,
+                    adminIds.Contains(p.Id),
+                    hasAccount,
+                    hasAccount && (acc?.IsLocked ?? false));
+            })
+            .ToList();
     }
 
     public async Task AddAndSaveAsync(Person person, CancellationToken ct = default)

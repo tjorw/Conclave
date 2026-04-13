@@ -65,4 +65,6 @@ export interface PersonDto {
   phone: string | null;
   isActive: boolean;
   isAdmin: boolean;
+  hasAccount: boolean;
+  isLocked: boolean;
 }

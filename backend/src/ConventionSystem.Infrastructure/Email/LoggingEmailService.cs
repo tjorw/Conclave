@@ -43,4 +43,10 @@ public sealed class LoggingEmailService(ILogger<LoggingEmailService> logger) : I
             toName, toEmail, eventTitle, comment);
         return Task.CompletedTask;
     }
+
+    public Task SendPasswordResetAsync(string toEmail, string toName, string resetLink, CancellationToken ct = default)
+    {
+        logger.LogInformation("[E-POST] Lösenordsåterställning → {Name} <{Email}>, länk: {Link}", toName, toEmail, resetLink);
+        return Task.CompletedTask;
+    }
 }

@@ -6,7 +6,9 @@ using ConventionSystem.Api.DevData;
 using ConventionSystem.Api.Endpoints;
 using ConventionSystem.Api.Services;
 using ConventionSystem.Infrastructure;
+using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -23,6 +25,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddIdentityCore<ApplicationUser>().AddDefaultTokenProviders();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();

@@ -165,4 +165,37 @@ export class PersonsComponent implements OnInit {
       },
     });
   }
+
+  sendResetLink(person: PersonDto): void {
+    if (this.saving()) return;
+    this.saving.set(true);
+    this.svc.sendResetLink(person.id).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.error.set(null);
+      },
+      error: err => {
+        this.saving.set(false);
+        this.error.set(err?.error?.detail ?? 'Kunde inte skicka återställningslänk.');
+      },
+    });
+  }
+
+  toggleLock(person: PersonDto): void {
+    if (this.saving()) return;
+    this.saving.set(true);
+    const action = person.isLocked
+      ? this.svc.unlockAccount(person.id)
+      : this.svc.lockAccount(person.id);
+    action.subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.load();
+      },
+      error: err => {
+        this.saving.set(false);
+        this.error.set(err?.error?.detail ?? 'Kunde inte ändra kontostatus.');
+      },
+    });
+  }
 }

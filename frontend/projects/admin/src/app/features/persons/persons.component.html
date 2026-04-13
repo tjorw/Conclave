@@ -63,6 +63,7 @@
             <th>Telefon</th>
             <th>Roller</th>
             <th>Status</th>
+            <th>Konto</th>
             <th class="actions-col"></th>
           </tr>
         </thead>
@@ -82,6 +83,15 @@
                   <span class="chip chip-green">Aktiv</span>
                 } @else {
                   <span class="chip chip-grey">Inaktiv</span>
+                }
+              </td>
+              <td>
+                @if (person.hasAccount && person.isLocked) {
+                  <span class="chip chip-red">Låst</span>
+                } @else if (person.hasAccount) {
+                  <span class="chip chip-green">Konto</span>
+                } @else {
+                  <span class="chip chip-grey">Inget konto</span>
                 }
               </td>
               <td class="row-actions">
@@ -108,12 +118,29 @@
                       <mat-icon>person</mat-icon>
                     </button>
                   }
+                  @if (person.hasAccount) {
+                    <button mat-icon-button (click)="sendResetLink(person)"
+                      matTooltip="Skicka återställningslänk" [disabled]="saving()">
+                      <mat-icon>key</mat-icon>
+                    </button>
+                    @if (person.isLocked) {
+                      <button mat-icon-button color="primary" (click)="toggleLock(person)"
+                        matTooltip="Lås upp konto" [disabled]="saving()">
+                        <mat-icon>lock_open</mat-icon>
+                      </button>
+                    } @else {
+                      <button mat-icon-button color="warn" (click)="toggleLock(person)"
+                        matTooltip="Lås konto" [disabled]="saving()">
+                        <mat-icon>lock</mat-icon>
+                      </button>
+                    }
+                  }
                 }
               </td>
             </tr>
             @if (editingPerson()?.id === person.id) {
               <tr class="edit-row">
-                <td colspan="6">
+                <td colspan="7">
                   <form [formGroup]="editForm" (ngSubmit)="saveEdit()" class="form-row">
                     <mat-form-field appearance="outline" subscriptSizing="dynamic">
                       <mat-label>Namn</mat-label>
@@ -133,7 +160,7 @@
             }
           } @empty {
             <tr>
-              <td colspan="6" class="empty-cell">
+              <td colspan="7" class="empty-cell">
                 @if (searchQuery()) { Inga personer matchar sökningen. }
                 @else { Inga personer registrerade ännu. }
               </td>

@@ -223,6 +223,18 @@ export class ConventionService {
     return this.http.post<void>(`${this.env.apiBaseUrl}/persons/${personId}/reactivate`, {});
   }
 
+  sendResetLink(personId: string) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/persons/${personId}/send-reset-link`, {});
+  }
+
+  lockAccount(personId: string) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/persons/${personId}/lock`, {});
+  }
+
+  unlockAccount(personId: string) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/persons/${personId}/unlock`, {});
+  }
+
   setActiveEdition(editionId: string) {
     return this.http.post<void>(`${this.env.apiBaseUrl}/editions/${editionId}/set-active`, {});
   }
