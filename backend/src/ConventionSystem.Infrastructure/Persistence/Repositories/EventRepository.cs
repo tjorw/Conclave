@@ -85,15 +85,30 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
 
         if (ev is null) return null;
 
-        var organiserName = await db.Persons
-            .Where(p => p.Id == ev.LeadOrganiserId)
-            .Select(p => p.Name)
+        var category = await db.Categories
+            .Where(c => c.Id == ev.CategoryId)
+            .Select(c => new { c.Name, c.ResponsibleId })
             .FirstOrDefaultAsync(ct);
+
+        var personIds = new List<PersonId> { ev.LeadOrganiserId };
+        if (category is not null) personIds.Add(category.ResponsibleId);
+
+        var personNames = await db.Persons
+            .Where(p => personIds.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id.Value, p => p.Name, ct);
+
+        var organiserName = personNames.GetValueOrDefault(ev.LeadOrganiserId.Value);
+        var responsibleName = category is not null
+            ? personNames.GetValueOrDefault(category.ResponsibleId.Value)
+            : null;
 
         return new EventDto(
             ev.Id.Value,
             ev.EditionId.Value,
             ev.CategoryId.Value,
+            category?.Name,
+            category is not null ? category.ResponsibleId.Value : (Guid?)null,
+            responsibleName,
             ev.LeadOrganiserId.Value,
             organiserName,
             ev.Status.ToString(),

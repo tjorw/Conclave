@@ -66,6 +66,12 @@ public sealed class Event : AggregateRoot
         Description = description;
     }
 
+    public void ChangeCategory(CategoryId newCategoryId)
+    {
+        EnsureNotCancelled();
+        CategoryId = newCategoryId;
+    }
+
     public void SetRegistrationType(RegistrationType registrationType, string? dropInRules = null)
     {
         EnsureNotCancelled();

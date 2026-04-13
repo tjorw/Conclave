@@ -1,4 +1,6 @@
+using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Event.Commands.AddCoOrganiser;
+using ConventionSystem.Application.Event.Commands.ChangeCategory;
 using ConventionSystem.Application.Event.Commands.AddSessionRequest;
 using ConventionSystem.Application.Event.Commands.ApproveVersion;
 using ConventionSystem.Application.Event.Commands.CancelEvent;
@@ -40,6 +42,13 @@ public static class EventEndpoints
                     new CreateEventCommand(editionId, request.CategoryId, request.LeadOrganiserId, request.ConventionId), ct);
                 return Results.Created($"/events/{id}", new { id });
             }).RequireAuthorization();
+
+        app.MapPut("/events/{eventId:guid}/category",
+            async (Guid eventId, ChangeCategoryRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new ChangeCategoryCommand(eventId, request.CategoryId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         // UC-EV002 – Redigera evenemangsutkast
         app.MapPut("/events/{eventId:guid}",
@@ -150,6 +159,7 @@ public static class EventEndpoints
 }
 
 public record CreateEventRequest(Guid CategoryId, Guid LeadOrganiserId, Guid ConventionId);
+public record ChangeCategoryRequest(Guid CategoryId);
 public record EditEventDraftRequest(string Title, string Description, RegistrationType RegistrationType, string? DropInRules);
 public record AddSessionRequestRequest(string Description, int DurationMinutes, int Seats, StartType StartType);
 public record AddCoOrganiserRequest(Guid PersonId, Guid ConventionId);

@@ -174,3 +174,36 @@
   gap: 8px;
   padding: 4px 0 12px;
 }
+
+.category-info {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.category-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.category-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #999;
+}
+
+.category-value {
+  font-size: 0.95rem;
+}
+
+.category-change-form {
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+  align-items: center;
+
+  mat-form-field { flex: 0 0 280px; }
+}

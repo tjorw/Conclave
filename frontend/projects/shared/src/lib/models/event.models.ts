@@ -14,6 +14,9 @@ export interface EventDto {
   id: string;
   editionId: string;
   categoryId: string;
+  categoryName: string | null;
+  categoryResponsibleId: string | null;
+  categoryResponsibleName: string | null;
   leadOrganiserId: string;
   leadOrganiserName: string | null;
   status: string;

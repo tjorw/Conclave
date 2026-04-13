@@ -11,7 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ConventionService, EventDto, EventService, VenueDto } from 'shared';
+import { CategoryDto, ConventionService, EventDto, EventService, VenueDto } from 'shared';
 
 @Component({
   selector: 'app-event-detail',
@@ -40,15 +40,20 @@ export class EventDetailComponent implements OnInit {
   private readonly conSvc     = inject(ConventionService);
   private readonly fb         = inject(FormBuilder);
 
-  readonly event   = signal<EventDto | null>(null);
-  readonly venues  = signal<VenueDto[]>([]);
-  readonly loading = signal(true);
-  readonly saving  = signal(false);
-  readonly error   = signal<string | null>(null);
+  readonly event      = signal<EventDto | null>(null);
+  readonly venues     = signal<VenueDto[]>([]);
+  readonly categories = signal<CategoryDto[]>([]);
+  readonly loading    = signal(true);
+  readonly saving     = signal(false);
+  readonly error      = signal<string | null>(null);
   readonly showRejectForm        = signal(false);
   readonly showAddRequestForm    = signal(false);
   readonly showAddSessionForm    = signal(false);
   readonly editingSessionId      = signal<string | null>(null);
+
+  readonly categoryForm = this.fb.group({
+    categoryId: ['', Validators.required],
+  });
 
   readonly rejectForm = this.fb.group({
     comment: ['', [Validators.required, Validators.minLength(5)]],
@@ -83,11 +88,28 @@ export class EventDetailComponent implements OnInit {
         this.event.set(e);
         this.loading.set(false);
         this.populateEditForm(e);
+        this.categoryForm.patchValue({ categoryId: e.categoryId });
         this.conSvc.getEdition(e.editionId).subscribe({
-          next: ed => this.venues.set(ed.venues),
+          next: ed => {
+            this.venues.set(ed.venues);
+            this.categories.set(ed.categories);
+          },
         });
       },
       error: () => { this.error.set('Kunde inte hämta evenemanget.'); this.loading.set(false); },
+    });
+  }
+
+  // ── Category ────────────────────────────────────────────────────────────
+
+  changeCategory(): void {
+    const ev = this.event();
+    if (!ev || this.categoryForm.invalid || this.saving()) return;
+    const { categoryId } = this.categoryForm.getRawValue();
+    this.saving.set(true);
+    this.svc.changeCategory(ev.id, categoryId!).subscribe({
+      next: () => { this.saving.set(false); this.reload(); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte byta kategori.'); },
     });
   }
 
