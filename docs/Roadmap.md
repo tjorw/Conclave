@@ -32,6 +32,7 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 - **API-förbättringar** – CORS-policy för Angular-apparna, ConventionDbContext + ApplicationIdentityDbContext auto-migreras vid uppstart
 - **3.1.4 Konventionsstruktur** – Upplagehantering, lokaler, funktionsområden, kategorier med full CRUD; aktiv upplaga i sessionStorage-kontext; tabbar och tabelllistningar
 - **3.1.5 Personregister** – Personlista med sökning, skapa/redigera/avaktivera/återaktivera; admin-flagga; standardmönster för listningssidor dokumenterat
+- **3.1.9 Kontohantering** – `hasAccount`/`isLocked` i PersonDto, skicka återställningslänk, lås/lås upp konto
 - **3.1.7 Bemanningshantering** – Passöversikt per station, skapa/ställa in pass, tilldela/bekräfta/avslå/avboka tilldelningar, staffansökningslista med acceptera/avslå; `GET /editions/{id}/staff-applications` implementerad
 - **3.2.1 Publik scaffold och layout** – ShellComponent med brandad topnav, CSS custom properties, lazy-loadade routes, `EditionService` med APP_INITIALIZER
 - **3.2.2 Hem och program** – Hemsida med hero och CTA-kort, programlista med dagsfilter och kategori-chips, evenemangsdetaljvy med sessionsexpandering; aktiv upplaga styrs av admin via `POST /editions/{id}/set-active`
@@ -167,12 +168,49 @@ Draftprocessen fungerar tekniskt men speglar inte fullt ut hur flödet ska funge
 #### 3.1.7b Bemanningsvy – genomgång och förfining
 Bemanningsvyn fungerar tekniskt men behöver ett dedikerat arbetspass för att genomarbeta flödet ur bemanningskoordinatorns perspektiv – liknande 3.1.6b för evenemangsflödet.
 
-#### 3.1.9 Kontohantering i personregistret
-- Personlistan visar om person har kopplat konto (`hasAccount`-fält i `PersonDto`)
-- Knapp "Skicka återställningslänk" per person → `POST /persons/{id}/send-reset-link` (admin triggar reset-e-post utan att känna till lösenordet)
-- Knapp "Lås konto" / "Lås upp konto" → `UserManager.SetLockoutEnabledAsync` + `SetLockoutEndDateAsync`
-- *Kräver ny backend-endpoint:* `POST /persons/{id}/send-reset-link`
-- *Kräver utökning av* `PersonDto` med `hasAccount: bool`
+#### ~~3.1.9 Kontohantering i personregistret~~ ✓ Klar
+- ~~Personlistan visar om person har kopplat konto (`hasAccount`/`isLocked` i `PersonDto`)~~
+- ~~Knapp "Skicka återställningslänk" per person → `POST /persons/{id}/send-reset-link`~~
+- ~~Knapp "Lås konto" / "Lås upp konto" → `UserManager.SetLockoutEnabledAsync` + `SetLockoutEndDateAsync`~~
+
+#### 3.1.10 Rollmodell per upplaga
+
+Introducerar `PersonEditionRole` – en persons aktiva roll inom en specifik upplaga. Löser problemet med att urvalslistor idag visar hela personregistret utan filtrering.
+
+**Domän och infrastruktur**
+- Ny entitet `PersonEditionRole` i Convention-kontexten med `PersonId`, `EditionId` och `Role` (enum: `Ansvarig`, `Personal`, `Arrangör`, `Besökare`)
+- `IsAdmin` förblir convention-scoped och hanteras separat (oförändrat)
+- EF Core-konfiguration + migration; unique index på `(PersonId, EditionId, Role)`
+- Idempotens gäller: lägg till befintlig roll = no-op, ta bort saknad roll = no-op
+
+**Implicit tilldelning via domain events**
+
+| Roll | Läggs till | Tas bort |
+|------|-----------|---------|
+| `Personal` | `StaffApplicationApproved` | `StaffApplicationRejected` eller ansökan dras tillbaka |
+| `Arrangör` | Evenemang skickas in för granskning | Inga inlämnade/godkända evenemang kvar i upplagan |
+| `Besökare` | Besökarregistrering bekräftad | Alla biljetter i upplagan makulerade |
+
+**Manuell hantering (Ansvarig)**
+- `Ansvarig`-rollen sätts och tas bort manuellt av admin i personlistan
+- Alla roller kan även manuellt repareras via samma endpoints vid behov
+- Nya endpoints:
+  - `POST /editions/{editionId}/persons/{personId}/roles` med `{ role }` – lägger till roll
+  - `DELETE /editions/{editionId}/persons/{personId}/roles/{role}` – tar bort roll
+
+**PersonDto och filtrering**
+- `PersonDto` utökas med `editionRoles: string[]` – rollerna personen har i den upplagekontext som efterfrågas
+- `GET /conventions/{id}/persons?editionId={editionId}` returnerar roller per person
+- Personlistan i admin visar alla med minst en roll i konventets upplagar + admins
+- Urvalslistor filtreras:
+  - Staffkoordinator, eventkoordinator, areas- och kategoriansvariga → `Ansvarig`
+  - Stafftilldelning → `Personal`
+  - Evenemangets arrangörsväljare → `Arrangör`
+
+**Edition 0 / bootstrap**
+- `staffCoordinatorId` och `eventCoordinatorId` på Edition görs valfria – en ny upplaga kan skapas utan att roller finns ännu
+
+*Löser teknisk skuld:* "Skalbart val av ansvariga personer"
 
 #### 3.1.8 Registreringsöversikt
 - Biljettyper: skapa, visa
@@ -305,6 +343,16 @@ Byggs precis innan den frontendsektion som behöver dem.
 - `PersonDto` utökas med `hasAccount: bool` (join mot `identity.users` på `person_id`)
 - `DevDataSeeder` och `ConventionSystemFactory` sätter `EmailConfirmed = true` direkt – kringgår e-postflödet
 
+#### Rollhantering (3.1.10)
+
+| Endpoint | Syfte | Auth |
+|----------|-------|------|
+| `POST /editions/{editionId}/persons/{personId}/roles` | Lägg till roll (idempotent) | IsAdmin |
+| `DELETE /editions/{editionId}/persons/{personId}/roles/{role}` | Ta bort roll (idempotent) | IsAdmin |
+| `GET /conventions/{id}/persons?editionId={editionId}` | Personlista med editionsroller | IsAdmin |
+
+Domain event-handlers som sätter roller implicit registreras i Application-lagret och triggas via befintlig `EventDispatchInterceptor`.
+
 #### Övriga endpoints (övriga 3.x-sektioner)
 
 | Endpoint | Krävs för | Auth |
@@ -326,7 +374,7 @@ Byggs precis innan den frontendsektion som behöver dem.
 
 | Post | Beskrivning | Prioritet |
 |------|-------------|-----------|
-| **Skalbart val av ansvariga personer** | När personlistan växer behövs en bättre lösning än enkel dropdown för att välja ansvariga (t.ex. sökbar/autocomplete-väljare, filtrering på aktiv status och begränsning till relevanta kandidater). Utvärdera även om en särskild roll ska krävas för att kunna tilldelas som ansvarig. | Medel |
+| ~~**Skalbart val av ansvariga personer**~~ | ~~Utvärderat och planerat: löses i 3.1.10 via `Ansvarig`-rollen och rollfiltrerad urvalslista.~~ | ~~Medel~~ – *åtgärdas i 3.1.10* |
 | `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |
 | Social inloggning (OAuth) | ASP.NET Identity stöder det men inte implementerat | Låg |
 | **Feed-cachning och API-nyckel** | Feed-endpointsen är öppna och läser från databasen vid varje anrop. Vid hög trafik (t.ex. om ett CMS pollar ofta) bör svaren cachas (HTTP-headers `Cache-Control`/`ETag`, CDN-lager eller Redis). Vid behov av skyddade feeds kan en API-nyckel i header eller query-parameter läggas till utan att ändra URL-strukturen. | Medel – utvärdera inför produktion |
@@ -356,8 +404,8 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 ## Nästa konkreta steg (förslag)
 
-1. **Fas 3.2.3** – Konton, inloggning och profil: backend-endpoints + publik app (registrering, e-postbekräftelse, glömt lösenord, lösenordsbyte, profilsida)
-2. **Fas 3.1.9** – Kontohantering i admin: `hasAccount` i personlistan, skicka återställningslänk
+1. **Fas 3.1.10** – Rollmodell per upplaga: `PersonEditionRole`-tabell, implicit tilldelning via domain events, manuell `Ansvarig`-hantering, rollfiltrerade urvalslistor
+2. **Fas 3.2.3** – Konton, inloggning och profil: backend-endpoints + publik app (registrering, e-postbekräftelse, glömt lösenord, lösenordsbyte, profilsida)
 3. **Fas 3.1.8** – Registreringsöversikt i admin (biljettyper, besökarregistreringar)
 4. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
 5. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
