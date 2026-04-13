@@ -52,6 +52,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'staffing/area/:areaId',
+        loadComponent: () =>
+          import('./features/staffing/staff-area-detail/staff-area-detail.component').then(
+            m => m.StaffAreaDetailComponent
+          ),
+      },
+      {
         path: 'feeds',
         loadComponent: () =>
           import('./features/feeds/feeds.component').then(m => m.FeedsComponent),
