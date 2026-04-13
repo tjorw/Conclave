@@ -4,8 +4,6 @@
       "Bash(dotnet new:*)",
       "Bash(dotnet sln add:*)",
       "Bash(dotnet add:*)",
-      "Bash(mkdir -p src/ConventionSystem.Domain/Convention src/ConventionSystem.Domain/Event src/ConventionSystem.Domain/Registration src/ConventionSystem.Domain/Volunteer src/ConventionSystem.Application/Convention src/ConventionSystem.Application/Event src/ConventionSystem.Application/Registration src/ConventionSystem.Application/Volunteer)",
-      "Bash(rm -f src/ConventionSystem.Domain/Class1.cs src/ConventionSystem.Application/Class1.cs src/ConventionSystem.Infrastructure/Class1.cs)",
       "Bash(dotnet build:*)",
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
@@ -18,9 +16,6 @@
       "Bash(dotnet ef:*)",
       "Bash(dotnet test:*)",
       "Bash(xargs grep:*)",
-      "Bash(grep -n \"MapGet\\\\|MapPost\\\\|MapPut\\\\|MapDelete\" /d/Dev/Konvent/src/ConventionSystem.Api/Endpoints/*.cs)",
-      "Bash(grep -n \"MapGet\" /d/Dev/Konvent/src/ConventionSystem.Api/Endpoints/*.cs)",
-      "Bash(grep -oE \"ConventionSystem\\\\.Application\\\\.Tests\\\\\\\\\\\\\\\\[A-Za-z]+\\\\\\\\\\\\\\\\[A-Za-z]+\\\\\\\\\\\\\\\\[A-Za-z]+\\\\.cs\")",
       "Bash(grep:*)",
       "Bash(npm list:*)",
       "Bash(npm install:*)",
@@ -31,8 +26,11 @@
       "Bash(ng build:*)",
       "Bash(cp -r src backend/src)",
       "Bash(cp -r tests backend/tests)",
-      "Bash(cp ConventionSystem.sln backend/ConventionSystem.sln)",
-      "Bash(npx ng:*)"
+      "Bash(npx ng:*)",
+      "Bash(xargs ls:*)",
+      "Bash(ls:*)",
+      "Bash(dotnet list:*)",
+      "Bash(find:*)"
     ]
   }
 }
