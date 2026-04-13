@@ -1,11 +1,20 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { routes } from './app.routes';
-import { ENVIRONMENT, conventionInterceptor, authInterceptor } from 'shared';
+import { ENVIRONMENT, conventionInterceptor, authInterceptor, ConventionDto } from 'shared';
 import { environment } from '../environments/environment';
+
+function loadConventionId(http: HttpClient) {
+  return () =>
+    http.get<ConventionDto>(`${environment.apiBaseUrl}/convention`).toPromise().then(c => {
+      if (c) environment.conventionId = c.id;
+    }).catch(() => {
+      // Faller tillbaka på värdet i environment.ts om API:t inte svarar
+    });
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -14,5 +23,11 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([conventionInterceptor, authInterceptor])),
     { provide: ENVIRONMENT, useValue: environment },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: loadConventionId,
+      deps: [HttpClient],
+      multi: true,
+    },
   ],
 };

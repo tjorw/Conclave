@@ -1,10 +1,5 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { ENVIRONMENT } from '../environment/environment.token';
 
-export const conventionInterceptor: HttpInterceptorFn = (req, next) => {
-  const env = inject(ENVIRONMENT);
-  return next(req.clone({
-    setHeaders: { 'X-Convention-Id': env.conventionId }
-  }));
-};
+// Behålls för bakåtkompatibilitet med app.config – är nu en no-op.
+// X-Convention-Id-headern togs bort när systemet gick från multi-tenant till deploy-per-konvention.
+export const conventionInterceptor: HttpInterceptorFn = (req, next) => next(req);

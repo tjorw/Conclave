@@ -1,7 +1,7 @@
 namespace ConventionSystem.Integration.Tests.Infrastructure;
 
 // En container delas av alla integrationstestklasser i samlingen.
-// Varje test provisionerar sin egna konvention och databas för isolering.
+// Alla tester körs mot samma seedade konvention; isolering sker per testkonto.
 [CollectionDefinition(Name)]
 public sealed class ConventionTestCollection : ICollectionFixture<ConventionSystemFactory>
 {

@@ -11,7 +11,7 @@ Den här filen styr hur Claude Code arbetar i det här projektet.
 
 - **Backend:** .NET 9, C# – Clean Architecture med DDD. Se `docs/Backend.md` för arkitekturprinciper och kodmönster.
 - **ORM:** Entity Framework Core
-- **Databas:** SQL Server (multi-tenant – en databas per konvention + systemdatabas + identitetsdatabas)
+- **Databas:** SQL Server (deploy-per-konvention – en databas per instans, `dbo`-schema för domändata, `identity`-schema för ASP.NET Identity)
 - **Frontend:** Angular (separata appar för admin och publik vy) – se `docs/Frontend.md` för arkitekturprinciper
 - **Auth:** ASP.NET Identity med stöd för social inloggning (OAuth)
 - **API:** REST, minimal API-endpoints
@@ -63,8 +63,8 @@ dotnet run --project backend/src/ConventionSystem.Api
 Tre infrastrukturskikt:
 
 - **Klienter:** Admin-app (Angular, rollbaserad), publik vy (Angular, konventionsstyld), externt CMS (REST-feed, läsbart)
-- **API-lager (.NET):** Tenant-router (löser rätt databas per request via domän/header), Auth (JWT + OAuth), publik REST (feed + webhooks)
-- **Datanivå:** Tenant-databaser (en per konvention), systemdatabas (tenant-register och routing), identitetsdatabas (konton och autentisering)
+- **API-lager (.NET):** Auth (JWT + OAuth), publik REST (feed + webhooks)
+- **Datanivå:** En databas per deploy (domändata i `dbo`-schema, ASP.NET Identity i `identity`-schema)
 
 ### Clean Architecture-lager
 

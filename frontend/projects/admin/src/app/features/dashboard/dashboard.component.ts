@@ -52,7 +52,7 @@ export class DashboardComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.conventionService.getConvention().subscribe({
+    this.conventionService.getCurrentConvention().subscribe({
       next: c => { this.convention.set(c); this.loading.set(false); },
       error: () => { this.error.set('Kunde inte hämta konventionsdata.'); this.loading.set(false); },
     });

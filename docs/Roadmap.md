@@ -9,13 +9,13 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 ### Klar – backend-grund
 - **Domänmodell** – alla fyra bounded contexts implementerade (Convention, Event, Registration, Staff) med aggregate roots, entiteter, value objects och domain events
 - **CQRS-hanterare** – commands och queries för alla use cases (UC001–UC002b, UC003–UC012, UC-ST001–ST006, UC-TK001–TK004, UC-VR001–VR003, UC-SA001–SA007, UC-SR001–SR002, UC-EV001–EV011)
-- **Infrastruktur** – EF Core med tre databaser (konventionsdatabas, systemdatabas, identitetsdatabas), EventDispatchInterceptor, DomainEventLog
-- **Auth-stack** – JWT-middleware, ASP.NET Identity, `POST /auth/login`, tenant-resolution via `X-Convention-Id`-header
-- **UC002** – identifiera eller skapa person vid inloggning
+- **Infrastruktur** – EF Core med en databas per deploy (`dbo`-schema för domändata, `identity`-schema för ASP.NET Identity), EventDispatchInterceptor, DomainEventLog
+- **Auth-stack** – JWT-middleware, ASP.NET Identity, `POST /auth/login`
+- **UC002** – identifiera eller skapa person vid inloggning (`PersonId` direkt på `ApplicationUser`)
 - **Minimal API** – endpoints för alla ovanstående use cases
 
 ### Klar – Fas 1 (end-to-end)
-- **1.1 Tenant-provisionering** – `POST /system/conventions` skapar konvention i ConventionDb, tenant-post i SystemDb, `ApplicationUser` i IdentityDb och `ConventionUserLink`
+- **1.1 Konventionsinitiering** – `CreateConventionCommand` skapar konvention och admin-person; `ApplicationUser` med `PersonId` skapas via `UserManager` vid seeding/onboarding
 - **1.2 Profilkomplettering** – `PUT /me/profile` låter inloggad användare uppdatera namn, e-post och telefon
 - **1.3 Rollbaserad auktorisering** – `is_admin`-claim i JWT, `IsAdmin`-policy, admin-endpoints skyddade; domänägarskapskontroller görs inline i handlers
 - **1.4 Global felhantering** – `GlobalExceptionHandler` med ProblemDetails (RFC 7807): `ArgumentException` → 400, `InvalidOperationException` → 422, `UnauthorizedAccessException` → 401, `KeyNotFoundException` → 404
@@ -23,13 +23,13 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 ### Klar – Fas 2
 - **2.1 E-postnotifikationer** – `IEmailService` med handlers för `VisitorRegistrationConfirmed`, `StaffApplicationReceived/Accepted/Rejected`, `VersionApproved/Rejected`; `LoggingEmailService` som platshållare tills SMTP/SendGrid kopplas in
 - **2.2 Publik feed-API** – `GET /feed/editions/{id}` och `GET /feed/events/{id}`, anonyma, filtrerar bort intern data
-- **2.3 Integrationstester** – 14 tester mot SQL Server (Testcontainers), täcker tenant-resolution, UC002, auth-flödet och publik feed; per-test isolerade databaser via `ProvisionAsync`
+- **2.3 Integrationstester** – tester mot SQL Server (Testcontainers), täcker UC002 (first login), auth-flödet och publik feed; delad konvention per testklass, isolering via unika testkonton
 
 ### Klar – Fas 3 (delvis)
-- **3.0 Workspace och delad infrastruktur** – Angular monorepo med admin-app, publik-app och delat bibliotek; `AuthService` (signals), `authGuard`, `adminGuard`, `ConventionInterceptor`, `AuthInterceptor`, alla API-modeller
+- **3.0 Workspace och delad infrastruktur** – Angular monorepo med admin-app, publik-app och delat bibliotek; `AuthService` (signals), `authGuard`, `adminGuard`, `AuthInterceptor`, alla API-modeller
 - **3.1.1 Scaffold och layout** – App-shell med sidenav, toolbar, logout; lazy-loadade routes med `authGuard` + `adminGuard`
 - **3.1.2 Inloggning** – Inloggningsformulär med Angular Material Reactive Forms, JWT sparas i sessionStorage, redirect vid lyckad inloggning, logout
-- **API-förbättringar** – CORS-policy för Angular-apparna, SystemDb/IdentityDb auto-migreras vid uppstart, ConventionDb auto-migreras vid provisioning
+- **API-förbättringar** – CORS-policy för Angular-apparna, ConventionDbContext + ApplicationIdentityDbContext auto-migreras vid uppstart
 - **3.1.4 Konventionsstruktur** – Upplagehantering, lokaler, funktionsområden, kategorier med full CRUD; aktiv upplaga i sessionStorage-kontext; tabbar och tabelllistningar
 - **3.1.5 Personregister** – Personlista med sökning, skapa/redigera/avaktivera/återaktivera; admin-flagga; standardmönster för listningssidor dokumenterat
 - **3.1.7 Bemanningshantering** – Passöversikt per station, skapa/ställa in pass, tilldela/bekräfta/avslå/avboka tilldelningar, staffansökningslista med acceptera/avslå; `GET /editions/{id}/staff-applications` implementerad
@@ -81,11 +81,9 @@ frontend/
 └── package.json
 ```
 
-### Tenant-kontext i Angular
+### Konventions-ID i Angular
 
-Konventions-ID konfigureras per driftsättning via `environment.ts`. HTTP-interceptorn lägger automatiskt till `X-Convention-Id`-headern på alla anrop. Den publika appen deployas en gång per konvention med rätt ID inbakat.
-
-> **OBS – måste lösas inför produktion:** Nuvarande modell kräver en unik deploy per konvention enbart för att byta `conventionId`. Se teknisk skuld: *Tenant-routing via domän*.
+Konventions-ID konfigureras per driftsättning via `environment.ts`. Det används för att konstruera URL:er till feed-endpointarna (`/feed/{conventionId}/...`). Varje konvention är en separat deploy – ingen delad infrastruktur.
 
 ---
 
@@ -106,7 +104,7 @@ Konventions-ID konfigureras per driftsättning via `environment.ts`. HTTP-interc
 |-----|---------|
 | `api/models/` | TypeScript-interface för alla API-svar (EditionDto, EventDto, PersonDto etc.) |
 | `api/services/` | Injectable-tjänster som wrappar varje endpoint-grupp (AuthService, EditionService, EventService etc.) |
-| `interceptors/` | `ConventionInterceptor` (lägger till X-Convention-Id), `AuthInterceptor` (lägger till Bearer token) |
+| `interceptors/` | `ConventionInterceptor` (används för feed-URL-prefix med `conventionId`), `AuthInterceptor` (lägger till Bearer token) |
 | `auth/` | `AuthService`: login, logout, tokenlagring (sessionStorage), JWT-parsing, `isAdmin$` signal |
 | `guards/` | `authGuard` (kräver inloggning), `adminGuard` (kräver `is_admin`-claim) |
 | `environment/` | Typade miljövariabler inkl. `apiBaseUrl` och `conventionId` |
@@ -273,14 +271,13 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 
 | Post | Beskrivning | Prioritet |
 |------|-------------|-----------|
-| **Skydda provisioning-endpoint** | `POST /system/conventions` är oskyddad – vem som helst kan skapa tenants och databaser. Måste skyddas med API-nyckel eller system-admin-roll innan produktion. | **Hög – blockar produktion** |
-| **Tenant-routing via domän** | Idag: `conventionId` hårdkodat i `environment.ts` → unik deploy per konvention. Ska vara: TenantMiddleware löser tenant från HTTP-domän (subdomän); frontend resolvar `conventionId` dynamiskt från API:t baserat på `window.location.hostname`. Tenant-tabellen har redan ett `Domain`-fält. | **Hög – blockar produktion** |
 | **Skalbart val av ansvariga personer** | När personlistan växer behövs en bättre lösning än enkel dropdown för att välja ansvariga (t.ex. sökbar/autocomplete-väljare, filtrering på aktiv status och begränsning till relevanta kandidater). Utvärdera även om en särskild roll ska krävas för att kunna tilldelas som ansvarig. | Medel |
 | `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |
 | Social inloggning (OAuth) | ASP.NET Identity stöder det men inte implementerat | Låg |
 | **Feed-cachning och API-nyckel** | Feed-endpointsen är öppna och läser från databasen vid varje anrop. Vid hög trafik (t.ex. om ett CMS pollar ofta) bör svaren cachas (HTTP-headers `Cache-Control`/`ETag`, CDN-lager eller Redis). Vid behov av skyddade feeds kan en API-nyckel i header eller query-parameter läggas till utan att ändra URL-strukturen. | Medel – utvärdera inför produktion |
 | `CreatePersonCommand` vs UC002 | Två vägar att skapa en person (admin-väg och auth-väg). Kan leda till inkonsekvens om e-post-uniqueness-kontrollen blockerar auth-skapande | Medel – se till att UC002-vägen aldrig kolliderar |
-| Idempotens i login-flödet | Race condition: två parallella första-inloggningar kan försöka skapa person+länk simultaneously | Låg – unikt index är sista skyddet |
+| Idempotens i login-flödet | Race condition: två parallella första-inloggningar kan försöka skapa person simultaneously | Låg – unikt index är sista skyddet |
+| `ICurrentUser` i bakgrundsjobb | `ICurrentUser` läser från `HttpContext` och fungerar inte utanför HTTP-request-scopet. Bakgrundsjobb och seeders måste anropa domänmodellen direkt och förbigå handlers som kräver `ICurrentUser`. | Medel – dokumentera mönstret |
 
 ---
 
@@ -288,18 +285,17 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 
 ### 4.1 Demo-deploy (ett fiktivt konvent)
 - Bygg-pipeline: Angular-appar (admin + publik) byggs in i `wwwroot` som en del av .NET publish-steget
-- En SQL Server-instans med tre databaser (SystemRegistry, Identity, ett demo-konvent)
+- En SQL Server-instans med en databas (`dbo` för domändata, `identity` för ASP.NET Identity)
 - Self-contained .NET-publish deployad till en host (VPS, Azure App Service eller liknande)
-- Seed-script för fiktivt demo-konvent med exempeldata
+- `DevDataSeeder` körs i `Development`-miljö och skapar demo-konvention med exempeldata
 - Hemligheter via miljövariabler eller Key Vault (ej `appsettings`)
 
-### 4.2 Konvent-onboarding (självbetjäning)
-Idag skapas konvent via `POST /system/conventions` – ett oskyddat, manuellt API-anrop. Inför produktion ska det finnas ett riktigt onboarding-flöde:
-- Registreringsformulär för nytt konvent (namn, slug, kontakt-e-post)
-- Systemadmin-vy för att godkänna/avvisa nya konvent
-- Automatiserad databas-provisionering vid godkännande
+### 4.2 Konvent-onboarding
+Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny instans:
+- Ny databas provisioneras (kör EF Core-migrationer mot `DefaultConnection`)
+- `environment.ts` konfigureras med rätt `conventionId` och `apiBaseUrl`
+- Admin-konto skapas via `CreateConventionCommand` + `UserManager`
 - Välkomstmejl med inloggningsuppgifter för konventets admin
-- *Beroende:* kräver att `POST /system/conventions` skyddas (se teknisk skuld) och att domänbaserad tenant-routing är klar
 
 ---
 
@@ -310,5 +306,4 @@ Idag skapas konvent via `POST /system/conventions` – ett oskyddat, manuellt AP
 3. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
 4. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
 5. **Fas 3.2.4** – Besökarregistrering (publik vy)
-6. **Pre-produktion** – Skydda provisioning-endpoint + domänbaserad tenant-routing
-7. **Fas 4.1** – Demo-deploy med fiktivt konvent
+6. **Fas 4.1** – Demo-deploy med fiktivt konvent

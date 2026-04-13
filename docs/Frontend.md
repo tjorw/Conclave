@@ -389,7 +389,7 @@ deploy via `environment.ts` → `environment.brandPrimary` /
 
 ---
 
-### Tenant och edition-kontext
+### Edition-kontext
 
 Den publika appen visar alltid den aktiva/publicerade upplagan. Inget
 `EditionContextService` med val bland upplagor (till skillnad från admin).

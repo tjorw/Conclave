@@ -57,8 +57,8 @@ Valfri användare som startar ett registreringsflöde
 4. Registreringsflödet fortsätter
 
 ## Affärsregler
-- Ett personkonto är alltid kopplat till en konvention
-- Samma fysiska person kan ha separata personkonton i olika konventioner
+- Ett personkonto är alltid kopplat till konventionen (deploy-per-konvention – ingen delad identity)
+- `ApplicationUser.PersonId` kopplar identitetskontot till `Person`-aggregatet; sätts vid första inloggningen
 - Personskapandet är en bieffekt av autentisering – aldrig en fristående operation för slutanvändare
 - Namn och telefon samlas in som en del av registreringsflödet om de inte redan finns på personkontot
 

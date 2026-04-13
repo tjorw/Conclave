@@ -7,12 +7,20 @@ using ConventionSystem.Application.Convention.Queries.ListEditions;
 using ConventionSystem.Application.Convention.Queries.ListPersons;
 using MediatR;
 
+
 namespace ConventionSystem.Api.Endpoints;
 
 public static class ConventionEndpoints
 {
     public static IEndpointRouteBuilder MapConventionEndpoints(this IEndpointRouteBuilder app)
     {
+        // Hämtar den enda konventionen för denna instans – ingen ID krävs (deploy-per-konvention)
+        app.MapGet("/convention", async (ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetCurrentConventionQuery(), ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        });
+
         var group = app.MapGroup("/conventions");
 
         group.MapPost("/", async (CreateConventionRequest request, ISender sender, CancellationToken ct) =>

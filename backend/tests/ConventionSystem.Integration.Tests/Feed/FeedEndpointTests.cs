@@ -8,8 +8,10 @@ public sealed class FeedEndpointTests(ConventionSystemFactory factory) : Integra
     [Fact]
     public async Task GetEditionFeed_UnknownId_Returns404()
     {
+        var conventionId = await Factory.GetConventionIdAsync();
         var client = Factory.CreateClient();
-        var response = await client.GetAsync($"/feed/editions/{Guid.NewGuid()}");
+
+        var response = await client.GetAsync($"/feed/{conventionId}/editions/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -17,22 +19,22 @@ public sealed class FeedEndpointTests(ConventionSystemFactory factory) : Integra
     [Fact]
     public async Task GetEventFeed_UnknownId_Returns404()
     {
+        var conventionId = await Factory.GetConventionIdAsync();
         var client = Factory.CreateClient();
-        var response = await client.GetAsync($"/feed/events/{Guid.NewGuid()}");
+
+        var response = await client.GetAsync($"/feed/{conventionId}/events/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
-    public async Task GetEditionFeed_NoAuthorizationHeader_Returns200OrNotFound()
+    public async Task GetEditionFeed_NoAuthorizationHeader_NeverReturns401()
     {
-        // Verifiera att feed-endpoints inte kräver autentisering – ingen 401 ska returneras.
-        // (Endpoint finns men eventuell data saknas – 404 är OK, men aldrig 401.)
-        var (conventionId, _, _, _) = await ProvisionAsync();
-
+        // Feed-endpoints kräver inte autentisering
+        var conventionId = await Factory.GetConventionIdAsync();
         var client = Factory.CreateClient();
-        client.DefaultRequestHeaders.Add("X-Convention-Id", conventionId.ToString());
-        var response = await client.GetAsync($"/feed/editions/{Guid.NewGuid()}");
+
+        var response = await client.GetAsync($"/feed/{conventionId}/editions/{Guid.NewGuid()}");
 
         Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
     }

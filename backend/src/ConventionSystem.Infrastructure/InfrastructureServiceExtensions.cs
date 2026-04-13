@@ -8,14 +8,12 @@ using ConventionSystem.Domain.Registration.Services;
 using ConventionSystem.Infrastructure.Dispatching;
 using ConventionSystem.Infrastructure.Email;
 using ConventionSystem.Infrastructure.Identity;
-using ConventionSystem.Infrastructure.MultiTenancy;
 using ConventionSystem.Infrastructure.Persistence;
 using ConventionSystem.Infrastructure.Persistence.Repositories;
 using ConventionSystem.Infrastructure.Registration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace ConventionSystem.Infrastructure;
 
@@ -25,9 +23,6 @@ public static class InfrastructureServiceExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddScoped<TenantContext>();
-        services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
-
         services.AddScoped<IConventionRepository, ConventionRepository>();
         services.AddScoped<IPersonRepository, PersonRepository>();
         services.AddScoped<IEditionRepository, EditionRepository>();
@@ -48,18 +43,14 @@ public static class InfrastructureServiceExtensions
 
         services.AddDbContext<ConventionDbContext>((provider, options) =>
         {
-            var tenantContext = provider.GetRequiredService<ITenantContext>();
             var interceptor = provider.GetRequiredService<EventDispatchInterceptor>();
             options
-                .UseSqlServer(tenantContext.ConnectionString)
+                .UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
                 .AddInterceptors(interceptor);
         });
 
-        services.AddDbContext<SystemDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("SystemDb")));
-
         services.AddDbContext<ApplicationIdentityDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("IdentityDb")));
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddIdentityCore<ApplicationUser>(options =>
             {

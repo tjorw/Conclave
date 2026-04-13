@@ -214,6 +214,11 @@ public interface ICurrentUser
 }
 ```
 
+**Begränsning:** `ICurrentUser` fungerar bara inom ett HTTP-request-scope.
+Seeders, bakgrundsjobb och integrationstest-setup får **inte** anropa handlers
+som injicerar `ICurrentUser` – de måste istället anropa domänmodellen direkt
+och kalla `repository.MarkAsAdded(entity)` + `repository.SaveAsync()` manuellt.
+
 ### Domain event handlers
 
 Implementerar `IDomainEventHandler<TEvent>`. Placeras i applikationslagret

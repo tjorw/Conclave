@@ -91,6 +91,10 @@ export class ConventionService {
     return `${this.env.apiBaseUrl}/conventions/${this.env.conventionId}`;
   }
 
+  getCurrentConvention() {
+    return this.http.get<ConventionDto>(`${this.env.apiBaseUrl}/convention`);
+  }
+
   getConvention() {
     return this.http.get<ConventionDto>(this.base);
   }

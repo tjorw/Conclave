@@ -4,5 +4,5 @@ namespace ConventionSystem.Infrastructure.Identity;
 
 public sealed class ApplicationUser : IdentityUser
 {
-    public ICollection<ConventionUserLink> ConventionLinks { get; } = [];
+    public Guid? PersonId { get; set; }
 }

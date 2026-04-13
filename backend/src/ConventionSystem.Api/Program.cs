@@ -1,9 +1,9 @@
 using ConventionSystem.Api.Auth;
+using ConventionSystem.Api.Middleware;
 using ConventionSystem.Application;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Api.DevData;
 using ConventionSystem.Api.Endpoints;
-using ConventionSystem.Api.Middleware;
 using ConventionSystem.Api.Services;
 using ConventionSystem.Infrastructure;
 using ConventionSystem.Infrastructure.Persistence;
@@ -63,10 +63,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Migrera systemdatabaserna automatiskt vid uppstart
+// Migrera databaser automatiskt vid uppstart
 using (var scope = app.Services.CreateScope())
 {
-    await scope.ServiceProvider.GetRequiredService<SystemDbContext>().Database.MigrateAsync();
+    await scope.ServiceProvider.GetRequiredService<ConventionDbContext>().Database.MigrateAsync();
     await scope.ServiceProvider.GetRequiredService<ApplicationIdentityDbContext>().Database.MigrateAsync();
 }
 
@@ -86,12 +86,10 @@ app.UseHttpsRedirection();
 app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<TenantMiddleware>();
 
 app.MapAuthEndpoints();
 app.MapMeEndpoints();
 app.MapFeedEndpoints();
-app.MapSystemEndpoints();
 app.MapConventionEndpoints();
 app.MapPersonEndpoints();
 app.MapEditionEndpoints();

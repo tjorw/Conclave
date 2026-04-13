@@ -1,21 +1,11 @@
 using ConventionSystem.Application.Convention.Abstractions;
-using ConventionSystem.Application.Convention.Commands.AddAdministrator;
-using ConventionSystem.Application.Convention.Commands.CreateCategory;
 using ConventionSystem.Application.Convention.Commands.CreateConvention;
-using ConventionSystem.Application.Convention.Commands.CreateEdition;
-using ConventionSystem.Application.Convention.Commands.CreatePerson;
-using ConventionSystem.Application.Convention.Commands.CreateStaffArea;
-using ConventionSystem.Application.Convention.Commands.CreateStation;
-using ConventionSystem.Application.Convention.Commands.CreateVenue;
-using ConventionSystem.Application.Convention.Commands.PublishEdition;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Infrastructure.Identity;
-using ConventionSystem.Infrastructure.MultiTenancy;
 using ConventionSystem.Infrastructure.Persistence;
-using ConventionSystem.Infrastructure.System;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConventionSystem.Api.DevData;
@@ -24,107 +14,93 @@ public static class DevDataSeeder
 {
     private const string AdminEmail = "admin@demo.se";
     private const string AdminPassword = "Admin123!";
-    private const string ConventionSlug = "demo";
 
     public static async Task SeedAsync(IServiceProvider appServices, IConfiguration config)
     {
         await using var scope = appServices.CreateAsyncScope();
         var sp = scope.ServiceProvider;
 
-        var systemDb = sp.GetRequiredService<SystemDbContext>();
+        var conventionDb = sp.GetRequiredService<ConventionDbContext>();
         var logger = appServices.GetRequiredService<ILogger<Program>>();
 
-        // Migrera alltid – idempotent och nödvändigt vid nya migrationer
-        var connStr = DeriveConnectionString(config, "ConventionDemo");
-        var dbOptions = new DbContextOptionsBuilder<ConventionDbContext>()
-            .UseSqlServer(connStr).Options;
-        await using (var db = new ConventionDbContext(dbOptions))
-            await db.Database.MigrateAsync();
-
-        if (await systemDb.Tenants.AnyAsync(t => t.Slug == ConventionSlug))
+        // Hoppa över seeding om konvention redan finns
+        if (await conventionDb.Conventions.AnyAsync())
             return;
 
         logger.LogInformation("Seeder: skapar demo-data...");
 
         var conventionId = Guid.CreateVersion7();
-
-        // Lös tenant-kontexten för scopet så att ConventionDbContext pekar rätt
-        var tenantContext = sp.GetRequiredService<TenantContext>();
-        tenantContext.Resolve(conventionId, connStr);
-
         var sender = sp.GetRequiredService<ISender>();
-
-        // Konvention + admin-person
-        await sender.Send(new CreateConventionCommand(
-            "Conclave Demo", ConventionSlug, "Admin Demo", AdminEmail, conventionId));
-
         var personRepo = sp.GetRequiredService<IPersonRepository>();
+        var conventionRepo = sp.GetRequiredService<IConventionRepository>();
+        var editionRepo = sp.GetRequiredService<IEditionRepository>();
+
+        // Konvention + admin-person via command (kräver ej auth)
+        await sender.Send(new CreateConventionCommand(
+            "Conclave Demo", "demo", "Admin Demo", AdminEmail, conventionId));
+
         var adminPerson = await personRepo.FindByEmailInConventionAsync(
             new ConventionId(conventionId), AdminEmail);
 
         // Identity-konto för admin
         var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
-        var identityDb = sp.GetRequiredService<ApplicationIdentityDbContext>();
-        var user = new ApplicationUser { UserName = AdminEmail, Email = AdminEmail };
+        var user = new ApplicationUser
+        {
+            UserName = AdminEmail,
+            Email = AdminEmail,
+            PersonId = adminPerson!.Id.Value
+        };
         await userManager.CreateAsync(user, AdminPassword);
-        await identityDb.ConventionUserLinks.AddAsync(
-            ConventionUserLink.Create(user.Id, conventionId, adminPerson!.Id.Value));
-        await identityDb.SaveChangesAsync();
 
-        // Tenant-post
-        await systemDb.Tenants.AddAsync(Tenant.Create(conventionId, ConventionSlug, connStr, null));
-        await systemDb.SaveChangesAsync();
+        // Hämta konventionen för att använda domänmodellen direkt (bypass MediatR/auth)
+        var convention = await conventionRepo.GetSingleAsync();
 
-        // Koordinatörer
-        var staffCoordId = await sender.Send(new CreatePersonCommand(
-            conventionId, "Saga Svensson", "saga@demo.se", null));
-        var eventCoordId = await sender.Send(new CreatePersonCommand(
-            conventionId, "Erik Eriksson", "erik@demo.se", null));
+        // Koordinatörer – skapas direkt via domänmodellen
+        var staffCoord = convention!.CreatePerson("Saga Svensson", "saga@demo.se");
+        var eventCoord = convention.CreatePerson("Erik Eriksson", "erik@demo.se");
+        await personRepo.AddAndSaveAsync(staffCoord);
+        await personRepo.AddAndSaveAsync(eventCoord);
 
         // Upplaga
-        var editionId = await sender.Send(new CreateEditionCommand(
-            conventionId,
-            "Sommarcon 2026",
-            new DateOnly(2026, 8, 1),
-            new DateOnly(2026, 8, 3),
-            staffCoordId,
-            eventCoordId));
+        var period = new DatePeriod(new DateOnly(2026, 8, 1), new DateOnly(2026, 8, 3));
+        var edition = convention.CreateEdition("Sommarcon 2026", period, staffCoord.Id, eventCoord.Id);
+        await editionRepo.AddAndSaveAsync(edition);
 
-        // Lokaler
-        await sender.Send(new CreateVenueCommand(editionId, "Stora salen", "Huvudbyggnaden", "Konventionets huvudsal"));
-        await sender.Send(new CreateVenueCommand(editionId, "Spelrummet", "Annexet", null));
+        // Lokaler (MarkAsAdded behövs eftersom EF Core inte autodetekterar ändringar i privata listor)
+        var storaSalen = edition.CreateVenue("Stora salen", "Huvudbyggnaden", "Konventionets huvudsal");
+        editionRepo.MarkAsAdded(storaSalen);
+        var spelrummet = edition.CreateVenue("Spelrummet", "Annexet", null);
+        editionRepo.MarkAsAdded(spelrummet);
 
         // Funktionsområden och stationer
-        var receptionId = await sender.Send(new CreateStaffAreaCommand(
-            editionId, "Reception", "Välkomnande och ackreditering", adminPerson.Id.Value));
-        await sender.Send(new CreateStationCommand(editionId, "Nordingång", null, receptionId));
-        await sender.Send(new CreateStationCommand(editionId, "Söderingång", null, receptionId));
+        var reception = edition.CreateStaffArea("Reception", adminPerson.Id, "Välkomnande och ackreditering");
+        editionRepo.MarkAsAdded(reception);
+        var nordingång = edition.CreateStation("Nordingång", reception.Id);
+        editionRepo.MarkAsAdded(nordingång);
+        var söderingång = edition.CreateStation("Söderingång", reception.Id);
+        editionRepo.MarkAsAdded(söderingång);
 
-        var spelsupportId = await sender.Send(new CreateStaffAreaCommand(
-            editionId, "Spelsupport", "Hjälp med spel och evenemang", adminPerson.Id.Value));
-        await sender.Send(new CreateStationCommand(editionId, "Sal A", null, spelsupportId));
-        await sender.Send(new CreateStationCommand(editionId, "Sal B", null, spelsupportId));
+        var spelsupport = edition.CreateStaffArea("Spelsupport", adminPerson.Id, "Hjälp med spel och evenemang");
+        editionRepo.MarkAsAdded(spelsupport);
+        var salA = edition.CreateStation("Sal A", spelsupport.Id);
+        editionRepo.MarkAsAdded(salA);
+        var salB = edition.CreateStation("Sal B", spelsupport.Id);
+        editionRepo.MarkAsAdded(salB);
 
         // Kategorier
-        await sender.Send(new CreateCategoryCommand(
-            editionId, "Rollspel", "Pen & paper-rollspel", adminPerson.Id.Value));
-        await sender.Send(new CreateCategoryCommand(
-            editionId, "Brädspel", "Moderna och klassiska brädspel", adminPerson.Id.Value));
-        await sender.Send(new CreateCategoryCommand(
-            editionId, "Lajv", "Levande rollspel", adminPerson.Id.Value));
+        var rollspel = edition.CreateCategory("Rollspel", adminPerson.Id, "Pen & paper-rollspel");
+        editionRepo.MarkAsAdded(rollspel);
+        var brädspel = edition.CreateCategory("Brädspel", adminPerson.Id, "Moderna och klassiska brädspel");
+        editionRepo.MarkAsAdded(brädspel);
+        var lajv = edition.CreateCategory("Lajv", adminPerson.Id, "Levande rollspel");
+        editionRepo.MarkAsAdded(lajv);
 
         // Publicera upplagan
-        await sender.Send(new PublishEditionCommand(editionId));
+        edition.Publish(adminPerson.Id);
+        await editionRepo.SaveAsync();
 
         logger.LogInformation(
             "Seeder: demo-konvention skapad (id={ConventionId}). Logga in med {Email} / {Password}",
             conventionId, AdminEmail, AdminPassword);
-    }
-
-    private static string DeriveConnectionString(IConfiguration config, string database)
-    {
-        var systemConnStr = config.GetConnectionString("SystemDb")
-            ?? throw new InvalidOperationException("ConnectionStrings:SystemDb saknas.");
-        return new SqlConnectionStringBuilder(systemConnStr) { InitialCatalog = database }.ConnectionString;
     }
 }

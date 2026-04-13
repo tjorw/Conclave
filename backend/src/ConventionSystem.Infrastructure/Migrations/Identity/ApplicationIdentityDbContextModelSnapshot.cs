@@ -17,6 +17,7 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("identity")
                 .HasAnnotation("ProductVersion", "9.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -58,6 +59,10 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("PersonId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("person_id");
+
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
@@ -84,36 +89,10 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("ConventionSystem.Infrastructure.Identity.ConventionUserLink", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("newsequentialid()");
-
-                    b.Property<Guid>("ConventionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PersonId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
                     b.HasIndex("PersonId")
-                        .HasDatabaseName("IX_convention_user_links_person_id");
+                        .HasDatabaseName("IX_users_person_id");
 
-                    b.HasIndex("UserId", "ConventionId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_convention_user_links_user_id_convention_id");
-
-                    b.ToTable("convention_user_links", (string)null);
+                    b.ToTable("AspNetUsers", "identity");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -140,7 +119,7 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
                         .HasDatabaseName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
-                    b.ToTable("AspNetRoles", (string)null);
+                    b.ToTable("AspNetRoles", "identity");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -165,7 +144,7 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetRoleClaims", (string)null);
+                    b.ToTable("AspNetRoleClaims", "identity");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -190,7 +169,7 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserClaims", (string)null);
+                    b.ToTable("AspNetUserClaims", "identity");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -212,7 +191,7 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins", (string)null);
+                    b.ToTable("AspNetUserLogins", "identity");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -227,7 +206,7 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetUserRoles", (string)null);
+                    b.ToTable("AspNetUserRoles", "identity");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -246,18 +225,7 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("ConventionSystem.Infrastructure.Identity.ConventionUserLink", b =>
-                {
-                    b.HasOne("ConventionSystem.Infrastructure.Identity.ApplicationUser", "User")
-                        .WithMany("ConventionLinks")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
+                    b.ToTable("AspNetUserTokens", "identity");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -309,11 +277,6 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("ConventionSystem.Infrastructure.Identity.ApplicationUser", b =>
-                {
-                    b.Navigation("ConventionLinks");
                 });
 #pragma warning restore 612, 618
         }

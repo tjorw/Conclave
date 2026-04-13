@@ -26,9 +26,19 @@ public sealed class ConventionRepository(ConventionDbContext db) : IConventionRe
             .Include(c => c.Administrators)
             .FirstOrDefaultAsync(c => c.Id == id, ct);
 
+    public Task<Domain.Convention.Aggregates.Convention?> GetSingleAsync(CancellationToken ct = default)
+        => db.Conventions
+            .Include(c => c.Administrators)
+            .FirstOrDefaultAsync(ct);
+
     public Task<ConventionDto?> GetProjectedByIdAsync(ConventionId id, CancellationToken ct = default)
         => db.Conventions
             .Where(c => c.Id == id)
+            .Select(c => new ConventionDto(c.Id.Value, c.Name, c.Slug))
+            .FirstOrDefaultAsync(ct);
+
+    public Task<ConventionDto?> GetProjectedAsync(CancellationToken ct = default)
+        => db.Conventions
             .Select(c => new ConventionDto(c.Id.Value, c.Name, c.Slug))
             .FirstOrDefaultAsync(ct);
 

@@ -2,10 +2,8 @@ using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Infrastructure.Identity;
-using ConventionSystem.Infrastructure.MultiTenancy;
 using ConventionSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -20,43 +18,30 @@ public static class AuthEndpoints
         app.MapPost("/auth/login", async (
             LoginRequest request,
             UserManager<ApplicationUser> userManager,
-            ApplicationIdentityDbContext identityDb,
-            ITenantContext tenantContext,
-            IServiceProvider services,
+            IConventionRepository conventionRepo,
+            IPersonRepository personRepo,
             IConfiguration configuration,
             CancellationToken ct) =>
         {
-            if (!tenantContext.IsResolved)
-                return Results.BadRequest("X-Convention-Id-header saknas eller är ogiltig.");
-
-            // Löses lazily efter att tenant-kontexten är klar, så att ConventionDbContext
-            // byggs med rätt connection string och inte kastar InvalidOperationException.
-            var conventionRepo = services.GetRequiredService<IConventionRepository>();
-            var personRepo = services.GetRequiredService<IPersonRepository>();
-
             var user = await userManager.FindByEmailAsync(request.Email);
             if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
                 return Results.Unauthorized();
 
-            var conventionId = new ConventionId(tenantContext.ConventionId);
-
-            var convention = await conventionRepo.GetByIdAsync(conventionId, ct);
+            var convention = await conventionRepo.GetSingleAsync(ct);
             if (convention is null)
-                return Results.BadRequest("Konventionen hittades inte.");
+                return Results.Problem("Konventionen är inte konfigurerad.");
 
-            // UC002: identifiera eller skapa person
-            var link = await identityDb.ConventionUserLinks
-                .FirstOrDefaultAsync(l => l.UserId == user.Id && l.ConventionId == tenantContext.ConventionId, ct);
+            var conventionId = convention.Id;
 
             Guid personId;
-            if (link is not null)
+            if (user.PersonId.HasValue)
             {
-                // Befintlig person – återinloggning
-                personId = link.PersonId;
+                // Återinloggning – PersonId redan känt
+                personId = user.PersonId.Value;
             }
             else
             {
-                // Första inloggningen till denna konvention – identifiera eller skapa person
+                // Första inloggningen – identifiera eller skapa person
                 var existingPerson = await personRepo.FindByEmailInConventionAsync(conventionId, request.Email, ct);
 
                 if (existingPerson is not null)
@@ -66,18 +51,17 @@ public static class AuthEndpoints
                 }
                 else
                 {
-                    // Skapa nytt personkonto; namn samlas in i registreringsflödet (UC-VR001/SA001/EV001)
+                    // Skapa nytt personkonto; namn samlas in i registreringsflödet
                     var person = convention.RegisterPerson(string.Empty, request.Email);
                     await personRepo.AddAndSaveAsync(person, ct);
                     personId = person.Id.Value;
                 }
 
-                var newLink = ConventionUserLink.Create(user.Id, tenantContext.ConventionId, personId);
-                await identityDb.ConventionUserLinks.AddAsync(newLink, ct);
-                await identityDb.SaveChangesAsync(ct);
+                user.PersonId = personId;
+                await userManager.UpdateAsync(user);
             }
 
-            var isAdmin = convention.IsAdministrator(new Domain.Convention.Ids.PersonId(personId));
+            var isAdmin = convention.IsAdministrator(new PersonId(personId));
             var token = IssueJwt(personId, isAdmin, configuration);
             return Results.Ok(new { token });
         });

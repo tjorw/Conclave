@@ -7,7 +7,7 @@ System för att administrera, annonsera, registrera och driva hobbymässor (tabl
 - **Backend:** .NET 9, C#
 - **Arkitektur:** Clean Architecture med DDD (Domain-Driven Design)
 - **ORM:** Entity Framework Core
-- **Databas:** SQL Server (multi-tenant – en databas per konvention + systemdatabas + identitetsdatabas)
+- **Databas:** SQL Server (deploy-per-konvention – en databas per instans, `dbo`-schema för domändata, `identity`-schema för ASP.NET Identity)
 - **Frontend:** Angular (admin-app + publik vy)
 - **Auth:** ASP.NET Identity med JWT
 - **API:** REST, minimal API
@@ -19,7 +19,7 @@ System för att administrera, annonsera, registrera och driva hobbymässor (tabl
 | Verktyg | Version | Används till |
 |---------|---------|--------------|
 | .NET SDK | 9.0 | Backend API |
-| SQL Server | valfri lokal instans | Databaser (SystemDb, IdentityDb, en per konvention) |
+| SQL Server | valfri lokal instans | Konventionsdatabas (dbo + identity-schema) |
 | Node.js | 22+ | Angular frontend |
 | Angular CLI | 21+ | Bygga och köra Angular-apparna |
 | Docker Desktop | senaste | Integrationstester (SQL Server-container) |
@@ -37,8 +37,7 @@ Filen är gitignorerad och måste skapas lokalt. Lägg den i `backend/src/Conven
 ```json
 {
   "ConnectionStrings": {
-    "SystemDb": "Server=localhost;Database=ConventionSystemRegistry;Trusted_Connection=True;TrustServerCertificate=True;",
-    "IdentityDb": "Server=localhost;Database=ConventionSystemIdentity;Trusted_Connection=True;TrustServerCertificate=True;"
+    "DefaultConnection": "Server=localhost;Database=ConventionSystem;Trusted_Connection=True;TrustServerCertificate=True;"
   },
   "Jwt": {
     "Key": "minst-32-tecken-lång-hemlig-nyckel-byt-ut-mig",
@@ -54,7 +53,7 @@ Filen är gitignorerad och måste skapas lokalt. Lägg den i `backend/src/Conven
 dotnet run --project backend/src/ConventionSystem.Api
 ```
 
-API:t lyssnar på `http://localhost:5127`. Databaserna `ConventionSystemRegistry` och `ConventionSystemIdentity` skapas och migreras automatiskt vid uppstart.
+API:t lyssnar på `http://localhost:5127`. Databasen `ConventionSystem` skapas och migreras automatiskt vid uppstart (`dbo`-schema via ConventionDbContext, `identity`-schema via ApplicationIdentityDbContext).
 
 I `Development`-miljön körs seedern automatiskt och skapar en komplett demo-konvention om den inte redan finns. I konsolen loggas konventions-ID:t:
 
@@ -172,8 +171,8 @@ Beroendet pekar alltid inåt: Infrastructure → Application → Domain.
 Tre infrastrukturskikt:
 
 - **Klienter:** Admin-app (Angular, rollbaserad), publik vy (Angular, konventionsstyld), externt CMS (REST-feed, läsbart)
-- **API-lager (.NET):** Tenant-router (löser rätt databas per request via domän/header), Auth (JWT + OAuth), publik REST (feed + webhooks)
-- **Datanivå:** Tenant-databaser (en per konvention), systemdatabas (tenant-register och routing), identitetsdatabas (konton och autentisering)
+- **API-lager (.NET):** Auth (JWT + OAuth), publik REST (feed + webhooks)
+- **Datanivå:** En databas per deploy – domändata i `dbo`-schema, ASP.NET Identity i `identity`-schema
 
 ### Clean Architecture-lager
 
