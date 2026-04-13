@@ -167,6 +167,13 @@ Draftprocessen fungerar tekniskt men speglar inte fullt ut hur flödet ska funge
 #### 3.1.7b Bemanningsvy – genomgång och förfining
 Bemanningsvyn fungerar tekniskt men behöver ett dedikerat arbetspass för att genomarbeta flödet ur bemanningskoordinatorns perspektiv – liknande 3.1.6b för evenemangsflödet.
 
+#### 3.1.9 Kontohantering i personregistret
+- Personlistan visar om person har kopplat konto (`hasAccount`-fält i `PersonDto`)
+- Knapp "Skicka återställningslänk" per person → `POST /persons/{id}/send-reset-link` (admin triggar reset-e-post utan att känna till lösenordet)
+- Knapp "Lås konto" / "Lås upp konto" → `UserManager.SetLockoutEnabledAsync` + `SetLockoutEndDateAsync`
+- *Kräver ny backend-endpoint:* `POST /persons/{id}/send-reset-link`
+- *Kräver utökning av* `PersonDto` med `hasAccount: bool`
+
 #### 3.1.8 Registreringsöversikt
 - Biljettyper: skapa, visa
 - Besökarregistreringar: lista, bekräfta betalning, makulera biljett
@@ -182,7 +189,7 @@ Se `docs/public-mockup.html` för interaktiv skissbild av alla skärmar.
 #### ~~3.2.1 Scaffold och layout~~ ✓ Klar
 - ~~`ShellComponent` med `mat-toolbar` (konventionsbrandad topnav), footer~~
 - ~~Angular Material custom theme via CSS custom properties (`--brand-primary`, `--brand-accent`)~~
-- ~~Route-split: publika routes (`/`, `/program`, `/program/:id`, `/login`) + skyddade (`/mina-sidor/**`)~~
+- ~~Route-split: publika routes (`/`, `/program`, `/program/:id`, `/login`) + skyddade (`/mina-sidor/**`)~~ *(routes för `/register`, `/confirm-email`, `/forgot-password`, `/reset-password` tillkommer i 3.2.3)*
 - ~~`authGuard` på alla `/mina-sidor/**`-routes – ingen `adminGuard`~~
 - ~~`EditionService` (singleton): laddar aktiv upplaga vid app-start via `APP_INITIALIZER`, exponerar `editionId` som signal~~
 - ~~Skeleton shimmer utility-klass i `styles.scss`~~
@@ -195,11 +202,38 @@ Se `docs/public-mockup.html` för interaktiv skissbild av alla skärmar.
 - ~~Publika endpoints: `GET /feed/editions/{id}`, `GET /feed/events/{id}`, `GET /feed/active-edition`~~
 - ~~Aktiv upplaga: Convention-aggregatet lagrar `ActiveEditionId`, admin sätter via `POST /editions/{id}/set-active`~~
 
-#### 3.2.3 Inloggning och profil
-- Inloggningsformulär (`POST /auth/login`) – samma mekanism som admin
-- Social inloggning-platshållar-knappar (Google, Facebook)
-- Profilvy: visa och uppdatera namn/e-post/telefon
-- *Kräver ny backend-endpoint:* `GET /me/profile`, `PUT /me/profile`
+#### 3.2.3 Konton, inloggning och profil
+
+**Registrering**
+- Registreringsformulär (`/register`): e-post + lösenord
+- `POST /auth/register` skapar `ApplicationUser` med `EmailConfirmed = false` och skickar bekräftelse-e-post
+- UC002-länkning sker vid `POST /auth/login` (som vanligt), inte vid registrering
+
+**E-postbekräftelse**
+- Bekräftelsesida (`/confirm-email?email=...&token=...`): anropas via länk i e-postmeddelande
+- `POST /auth/confirm-email` med `{ email, token }` → `UserManager.ConfirmEmailAsync`
+- Länk till "Skicka om bekräftelse" om token gått ut
+- `POST /auth/resend-confirmation` med `{ email }` – returnerar alltid 200 (avslöjar inte om kontot finns)
+- Login returnerar `403` med tydlig instruktion om e-posten inte är bekräftad
+
+**Glömt lösenord (self-service)**
+- Glömt lösenord-sida (`/forgot-password`): anger e-postadress
+- `POST /auth/forgot-password` – returnerar alltid 200; skickar länk om konto finns och e-post är bekräftad
+- Återställningssida (`/reset-password?email=...&token=...`): anger nytt lösenord
+- `POST /auth/reset-password` med `{ email, token, newPassword }` → `UserManager.ResetPasswordAsync`
+- Tokens URL-encodas i länken (innehåller specialtecken), decodas på backend
+
+**Lösenordsbyte (inloggad)**
+- Profilsida (`/mina-sidor/profil`): visar namn/e-post/telefon, formulär för lösenordsbyte
+- `PUT /auth/password` med `{ currentPassword, newPassword }` → `UserManager.ChangePasswordAsync`
+- `GET /me/profile`, `PUT /me/profile` för profilfälten
+
+**Social inloggning**
+- Platshållar-knappar (Google, Facebook) – inte implementerat
+
+*Kräver nya backend-endpoints:* `POST /auth/register`, `POST /auth/confirm-email`, `POST /auth/resend-confirmation`, `POST /auth/forgot-password`, `POST /auth/reset-password`, `PUT /auth/password`, `GET /me/profile`, `PUT /me/profile`
+
+*Kräver e-posttjänst:* `LoggingEmailService` i dev (loggar länkarna i konsolen utan SMTP). Fyra e-posttyper: välkommen+bekräftelse, skicka om bekräftelse, lösenordsåterställning, lösenord ändrat.
 
 #### 3.2.4 Mina sidor – hub och navigationsstruktur
 - `MinaSidorComponent` (hub): hälsningsbanner + kompakta statuskort per sektion
@@ -249,12 +283,32 @@ Se `docs/public-mockup.html` för interaktiv skissbild av alla skärmar.
 
 ### Backend-komplement som krävs under Fas 3
 
-Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion som behöver dem.
+Byggs precis innan den frontendsektion som behöver dem.
+
+#### Auth och konton (3.2.3 + 3.1.9)
+
+| Endpoint | Syfte | Auth |
+|----------|-------|------|
+| `POST /auth/register` | Skapar konto, skickar bekräftelse-e-post | Anonym |
+| `POST /auth/confirm-email` | Bekräftar token från e-postlänk | Anonym |
+| `POST /auth/resend-confirmation` | Skickar ny bekräftelselänk | Anonym |
+| `POST /auth/forgot-password` | Genererar reset-token, skickar e-post | Anonym |
+| `POST /auth/reset-password` | Sätter nytt lösenord med token | Anonym |
+| `PUT /auth/password` | Byter eget lösenord (inloggad) | Autentiserad |
+| `GET /me/profile` | Hämtar inloggad persons profil | Autentiserad |
+| `PUT /me/profile` | Uppdaterar profil (namn, e-post, telefon) | Autentiserad |
+| `POST /persons/{id}/send-reset-link` | Admin skickar reset-e-post åt person | IsAdmin |
+
+**Viktiga detaljer:**
+- `POST /auth/login` utökas: kontrollerar `EmailConfirmed` → `403` med instruktion om ej bekräftad
+- Tokens (bekräftelse + reset) URL-encodas i e-postlänkar, decodas på backend
+- `PersonDto` utökas med `hasAccount: bool` (join mot `identity.users` på `person_id`)
+- `DevDataSeeder` och `ConventionSystemFactory` sätter `EmailConfirmed = true` direkt – kringgår e-postflödet
+
+#### Övriga endpoints (övriga 3.x-sektioner)
 
 | Endpoint | Krävs för | Auth |
 |----------|-----------|------|
-| `GET /me/profile` | 3.2.3 profilvy | Autentiserad |
-| `PUT /me/profile` | 3.2.3 profil-redigering | Autentiserad |
 | `GET /editions/{id}/persons` | 3.1.5 personregister | IsAdmin |
 | ~~`GET /editions/{id}/staff-applications`~~ | ~~3.1.7 bemanningshantering~~ ✓ Klar | IsAdmin |
 | ~~`GET /feed/active-edition`~~ | ~~3.2.1–3.2.2 publik vy~~ ✓ Klar | Anonym |
@@ -262,8 +316,9 @@ Dessa GET-queries saknas i dagsläget. Byggs precis innan den frontendsektion so
 | `GET /editions/{id}/visitor-registrations` | 3.1.8 registreringsöversikt | IsAdmin |
 | `GET /editions/{id}/ticket-types` | 3.1.8 biljettyper | Publik |
 | `GET /editions/{id}/my-visitor-registration` | 3.2.5 besökarregistrering | Autentiserad |
-| `GET /editions/{id}/my-events` | 3.2.6 arrangörsflöde | Autentiserad |
-| `GET /editions/{id}/my-staff-application` | 3.2.7 staffansökan | Autentiserad |
+| `GET /editions/{id}/my-session-registrations` | 3.2.6 mitt program | Autentiserad |
+| `GET /editions/{id}/my-events` | 3.2.7 arrangörsflöde | Autentiserad |
+| `GET /editions/{id}/my-staff-application` | 3.2.8 staffansökan | Autentiserad |
 
 ---
 
@@ -301,9 +356,10 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 ## Nästa konkreta steg (förslag)
 
-1. **Fas 3.2.3** – Inloggning och profil för publika appen (formulär, social login-platshållare, profilvy)
-2. **Fas 3.1.8** – Registreringsöversikt i admin (biljettyper, besökarregistreringar)
-3. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
-4. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
-5. **Fas 3.2.4** – Besökarregistrering (publik vy)
-6. **Fas 4.1** – Demo-deploy med fiktivt konvent
+1. **Fas 3.2.3** – Konton, inloggning och profil: backend-endpoints + publik app (registrering, e-postbekräftelse, glömt lösenord, lösenordsbyte, profilsida)
+2. **Fas 3.1.9** – Kontohantering i admin: `hasAccount` i personlistan, skicka återställningslänk
+3. **Fas 3.1.8** – Registreringsöversikt i admin (biljettyper, besökarregistreringar)
+4. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
+5. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
+6. **Fas 3.2.4** – Mina sidor – hub och navigationsstruktur
+7. **Fas 4.1** – Demo-deploy med fiktivt konvent
