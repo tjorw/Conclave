@@ -13,5 +13,6 @@ public interface IEventRepository
     Task<Domain.Event.Aggregates.Event?> GetByIdWithSessionsAsync(EventId id, CancellationToken ct = default);
     Task<IReadOnlyList<EventSummaryDto>> ListByEditionIdAsync(EditionId id, CancellationToken ct = default);
     Task<EventDto?> GetProjectedByIdAsync(EventId id, CancellationToken ct = default);
+    Task<IReadOnlyList<EditionOrganiserDto>> ListOrganisersByEditionIdAsync(EditionId editionId, CancellationToken ct = default);
     Task SaveAsync(CancellationToken ct = default);
 }

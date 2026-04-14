@@ -31,6 +31,13 @@ public record StaffAssignmentDto(
     string Status,
     DateTimeOffset AssignedAt);
 
+public record EditionStaffMemberDto(
+    Guid PersonId,
+    string PersonName,
+    string Email,
+    string? Phone,
+    string ApplicationStatus);
+
 public record StaffApplicationSummaryDto(
     Guid Id,
     Guid PersonId,

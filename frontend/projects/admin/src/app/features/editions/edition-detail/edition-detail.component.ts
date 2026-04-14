@@ -15,6 +15,10 @@ import {
   CategoryDto,
   ConventionService,
   EditionDto,
+  EditionOrganiserDto,
+  EditionResponsibleDto,
+  EditionStaffMemberDto,
+  EditionVisitorDto,
   PersonDto,
   StaffAreaDto,
   VenueDto,
@@ -48,6 +52,12 @@ export class EditionDetailComponent implements OnInit {
 
   readonly edition = signal<EditionDto | null>(null);
   readonly persons = signal<PersonDto[]>([]);
+  readonly visitors = signal<EditionVisitorDto[]>([]);
+  readonly organisers = signal<EditionOrganiserDto[]>([]);
+  readonly staff = signal<EditionStaffMemberDto[]>([]);
+  readonly responsibles = signal<EditionResponsibleDto[]>([]);
+  readonly roleViewsLoading = signal(false);
+  readonly roleViewsSearch = signal('');
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
@@ -137,6 +147,50 @@ export class EditionDetailComponent implements OnInit {
     this.svc.listPersons().subscribe({
       next: p => this.persons.set(p.filter(x => x.isActive)),
     });
+    this.loadRoleViews(editionId);
+  }
+
+  private loadRoleViews(editionId: string): void {
+    this.roleViewsLoading.set(true);
+    let pending = 4;
+    const done = () => { if (--pending === 0) this.roleViewsLoading.set(false); };
+
+    this.svc.listEditionVisitors(editionId).subscribe({ next: v => { this.visitors.set(v); done(); }, error: done });
+    this.svc.listEditionOrganisers(editionId).subscribe({ next: o => { this.organisers.set(o); done(); }, error: done });
+    this.svc.listEditionStaff(editionId).subscribe({ next: s => { this.staff.set(s); done(); }, error: done });
+    this.svc.listEditionResponsibles(editionId).subscribe({ next: r => { this.responsibles.set(r); done(); }, error: done });
+  }
+
+  readonly filteredVisitors = computed(() => {
+    const q = this.roleViewsSearch().toLowerCase();
+    return !q ? this.visitors() : this.visitors().filter(
+      v => v.personName.toLowerCase().includes(q) || v.email.toLowerCase().includes(q)
+    );
+  });
+
+  readonly filteredOrganisers = computed(() => {
+    const q = this.roleViewsSearch().toLowerCase();
+    return !q ? this.organisers() : this.organisers().filter(
+      o => o.personName.toLowerCase().includes(q) || o.eventTitle.toLowerCase().includes(q)
+    );
+  });
+
+  readonly filteredStaff = computed(() => {
+    const q = this.roleViewsSearch().toLowerCase();
+    return !q ? this.staff() : this.staff().filter(
+      s => s.personName.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)
+    );
+  });
+
+  readonly filteredResponsibles = computed(() => {
+    const q = this.roleViewsSearch().toLowerCase();
+    return !q ? this.responsibles() : this.responsibles().filter(
+      r => r.position.toLowerCase().includes(q) || (r.personName ?? '').toLowerCase().includes(q)
+    );
+  });
+
+  onRoleViewsSearch(event: Event): void {
+    this.roleViewsSearch.set((event.target as HTMLInputElement).value);
   }
 
   private reload(): void {

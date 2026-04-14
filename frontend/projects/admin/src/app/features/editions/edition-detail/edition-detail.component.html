@@ -314,5 +314,148 @@
       </div>
     </mat-tab>
 
+    <!-- Besökare / Arrangörer / Funktionärer / Ansvariga – delad sökruta -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        Besökare <span class="tab-count">{{ visitors().length }}</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="role-search-row">
+          <mat-form-field subscriptSizing="dynamic">
+            <mat-label>Sök</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput (input)="onRoleViewsSearch($event)" placeholder="Namn eller e-post" />
+          </mat-form-field>
+        </div>
+        @if (roleViewsLoading()) {
+          <mat-spinner diameter="32" />
+        } @else if (filteredVisitors().length > 0) {
+          <table class="data-table">
+            <thead>
+              <tr><th>Namn</th><th>E-post</th><th>Telefon</th></tr>
+            </thead>
+            <tbody>
+              @for (v of filteredVisitors(); track v.personId) {
+                <tr>
+                  <td>{{ v.personName }}</td>
+                  <td>{{ v.email }}</td>
+                  <td class="muted">{{ v.phone || '–' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="empty-hint">Inga bekräftade besökare.</p>
+        }
+      </div>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        Arrangörer <span class="tab-count">{{ organisers().length }}</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="role-search-row">
+          <mat-form-field subscriptSizing="dynamic">
+            <mat-label>Sök</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput (input)="onRoleViewsSearch($event)" placeholder="Namn eller evenemangstitel" />
+          </mat-form-field>
+        </div>
+        @if (roleViewsLoading()) {
+          <mat-spinner diameter="32" />
+        } @else if (filteredOrganisers().length > 0) {
+          <table class="data-table">
+            <thead>
+              <tr><th>Namn</th><th>E-post</th><th>Evenemang</th><th>Roll</th></tr>
+            </thead>
+            <tbody>
+              @for (o of filteredOrganisers(); track o.personId + o.eventId) {
+                <tr>
+                  <td>{{ o.personName }}</td>
+                  <td>{{ o.email }}</td>
+                  <td>{{ o.eventTitle }}</td>
+                  <td class="muted">{{ o.role }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="empty-hint">Inga arrangörer på publicerade evenemang.</p>
+        }
+      </div>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        Funktionärer <span class="tab-count">{{ staff().length }}</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="role-search-row">
+          <mat-form-field subscriptSizing="dynamic">
+            <mat-label>Sök</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput (input)="onRoleViewsSearch($event)" placeholder="Namn eller e-post" />
+          </mat-form-field>
+        </div>
+        @if (roleViewsLoading()) {
+          <mat-spinner diameter="32" />
+        } @else if (filteredStaff().length > 0) {
+          <table class="data-table">
+            <thead>
+              <tr><th>Namn</th><th>E-post</th><th>Telefon</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              @for (s of filteredStaff(); track s.personId) {
+                <tr>
+                  <td>{{ s.personName }}</td>
+                  <td>{{ s.email }}</td>
+                  <td class="muted">{{ s.phone || '–' }}</td>
+                  <td class="muted">{{ s.applicationStatus }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="empty-hint">Inga godkända funktionärer.</p>
+        }
+      </div>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        Ansvariga <span class="tab-count">{{ responsibles().length }}</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="role-search-row">
+          <mat-form-field subscriptSizing="dynamic">
+            <mat-label>Sök</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput (input)="onRoleViewsSearch($event)" placeholder="Funktion eller personnamn" />
+          </mat-form-field>
+        </div>
+        @if (roleViewsLoading()) {
+          <mat-spinner diameter="32" />
+        } @else if (filteredResponsibles().length > 0) {
+          <table class="data-table">
+            <thead>
+              <tr><th>Funktion</th><th>Person</th><th>E-post</th></tr>
+            </thead>
+            <tbody>
+              @for (r of filteredResponsibles(); track r.position) {
+                <tr>
+                  <td>{{ r.position }}</td>
+                  <td [class.muted]="!r.personName">{{ r.personName || 'Ej tillsatt' }}</td>
+                  <td class="muted">{{ r.email || '–' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="empty-hint">Inga ansvariga positioner definierade.</p>
+        }
+      </div>
+    </mat-tab>
+
   </mat-tab-group>
 }

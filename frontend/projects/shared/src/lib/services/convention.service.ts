@@ -5,7 +5,11 @@ import {
   CategoryDto,
   ConventionDto,
   EditionDto,
+  EditionOrganiserDto,
+  EditionResponsibleDto,
+  EditionStaffMemberDto,
   EditionSummaryDto,
+  EditionVisitorDto,
   PersonDto,
   StaffAreaDto,
   StationDto,
@@ -237,5 +241,21 @@ export class ConventionService {
 
   setActiveEdition(editionId: string) {
     return this.http.post<void>(`${this.env.apiBaseUrl}/editions/${editionId}/set-active`, {});
+  }
+
+  listEditionVisitors(editionId: string) {
+    return this.http.get<EditionVisitorDto[]>(`${this.env.apiBaseUrl}/editions/${editionId}/visitors`);
+  }
+
+  listEditionOrganisers(editionId: string) {
+    return this.http.get<EditionOrganiserDto[]>(`${this.env.apiBaseUrl}/editions/${editionId}/organisers`);
+  }
+
+  listEditionStaff(editionId: string) {
+    return this.http.get<EditionStaffMemberDto[]>(`${this.env.apiBaseUrl}/editions/${editionId}/staff`);
+  }
+
+  listEditionResponsibles(editionId: string) {
+    return this.http.get<EditionResponsibleDto[]>(`${this.env.apiBaseUrl}/editions/${editionId}/responsibles`);
   }
 }

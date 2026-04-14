@@ -1,5 +1,14 @@
 namespace ConventionSystem.Application.Event.Queries;
 
+public record EditionOrganiserDto(
+    Guid PersonId,
+    string PersonName,
+    string Email,
+    string? Phone,
+    Guid EventId,
+    string EventTitle,
+    string Role);
+
 public record EventSummaryDto(
     Guid Id,
     Guid EditionId,
