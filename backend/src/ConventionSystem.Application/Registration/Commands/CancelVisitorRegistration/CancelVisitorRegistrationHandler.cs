@@ -20,6 +20,9 @@ public sealed class CancelVisitorRegistrationHandler(
         var registration = await visitorRegistrationRepository.GetByIdAsync(registrationId, ct)
             ?? throw new InvalidOperationException($"Besöksregistreringen '{command.VisitorRegistrationId}' hittades inte.");
 
+        if (currentUser.PersonId != registration.PersonId && !currentUser.IsAdmin)
+            throw new UnauthorizedAccessException("Du har inte behörighet att avboka denna besöksregistrering.");
+
         var ticket = await ticketRepository.GetByIdAsync(registration.TicketId, ct)
             ?? throw new InvalidOperationException("Biljetten för registreringen hittades inte.");
 

@@ -282,9 +282,6 @@ Se `docs/public-mockup.html` för interaktiv skissbild av alla skärmar.
 - `PUT /auth/password` med `{ currentPassword, newPassword }` → `UserManager.ChangePasswordAsync`
 - `GET /me/profile`, `PUT /me/profile` för profilfälten
 
-**Social inloggning**
-- Platshållar-knappar (Google, Facebook) – inte implementerat
-
 *Kräver nya backend-endpoints:* `POST /auth/register`, `POST /auth/confirm-email`, `POST /auth/resend-confirmation`, `POST /auth/forgot-password`, `POST /auth/reset-password`, `PUT /auth/password`, `GET /me/profile`, `PUT /me/profile`
 
 *Kräver e-posttjänst:* `LoggingEmailService` i dev (loggar länkarna i konsolen utan SMTP). Fyra e-posttyper: välkommen+bekräftelse, skicka om bekräftelse, lösenordsåterställning, lösenord ändrat.

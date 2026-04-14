@@ -19,4 +19,13 @@ public sealed class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICur
             return new PersonId(guid);
         }
     }
+
+    public bool IsAdmin
+    {
+        get
+        {
+            var claim = httpContextAccessor.HttpContext?.User.FindFirst(AuthConstants.Claims.IsAdmin);
+            return claim is not null && bool.TryParse(claim.Value, out var result) && result;
+        }
+    }
 }

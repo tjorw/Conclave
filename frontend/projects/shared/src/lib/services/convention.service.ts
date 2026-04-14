@@ -178,7 +178,7 @@ export class ConventionService {
 
   changeCategoryResponsible(editionId: string, categoryId: string, newResponsibleId: string) {
     return this.http.put<void>(
-      `${this.env.apiBaseUrl}/editions/${editionId}/categories/${categoryId}`,
+      `${this.env.apiBaseUrl}/editions/${editionId}/categories/${categoryId}/responsible`,
       { newResponsibleId }
     );
   }

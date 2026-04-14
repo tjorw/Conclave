@@ -113,6 +113,14 @@ public static class EditionEndpoints
                 return Results.NoContent();
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
+        // UC011 – Byt kategoriansvarig
+        app.MapPut("/editions/{editionId:guid}/categories/{categoryId:guid}/responsible",
+            async (Guid editionId, Guid categoryId, ChangeCategoryResponsibleRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new ChangeCategoryResponsibleCommand(editionId, categoryId, request.NewResponsibleId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
         app.MapPost("/editions/{editionId:guid}/categories",
             async (Guid editionId, CreateCategoryRequest request, ISender sender, CancellationToken ct) =>
             {

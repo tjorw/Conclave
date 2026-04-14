@@ -5,4 +5,5 @@ namespace ConventionSystem.Application.Common;
 public interface ICurrentUser
 {
     PersonId PersonId { get; }
+    bool IsAdmin { get; }
 }

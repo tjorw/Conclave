@@ -19,7 +19,9 @@ public class SubmitStaffApplicationHandlerTests
         _handler = new SubmitStaffApplicationHandler(_applicationRepo, _editionRepo, _personRepo);
     }
 
-    private (Domain.Convention.Entities.Person person, Domain.Convention.Aggregates.Edition edition) Setup(bool staffRegOpen = true)
+    private (Domain.Convention.Aggregates.Convention convention,
+             Domain.Convention.Entities.Person person,
+             Domain.Convention.Aggregates.Edition edition) Setup(bool staffRegOpen = true)
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
         var admin = convention.RegisterPerson("Admin", "admin@example.com");
@@ -38,13 +40,13 @@ public class SubmitStaffApplicationHandlerTests
         _personRepo.GetByIdAsync(person.Id, Arg.Any<CancellationToken>()).Returns(person);
         _applicationRepo.HasActiveApplicationAsync(person.Id, edition.Id, Arg.Any<CancellationToken>()).Returns(false);
 
-        return (person, edition);
+        return (convention, person, edition);
     }
 
     [Fact]
     public async Task Handle_ValidCommand_ReturnsApplicationId()
     {
-        var (person, edition) = Setup();
+        var (_, person, edition) = Setup();
 
         var id = await _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, person.Id.Value, "Jag vill jobba i receptionen"), default);
 
@@ -54,7 +56,7 @@ public class SubmitStaffApplicationHandlerTests
     [Fact]
     public async Task Handle_ValidCommand_CallsAddAndSave()
     {
-        var (person, edition) = Setup();
+        var (_, person, edition) = Setup();
 
         await _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, person.Id.Value, "Intresserad"), default);
 
@@ -64,7 +66,7 @@ public class SubmitStaffApplicationHandlerTests
     [Fact]
     public async Task Handle_StaffRegistrationNotOpen_Throws()
     {
-        var (person, edition) = Setup(staffRegOpen: false);
+        var (_, person, edition) = Setup(staffRegOpen: false);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, person.Id.Value, "Intresserad"), default));
@@ -73,8 +75,18 @@ public class SubmitStaffApplicationHandlerTests
     [Fact]
     public async Task Handle_DuplicateApplication_Throws()
     {
-        var (person, edition) = Setup();
+        var (_, person, edition) = Setup();
         _applicationRepo.HasActiveApplicationAsync(person.Id, edition.Id, Arg.Any<CancellationToken>()).Returns(true);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, person.Id.Value, "Intresserad"), default));
+    }
+
+    [Fact]
+    public async Task Handle_InactivePerson_Throws()
+    {
+        var (convention, person, edition) = Setup();
+        convention.DeactivatePerson(person);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, person.Id.Value, "Intresserad"), default));

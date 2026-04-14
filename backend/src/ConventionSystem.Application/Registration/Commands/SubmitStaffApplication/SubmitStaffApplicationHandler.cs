@@ -28,6 +28,8 @@ public sealed class SubmitStaffApplicationHandler(
             ?? throw new InvalidOperationException($"Person '{command.PersonId}' hittades inte.");
         if (person.ConventionId != edition.ConventionId)
             throw new InvalidOperationException("Personen tillhör inte denna konvention.");
+        if (!person.IsActive)
+            throw new InvalidOperationException("Inaktiverade personer kan inte initiera nya registreringar.");
 
         if (await staffApplicationRepository.HasActiveApplicationAsync(personId, editionId, ct))
             throw new InvalidOperationException("Personen har redan en aktiv staffansökan för denna upplaga.");

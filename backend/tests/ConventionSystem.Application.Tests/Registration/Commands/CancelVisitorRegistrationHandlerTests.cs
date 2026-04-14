@@ -28,6 +28,8 @@ public class CancelVisitorRegistrationHandlerTests
 
         _registrationRepo.GetByIdAsync(registration.Id, Arg.Any<CancellationToken>()).Returns(registration);
         _ticketRepo.GetByIdAsync(ticketId, Arg.Any<CancellationToken>()).Returns(ticket);
+        _currentUser.PersonId.Returns(registration.PersonId);
+        _currentUser.IsAdmin.Returns(false);
 
         return (registration, ticket);
     }
@@ -61,5 +63,29 @@ public class CancelVisitorRegistrationHandlerTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new CancelVisitorRegistrationCommand(Guid.NewGuid()), default));
+    }
+
+    [Fact]
+    public async Task Handle_OtherUserNotAdmin_Throws()
+    {
+        var (registration, _) = Setup();
+        _currentUser.PersonId.Returns(PersonId.New());
+        _currentUser.IsAdmin.Returns(false);
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            () => _handler.Handle(new CancelVisitorRegistrationCommand(registration.Id.Value), default));
+    }
+
+    [Fact]
+    public async Task Handle_AdminCanCancelOtherUsersRegistration()
+    {
+        var (registration, ticket) = Setup();
+        _currentUser.PersonId.Returns(PersonId.New());
+        _currentUser.IsAdmin.Returns(true);
+
+        await _handler.Handle(new CancelVisitorRegistrationCommand(registration.Id.Value), default);
+
+        Assert.Equal(Domain.Registration.Enums.VisitorRegistrationStatus.Cancelled, registration.Status);
+        Assert.Equal(Domain.Registration.Enums.TicketStatus.Revoked, ticket.Status);
     }
 }

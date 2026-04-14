@@ -102,4 +102,14 @@ public class SubmitVisitorRegistrationHandlerTests
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, person.Id.Value, staffTicketType.Id.Value), default));
     }
+
+    [Fact]
+    public async Task Handle_InactivePerson_Throws()
+    {
+        var (convention, person, edition, ticketType) = Setup();
+        convention.DeactivatePerson(person);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, person.Id.Value, ticketType.Id.Value), default));
+    }
 }
