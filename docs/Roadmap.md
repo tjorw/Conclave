@@ -166,8 +166,11 @@ Draftprocessen fungerar tekniskt men speglar inte fullt ut hur flödet ska funge
 - ~~Staffansökanslista: acceptera/avslå~~
 - ~~`GET /editions/{id}/staff-applications` implementerad~~
 
-#### 3.1.7b Bemanningsvy – genomgång och förfining
-Bemanningsvyn fungerar tekniskt men behöver ett dedikerat arbetspass för att genomarbeta flödet ur bemanningskoordinatorns perspektiv – liknande 3.1.6b för evenemangsflödet.
+#### ~~3.1.7b Bemanningsvy – genomgång och förfining~~ ✓ Klar
+- ~~Ansökningslista med statusfilter (Att granska / Godkända / Avslagna / Alla) och räknare~~
+- ~~Acceptera / avslå ansökan direkt från listan~~
+- ~~Tillgänglighetsperioder visas per ansökan~~
+- ~~"Lägg till funktionär" – skapar person om ny e-post, återanvänder befintlig person annars; sätter ansökan direkt som Godkänd~~
 
 #### ~~3.1.9 Kontohantering i personregistret~~ ✓ Klar
 - ~~Personlistan visar om person har kopplat konto (`hasAccount`/`isLocked` i `PersonDto`)~~
@@ -425,7 +428,7 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 3. **Fas 3.2.3** – Konton, inloggning och profil: backend-endpoints + publik app (registrering, e-postbekräftelse, glömt lösenord, lösenordsbyte, profilsida)
 4. **Fas 3.1.8** – Registreringsöversikt i admin (biljettyper, besökarregistreringar)
 5. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
-6. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
+6. ~~**Fas 3.1.7b** – Bemanningsvy: genomgång och förfining~~ ✓ Klar
 7. **Fas 3.2.4** – Mina sidor – hub och navigationsstruktur
 8. **Fas 4.1** – Demo-deploy med fiktivt konvent
 

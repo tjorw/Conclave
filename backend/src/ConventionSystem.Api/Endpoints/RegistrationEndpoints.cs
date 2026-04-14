@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
+using ConventionSystem.Application.Registration.Commands.AddStaffMember;
 using ConventionSystem.Application.Staff.Queries.ListStaffApplications;
 using ConventionSystem.Application.Registration.Commands.AddAvailability;
 using ConventionSystem.Application.Registration.Commands.AddStationPreference;
@@ -152,6 +153,16 @@ public static class RegistrationEndpoints
                 return Results.NoContent();
             }).RequireAuthorization();
 
+        // Admin: lägg till bekräftad funktionär (find-or-create person)
+        app.MapPost("/editions/{editionId:guid}/staff",
+            async (Guid editionId, AddStaffMemberRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var id = await sender.Send(
+                    new AddStaffMemberCommand(editionId, request.Name, request.Email, request.Phone, request.Note), ct);
+                return Results.Created($"/staff-applications/{id}", new { id });
+            })
+            .RequireAuthorization("IsAdmin");
+
         // UC-SA007: Lista staffansökningar per upplaga
         app.MapGet("/editions/{editionId:guid}/staff-applications",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
@@ -170,3 +181,4 @@ public record SubmitStaffApplicationRequest(Guid PersonId, string InterestDescri
 public record AddAvailabilityRequest(DateTime From, DateTime To);
 public record StationPreferenceRequest(Guid StationId);
 public record RegisterForSessionRequest(Guid PersonId, Guid TicketId);
+public record AddStaffMemberRequest(string Name, string Email, string? Phone, string? Note);

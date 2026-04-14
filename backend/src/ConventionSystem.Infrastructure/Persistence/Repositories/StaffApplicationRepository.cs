@@ -27,6 +27,7 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
     {
         var applications = await db.StaffApplications
             .Include(a => a.StationPreferences)
+            .Include(a => a.Availabilities)
             .Where(a => a.EditionId == editionId)
             .OrderBy(a => a.CreatedAt)
             .ToListAsync(ct);
@@ -43,7 +44,10 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
             a.InterestDescription,
             a.Status.ToString(),
             a.CreatedAt,
-            a.StationPreferences.Select(p => p.StationId.Value).ToList()
+            a.StationPreferences.Select(p => p.StationId.Value).ToList(),
+            a.Availabilities.OrderBy(av => av.TimeSlot.Start)
+                            .Select(av => new StaffApplicationAvailabilityDto(av.TimeSlot.Start, av.TimeSlot.End))
+                            .ToList()
         )).ToList();
     }
 
