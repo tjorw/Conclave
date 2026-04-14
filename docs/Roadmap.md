@@ -173,42 +173,52 @@ Bemanningsvyn fungerar tekniskt men behöver ett dedikerat arbetspass för att g
 - ~~Knapp "Skicka återställningslänk" per person → `POST /persons/{id}/send-reset-link`~~
 - ~~Knapp "Lås konto" / "Lås upp konto" → `UserManager.SetLockoutEnabledAsync` + `SetLockoutEndDateAsync`~~
 
-#### 3.1.10 Rollmodell per upplaga
+#### 3.1.10 Rollvyer per upplaga
 
-Introducerar `PersonEditionRole` – en persons aktiva roll inom en specifik upplaga. Löser problemet med att urvalslistor idag visar hela personregistret utan filtrering.
+Löser problemet med att urvalslistor idag visar hela personregistret utan filtrering. Ingen ny domänentitet – rollerna deriveras ur befintliga register via read-only query-endpoints.
 
-**Domän och infrastruktur**
-- Ny entitet `PersonEditionRole` i Convention-kontexten med `PersonId`, `EditionId` och `Role` (enum: `Ansvarig`, `Personal`, `Arrangör`, `Besökare`)
-- `IsAdmin` förblir convention-scoped och hanteras separat (oförändrat)
-- EF Core-konfiguration + migration; unique index på `(PersonId, EditionId, Role)`
-- Idempotens gäller: lägg till befintlig roll = no-op, ta bort saknad roll = no-op
+**Princip**
 
-**Implicit tilldelning via domain events**
+Rollerna är inte lagrade – de är härledda. Varje vy frågar sin källtabell direkt:
 
-| Roll | Läggs till | Tas bort |
-|------|-----------|---------|
-| `Personal` | `StaffApplicationApproved` | `StaffApplicationRejected` eller ansökan dras tillbaka |
-| `Arrangör` | Evenemang skickas in för granskning | Inga inlämnade/godkända evenemang kvar i upplagan |
-| `Besökare` | Besökarregistrering bekräftad | Alla biljetter i upplagan makulerade |
+| Vy | Källa | Filter |
+|----|-------|--------|
+| **Besökare** | `VisitorRegistration` | Bekräftad registrering för upplagan |
+| **Arrangörer** | `Event` + `CoOrganiser` | `Published`-evenemang i upplagan; både huvudarrangör och medarrangörer inkluderas |
+| **Funktionärer** | `StaffApplication` | Godkänd ansökan för upplagan |
+| **Ansvariga** | `Edition`, `StaffArea`, `Category` | En rad per ansvarigposition; person kan vara otillsatt (`null`) |
 
-**Manuell hantering (Ansvarig)**
-- `Ansvarig`-rollen sätts och tas bort manuellt av admin i personlistan
-- Alla roller kan även manuellt repareras via samma endpoints vid behov
-- Nya endpoints:
-  - `POST /editions/{editionId}/persons/{personId}/roles` med `{ role }` – lägger till roll
-  - `DELETE /editions/{editionId}/persons/{personId}/roles/{role}` – tar bort roll
+**Nya query-endpoints (IsAdmin)**
 
-**PersonDto och filtrering**
-- `PersonDto` utökas med `editionRoles: string[]` – rollerna personen har i den upplagekontext som efterfrågas
-- `GET /conventions/{id}/persons?editionId={editionId}` returnerar roller per person
-- Personlistan i admin visar alla med minst en roll i konventets upplagar + admins
-- Urvalslistor filtreras:
-  - Staffkoordinator, eventkoordinator, areas- och kategoriansvariga → `Ansvarig`
-  - Stafftilldelning → `Personal`
-  - Evenemangets arrangörsväljare → `Arrangör`
+| Endpoint | Beskrivning |
+|----------|-------------|
+| `GET /editions/{id}/visitors` | Personlista – bekräftade besökarregistreringar |
+| `GET /editions/{id}/organisers` | Personlista – arrangörer (lead + co) på publicerade evenemang |
+| `GET /editions/{id}/staff` | Personlista – godkända funktionärsansökningar |
+| `GET /editions/{id}/responsibles` | Positionslista – en rad per ansvarigpost oavsett om den är tillsatt |
 
-**Edition 0 / bootstrap**
-- `staffCoordinatorId` och `eventCoordinatorId` på Edition görs valfria – en ny upplaga kan skapas utan att roller finns ännu
+**Ansvariga-vyn i detalj**
+
+Aggregerar alla definierade ansvarigpositioner för upplagan till en sökbar, read-only lista:
+- Bemanningskoordinator (`Edition.StaffCoordinatorId`)
+- Evenemangskoordinator (`Edition.EventCoordinatorId`)
+- En rad per funktionsområde (`StaffArea.ResponsibleId`)
+- En rad per kategori (`Category.ResponsibleId`)
+- En rad per publicerat evenemang – huvudarrangör (`Event.LeadOrganiserId`)
+- En rad per medarrangör på publicerade evenemang (`CoOrganiser.PersonId`)
+
+Koordinator- och ansvarigposter utan tillsatt person visas som "Ej tillsatt". Arrangörsposter genereras bara för publicerade evenemang och är alltid tillsatta. Vyn är sökbar (på position eller personnamn).
+
+**Urvalslistor filtreras på funktionärer**
+
+När admin väljer person till en ansvarigpost (koordinator, areas- eller kategoriansvarig) hämtas urvalet från `/editions/{id}/staff` – det krävs en godkänd funktionärsansökan för att kunna tilldelas ett ansvar.
+
+**Edition Bootstrap**
+- `staffCoordinatorId` och `eventCoordinatorId` på `Edition` görs valfria – en ny upplaga kan skapas utan att positioner är tillsatta ännu
+
+**Frontend – fyra nya flikar/vyer under upplagekontext**
+- Besökare, Arrangörer, Funktionärer: personlistor med namn, e-post och relevant kontextinfo (t.ex. biljettyp, evenemangstitel, stationsval)
+- Ansvariga: positionstabell med sökfunktion, read-only
 
 *Löser teknisk skuld:* "Skalbart val av ansvariga personer"
 
@@ -343,15 +353,18 @@ Byggs precis innan den frontendsektion som behöver dem.
 - `PersonDto` utökas med `hasAccount: bool` (join mot `identity.users` på `person_id`)
 - `DevDataSeeder` och `ConventionSystemFactory` sätter `EmailConfirmed = true` direkt – kringgår e-postflödet
 
-#### Rollhantering (3.1.10)
+#### Rollvyer (3.1.10)
+
+Inga nya domänentiteter. Fyra read-only query-endpoints som deriverar rollerna ur befintliga register:
 
 | Endpoint | Syfte | Auth |
 |----------|-------|------|
-| `POST /editions/{editionId}/persons/{personId}/roles` | Lägg till roll (idempotent) | IsAdmin |
-| `DELETE /editions/{editionId}/persons/{personId}/roles/{role}` | Ta bort roll (idempotent) | IsAdmin |
-| `GET /conventions/{id}/persons?editionId={editionId}` | Personlista med editionsroller | IsAdmin |
+| `GET /editions/{id}/visitors` | Bekräftade besökarregistreringar | IsAdmin |
+| `GET /editions/{id}/organisers` | Arrangörer (lead + co) på publicerade evenemang | IsAdmin |
+| `GET /editions/{id}/staff` | Godkända funktionärsansökningar | IsAdmin |
+| `GET /editions/{id}/responsibles` | Positionslista – en rad per ansvarigpost, person kan vara null | IsAdmin |
 
-Domain event-handlers som sätter roller implicit registreras i Application-lagret och triggas via befintlig `EventDispatchInterceptor`.
+Urvalslistor för koordinator- och ansvarigval hämtar från `/editions/{id}/staff`.
 
 #### Övriga endpoints (övriga 3.x-sektioner)
 
