@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -8,7 +8,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ConventionService, PersonDto } from 'shared';
+import {
+  ConventionService,
+  EditionOrganiserDto,
+  EditionResponsibleDto,
+  EditionStaffMemberDto,
+  EditionVisitorDto,
+  PersonDto,
+} from 'shared';
+import { EditionContextService } from '../../services/edition-context.service';
 
 @Component({
   selector: 'app-persons',
@@ -30,6 +38,7 @@ import { ConventionService, PersonDto } from 'shared';
 export class PersonsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly svc = inject(ConventionService);
+  readonly editionContext = inject(EditionContextService);
 
   readonly persons = signal<PersonDto[]>([]);
   readonly loading = signal(true);
@@ -40,11 +49,95 @@ export class PersonsComponent implements OnInit {
   readonly searchQuery = signal('');
   readonly editingPerson = signal<PersonDto | null>(null);
 
+  readonly onlyEditionPersons = signal(true);
+  readonly editionRolesMap = signal<Map<string, string[]>>(new Map());
+  readonly rolesLoading = signal(false);
+
+  constructor() {
+    effect(() => {
+      const edition = this.editionContext.activeEdition();
+      if (edition) {
+        this.loadEditionRoles(edition.id);
+      } else {
+        this.editionRolesMap.set(new Map());
+      }
+    });
+  }
+
+  private loadEditionRoles(editionId: string): void {
+    this.rolesLoading.set(true);
+    let pending = 4;
+    let visitors: EditionVisitorDto[] = [];
+    let organisers: EditionOrganiserDto[] = [];
+    let staff: EditionStaffMemberDto[] = [];
+    let responsibles: EditionResponsibleDto[] = [];
+
+    const tryBuild = () => {
+      if (--pending === 0) {
+        this.editionRolesMap.set(this.buildRoleMap(visitors, organisers, staff, responsibles));
+        this.rolesLoading.set(false);
+      }
+    };
+
+    this.svc.listEditionVisitors(editionId).subscribe({ next: v => { visitors = v; tryBuild(); }, error: tryBuild });
+    this.svc.listEditionOrganisers(editionId).subscribe({ next: o => { organisers = o; tryBuild(); }, error: tryBuild });
+    this.svc.listEditionStaff(editionId).subscribe({ next: s => { staff = s; tryBuild(); }, error: tryBuild });
+    this.svc.listEditionResponsibles(editionId).subscribe({ next: r => { responsibles = r; tryBuild(); }, error: tryBuild });
+  }
+
+  private buildRoleMap(
+    visitors: EditionVisitorDto[],
+    organisers: EditionOrganiserDto[],
+    staff: EditionStaffMemberDto[],
+    responsibles: EditionResponsibleDto[]
+  ): Map<string, string[]> {
+    const map = new Map<string, Set<string>>();
+    const add = (pid: string, role: string) => {
+      if (!map.has(pid)) map.set(pid, new Set());
+      map.get(pid)!.add(role);
+    };
+
+    for (const v of visitors) add(v.personId, 'Besökare');
+    for (const o of organisers) add(o.personId, 'Arrangör');
+    for (const s of staff) add(s.personId, 'Funktionär');
+    for (const r of responsibles) {
+      if (!r.personId) continue;
+      if (r.position === 'Bemanningskoordinator' || r.position === 'Evenemangskoordinator') {
+        add(r.personId, 'Koordinator');
+      } else if (r.position.startsWith('Funktionsområdesansvarig') || r.position.startsWith('Kategoriansvarig')) {
+        add(r.personId, 'Ansvarig');
+      }
+    }
+
+    return new Map([...map.entries()].map(([k, v]) => [k, [...v]]));
+  }
+
+  personRoles(personId: string): string[] {
+    return this.editionRolesMap().get(personId) ?? [];
+  }
+
+  roleChipClass(role: string): string {
+    switch (role) {
+      case 'Besökare':    return 'chip-green';
+      case 'Arrangör':    return 'chip-blue';
+      case 'Funktionär':  return 'chip-blue';
+      case 'Koordinator': return 'chip-red';
+      case 'Ansvarig':    return 'chip-grey';
+      default:            return 'chip-grey';
+    }
+  }
+
   readonly filteredPersons = computed(() => {
     const q = this.searchQuery().toLowerCase();
-    return this.persons().filter(
-      p => !q || p.name.toLowerCase().includes(q) || p.email.toLowerCase().includes(q)
-    );
+    const onlyEdition = this.onlyEditionPersons();
+    const roleMap = this.editionRolesMap();
+    const hasEditionContext = this.editionContext.activeEdition() !== null;
+
+    return this.persons().filter(p => {
+      if (q && !p.name.toLowerCase().includes(q) && !p.email.toLowerCase().includes(q)) return false;
+      if (onlyEdition && hasEditionContext && !this.rolesLoading() && !p.isAdmin && !roleMap.has(p.id)) return false;
+      return true;
+    });
   });
 
   readonly createForm = this.fb.group({
@@ -60,6 +153,7 @@ export class PersonsComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.editionContext.load();
     this.load();
   }
 

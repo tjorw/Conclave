@@ -1,6 +1,16 @@
 <div class="page-header">
   <h1>Personer</h1>
-  <p class="subtitle">Alla registrerade personer i konventionen</p>
+  <p class="subtitle">
+    @if (editionContext.activeEdition(); as e) {
+      @if (onlyEditionPersons()) {
+        Knutna till <strong>{{ e.name }}</strong>
+      } @else {
+        Alla registrerade personer i konventionen
+      }
+    } @else {
+      Alla registrerade personer i konventionen
+    }
+  </p>
 </div>
 
 @if (error()) {
@@ -12,6 +22,22 @@
     <mat-icon matPrefix>search</mat-icon>
     <input matInput placeholder="Sök namn eller e-post…" (input)="onSearch($event)" />
   </mat-form-field>
+  @if (editionContext.activeEdition(); as e) {
+    <button mat-stroked-button
+      [color]="onlyEditionPersons() ? 'primary' : undefined"
+      (click)="onlyEditionPersons.update(v => !v)"
+      [matTooltip]="onlyEditionPersons() ? 'Visa alla personer' : 'Filtrera till ' + e.name"
+      class="edition-filter-btn">
+      @if (rolesLoading()) {
+        <mat-spinner diameter="16" />
+      } @else if (onlyEditionPersons()) {
+        <mat-icon>filter_alt</mat-icon>
+      } @else {
+        <mat-icon>filter_alt_off</mat-icon>
+      }
+      {{ e.name }}
+    </button>
+  }
   <span class="spacer"></span>
   <button mat-flat-button color="primary" (click)="toggleCreateForm()">
     <mat-icon>add</mat-icon>
@@ -73,9 +99,12 @@
               <td><strong>{{ person.name }}</strong></td>
               <td>{{ person.email }}</td>
               <td>{{ person.phone ?? '–' }}</td>
-              <td>
+              <td class="roles-cell">
                 @if (person.isAdmin) {
                   <span class="chip chip-blue">Admin</span>
+                }
+                @for (role of personRoles(person.id); track role) {
+                  <span class="chip" [class]="roleChipClass(role)">{{ role }}</span>
                 }
               </td>
               <td>
@@ -161,8 +190,13 @@
           } @empty {
             <tr>
               <td colspan="7" class="empty-cell">
-                @if (searchQuery()) { Inga personer matchar sökningen. }
-                @else { Inga personer registrerade ännu. }
+                @if (searchQuery()) {
+                  Inga personer matchar sökningen.
+                } @else if (onlyEditionPersons() && editionContext.activeEdition()) {
+                  Inga personer knutna till denna upplaga ännu.
+                } @else {
+                  Inga personer registrerade ännu.
+                }
               </td>
             </tr>
           }

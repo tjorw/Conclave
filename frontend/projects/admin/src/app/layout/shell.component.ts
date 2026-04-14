@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,6 +18,7 @@ import { EditionContextService } from '../services/edition-context.service';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
+    MatDividerModule,
     MatSidenavModule,
     MatToolbarModule,
     MatIconModule,

@@ -8,6 +8,23 @@
   .search-field { width: 300px; }
 }
 
+.edition-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roles-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
 .create-card {
   margin-bottom: 16px;
 }

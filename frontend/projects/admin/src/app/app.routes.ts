@@ -33,6 +33,26 @@ export const routes: Routes = [
           import('./features/persons/persons.component').then(m => m.PersonsComponent),
       },
       {
+        path: 'persons/visitors',
+        loadComponent: () =>
+          import('./features/persons/edition-visitors.component').then(m => m.EditionVisitorsComponent),
+      },
+      {
+        path: 'persons/organisers',
+        loadComponent: () =>
+          import('./features/persons/edition-organisers.component').then(m => m.EditionOrganisersComponent),
+      },
+      {
+        path: 'persons/staff',
+        loadComponent: () =>
+          import('./features/persons/edition-staff.component').then(m => m.EditionStaffComponent),
+      },
+      {
+        path: 'persons/responsibles',
+        loadComponent: () =>
+          import('./features/persons/edition-responsibles.component').then(m => m.EditionResponsiblesComponent),
+      },
+      {
         path: 'events',
         loadComponent: () =>
           import('./features/events/events.component').then(m => m.EventsComponent),

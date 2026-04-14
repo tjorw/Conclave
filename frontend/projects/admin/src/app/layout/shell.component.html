@@ -10,10 +10,35 @@
         <mat-icon matListItemIcon>dashboard</mat-icon>
         <span matListItemTitle>Dashboard</span>
       </a>
-      <a mat-list-item routerLink="persons" routerLinkActive="active-link">
+
+      <mat-divider />
+      <span class="nav-section-label">Personer</span>
+
+      <a mat-list-item routerLink="persons"
+         routerLinkActive="active-link"
+         [routerLinkActiveOptions]="{exact: true}">
         <mat-icon matListItemIcon>people</mat-icon>
-        <span matListItemTitle>Personer</span>
+        <span matListItemTitle>Personregister</span>
       </a>
+      <a mat-list-item routerLink="persons/visitors" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>emoji_people</mat-icon>
+        <span matListItemTitle>Besökare</span>
+      </a>
+      <a mat-list-item routerLink="persons/organisers" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>theater_comedy</mat-icon>
+        <span matListItemTitle>Arrangörer</span>
+      </a>
+      <a mat-list-item routerLink="persons/staff" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>construction</mat-icon>
+        <span matListItemTitle>Funktionärer</span>
+      </a>
+      <a mat-list-item routerLink="persons/responsibles" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>supervisor_account</mat-icon>
+        <span matListItemTitle>Ansvariga</span>
+      </a>
+
+      <mat-divider />
+
       <a mat-list-item routerLink="events" routerLinkActive="active-link">
         <mat-icon matListItemIcon>event</mat-icon>
         <span matListItemTitle>Evenemang</span>
