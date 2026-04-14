@@ -10,6 +10,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { AuthService } from 'shared';
 import { EditionContextService } from '../services/edition-context.service';
+import { NAV } from '../labels/nav.labels';
+import { ACTION } from '../labels/ui.labels';
 
 @Component({
   selector: 'app-shell',
@@ -34,6 +36,9 @@ export class ShellComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   readonly editionContext = inject(EditionContextService);
+
+  readonly NAV    = NAV;
+  readonly ACTION = ACTION;
 
   ngOnInit(): void {
     this.editionContext.load();

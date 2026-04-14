@@ -27,7 +27,7 @@
             <mat-card-title>
               {{ edition.name }}
               @if (edition.status === 'Published') {
-                <span class="active-badge">Aktiv</span>
+                <span class="active-badge">{{ CHIP.active }}</span>
               }
             </mat-card-title>
             <mat-card-subtitle>
@@ -56,24 +56,24 @@
 
     <form [formGroup]="createForm" (ngSubmit)="create()" class="create-form">
       <mat-form-field appearance="outline">
-        <mat-label>Namn</mat-label>
-        <input matInput formControlName="name" placeholder="t.ex. Conclave 2026" />
+        <mat-label>{{ FIELD.name }}</mat-label>
+        <input matInput formControlName="name" [placeholder]="PLACEHOLDER.editionName" />
       </mat-form-field>
 
       <div class="date-row">
         <mat-form-field appearance="outline">
-          <mat-label>Startdatum</mat-label>
+          <mat-label>{{ FIELD.startDate }}</mat-label>
           <input matInput type="date" formControlName="startDate" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Slutdatum</mat-label>
+          <mat-label>{{ FIELD.endDate }}</mat-label>
           <input matInput type="date" formControlName="endDate" />
         </mat-form-field>
       </div>
 
       <mat-form-field appearance="outline">
-        <mat-label>Staffkoordinator</mat-label>
+        <mat-label>{{ FIELD.staffCoord }}</mat-label>
         <mat-select formControlName="staffCoordinatorId">
           @for (person of persons(); track person.id) {
             <mat-option [value]="person.id">{{ person.name }}</mat-option>
@@ -82,7 +82,7 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Evenemangskoordinator</mat-label>
+        <mat-label>{{ FIELD.eventCoord }}</mat-label>
         <mat-select formControlName="eventCoordinatorId">
           @for (person of persons(); track person.id) {
             <mat-option [value]="person.id">{{ person.name }}</mat-option>
@@ -95,7 +95,7 @@
           @if (saving()) {
             <mat-spinner diameter="18" />
           } @else {
-            Skapa
+            {{ ACTION.create }}
           }
         </button>
       </div>

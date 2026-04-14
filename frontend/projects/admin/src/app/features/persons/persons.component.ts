@@ -17,6 +17,7 @@ import {
   PersonDto,
 } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
+import { ACTION, CHIP, FIELD, PLACEHOLDER, TOOLTIP } from '../../labels/ui.labels';
 
 @Component({
   selector: 'app-persons',
@@ -39,6 +40,12 @@ export class PersonsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly svc = inject(ConventionService);
   readonly editionContext = inject(EditionContextService);
+
+  readonly ACTION      = ACTION;
+  readonly TOOLTIP     = TOOLTIP;
+  readonly FIELD       = FIELD;
+  readonly PLACEHOLDER = PLACEHOLDER;
+  readonly CHIP        = CHIP;
 
   readonly persons = signal<PersonDto[]>([]);
   readonly loading = signal(true);

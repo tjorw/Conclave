@@ -9,9 +9,11 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DatePipe } from '@angular/common';
 import { EditionContextService } from '../../services/edition-context.service';
+import { TOOLTIP } from '../../labels/ui.labels';
 import {
   ConventionService, EditionDto, StaffApplicationSummaryDto, StaffService,
   StaffAreaDto, StationDto,
+  STAFF_APPLICATION_STATUS_LABEL, STAFF_APPLICATION_STATUS_CHIP,
 } from 'shared';
 
 type StatusFilter = 'all' | 'pending' | 'accepted' | 'rejected';
@@ -37,6 +39,8 @@ export class StaffingComponent {
   private readonly conventionSvc = inject(ConventionService);
   private readonly router        = inject(Router);
   readonly editionCtx            = inject(EditionContextService);
+
+  readonly TOOLTIP = TOOLTIP;
 
   readonly loading     = signal(true);
   readonly saving      = signal(false);
@@ -75,7 +79,6 @@ export class StaffingComponent {
     this.loading.set(true);
     this.error.set(null);
     this.applicationsLoaded.set(false);
-    this.showAddForm.set(false);
 
     this.conventionSvc.getEdition(editionId).subscribe({
       next: ed => { this.edition.set(ed); this.loading.set(false); },
@@ -143,25 +146,11 @@ export class StaffingComponent {
   }
 
   applicationStatusLabel(status: string): string {
-    const map: Record<string, string> = {
-      Received:    'Mottagen',
-      UnderReview: 'Under granskning',
-      Assigned:    'Tilldelad',
-      Confirmed:   'Godkänd',
-      Rejected:    'Avslagen',
-    };
-    return map[status] ?? status;
+    return STAFF_APPLICATION_STATUS_LABEL[status] ?? status;
   }
 
   applicationStatusChipClass(status: string): string {
-    switch (status) {
-      case 'Received':    return 'chip chip-grey';
-      case 'UnderReview': return 'chip chip-blue';
-      case 'Assigned':
-      case 'Confirmed':   return 'chip chip-green';
-      case 'Rejected':    return 'chip chip-red';
-      default:            return 'chip chip-grey';
-    }
+    return STAFF_APPLICATION_STATUS_CHIP[status] ?? 'chip chip-grey';
   }
 
   stationName(stationId: string): string {

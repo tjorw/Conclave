@@ -109,13 +109,13 @@
                     @if (canReview(app.status)) {
                       <button mat-icon-button color="primary"
                         (click)="accept(app)"
-                        matTooltip="Acceptera"
+                        [matTooltip]="TOOLTIP.accept"
                         [disabled]="saving()">
                         <mat-icon>check_circle</mat-icon>
                       </button>
                       <button mat-icon-button color="warn"
                         (click)="reject(app)"
-                        matTooltip="Avslå"
+                        [matTooltip]="TOOLTIP.reject"
                         [disabled]="saving()">
                         <mat-icon>cancel</mat-icon>
                       </button>

@@ -40,7 +40,7 @@
     <mat-card-content>
       <form [formGroup]="createForm" class="form-row">
         <mat-form-field appearance="outline">
-          <mat-label>Kategori *</mat-label>
+          <mat-label>{{ FIELD.category }} *</mat-label>
           <mat-select formControlName="categoryId">
             @for (cat of categories(); track cat.id) {
               <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
@@ -48,7 +48,7 @@
           </mat-select>
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>Huvudarrangör *</mat-label>
+          <mat-label>{{ FIELD.leadOrganiser }} *</mat-label>
           <mat-select formControlName="leadOrganiserId">
             @for (person of persons(); track person.id) {
               <mat-option [value]="person.id">{{ person.name }}</mat-option>
@@ -58,10 +58,10 @@
       </form>
     </mat-card-content>
     <mat-card-actions align="end">
-      <button mat-button type="button" (click)="toggleCreateForm()">Avbryt</button>
+      <button mat-button type="button" (click)="toggleCreateForm()">{{ ACTION.cancel }}</button>
       <button mat-flat-button color="primary" (click)="create()"
         [disabled]="createForm.invalid || saving()">
-        @if (saving()) { <mat-spinner diameter="18" /> } @else { Skapa }
+        @if (saving()) { <mat-spinner diameter="18" /> } @else { {{ ACTION.create }} }
       </button>
     </mat-card-actions>
   </mat-card>
@@ -96,7 +96,7 @@
                 </span>
               </td>
               <td class="row-actions" (click)="$event.stopPropagation()">
-                <button mat-icon-button (click)="openEvent(event.id)" matTooltip="Öppna">
+                <button mat-icon-button (click)="openEvent(event.id)" [matTooltip]="TOOLTIP.open">
                   <mat-icon>open_in_new</mat-icon>
                 </button>
               </td>

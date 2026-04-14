@@ -21,7 +21,7 @@
   <div class="action-bar">
     <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
       <mat-icon matPrefix>search</mat-icon>
-      <input matInput placeholder="Sök namn eller e-post…" (input)="onSearch($event)" />
+      <input matInput [placeholder]="PLACEHOLDER.searchNameEmail" (input)="onSearch($event)" />
     </mat-form-field>
   </div>
 

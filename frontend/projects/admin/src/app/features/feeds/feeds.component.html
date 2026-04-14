@@ -8,10 +8,10 @@
   <p class="feed-description">Returnerar alltid den upplaga som är markerad som aktiv. Lämplig för startsidor och widgets.</p>
   <div class="feed-row">
     <code class="feed-url">{{ activeEditionUrl }}</code>
-    <button mat-icon-button (click)="copy(activeEditionUrl)" matTooltip="Kopiera URL">
+    <button mat-icon-button (click)="copy(activeEditionUrl)" [matTooltip]="TOOLTIP.copyUrl">
       <mat-icon>content_copy</mat-icon>
     </button>
-    <a mat-icon-button [href]="activeEditionUrl" target="_blank" matTooltip="Öppna i ny flik">
+    <a mat-icon-button [href]="activeEditionUrl" target="_blank" [matTooltip]="TOOLTIP.openInNewTab">
       <mat-icon>open_in_new</mat-icon>
     </a>
   </div>
@@ -24,10 +24,10 @@
     <div class="feed-row">
       <span class="feed-label">{{ ed.name }}</span>
       <code class="feed-url">{{ ed.url }}</code>
-      <button mat-icon-button (click)="copy(ed.url)" matTooltip="Kopiera URL">
+      <button mat-icon-button (click)="copy(ed.url)" [matTooltip]="TOOLTIP.copyUrl">
         <mat-icon>content_copy</mat-icon>
       </button>
-      <a mat-icon-button [href]="ed.url" target="_blank" matTooltip="Öppna i ny flik">
+      <a mat-icon-button [href]="ed.url" target="_blank" [matTooltip]="TOOLTIP.openInNewTab">
         <mat-icon>open_in_new</mat-icon>
       </a>
     </div>

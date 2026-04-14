@@ -62,4 +62,30 @@ html, body {
   &.chip-grey   { background: #f5f5f5; color: #757575; }
   &.chip-blue   { background: #e3f2fd; color: #1565c0; }
   &.chip-red    { background: #ffebee; color: #c62828; }
+  &.chip-orange { background: #fff3e0; color: #e65100; }
+}
+
+// ── Utilityklasser (globala, undvik duplicering i component.scss) ──────────
+
+.no-pad { padding: 0; }
+
+.spinner-center {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.error-banner {
+  background: #fdecea;
+  color: #b71c1c;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.empty-cell {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 32px 16px;
 }

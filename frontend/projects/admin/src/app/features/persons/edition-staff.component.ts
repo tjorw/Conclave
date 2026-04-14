@@ -6,8 +6,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ConventionService, EditionStaffMemberDto, PersonDto, StaffService } from 'shared';
+import { ConventionService, EditionStaffMemberDto, PersonDto, StaffService, STAFF_APPLICATION_STATUS_LABEL } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
+import { ACTION, FIELD, PLACEHOLDER, TOOLTIP } from '../../labels/ui.labels';
 
 @Component({
   selector: 'app-edition-staff',
@@ -29,6 +30,11 @@ export class EditionStaffComponent {
   private readonly staffSvc = inject(StaffService);
   private readonly fb      = inject(FormBuilder);
   readonly editionContext  = inject(EditionContextService);
+
+  readonly ACTION      = ACTION;
+  readonly TOOLTIP     = TOOLTIP;
+  readonly FIELD       = FIELD;
+  readonly PLACEHOLDER = PLACEHOLDER;
 
   readonly staff       = signal<EditionStaffMemberDto[]>([]);
   readonly loading     = signal(false);
@@ -93,6 +99,10 @@ export class EditionStaffComponent {
 
   onSearch(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);
+  }
+
+  applicationStatusLabel(status: string): string {
+    return STAFF_APPLICATION_STATUS_LABEL[status] ?? status;
   }
 
   openAddForm(): void {

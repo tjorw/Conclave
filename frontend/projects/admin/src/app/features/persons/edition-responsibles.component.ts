@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConventionService, EditionResponsibleDto } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
+import { FIELD, PLACEHOLDER } from '../../labels/ui.labels';
 
 @Component({
   selector: 'app-edition-responsibles',
@@ -23,6 +24,9 @@ import { EditionContextService } from '../../services/edition-context.service';
 export class EditionResponsiblesComponent {
   private readonly svc = inject(ConventionService);
   readonly editionContext = inject(EditionContextService);
+
+  readonly FIELD       = FIELD;
+  readonly PLACEHOLDER = PLACEHOLDER;
 
   readonly responsibles = signal<EditionResponsibleDto[]>([]);
   readonly loading = signal(false);

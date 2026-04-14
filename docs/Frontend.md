@@ -262,6 +262,66 @@ API-data.
 
 ---
 
+### Etiketter och texter – ingen hårdkodning
+
+**Regel: inga svenska (eller andra naturliga språk) texter får vara hårdkodade direkt i `.html`- eller `.ts`-filer.**
+
+All text som visas för användaren definieras i en dedikerad labelkälla och importeras därifrån. Det gäller utan undantag:
+
+- Navigationsrubriker och menyetiketter
+- Sidrubriker, undertexter
+- Knappar, tooltips, aria-labels
+- Formulärfältetiketter (`mat-label`) och platshållare (`placeholder`)
+- Felmeddelanden (både inline i template och i `.ts`-filer)
+- Tomma-lista-meddelanden (`empty-cell`-text)
+- Statusetiketter och chip-text
+- Bekräftelsetexter och dialogrubriker
+- Tabellkolumnrubriker
+
+#### Var labels definieras
+
+| Typ | Plats |
+|-----|-------|
+| Domänstatusardar (EventStatus, StaffApplicationStatus m.fl.) | `projects/shared/src/lib/labels/*.labels.ts` – exporteras via `public-api.ts` |
+| Gemensamma UI-åtgärder (Spara, Avbryt, Redigera, Ta bort…) | `projects/admin/src/app/labels/ui.labels.ts` |
+| Navigationsrubriker | `projects/admin/src/app/labels/nav.labels.ts` |
+| Felmeddelanden per domän | `projects/admin/src/app/labels/errors.labels.ts` |
+| Sidspecifika texter (rubriker, empty states) | `projects/admin/src/app/labels/pages.labels.ts` |
+
+Filer i `shared/lib/labels/` exporteras via `public-api.ts` och är tillgängliga i alla appar.
+Filer under `admin/labels/` är admin-appens egna och importeras direkt av komponenterna.
+
+#### Format
+
+Label-filer exporterar namngivna `Record<string, string>`-konstanter eller enkla objekt:
+
+```typescript
+// ui.labels.ts
+export const ACTION = {
+  save:   'Spara',
+  cancel: 'Avbryt',
+  create: 'Skapa',
+  delete: 'Ta bort',
+  edit:   'Redigera',
+} as const;
+```
+
+Komponenter importerar och exponerar etiketten som en `readonly`-property:
+
+```typescript
+readonly ACTION = ACTION;   // tillgängliggör i template
+```
+
+I template: `{{ ACTION.cancel }}` eller `[matTooltip]="ACTION.edit"`.
+
+#### Framtida i18n
+
+Strukturen är förberedd för flerspråksstöd. När behov uppstår introduceras en
+`LabelsService` som väljer rätt lokalisering vid runtime – komponenterna behöver
+då bara byta från direktimport till service-injektion, utan att ändra templates.
+
+---
+
 ### Konventioner
 
 - `inject()` för dependency injection, aldrig konstruktor-injektion

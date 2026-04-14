@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ENVIRONMENT } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
+import { TOOLTIP } from '../../labels/ui.labels';
 
 @Component({
   selector: 'app-feeds',
@@ -15,6 +16,8 @@ import { EditionContextService } from '../../services/edition-context.service';
 export class FeedsComponent {
   private readonly env    = inject(ENVIRONMENT);
   readonly editionCtx     = inject(EditionContextService);
+
+  readonly TOOLTIP = TOOLTIP;
 
   private readonly base = `${this.env.apiBaseUrl}/feed/${this.env.conventionId}`;
 

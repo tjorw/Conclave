@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConventionService, EditionVisitorDto } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
+import { FIELD, PLACEHOLDER } from '../../labels/ui.labels';
 
 @Component({
   selector: 'app-edition-visitors',
@@ -23,6 +24,9 @@ import { EditionContextService } from '../../services/edition-context.service';
 export class EditionVisitorsComponent {
   private readonly svc = inject(ConventionService);
   readonly editionContext = inject(EditionContextService);
+
+  readonly FIELD       = FIELD;
+  readonly PLACEHOLDER = PLACEHOLDER;
 
   readonly visitors = signal<EditionVisitorDto[]>([]);
   readonly loading = signal(false);
