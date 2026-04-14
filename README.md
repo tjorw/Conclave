@@ -67,6 +67,19 @@ System för att administrera, annonsera, registrera och driva hobbymässor (tabl
 | [Angular CLI](https://angular.dev/tools/cli) | 21+ | Bygga och köra Angular-apparna |
 | [Docker Desktop](https://www.docker.com/products/docker-desktop/) | senaste | Integrationstester (SQL Server-container) |
 
+Repo:t innehåller [global.json](global.json) och låser SDK till `.NET 9`.
+Om `dotnet` klagar på "A compatible .NET SDK was not found" behöver du installera en 9.x-SDK lokalt.
+
+#### Felsökning: saknad .NET 9 SDK
+
+```powershell
+winget install Microsoft.DotNet.SDK.9
+dotnet --list-sdks
+dotnet --version
+```
+
+Om installationen lyckats ska `dotnet --version` visa en 9.x-version när du kör kommandot i repo-roten.
+
 Docker Desktop krävs bara för integrationstesterna. Testcontainers startar en SQL Server-container automatiskt; ingen lokal SQL Server-installation behövs för CI. SQL Server-imagen (`mcr.microsoft.com/mssql/server`, ~600 MB) hämtas första gången.
 
 ---
