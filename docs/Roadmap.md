@@ -27,7 +27,7 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 
 ### Klar – Fas 3 (delvis)
 - **3.0 Workspace och delad infrastruktur** – Angular monorepo med admin-app, publik-app och delat bibliotek; `AuthService` (signals), `authGuard`, `adminGuard`, `AuthInterceptor`, alla API-modeller
-- **3.1.1 Scaffold och layout** – App-shell med sidenav, toolbar, logout; lazy-loadade routes med `authGuard` + `adminGuard`
+- **3.1.1 Scaffold och layout** – App-shell med sidenav, toolbar, logout; lazy-loadade routes med `authGuard` + `adminGuard`; felsidor 401, 403, 404; `httpErrorInterceptor` omdirigerar API-401 till `/unauthorized`
 - **3.1.2 Inloggning** – Inloggningsformulär med Angular Material Reactive Forms, JWT sparas i sessionStorage, redirect vid lyckad inloggning, logout
 - **API-förbättringar** – CORS-policy för Angular-apparna, ConventionDbContext + ApplicationIdentityDbContext auto-migreras vid uppstart
 - **3.1.4 Konventionsstruktur** – Upplagehantering, lokaler, funktionsområden, kategorier med full CRUD; aktiv upplaga i sessionStorage-kontext; tabbar och tabelllistningar
@@ -120,7 +120,7 @@ Rollbaserad app för konventionsadministratörer. Kräver `is_admin`-claim.
 #### ~~3.1.1 Scaffold och layout~~ ✓ Klar
 - ~~App-shell: topbar, sidebar-navigation, content-area~~
 - ~~Routing: `AdminGuard` på alla routes utom login~~
-- Felsidor: 401, 403, 404 *(ej klar)*
+- ~~Felsidor: 401, 403, 404~~
 - ~~Lazy-loaded feature-routes per sektion~~
 
 #### ~~3.1.2 Inloggning~~ ✓ Klar
