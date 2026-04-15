@@ -2,6 +2,7 @@ using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.RemoveSessionRequest;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Enums;
+using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Ids;
 using NSubstitute;
 
@@ -52,7 +53,7 @@ public class RemoveSessionRequestHandlerTests
     {
         var ev = CreateDraftEventWithRequest(out _);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<SessionRequestNotFoundException>(() =>
             _handler.Handle(new RemoveSessionRequestCommand(ev.Id.Value, Guid.NewGuid()), default));
     }
 
@@ -62,7 +63,7 @@ public class RemoveSessionRequestHandlerTests
         var ev = CreateDraftEventWithRequest(out var requestId);
         ev.CancelEvent(PersonId.New());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<EventIsCancelledAndReadOnlyException>(() =>
             _handler.Handle(new RemoveSessionRequestCommand(ev.Id.Value, requestId), default));
     }
 }

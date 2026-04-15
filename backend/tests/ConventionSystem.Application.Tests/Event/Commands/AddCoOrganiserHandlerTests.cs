@@ -4,6 +4,7 @@ using ConventionSystem.Application.Event.Commands.AddCoOrganiser;
 using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
+using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Ids;
 using NSubstitute;
 
@@ -68,7 +69,7 @@ public class AddCoOrganiserHandlerTests
         var (convention, coOrganiser, ev) = Setup();
         ev.AddCoOrganiser(coOrganiser.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<CoOrganiserAlreadyAddedException>(() =>
             _handler.Handle(new AddCoOrganiserCommand(ev.Id.Value, coOrganiser.Id.Value, convention.Id.Value), default));
     }
 

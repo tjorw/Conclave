@@ -5,6 +5,7 @@ using ConventionSystem.Application.Event.Commands.CancelEvent;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Event.Enums;
+using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Events;
 using ConventionSystem.Domain.Event.Ids;
 using NSubstitute;
@@ -78,7 +79,7 @@ public class CancelEventHandlerTests
         _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _currentUser.PersonId.Returns(responsible.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<EventAlreadyCancelledException>(
             () => _handler.Handle(new CancelEventCommand(ev.Id.Value), default));
     }
 

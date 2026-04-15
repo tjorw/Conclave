@@ -5,6 +5,7 @@ using ConventionSystem.Application.Event.Commands.ApproveVersion;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Event.Enums;
+using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Events;
 using ConventionSystem.Domain.Event.Ids;
 using NSubstitute;
@@ -81,7 +82,7 @@ public class ApproveVersionHandlerTests
         _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _currentUser.PersonId.Returns(responsible.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<EventAlreadyPublishedException>(
             () => _handler.Handle(new ApproveVersionCommand(ev.Id.Value), default));
     }
 

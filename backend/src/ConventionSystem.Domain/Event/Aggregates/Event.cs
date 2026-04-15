@@ -2,6 +2,7 @@ using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Entities;
 using ConventionSystem.Domain.Event.Enums;
+using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Events;
 using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Event.ValueObjects;
@@ -47,7 +48,7 @@ public sealed class Event : AggregateRoot
     private void EnsureNotCancelled()
     {
         if (Status == EventStatus.Cancelled)
-            throw new InvalidOperationException("Evenemanget är inställt och kan inte redigeras.");
+            throw new EventIsCancelledAndReadOnlyException();
     }
 
     public void EditTitle(string title)
@@ -93,20 +94,20 @@ public sealed class Event : AggregateRoot
     {
         EnsureNotCancelled();
         var request = _sessionRequests.FirstOrDefault(r => r.Id == requestId)
-            ?? throw new InvalidOperationException("Sessionönskemålet hittades inte.");
+            ?? throw new SessionRequestNotFoundException();
         _sessionRequests.Remove(request);
     }
 
     public void SubmitForReview()
     {
         if (Status == EventStatus.Cancelled)
-            throw new InvalidOperationException("Evenemanget är inställt.");
+            throw new EventIsCancelledException();
         if (Status == EventStatus.UnderReview)
-            throw new InvalidOperationException("Evenemanget är redan under granskning.");
+            throw new EventAlreadyUnderReviewException();
         if (string.IsNullOrWhiteSpace(Title))
-            throw new InvalidOperationException("Evenemanget måste ha en titel.");
+            throw new EventTitleRequiredException();
         if (string.IsNullOrWhiteSpace(Description))
-            throw new InvalidOperationException("Evenemanget måste ha en beskrivning.");
+            throw new EventDescriptionRequiredException();
 
         Status = EventStatus.UnderReview;
         RaiseDomainEvent(new EventSubmittedForReview(Id, DateTimeOffset.UtcNow));
@@ -115,13 +116,13 @@ public sealed class Event : AggregateRoot
     public void Approve(PersonId responsibleId)
     {
         if (Status == EventStatus.Cancelled)
-            throw new InvalidOperationException("Evenemanget är inställt.");
+            throw new EventIsCancelledException();
         if (Status == EventStatus.Published)
-            throw new InvalidOperationException("Evenemanget är redan publicerat.");
+            throw new EventAlreadyPublishedException();
         if (string.IsNullOrWhiteSpace(Title))
-            throw new InvalidOperationException("Evenemanget måste ha en titel.");
+            throw new EventTitleRequiredException();
         if (string.IsNullOrWhiteSpace(Description))
-            throw new InvalidOperationException("Evenemanget måste ha en beskrivning.");
+            throw new EventDescriptionRequiredException();
 
         Status = EventStatus.Published;
         RaiseDomainEvent(new EventApproved(Id, LeadOrganiserId, responsibleId, Title, DateTimeOffset.UtcNow));
@@ -130,7 +131,7 @@ public sealed class Event : AggregateRoot
     public void ReturnToDraft(PersonId performedById)
     {
         if (Status == EventStatus.Draft)
-            throw new InvalidOperationException("Evenemanget är redan i utkastläge.");
+            throw new EventAlreadyDraftException();
 
         Status = EventStatus.Draft;
     }
@@ -138,7 +139,7 @@ public sealed class Event : AggregateRoot
     public EventComment Reject(PersonId responsibleId, string comment)
     {
         if (Status != EventStatus.UnderReview)
-            throw new InvalidOperationException("Evenemanget är inte under granskning.");
+            throw new EventNotUnderReviewException();
 
         Status = EventStatus.Draft;
         var eventComment = new EventComment(EventCommentId.New(), Id, responsibleId, comment);
@@ -151,7 +152,7 @@ public sealed class Event : AggregateRoot
     public void CancelEvent(PersonId responsibleId)
     {
         if (Status == EventStatus.Cancelled)
-            throw new InvalidOperationException("Evenemanget är redan inställt.");
+            throw new EventAlreadyCancelledException();
 
         Status = EventStatus.Cancelled;
         RaiseDomainEvent(new EventCancelled(Id, responsibleId, DateTimeOffset.UtcNow));
@@ -168,7 +169,7 @@ public sealed class Event : AggregateRoot
     public void UpdateSession(SessionId sessionId, VenueId venueId, TimeSlot timeSlot, int maxSeats, StartType startType, PersonId performedById)
     {
         var session = _sessions.FirstOrDefault(s => s.Id == sessionId)
-            ?? throw new InvalidOperationException("Sessionen hittades inte.");
+            ?? throw new SessionNotFoundException();
 
         session.Update(venueId, timeSlot, maxSeats, startType);
     }
@@ -176,7 +177,7 @@ public sealed class Event : AggregateRoot
     public void DeactivateSession(SessionId sessionId, PersonId performedById)
     {
         var session = _sessions.FirstOrDefault(s => s.Id == sessionId)
-            ?? throw new InvalidOperationException("Sessionen hittades inte.");
+            ?? throw new SessionNotFoundException();
 
         session.Deactivate();
         RaiseDomainEvent(new SessionDeactivated(sessionId, Id, performedById, DateTimeOffset.UtcNow));
@@ -185,7 +186,7 @@ public sealed class Event : AggregateRoot
     public CoOrganiser AddCoOrganiser(PersonId personId)
     {
         if (_coOrganisers.Any(c => c.PersonId == personId))
-            throw new InvalidOperationException("Personen är redan medarrangör för detta evenemang.");
+            throw new CoOrganiserAlreadyAddedException();
 
         var coOrganiser = new CoOrganiser(personId);
         _coOrganisers.Add(coOrganiser);

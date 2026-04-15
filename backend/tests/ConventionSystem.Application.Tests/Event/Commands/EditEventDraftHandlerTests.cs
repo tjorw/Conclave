@@ -2,6 +2,7 @@ using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.EditEventDraft;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Enums;
+using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Ids;
 using NSubstitute;
 
@@ -77,7 +78,7 @@ public class EditEventDraftHandlerTests
         var ev = CreateDraftEvent();
         ev.CancelEvent(PersonId.New());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<EventIsCancelledAndReadOnlyException>(() =>
             _handler.Handle(
                 new EditEventDraftCommand(ev.Id.Value, "Titel", "Beskrivning", RegistrationType.PreRegistration, null), default));
     }

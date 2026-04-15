@@ -2,6 +2,7 @@ using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.AddSessionRequest;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Enums;
+using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Ids;
 using NSubstitute;
 
@@ -74,7 +75,7 @@ public class AddSessionRequestHandlerTests
         var ev = CreateDraftEvent();
         ev.CancelEvent(PersonId.New());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<EventIsCancelledAndReadOnlyException>(() =>
             _handler.Handle(
                 new AddSessionRequestCommand(ev.Id.Value, "Beskrivning", 120, 4, StartType.FixedTime), default));
     }

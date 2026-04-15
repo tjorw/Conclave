@@ -1,6 +1,7 @@
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Enums;
+using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Event.ValueObjects;
 
@@ -31,7 +32,7 @@ public sealed class Session : Entity<SessionId>
     internal void Update(VenueId venueId, TimeSlot timeSlot, int maxSeats, StartType startType)
     {
         if (Status == SessionStatus.Inactive)
-            throw new InvalidOperationException("Kan inte redigera en inaktiv session.");
+            throw new SessionInactiveCannotEditException();
         VenueId = venueId;
         TimeSlot = timeSlot;
         MaxSeats = maxSeats;
@@ -41,7 +42,7 @@ public sealed class Session : Entity<SessionId>
     internal void Deactivate()
     {
         if (Status == SessionStatus.Inactive)
-            throw new InvalidOperationException("Sessionen är redan inaktiv.");
+            throw new SessionAlreadyInactiveException();
         Status = SessionStatus.Inactive;
     }
 }

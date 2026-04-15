@@ -2,6 +2,7 @@ using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.SubmitForReview;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Enums;
+using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Ids;
 using NSubstitute;
 
@@ -57,7 +58,7 @@ public class SubmitForReviewHandlerTests
         ev.EditDescription("Beskrivning");
         _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<EventTitleRequiredException>(() =>
             _handler.Handle(new SubmitForReviewCommand(ev.Id.Value), default));
     }
 
@@ -68,7 +69,7 @@ public class SubmitForReviewHandlerTests
         ev.SubmitForReview();
         _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<EventAlreadyUnderReviewException>(() =>
             _handler.Handle(new SubmitForReviewCommand(ev.Id.Value), default));
     }
 }

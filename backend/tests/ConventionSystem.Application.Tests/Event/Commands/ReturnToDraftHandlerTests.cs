@@ -5,6 +5,7 @@ using ConventionSystem.Application.Event.Commands.ReturnToDraft;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Event.Enums;
+using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Ids;
 using NSubstitute;
 
@@ -81,7 +82,7 @@ public class ReturnToDraftHandlerTests
         var (_, responsible, _, ev) = Setup(EventStatus.Draft);
         _currentUser.PersonId.Returns(responsible.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<EventAlreadyDraftException>(
             () => _handler.Handle(new ReturnToDraftCommand(ev.Id.Value), default));
     }
 

@@ -1,6 +1,7 @@
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Aggregates;
 using ConventionSystem.Domain.Event.Enums;
+using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Ids;
 
 namespace ConventionSystem.Domain.Tests.Event;
@@ -28,7 +29,7 @@ public class EventChangeCategoryTests
         var ev = CreateDraftEvent();
         ev.CancelEvent(PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(() => ev.ChangeCategory(CategoryId.New()));
+        Assert.Throws<EventIsCancelledAndReadOnlyException>(() => ev.ChangeCategory(CategoryId.New()));
     }
 
     [Fact]

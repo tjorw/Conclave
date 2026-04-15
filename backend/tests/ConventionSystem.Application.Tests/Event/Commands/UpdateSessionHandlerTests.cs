@@ -6,6 +6,7 @@ using ConventionSystem.Application.Event.Commands.UpdateSession;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Event.Enums;
+using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Ids;
 using NSubstitute;
 
@@ -82,7 +83,7 @@ public class UpdateSessionHandlerTests
         var (_, responsible, _, ev, venueId, _) = Setup();
         _currentUser.PersonId.Returns(responsible.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<SessionNotFoundException>(() =>
             _handler.Handle(new UpdateSessionCommand(
                 ev.Id.Value, Guid.NewGuid(), venueId.Value,
                 new DateTime(2027, 3, 1, 12, 0, 0),
