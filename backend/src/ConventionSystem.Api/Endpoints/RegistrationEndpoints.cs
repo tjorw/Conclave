@@ -1,5 +1,8 @@
 using ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
 using ConventionSystem.Application.Registration.Commands.AddStaffMember;
+using ConventionSystem.Application.Registration.Queries.GetMyVisitorRegistration;
+using ConventionSystem.Application.Registration.Queries.GetMySessionRegistrations;
+using ConventionSystem.Application.Registration.Queries.GetMyStaffApplication;
 using ConventionSystem.Application.Staff.Queries.ListStaffApplications;
 using ConventionSystem.Application.Registration.Commands.AddAvailability;
 using ConventionSystem.Application.Registration.Commands.AddStationPreference;
@@ -162,6 +165,24 @@ public static class RegistrationEndpoints
                 return Results.Created($"/staff-applications/{id}", new { id });
             })
             .RequireAuthorization("IsAdmin");
+
+        // 3.2.4 – Min besökarregistrering
+        app.MapGet("/editions/{editionId:guid}/my-visitor-registration",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetMyVisitorRegistrationQuery(editionId), ct)))
+            .RequireAuthorization();
+
+        // 3.2.4 – Mina sessionsregistreringar
+        app.MapGet("/editions/{editionId:guid}/my-session-registrations",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetMySessionRegistrationsQuery(editionId), ct)))
+            .RequireAuthorization();
+
+        // 3.2.4 – Min staffansökan
+        app.MapGet("/editions/{editionId:guid}/my-staff-application",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetMyStaffApplicationQuery(editionId), ct)))
+            .RequireAuthorization();
 
         // UC-SA007: Lista staffansökningar per upplaga
         app.MapGet("/editions/{editionId:guid}/staff-applications",

@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Registration.Abstractions;
+using ConventionSystem.Application.Registration.Queries;
 using ConventionSystem.Application.Staff.Queries;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
@@ -22,6 +23,18 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
         => db.StaffApplications.AnyAsync(
             a => a.PersonId == personId && a.EditionId == editionId
               && a.Status != StaffApplicationStatus.Rejected, ct);
+
+    public async Task<MyStaffApplicationDto?> GetByPersonAndEditionAsync(
+        PersonId personId, EditionId editionId, CancellationToken ct = default)
+    {
+        var application = await db.StaffApplications
+            .FirstOrDefaultAsync(a => a.PersonId == personId && a.EditionId == editionId
+                                      && a.Status != StaffApplicationStatus.Rejected, ct);
+
+        return application is null
+            ? null
+            : new MyStaffApplicationDto(application.Id.Value, application.Status.ToString());
+    }
 
     public async Task<IReadOnlyList<StaffApplicationSummaryDto>> ListByEditionIdAsync(EditionId editionId, CancellationToken ct = default)
     {

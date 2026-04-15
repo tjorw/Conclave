@@ -1,30 +1,64 @@
-import { Component } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { EditionService } from '../../services/edition.service';
+import {
+  AuthService,
+  EventService,
+  EventSummaryDto,
+  MyVisitorRegistrationDto,
+  MySessionRegistrationSummaryDto,
+  MyStaffApplicationDto,
+  RegistrationService,
+} from 'shared';
 
 @Component({
   selector: 'app-my-pages',
   standalone: true,
-  imports: [RouterLink],
-  template: `
-    <div class="page-container" style="padding: 48px 16px; max-width: 640px;">
-      <h1 style="font-size: 1.75rem; font-weight: 500; color: var(--brand-primary); margin: 0 0 32px;">
-        Mina sidor
-      </h1>
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <a routerLink="/my-pages/events"
-           style="display: block; background: var(--brand-surface); border-radius: 10px;
-                  box-shadow: 0 2px 8px rgba(0,0,0,.06); padding: 18px 22px;
-                  text-decoration: none; color: var(--brand-text); font-weight: 500; font-size: 1rem;">
-          Mina arrangemang
-        </a>
-        <a routerLink="/my-pages/profile"
-           style="display: block; background: var(--brand-surface); border-radius: 10px;
-                  box-shadow: 0 2px 8px rgba(0,0,0,.06); padding: 18px 22px;
-                  text-decoration: none; color: var(--brand-text); font-weight: 500; font-size: 1rem;">
-          Min profil
-        </a>
-      </div>
-    </div>
-  `,
+  imports: [DatePipe, RouterLink, MatProgressSpinnerModule],
+  templateUrl: './my-pages.component.html',
+  styleUrl: './my-pages.component.scss',
 })
-export class MyPagesComponent {}
+export class MyPagesComponent implements OnInit {
+  private readonly editionSvc = inject(EditionService);
+  private readonly eventSvc   = inject(EventService);
+  private readonly regSvc     = inject(RegistrationService);
+  private readonly authSvc    = inject(AuthService);
+
+  readonly loading       = signal(true);
+  readonly userName      = signal<string | null>(null);
+  readonly myEvents      = signal<EventSummaryDto[]>([]);
+  readonly myTicket      = signal<MyVisitorRegistrationDto | null>(null);
+  readonly mySessions    = signal<MySessionRegistrationSummaryDto[]>([]);
+  readonly myApplication = signal<MyStaffApplicationDto | null>(null);
+
+  ngOnInit(): void {
+    const editionId = this.editionSvc.editionId();
+    if (!editionId) {
+      this.loading.set(false);
+      return;
+    }
+
+    forkJoin({
+      profile:     this.authSvc.getProfile().pipe(catchError(() => of(null))),
+      events:      this.eventSvc.getMyEvents(editionId).pipe(catchError(() => of([]))),
+      ticket:      this.regSvc.getMyVisitorRegistration(editionId).pipe(catchError(() => of(null))),
+      sessions:    this.regSvc.getMySessionRegistrations(editionId).pipe(catchError(() => of([]))),
+      application: this.regSvc.getMyStaffApplication(editionId).pipe(catchError(() => of(null))),
+    }).subscribe(result => {
+      this.userName.set(result.profile?.name ?? null);
+      this.myEvents.set(result.events);
+      this.myTicket.set(result.ticket);
+      this.mySessions.set(result.sessions);
+      this.myApplication.set(result.application);
+      this.loading.set(false);
+    });
+  }
+
+  get pendingCommentCount(): number {
+    return this.myEvents().reduce((sum, e) => sum + (e.pendingCommentCount ?? 0), 0);
+  }
+}

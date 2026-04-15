@@ -40,3 +40,24 @@ export interface SessionRegistrationDto {
   sessionId: string;
   registeredAt: string;
 }
+
+export interface MyVisitorRegistrationDto {
+  id: string;
+  status: string;
+  ticketTypeName: string | null;
+}
+
+export interface MySessionRegistrationSummaryDto {
+  id: string;
+  sessionId: string;
+  eventTitle: string;
+  start: string;
+  end: string;
+  venueName: string;
+  status: string;
+}
+
+export interface MyStaffApplicationDto {
+  id: string;
+  status: string;
+}

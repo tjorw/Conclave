@@ -1,0 +1,125 @@
+.hub-page {
+  max-width: 720px;
+  padding: 40px 16px 64px;
+}
+
+.loading-center {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+.hub-header {
+  margin-bottom: 32px;
+}
+
+.hub-greeting {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--brand-primary);
+  margin: 0;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.status-card {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: var(--brand-surface);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  text-decoration: none;
+  color: var(--brand-text);
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+  }
+}
+
+.card-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--brand-primary);
+}
+
+.card-summary {
+  font-size: 0.875rem;
+  margin: 0;
+  color: var(--brand-text);
+}
+
+.card-next {
+  font-size: 0.8rem;
+  margin: 0;
+  color: var(--brand-text-secondary);
+}
+
+.card-empty {
+  font-size: 0.875rem;
+  margin: 0;
+  color: var(--brand-text-secondary);
+}
+
+.card-cta {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--brand-primary);
+}
+
+.tag-green {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 12px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.tag-orange {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 12px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.hub-nav {
+  display: flex;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--brand-divider, #e5e7eb);
+}
+
+.nav-link {
+  font-size: 0.875rem;
+  color: var(--brand-primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

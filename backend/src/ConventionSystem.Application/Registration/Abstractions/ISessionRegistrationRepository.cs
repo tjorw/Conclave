@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Registration.Queries;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
@@ -10,6 +11,7 @@ public interface ISessionRegistrationRepository
     Task<SessionRegistration?> GetByIdAsync(SessionRegistrationId id, CancellationToken ct = default);
     Task<IReadOnlyList<SessionRegistration>> GetAllConfirmedBySessionIdAsync(SessionId sessionId, CancellationToken ct = default);
     Task<bool> HasRegistrationAsync(PersonId personId, SessionId sessionId, CancellationToken ct = default);
+    Task<IReadOnlyList<MySessionRegistrationSummaryDto>> ListByPersonAndEditionAsync(PersonId personId, EditionId editionId, CancellationToken ct = default);
     Task AddAndSaveAsync(SessionRegistration registration, CancellationToken ct = default);
     Task SaveAsync(CancellationToken ct = default);
 }

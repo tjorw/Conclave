@@ -74,6 +74,27 @@ export const routes: Routes = [
               ),
           },
           {
+            path: 'ticket',
+            loadComponent: () =>
+              import('./features/my-pages/ticket/my-ticket.component').then(
+                m => m.MyTicketComponent
+              ),
+          },
+          {
+            path: 'program',
+            loadComponent: () =>
+              import('./features/my-pages/program/my-program.component').then(
+                m => m.MyProgramComponent
+              ),
+          },
+          {
+            path: 'staff',
+            loadComponent: () =>
+              import('./features/my-pages/staff/my-staff.component').then(
+                m => m.MyStaffComponent
+              ),
+          },
+          {
             path: 'events/new',
             loadComponent: () =>
               import('./features/my-pages/my-events/create/create-event.component').then(
