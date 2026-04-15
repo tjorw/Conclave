@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using MediatR;
@@ -16,17 +17,17 @@ public sealed class RemoveAdministratorHandler(
         var conventionId = new ConventionId(command.ConventionId);
 
         var convention = await conventionRepository.GetByIdAsync(conventionId, ct)
-            ?? throw new InvalidOperationException($"Konvention '{command.ConventionId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Konvention", command.ConventionId.ToString());
 
         var performedById = currentUser.PersonId;
         if (!convention.IsAdministrator(performedById))
-            throw new InvalidOperationException("Utföraren är inte administratör för denna konvention.");
+            throw new ForbiddenException("Utföraren är inte administratör för denna konvention.");
 
         var person = await personRepository.GetByIdAsync(new PersonId(command.PersonId), ct)
-            ?? throw new InvalidOperationException($"Person '{command.PersonId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Person", command.PersonId.ToString());
 
         if (person.ConventionId != conventionId)
-            throw new InvalidOperationException("Personen tillhör inte denna konvention.");
+            throw new ForbiddenException("Personen tillhör inte denna konvention.");
 
         convention.RemoveAdministrator(person.Id, performedById);
         await conventionRepository.SaveAsync(ct);

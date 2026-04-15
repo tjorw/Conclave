@@ -1,6 +1,7 @@
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Convention.Events;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 
@@ -45,7 +46,7 @@ public sealed class Convention : AggregateRoot
     public ConventionAdministrator AddAdministrator(PersonId personId, PersonId performedById)
     {
         if (_administrators.Any(a => a.PersonId == personId))
-            throw new InvalidOperationException("Personen är redan administratör för denna konvention.");
+            throw new PersonIsAlreadyAdministratorException();
 
         var admin = new ConventionAdministrator(personId, performedById);
         _administrators.Add(admin);
@@ -56,10 +57,10 @@ public sealed class Convention : AggregateRoot
     public void RemoveAdministrator(PersonId personId, PersonId performedById)
     {
         if (personId == performedById)
-            throw new InvalidOperationException("Du kan inte ta bort dig själv som administratör.");
+            throw new CannotRemoveSelfAsAdministratorException();
 
         var admin = _administrators.SingleOrDefault(a => a.PersonId == personId)
-            ?? throw new InvalidOperationException("Personen är inte administratör för denna konvention.");
+            ?? throw new PersonIsNotAdministratorException();
 
         _administrators.Remove(admin);
         RaiseDomainEvent(new AdministratorRemoved(Id, personId, performedById, DateTimeOffset.UtcNow));

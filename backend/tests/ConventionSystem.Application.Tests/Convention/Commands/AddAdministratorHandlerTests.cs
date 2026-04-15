@@ -1,6 +1,8 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.AddAdministrator;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using NSubstitute;
 
@@ -62,7 +64,7 @@ public class AddAdministratorHandlerTests
         _conventionRepo.GetByIdAsync(Arg.Any<ConventionId>(), Arg.Any<CancellationToken>())
             .Returns((Domain.Convention.Aggregates.Convention?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new AddAdministratorCommand(Guid.NewGuid(), Guid.NewGuid()), default));
     }
 
@@ -74,7 +76,7 @@ public class AddAdministratorHandlerTests
         _personRepo.GetByIdAsync(newPerson.Id, Arg.Any<CancellationToken>()).Returns(newPerson);
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new AddAdministratorCommand(convention.Id.Value, newPerson.Id.Value), default));
     }
 
@@ -86,7 +88,7 @@ public class AddAdministratorHandlerTests
             .Returns((Domain.Convention.Entities.Person?)null);
         _currentUser.PersonId.Returns(existingAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new AddAdministratorCommand(convention.Id.Value, Guid.NewGuid()), default));
     }
 
@@ -99,7 +101,7 @@ public class AddAdministratorHandlerTests
         _personRepo.GetByIdAsync(foreignPerson.Id, Arg.Any<CancellationToken>()).Returns(foreignPerson);
         _currentUser.PersonId.Returns(existingAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new AddAdministratorCommand(convention.Id.Value, foreignPerson.Id.Value), default));
     }
 
@@ -110,7 +112,7 @@ public class AddAdministratorHandlerTests
         _personRepo.GetByIdAsync(existingAdmin.Id, Arg.Any<CancellationToken>()).Returns(existingAdmin);
         _currentUser.PersonId.Returns(existingAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<PersonIsAlreadyAdministratorException>(
             () => _handler.Handle(new AddAdministratorCommand(convention.Id.Value, existingAdmin.Id.Value), default));
     }
 }

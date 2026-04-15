@@ -1,3 +1,5 @@
+using ConventionSystem.Application.Common.Exceptions;
+using ConventionSystem.Domain.Common;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,13 +13,16 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         Exception exception,
         CancellationToken cancellationToken)
     {
-        var (statusCode, title) = exception switch
+        var (statusCode, title, errorCode) = exception switch
         {
-            ArgumentException => (StatusCodes.Status400BadRequest, "Ogiltiga parametrar"),
-            InvalidOperationException => (StatusCodes.Status422UnprocessableEntity, "Affärsregelbrott"),
-            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Ej behörig"),
-            KeyNotFoundException => (StatusCodes.Status404NotFound, "Resursen hittades inte"),
-            _ => (StatusCodes.Status500InternalServerError, "Ett internt serverfel inträffade")
+            ArgumentException => (StatusCodes.Status400BadRequest, "Ogiltiga parametrar", "invalid_argument"),
+            ResourceNotFoundException => (StatusCodes.Status404NotFound, "Resursen hittades inte", "resource_not_found"),
+            ForbiddenException => (StatusCodes.Status403Forbidden, "Saknar behörighet", "forbidden"),
+            DomainRuleViolationException domainRule => (StatusCodes.Status422UnprocessableEntity, "Affärsregelbrott", domainRule.ErrorCode),
+            InvalidOperationException => (StatusCodes.Status422UnprocessableEntity, "Affärsregelbrott", "invalid_operation"),
+            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Ej behörig", "unauthorized"),
+            KeyNotFoundException => (StatusCodes.Status404NotFound, "Resursen hittades inte", "key_not_found"),
+            _ => (StatusCodes.Status500InternalServerError, "Ett internt serverfel inträffade", "internal_server_error")
         };
 
         if (statusCode == StatusCodes.Status500InternalServerError)
@@ -29,6 +34,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             Title = title,
             Detail = exception.Message
         };
+        problem.Extensions["errorCode"] = errorCode;
 
         httpContext.Response.StatusCode = statusCode;
         await httpContext.Response.WriteAsJsonAsync(problem, cancellationToken);

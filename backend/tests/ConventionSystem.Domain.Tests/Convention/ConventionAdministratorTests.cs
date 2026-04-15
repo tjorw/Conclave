@@ -1,6 +1,8 @@
 using ConventionSystem.Domain.Convention.Aggregates;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Events;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Common;
 
 namespace ConventionSystem.Domain.Tests.Convention;
 
@@ -50,7 +52,7 @@ public class ConventionAdministratorTests
         var admin = convention.RegisterPerson("Admin", "admin@example.com");
         convention.AddAdministrator(admin.Id, admin.Id);
 
-        Assert.Throws<InvalidOperationException>(() => convention.RemoveAdministrator(admin.Id, admin.Id));
+        Assert.Throws<CannotRemoveSelfAsAdministratorException>(() => convention.RemoveAdministrator(admin.Id, admin.Id));
     }
 
     [Fact]
@@ -61,6 +63,16 @@ public class ConventionAdministratorTests
         var person = convention.CreatePerson("Anna", "anna@example.com");
         convention.AddAdministrator(existingAdmin.Id, existingAdmin.Id);
 
-        Assert.Throws<InvalidOperationException>(() => convention.RemoveAdministrator(person.Id, existingAdmin.Id));
+        Assert.Throws<PersonIsNotAdministratorException>(() => convention.RemoveAdministrator(person.Id, existingAdmin.Id));
+    }
+
+    [Fact]
+    public void AddAdministrator_AlreadyAdministrator_Throws()
+    {
+        var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
+        var admin = convention.RegisterPerson("Admin", "admin@example.com");
+        convention.AddAdministrator(admin.Id, admin.Id);
+
+        Assert.Throws<PersonIsAlreadyAdministratorException>(() => convention.AddAdministrator(admin.Id, admin.Id));
     }
 }

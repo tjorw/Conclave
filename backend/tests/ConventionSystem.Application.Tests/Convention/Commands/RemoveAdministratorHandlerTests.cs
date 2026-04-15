@@ -1,6 +1,8 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.RemoveAdministrator;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using NSubstitute;
 
@@ -63,7 +65,7 @@ public class RemoveAdministratorHandlerTests
         _conventionRepo.GetByIdAsync(Arg.Any<ConventionId>(), Arg.Any<CancellationToken>())
             .Returns((Domain.Convention.Aggregates.Convention?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new RemoveAdministratorCommand(Guid.NewGuid(), Guid.NewGuid()), default));
     }
 
@@ -74,7 +76,7 @@ public class RemoveAdministratorHandlerTests
         var nonAdmin = convention.CreatePerson("Bob", "bob@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new RemoveAdministratorCommand(convention.Id.Value, secondAdmin.Id.Value), default));
     }
 
@@ -86,7 +88,7 @@ public class RemoveAdministratorHandlerTests
             .Returns((Domain.Convention.Entities.Person?)null);
         _currentUser.PersonId.Returns(existingAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new RemoveAdministratorCommand(convention.Id.Value, Guid.NewGuid()), default));
     }
 
@@ -99,7 +101,7 @@ public class RemoveAdministratorHandlerTests
         _personRepo.GetByIdAsync(foreignPerson.Id, Arg.Any<CancellationToken>()).Returns(foreignPerson);
         _currentUser.PersonId.Returns(existingAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new RemoveAdministratorCommand(convention.Id.Value, foreignPerson.Id.Value), default));
     }
 
@@ -110,7 +112,7 @@ public class RemoveAdministratorHandlerTests
         _personRepo.GetByIdAsync(existingAdmin.Id, Arg.Any<CancellationToken>()).Returns(existingAdmin);
         _currentUser.PersonId.Returns(existingAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<CannotRemoveSelfAsAdministratorException>(
             () => _handler.Handle(new RemoveAdministratorCommand(convention.Id.Value, existingAdmin.Id.Value), default));
     }
 }

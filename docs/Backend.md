@@ -182,10 +182,36 @@ public sealed class CreateVenueHandler(
 }
 ```
 
-Felmeddelanden kastas som `InvalidOperationException` (→ 422 via
-`GlobalExceptionHandler`) vid regelbrott.
-Behörighetsfel kastas som `UnauthorizedAccessException` (→ 401) – aldrig
-`InvalidOperationException` för auth.
+### Felhanteringsstandard
+
+Vi använder exceptions som mekanism i alla lager, men med stark typning.
+
+- **Domain:** kastar `DomainRuleViolationException` eller en domänspecifik
+    subtyp (t.ex. `CannotRemoveSelfAsAdministratorException`)
+- **Application:** kastar applikationsspecifika typer för infrastruktur/
+    use case-fel, t.ex. `ResourceNotFoundException` och `ForbiddenException`
+- **API:** `GlobalExceptionHandler` mappar exception-typ till statuskod och
+    returnerar maskinläsbar `errorCode` i `ProblemDetails.Extensions`
+
+Mappning i API-lagret:
+
+- `ResourceNotFoundException` → 404
+- `ForbiddenException` → 403
+- `UnauthorizedAccessException` → 401
+- `DomainRuleViolationException` (och subtyper) → 422
+
+För domänfel gäller att subtypen styr `errorCode` så klienten kan reagera på
+exakt affärsregel utan att tolka feltext.
+
+```csharp
+public sealed class CannotRemoveSelfAsAdministratorException()
+        : DomainRuleViolationException(
+                "Du kan inte ta bort dig själv som administratör.",
+                "cannot_remove_self_as_administrator");
+```
+
+Regel: använd subtyp när klienten behöver särskilja ett specifikt regelbrott,
+annars räcker bas-typen `DomainRuleViolationException`.
 
 ### Repository-interfaces
 
