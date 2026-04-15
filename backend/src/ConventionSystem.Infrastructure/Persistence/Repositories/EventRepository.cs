@@ -246,6 +246,28 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
         return result;
     }
 
+    public async Task<IReadOnlyList<EditionSessionDto>> ListSessionsByEditionIdAsync(EditionId editionId, CancellationToken ct = default)
+    {
+        var events = await db.Events
+            .Include(e => e.Sessions)
+            .Where(e => e.EditionId == editionId)
+            .ToListAsync(ct);
+
+        return events
+            .SelectMany(e => e.Sessions, (e, s) => new EditionSessionDto(
+                s.Id.Value,
+                e.Id.Value,
+                e.Title ?? "",
+                s.VenueId.Value,
+                s.TimeSlot.Start,
+                s.TimeSlot.End,
+                s.MaxSeats,
+                s.StartType.ToString(),
+                s.Status.ToString()))
+            .OrderBy(s => s.Start)
+            .ToList();
+    }
+
     public async Task DeleteAsync(Domain.Event.Aggregates.Event ev, CancellationToken ct = default)
     {
         db.Events.Remove(ev);

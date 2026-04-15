@@ -67,6 +67,17 @@ public record SessionDto(
     string StartType,
     string Status);
 
+public record EditionSessionDto(
+    Guid SessionId,
+    Guid EventId,
+    string EventTitle,
+    Guid VenueId,
+    DateTime Start,
+    DateTime End,
+    int MaxSeats,
+    string StartType,
+    string Status);
+
 public record EventCommentDto(
     Guid Id,
     Guid AuthorId,

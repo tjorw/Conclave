@@ -2,6 +2,7 @@ using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Convention.Commands.ChangeCategoryResponsible;
 using ConventionSystem.Application.Convention.Queries.ListEditionResponsibles;
 using ConventionSystem.Application.Convention.Commands.SetActiveEdition;
+using ConventionSystem.Application.Event.Queries.GetEditionSessions;
 using ConventionSystem.Application.Event.Queries.ListEditionOrganisers;
 using ConventionSystem.Application.Registration.Queries.ListEditionVisitors;
 using ConventionSystem.Application.Registration.Queries.ListEditionStaff;
@@ -230,6 +231,11 @@ public static class EditionEndpoints
         app.MapGet("/editions/{editionId:guid}/responsibles",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListEditionResponsiblesQuery(editionId), ct)))
+            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapGet("/editions/{editionId:guid}/sessions",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetEditionSessionsQuery(editionId), ct)))
             .RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         return app;

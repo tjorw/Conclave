@@ -1,0 +1,103 @@
+@if (visibleVenues().length === 0 && !draftBlock()) {
+  <div class="tl-empty">
+    <mat-icon>schedule</mat-icon>
+    <span>Inga sessioner schemalagda ännu. Välj lokal och tid i formuläret för att se ett förslag.</span>
+  </div>
+} @else {
+  @if (hasConflict()) {
+    <div class="tl-conflict-banner">
+      <mat-icon>warning</mat-icon>
+      Tidskonflikten – den pågående sessionen krockar med en annan session i samma lokal.
+    </div>
+  }
+
+  <div class="tl-scroll">
+
+    <!-- ── Header ──────────────────────────────────────────────────── -->
+    <div class="tl-header" [style.padding-left.px]="VENUE_LABEL_WIDTH">
+
+      <!-- Day labels -->
+      <div class="tl-days" [style.width.px]="totalWidth()">
+        @for (seg of daySegments(); track seg.label) {
+          <div class="tl-day"
+            [style.left.px]="seg.left"
+            [style.width.px]="seg.width">
+            {{ seg.label }}
+          </div>
+        }
+      </div>
+
+      <!-- Hour ticks -->
+      <div class="tl-hours" [style.width.px]="totalWidth()">
+        @for (m of hourMarkers(); track m.left) {
+          <div class="tl-hour-tick" [style.left.px]="m.left">
+            <span>{{ m.label }}</span>
+          </div>
+        }
+      </div>
+
+    </div>
+
+    <!-- ── Venue rows ────────────────────────────────────────────── -->
+    <div class="tl-body">
+      @for (venue of visibleVenues(); track venue.id) {
+        <div class="tl-row" [style.height.px]="ROW_HEIGHT">
+
+          <!-- Venue label -->
+          <div class="tl-venue-label"
+            [style.width.px]="VENUE_LABEL_WIDTH"
+            [style.height.px]="ROW_HEIGHT"
+            [class.editing]="editingVenueId() === venue.id">
+            {{ venue.name }}
+          </div>
+
+          <!-- Track -->
+          <div class="tl-track" [style.width.px]="totalWidth()" [style.height.px]="ROW_HEIGHT">
+
+            <!-- Grid lines (one per hour) -->
+            @for (m of hourMarkers(); track m.left) {
+              <div class="tl-grid-line" [style.left.px]="m.left"></div>
+            }
+
+            <!-- Session blocks -->
+            @for (block of getBlocksForVenue(venue.id); track block.session.sessionId) {
+              <div class="tl-block"
+                [class.own]="block.isOwn && !block.hasConflict"
+                [class.other]="!block.isOwn && !block.hasConflict"
+                [class.conflict]="block.hasConflict"
+                [style.left.px]="block.left"
+                [style.width.px]="block.width"
+                [title]="block.session.eventTitle + ' ' + formatTime(block.session.start) + '–' + formatTime(block.session.end)">
+                <span class="tl-block-label">{{ block.session.eventTitle }}</span>
+                <span class="tl-block-time">{{ formatTime(block.session.start) }}–{{ formatTime(block.session.end) }}</span>
+              </div>
+            }
+
+            <!-- Draft block (only shown in the venue that's currently selected) -->
+            @if (draftBlock(); as db) {
+              @if (db.venueId === venue.id) {
+                <div class="tl-block draft"
+                  [class.conflict]="db.hasConflict"
+                  [style.left.px]="db.left"
+                  [style.width.px]="db.width"
+                  title="Pågår / förslag">
+                  <span class="tl-block-label">{{ db.hasConflict ? 'Konflikt!' : 'Pågår…' }}</span>
+                </div>
+              }
+            }
+
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+
+  <!-- Legend -->
+  <div class="tl-legend">
+    <span class="tl-legend-dot own">Eget evenemang</span>
+    <span class="tl-legend-dot other">Annat evenemang</span>
+    <span class="tl-legend-dot draft">Pågår / förslag</span>
+    <span class="tl-legend-dot conflict">Konflikt</span>
+  </div>
+}

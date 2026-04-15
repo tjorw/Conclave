@@ -325,6 +325,99 @@ Admin ska kunna styra när en upplaga tar emot arrangemangsansökningar respekti
 - `SubmitForReview`-knappen i arrangörsvyn döljs eller inaktiveras om `eventSubmissionsOpen == false`
 - Funktionärsansökningsformuläret (3.2.8) döljs om `staffApplicationsOpen == false`
 
+#### 3.1.12 Globalt schemaläggningsverktyg (admin)
+
+Ny menypost "Schemaläggning" i admin-sidnavet. Ger konventionsadmin en samlad vy över alla sessioner och möjlighet att placera, flytta och verifiera schemaläggning utan att behöva navigera in i varje enskilt evenemang.
+
+**Skärmlayout**
+
+Tvådelad vy: vänster sidopanel med åtgärdsformulär och höger tidslinjepanel.
+
+*Sidopanel*
+- **Förslagsformulär:** välj evenemang → välj sessionönskemål (dropdown med önskemålets tid/platser), välj lokal, sätt start- och sluttid, konfliktindikator (röd varning direkt om överlapp detekteras), valfri intern kommentar
+- **"Ta in önskemål"**-knapp på varje rad i önskemålslistan: fyller i formuläret med önskemålets parametrar som startpunkt
+- **Sessionönskemålslista:** visar alla oschemalagda önskemål (evenemangstitel, önskad tid, platser, typ), sorterade per evenemang
+
+*Tidslinjepanel*
+- Dag-flikar (en per konventdag) eller datumväljare
+- Lokaler som rader, tid (08:00–22:00) som x-axel
+- Sessionblock med färgkodning:
+  - Grön – placerad session
+  - Orange – pågående redigering / förslag
+  - Röd – konflikt (överlapp i samma lokal och tid)
+- Filter: byggnad (grupperar lokaler), kategori, fritextsökning
+
+**Konfliktdetektering**
+- Sker i frontend mot lokalt cachad sessionlista
+- En session är i konflikt om start/slut överlappar med en annan session i samma lokal
+- Konflikten visas i formuläret (röd statusrad) och i tidslinjen (röd block)
+
+**Åtgärder**
+- Spara nytt sessionblock → `POST /events/{eventId}/sessions`
+- Uppdatera befintlig session (drag i tidslinje eller formulärändring) → `PUT /events/{eventId}/sessions/{sessionId}`
+- Inaktivera session → `DELETE /events/{eventId}/sessions/{sessionId}`
+
+**Backend – ny query-endpoint**
+
+| Endpoint | Beskrivning | Auth |
+|----------|-------------|------|
+| `GET /editions/{id}/sessions` | Alla sessioner för upplagan: `sessionId`, `eventId`, `eventTitle`, `venueId`, `start`, `end`, `maxSeats`, `startType`, `status` | IsAdmin |
+
+Endpointen är read-only och används för att populera tidslinjen och för frontendbaserad konfliktdetektering. Befintliga schedule/update/deactivate-endpoints används för skrivoperationer.
+
+**Frontend**
+- Ny lazy-loadad route: `/sessions` i admin-appen
+- `SessionsOverviewComponent`: laddar `GET /editions/{id}/sessions` + `GET /editions/{id}` (lokaler, kategorier) i parallell
+- `TimelineComponent`: gemensam komponent som också används i 3.1.13 nedan
+
+#### 3.1.13 Sessionsredigerare i evenemangsdetalj (admin)
+
+Kompletterar den befintliga formulärbaserade sessionsvyn i evenemangsdetaljvyn med en valfri tidslinjevy. Enkla formulärkontroller behålls för snabb datainmatning; tidslinjevyn är ett alternativ att växla till när man vill se lokalens kontext.
+
+**Princip: två lägen, inte ett ersatt**
+
+Sessionsfliksn erbjuder en växlingsknapp "Visa tidslinje" / "Dölj tidslinje":
+- **Standardläge (formulär):** befintliga kontroller – lokal, starttid, sluttid, platser, starttyp, Spara/Återställ/Inaktivera. Snabbt att mata in värden utan att behöva ta in hela tidslinjebilden.
+- **Tidslinjläge (komplement):** tidslinjen visas bredvid formuläret och uppdateras reaktivt när lokal eller tider ändras i formuläret. Användaren kan granska kontexten utan att behöva byta skärm.
+
+**Tidslinjevy (komplement)**
+- Tid 08:00–23:00, vertikal layout med vald lokal som kontext
+- Sessionblock med färgkodning:
+  - Grön – eget evenemangs sessioner
+  - Grå – andra evenemang i samma lokal (read-only)
+  - Orange – session under aktiv redigering / ny session
+  - Röd – konflikt
+- Filter: byggnad (grupperingsväljare för lokaler), fritextsökning
+- Tidslinjen uppdateras när användaren byter lokal eller tid i formuläret
+
+**Datakälla**
+- Egna sessioner: redan hämtade via `GET /events/{id}` (ingår i `EventDto`)
+- Andra evenemang i lokal: hämtas från `GET /editions/{id}/sessions` (samma endpoint som 3.1.12), filtreras i frontend på vald lokal – laddas lazy när tidslinjeläget aktiveras för första gången
+
+**Åtgärder** – samma endpoints som dagens formulär
+- Spara ny session → `POST /events/{eventId}/sessions`
+- Uppdatera session → `PUT /events/{eventId}/sessions/{sessionId}`
+- Inaktivera session → `DELETE /events/{eventId}/sessions/{sessionId}`
+
+**Frontend**
+- Tidslinjeläget styrs av en lokal signal `showTimeline` i `EventDetailComponent`
+- `TimelineComponent` (från 3.1.12) renderas villkorligt – ingen kostnad när dold
+- Formuläret och tidslinjen delar samma reaktiva formulärsignaler; ingen dubbel state
+
+**Gemensam komponent: `TimelineComponent`**
+
+Eftersom 3.1.12 och 3.1.13 delar tidslinjepanelen implementeras den som en fristående, återanvändbar komponent i admin-apppen:
+
+| Input | Typ | Beskrivning |
+|-------|-----|-------------|
+| `sessions` | `SessionBlock[]` | Alla sessioner att rendera |
+| `highlightEventId` | `string \| null` | Eget evenemang (grön färg) |
+| `draftBlock` | `DraftBlock \| null` | Pågående redigering (orange) |
+| `venues` | `VenueDto[]` | Lokal-metadata |
+| `selectedVenueId` | `string \| null` | Filtrerar tidslinjen till en lokal |
+
+Konflikter beräknas internt i komponenten baserat på `draftBlock` mot `sessions`.
+
 ---
 
 ### Fas 3.2 – Publik vy
@@ -587,6 +680,8 @@ Använd en rad per punkt och ändra bara statusmarkören i början.
 
 - [x] `R02` Fas 3.1.8 Registreringsöversikt i admin
 - [x] `R12` Fas 3.1.11 Öppna och stänga ansökan – arrangemang och funktionärer
+- [ ] `R15` Fas 3.1.12 Globalt schemaläggningsverktyg (admin)
+- [ ] `R16` Fas 3.1.13 Sessionsredigerare i evenemangsdetalj (admin)
 - [x] `R04` Fas 3.2.4 Mina sidor – hub och navigationsstruktur
 - [ ] `R05` Fas 3.2.5 Min biljett
 - [ ] `R06` Fas 3.2.6 Mitt program

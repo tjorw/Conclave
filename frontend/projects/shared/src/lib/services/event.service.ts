@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ENVIRONMENT } from '../environment/environment.token';
-import { EventDto, EventSummaryDto } from '../models/event.models';
+import { EditionSessionDto, EventDto, EventSummaryDto } from '../models/event.models';
 
 @Injectable({ providedIn: 'root' })
 export class EventService {
@@ -136,6 +136,12 @@ export class EventService {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/events/${eventId}/sessions/${sessionId}/deactivate`,
       {}
+    );
+  }
+
+  getEditionSessions(editionId: string) {
+    return this.http.get<EditionSessionDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/sessions`
     );
   }
 }

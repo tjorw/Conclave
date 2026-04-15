@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,10 +15,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
-  CategoryDto, ConventionService, DateTimeRangeComponent, EditionDto, EventDto, EventService, VenueDto,
+  CategoryDto, ConventionService, DateTimeRangeComponent, EditionDto, EditionSessionDto, EventDto, EventService, VenueDto,
   EVENT_COMMENT_STATUS_LABEL, EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
 } from 'shared';
 import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
+import { DraftBlock, SessionTimelineComponent } from '../../../shared/session-timeline/session-timeline.component';
 
 @Component({
   selector: 'app-event-detail',
@@ -38,6 +40,7 @@ import { ChangeCategoryDialogComponent } from './change-category-dialog.componen
     DateTimeRangeComponent,
     MatTabsModule,
     MatTooltipModule,
+    SessionTimelineComponent,
   ],
   templateUrl: './event-detail.component.html',
   styleUrl: './event-detail.component.scss',
@@ -63,6 +66,10 @@ export class EventDetailComponent implements OnInit {
   readonly showAddSessionForm    = signal(false);
   readonly editingSessionId      = signal<string | null>(null);
   readonly commentResponses      = signal<Record<string, string>>({});
+  readonly showTimeline          = signal(false);
+  readonly editionSessions       = signal<EditionSessionDto[]>([]);
+  readonly timelineLoading       = signal(false);
+  private readonly timelineLoaded = signal(false);
 
   readonly rejectForm = this.fb.group({
     comment: ['', [Validators.required, Validators.minLength(5)]],
@@ -88,6 +95,24 @@ export class EventDetailComponent implements OnInit {
     endTime:   ['', Validators.required],
     maxSeats:  [20, [Validators.required, Validators.min(1)]],
     startType: ['FixedTime', Validators.required],
+  });
+
+  private readonly sessionFormValues = toSignal(this.sessionForm.valueChanges, {
+    initialValue: this.sessionForm.value,
+  });
+
+  readonly timelineVenueId = computed(() => this.sessionFormValues()?.venueId ?? null);
+
+  readonly timelineDraft = computed<DraftBlock | null>(() => {
+    // Visa bara ett draft-block när formuläret faktiskt är öppet
+    if (!this.showAddSessionForm() && !this.editingSessionId()) return null;
+    const v = this.sessionFormValues();
+    if (!v?.startTime || !v?.endTime) return null;
+    return {
+      start:     v.startTime,
+      end:       v.endTime,
+      sessionId: this.editingSessionId() ?? undefined,
+    };
   });
 
   ngOnInit(): void {
@@ -260,7 +285,7 @@ export class EventDetailComponent implements OnInit {
     const { venueId, startTime, endTime, maxSeats, startType } = this.sessionForm.getRawValue();
     this.saving.set(true);
     this.svc.scheduleSession(ev.id, venueId!, startTime!, endTime!, maxSeats!, startType!).subscribe({
-      next: () => { this.saving.set(false); this.showAddSessionForm.set(false); this.reload(); },
+      next: () => { this.saving.set(false); this.showAddSessionForm.set(false); this.reload(); this.refreshEditionSessions(); },
       error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte schemalägga sessionen.'); },
     });
   }
@@ -272,7 +297,7 @@ export class EventDetailComponent implements OnInit {
     const { venueId, startTime, endTime, maxSeats, startType } = this.sessionForm.getRawValue();
     this.saving.set(true);
     this.svc.updateSession(ev.id, sessionId, venueId!, startTime!, endTime!, maxSeats!, startType!).subscribe({
-      next: () => { this.saving.set(false); this.editingSessionId.set(null); this.reload(); },
+      next: () => { this.saving.set(false); this.editingSessionId.set(null); this.reload(); this.refreshEditionSessions(); },
       error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte spara sessionen.'); },
     });
   }
@@ -282,7 +307,7 @@ export class EventDetailComponent implements OnInit {
     if (!ev || this.saving()) return;
     this.saving.set(true);
     this.svc.deactivateSession(ev.id, sessionId).subscribe({
-      next: () => { this.saving.set(false); this.reload(); },
+      next: () => { this.saving.set(false); this.reload(); this.refreshEditionSessions(); },
       error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte inaktivera sessionen.'); },
     });
   }
@@ -306,6 +331,38 @@ export class EventDetailComponent implements OnInit {
     this.svc.submitForReview(ev.id).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
       error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte skicka in evenemanget för granskning.'); },
+    });
+  }
+
+  // ── Timeline ─────────────────────────────────────────────────────────────
+
+  toggleTimeline(): void {
+    this.showTimeline.update(v => !v);
+    if (this.showTimeline() && !this.timelineLoaded()) {
+      this.loadEditionSessions();
+    }
+  }
+
+  private loadEditionSessions(): void {
+    const ev = this.event();
+    if (!ev) return;
+    this.timelineLoading.set(true);
+    this.svc.getEditionSessions(ev.editionId).subscribe({
+      next: sessions => {
+        this.editionSessions.set(sessions);
+        this.timelineLoading.set(false);
+        this.timelineLoaded.set(true);
+      },
+      error: () => this.timelineLoading.set(false),
+    });
+  }
+
+  private refreshEditionSessions(): void {
+    if (!this.timelineLoaded()) return;
+    const ev = this.event();
+    if (!ev) return;
+    this.svc.getEditionSessions(ev.editionId).subscribe({
+      next: sessions => this.editionSessions.set(sessions),
     });
   }
 

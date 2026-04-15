@@ -186,6 +186,8 @@
     </mat-tab>
 
     <mat-tab label="Schema">
+      <div [class.schema-with-timeline]="showTimeline()">
+        <div class="schema-forms">
 
       <!-- Sessionönskemål -->
       <mat-card class="content-card tab-card">
@@ -263,7 +265,15 @@
 
       <!-- Schemalagda sessioner -->
       <mat-card class="content-card tab-card">
-        <mat-card-header><mat-card-title>Schemalagda sessioner</mat-card-title></mat-card-header>
+        <mat-card-header>
+          <mat-card-title>Schemalagda sessioner</mat-card-title>
+          <button mat-icon-button class="timeline-toggle"
+            (click)="toggleTimeline()"
+            [matTooltip]="showTimeline() ? 'Dölj tidslinje' : 'Visa tidslinje'"
+            [color]="showTimeline() ? 'primary' : ''">
+            <mat-icon>timeline</mat-icon>
+          </button>
+        </mat-card-header>
         <mat-card-content class="no-pad">
           @if (e.sessions.length === 0 && !showAddSessionForm()) {
             <p class="empty-state">Inga sessioner schemalagda ännu.</p>
@@ -385,6 +395,31 @@
           </button>
         </mat-card-actions>
       </mat-card>
+
+        </div><!-- schema-forms -->
+
+        @if (showTimeline()) {
+          <mat-card class="content-card tab-card">
+            <mat-card-header>
+              <mat-card-title>Tidslinje</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="no-pad">
+              @if (timelineLoading()) {
+                <div class="timeline-spinner"><mat-spinner diameter="36" /></div>
+              } @else {
+                <app-session-timeline
+                  [sessions]="editionSessions()"
+                  [currentEventId]="e.id"
+                  [editingVenueId]="timelineVenueId()"
+                  [venues]="venues()"
+                  [draft]="timelineDraft()"
+                  [editionStart]="edition()?.start ?? null"
+                  [editionEnd]="edition()?.end ?? null" />
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+      </div><!-- schema-with-timeline -->
 
     </mat-tab>
   </mat-tab-group>

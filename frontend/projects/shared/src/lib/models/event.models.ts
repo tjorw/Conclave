@@ -49,6 +49,18 @@ export interface SessionDto {
   status: string;
 }
 
+export interface EditionSessionDto {
+  sessionId: string;
+  eventId: string;
+  eventTitle: string;
+  venueId: string;
+  start: string;
+  end: string;
+  maxSeats: number;
+  startType: string;
+  status: string;
+}
+
 export interface EventCommentDto {
   id: string;
   authorId: string;

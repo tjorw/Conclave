@@ -165,3 +165,22 @@
   gap: 8px;
   padding: 4px 0 12px;
 }
+
+// ── Tidslinjelayout ────────────────────────────────────────────────────────────
+
+// schema-forms och timeline-kortet staplas vertikalt som vanliga block –
+// inga speciella flex-regler behövs.
+
+.timeline-toggle {
+  margin-left: auto;
+}
+
+.timeline-spinner {
+  padding: 32px;
+  text-align: center;
+}
+
+mat-card-header {
+  display: flex;
+  align-items: center;
+}
