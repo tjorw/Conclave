@@ -37,6 +37,16 @@ public sealed class EditionMustBePublishedException()
         "Upplagan måste vara publicerad innan registrering kan öppnas.",
         "edition_must_be_published");
 
+public sealed class OrganiserRegistrationNotOpenException()
+    : DomainRuleViolationException(
+        "Arrangörsregistrering är inte öppen.",
+        "organiser_registration_not_open");
+
+public sealed class StaffRegistrationNotOpenException()
+    : DomainRuleViolationException(
+        "Staffregistrering är inte öppen.",
+        "staff_registration_not_open");
+
 public sealed class EditionMustBeDraftToCopyStructureException()
     : DomainRuleViolationException(
         "Kan bara kopiera struktur till en upplaga med status Utkast.",

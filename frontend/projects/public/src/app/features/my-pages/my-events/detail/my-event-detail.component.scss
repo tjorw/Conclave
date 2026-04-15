@@ -223,3 +223,11 @@
 
   mat-form-field { flex: 1; min-width: 140px; }
 }
+
+.submissions-closed {
+  font-size: .875rem;
+  color: var(--brand-text-muted);
+  font-style: italic;
+  margin: 0;
+  padding: 8px 0;
+}

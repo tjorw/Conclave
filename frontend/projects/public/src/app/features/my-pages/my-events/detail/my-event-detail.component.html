@@ -84,10 +84,14 @@
     <!-- ── Åtgärdsknappar ─────────────────────────────────────────────── -->
     <div class="actions">
       @if (isDraft) {
-        <button mat-flat-button class="action-btn primary" (click)="submitForReview()"
-                [disabled]="submitting() || !ev.title">
-          @if (submitting()) { <mat-spinner diameter="18" /> } @else { Skicka in för granskning }
-        </button>
+        @if (eventSubmissionsOpen) {
+          <button mat-flat-button class="action-btn primary" (click)="submitForReview()"
+                  [disabled]="submitting() || !ev.title">
+            @if (submitting()) { <mat-spinner diameter="18" /> } @else { Skicka in för granskning }
+          </button>
+        } @else {
+          <p class="submissions-closed">Arrangemangsansökan är för tillfället stängd.</p>
+        }
       }
       @if (ev.status === 'UnderReview') {
         <button mat-stroked-button class="action-btn" (click)="returnToDraft()"

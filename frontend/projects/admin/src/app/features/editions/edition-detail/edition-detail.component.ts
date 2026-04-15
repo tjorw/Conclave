@@ -224,6 +224,30 @@ export class EditionDetailComponent implements OnInit {
     return { organiser: e.organiserRegistrationOpen, staff: e.staffRegistrationOpen, visitor: e.visitorRegistrationOpen }[type];
   }
 
+  toggleEventSubmissions(): void {
+    this.saving.set(true);
+    const open = this.edition()!.organiserRegistrationOpen;
+    const call = open
+      ? this.svc.closeEventSubmissions(this.edition()!.id)
+      : this.svc.openEventSubmissions(this.edition()!.id);
+    call.subscribe({
+      next: () => { this.reload(); this.saving.set(false); },
+      error: (err) => this.handleError('Kunde inte ändra arrangemangsansökan', err),
+    });
+  }
+
+  toggleStaffApplications(): void {
+    this.saving.set(true);
+    const open = this.edition()!.staffRegistrationOpen;
+    const call = open
+      ? this.svc.closeStaffApplications(this.edition()!.id)
+      : this.svc.openStaffApplications(this.edition()!.id);
+    call.subscribe({
+      next: () => { this.reload(); this.saving.set(false); },
+      error: (err) => this.handleError('Kunde inte ändra funktionärsansökan', err),
+    });
+  }
+
   // ── Redigera upplaga ─────────────────────────────────────────────────────
 
   startEditEdition(): void {

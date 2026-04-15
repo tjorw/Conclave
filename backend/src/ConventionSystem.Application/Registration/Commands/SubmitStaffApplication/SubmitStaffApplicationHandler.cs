@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -10,7 +11,8 @@ namespace ConventionSystem.Application.Registration.Commands.SubmitStaffApplicat
 public sealed class SubmitStaffApplicationHandler(
     IStaffApplicationRepository staffApplicationRepository,
     IEditionRepository editionRepository,
-    IPersonRepository personRepository)
+    IPersonRepository personRepository,
+    ICurrentUser currentUser)
     : IRequestHandler<SubmitStaffApplicationCommand, Guid>
 {
     public async Task<Guid> Handle(SubmitStaffApplicationCommand command, CancellationToken ct)
@@ -21,7 +23,7 @@ public sealed class SubmitStaffApplicationHandler(
         var edition = await editionRepository.GetByIdAsync(editionId, ct)
             ?? throw new InvalidOperationException($"Upplagan '{command.EditionId}' hittades inte.");
 
-        if (!edition.StaffRegistrationOpen)
+        if (!currentUser.IsAdmin && !edition.StaffRegistrationOpen)
             throw new InvalidOperationException("Staffregistrering är inte öppen för denna upplaga.");
 
         var person = await personRepository.GetByIdAsync(personId, ct)

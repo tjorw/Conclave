@@ -586,8 +586,8 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 Använd en rad per punkt och ändra bara statusmarkören i början.
 
 - [x] `R02` Fas 3.1.8 Registreringsöversikt i admin
-- [ ] `R12` Fas 3.1.11 Öppna och stänga ansökan – arrangemang och funktionärer
-- [ ] `R04` Fas 3.2.4 Mina sidor – hub och navigationsstruktur
+- [x] `R12` Fas 3.1.11 Öppna och stänga ansökan – arrangemang och funktionärer
+- [x] `R04` Fas 3.2.4 Mina sidor – hub och navigationsstruktur
 - [ ] `R05` Fas 3.2.5 Min biljett
 - [ ] `R06` Fas 3.2.6 Mitt program
 - [ ] `R09` Fas 3.2.9 Sessionsregistrering

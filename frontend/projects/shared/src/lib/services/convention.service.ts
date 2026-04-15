@@ -143,6 +143,34 @@ export class ConventionService {
     );
   }
 
+  openEventSubmissions(editionId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/event-submissions/open`,
+      {}
+    );
+  }
+
+  closeEventSubmissions(editionId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/event-submissions/close`,
+      {}
+    );
+  }
+
+  openStaffApplications(editionId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/staff-applications/open`,
+      {}
+    );
+  }
+
+  closeStaffApplications(editionId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/staff-applications/close`,
+      {}
+    );
+  }
+
   createVenue(editionId: string, request: CreateVenueRequest) {
     return this.http.post<{ id: string }>(
       `${this.env.apiBaseUrl}/editions/${editionId}/venues`,

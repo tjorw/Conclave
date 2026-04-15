@@ -58,6 +58,12 @@ public record RegistrationOpened(
     PersonId PerformedById,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
+public record RegistrationClosed(
+    EditionId EditionId,
+    RegistrationType Type,
+    PersonId PerformedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public record StructureCopiedFromEdition(
     EditionId TargetId,
     EditionId SourceId,

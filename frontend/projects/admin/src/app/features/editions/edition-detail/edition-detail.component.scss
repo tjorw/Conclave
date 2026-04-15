@@ -176,3 +176,15 @@
 
 .icon-yes { color: #16a34a; font-size: 20px; vertical-align: middle; }
 .icon-no  { color: #d1d5db; font-size: 20px; vertical-align: middle; }
+
+.submission-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+}
+
+.status-label {
+  opacity: 0.65;
+  white-space: nowrap;
+}

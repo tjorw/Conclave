@@ -8,6 +8,75 @@ namespace ConventionSystem.Domain.Tests.Convention;
 
 public class EditionOpenRegistrationTests
 {
+    [Fact]
+    public void CloseOrganiserRegistration_ClearsFlag()
+    {
+        var edition = CreatePublishedEdition();
+        edition.OpenOrganiserRegistration(PersonId.New());
+
+        edition.CloseOrganiserRegistration(PersonId.New());
+
+        Assert.False(edition.OrganiserRegistrationOpen);
+    }
+
+    [Fact]
+    public void CloseStaffRegistration_ClearsFlag()
+    {
+        var edition = CreatePublishedEdition();
+        edition.OpenStaffRegistration(PersonId.New());
+
+        edition.CloseStaffRegistration(PersonId.New());
+
+        Assert.False(edition.StaffRegistrationOpen);
+    }
+
+    [Fact]
+    public void CloseOrganiserRegistration_RaisesRegistrationClosedEvent()
+    {
+        var edition = CreatePublishedEdition();
+        var performedById = PersonId.New();
+        edition.OpenOrganiserRegistration(performedById);
+        edition.ClearDomainEvents();
+
+        edition.CloseOrganiserRegistration(performedById);
+
+        var domainEvent = edition.DomainEvents.OfType<RegistrationClosed>().Single();
+        Assert.Equal(edition.Id, domainEvent.EditionId);
+        Assert.Equal(RegistrationType.Organiser, domainEvent.Type);
+    }
+
+    [Fact]
+    public void CloseStaffRegistration_RaisesRegistrationClosedEvent()
+    {
+        var edition = CreatePublishedEdition();
+        var performedById = PersonId.New();
+        edition.OpenStaffRegistration(performedById);
+        edition.ClearDomainEvents();
+
+        edition.CloseStaffRegistration(performedById);
+
+        var domainEvent = edition.DomainEvents.OfType<RegistrationClosed>().Single();
+        Assert.Equal(edition.Id, domainEvent.EditionId);
+        Assert.Equal(RegistrationType.Staff, domainEvent.Type);
+    }
+
+    [Fact]
+    public void CloseOrganiserRegistration_NotOpen_Throws()
+    {
+        var edition = CreatePublishedEdition();
+
+        Assert.Throws<OrganiserRegistrationNotOpenException>(() => edition.CloseOrganiserRegistration(PersonId.New()));
+    }
+
+    [Fact]
+    public void CloseStaffRegistration_NotOpen_Throws()
+    {
+        var edition = CreatePublishedEdition();
+
+        Assert.Throws<StaffRegistrationNotOpenException>(() => edition.CloseStaffRegistration(PersonId.New()));
+    }
+
+
     private static Domain.Convention.Aggregates.Edition CreatePublishedEdition()
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");

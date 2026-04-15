@@ -91,18 +91,50 @@
       <button mat-stroked-button color="primary" (click)="setActive()" [disabled]="saving()">
         <mat-icon>public</mat-icon> Sätt som aktiv
       </button>
-      @for (rt of registrationTypes; track rt.type) {
-        <button
-          mat-stroked-button
-          [disabled]="saving() || !isPublished() || registrationOpen(rt.type)"
-          [matTooltip]="registrationOpen(rt.type) ? 'Redan öppen' : (!isPublished() ? 'Kräver publicerad upplaga' : '')"
-          (click)="openRegistration(rt.type)">
-          {{ rt.label }}
-          @if (registrationOpen(rt.type)) { <mat-icon>check</mat-icon> }
-        </button>
-      }
+      <button
+        mat-stroked-button
+        [disabled]="saving() || !isPublished() || registrationOpen('visitor')"
+        [matTooltip]="registrationOpen('visitor') ? 'Redan öppen' : (!isPublished() ? 'Kräver publicerad upplaga' : '')"
+        (click)="openRegistration('visitor')">
+        Besökarregistrering
+        @if (registrationOpen('visitor')) { <mat-icon>check</mat-icon> }
+      </button>
     </mat-card-content>
   </mat-card>
+
+  <!-- ── Ansökningsstatus ── -->
+  @if (isPublished()) {
+    <mat-card class="actions-card">
+      <mat-card-content class="actions-row">
+        <div class="submission-status">
+          <span class="status-label">Arrangemangsansökan:</span>
+          <mat-chip [color]="edition()!.organiserRegistrationOpen ? 'primary' : 'default'" highlighted>
+            {{ edition()!.organiserRegistrationOpen ? 'Öppen' : 'Stängd' }}
+          </mat-chip>
+          <button
+            mat-stroked-button
+            [color]="edition()!.organiserRegistrationOpen ? 'warn' : 'primary'"
+            [disabled]="saving()"
+            (click)="toggleEventSubmissions()">
+            {{ edition()!.organiserRegistrationOpen ? 'Stäng' : 'Öppna' }}
+          </button>
+        </div>
+        <div class="submission-status">
+          <span class="status-label">Funktionärsansökan:</span>
+          <mat-chip [color]="edition()!.staffRegistrationOpen ? 'primary' : 'default'" highlighted>
+            {{ edition()!.staffRegistrationOpen ? 'Öppen' : 'Stängd' }}
+          </mat-chip>
+          <button
+            mat-stroked-button
+            [color]="edition()!.staffRegistrationOpen ? 'warn' : 'primary'"
+            [disabled]="saving()"
+            (click)="toggleStaffApplications()">
+            {{ edition()!.staffRegistrationOpen ? 'Stäng' : 'Öppna' }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
 
   <!-- ── Tabbar ── -->
   <mat-tab-group animationDuration="150ms">

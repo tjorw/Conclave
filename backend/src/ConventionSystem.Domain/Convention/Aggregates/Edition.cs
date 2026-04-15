@@ -88,6 +88,22 @@ public sealed class Edition : AggregateRoot
         RaiseDomainEvent(new RegistrationOpened(Id, RegistrationType.Visitor, performedById, DateTimeOffset.UtcNow));
     }
 
+    public void CloseOrganiserRegistration(PersonId performedById)
+    {
+        if (!OrganiserRegistrationOpen)
+            throw new OrganiserRegistrationNotOpenException();
+        OrganiserRegistrationOpen = false;
+        RaiseDomainEvent(new RegistrationClosed(Id, RegistrationType.Organiser, performedById, DateTimeOffset.UtcNow));
+    }
+
+    public void CloseStaffRegistration(PersonId performedById)
+    {
+        if (!StaffRegistrationOpen)
+            throw new StaffRegistrationNotOpenException();
+        StaffRegistrationOpen = false;
+        RaiseDomainEvent(new RegistrationClosed(Id, RegistrationType.Staff, performedById, DateTimeOffset.UtcNow));
+    }
+
     public Venue CreateVenue(string name, string building, string? description = null)
     {
         var venue = new Venue(VenueId.New(), name, building, description);

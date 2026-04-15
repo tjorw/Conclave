@@ -11,6 +11,7 @@ using ConventionSystem.Application.Convention.Commands.CreateEdition;
 using ConventionSystem.Application.Convention.Commands.CreateStaffArea;
 using ConventionSystem.Application.Convention.Commands.CreateStation;
 using ConventionSystem.Application.Convention.Commands.CreateVenue;
+using ConventionSystem.Application.Convention.Commands.CloseRegistration;
 using ConventionSystem.Application.Convention.Commands.OpenRegistration;
 using ConventionSystem.Application.Convention.Commands.PublishEdition;
 using ConventionSystem.Application.Convention.Commands.RemoveCategory;
@@ -173,6 +174,34 @@ public static class EditionEndpoints
                 if (!Enum.TryParse<RegistrationType>(type, ignoreCase: true, out var registrationType))
                     return Results.BadRequest($"Okänd registreringstyp: {type}.");
                 await sender.Send(new OpenRegistrationCommand(editionId, registrationType), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapPost("/editions/{editionId:guid}/event-submissions/open",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new OpenRegistrationCommand(editionId, RegistrationType.Organiser), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapPost("/editions/{editionId:guid}/event-submissions/close",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new CloseRegistrationCommand(editionId, RegistrationType.Organiser), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapPost("/editions/{editionId:guid}/staff-applications/open",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new OpenRegistrationCommand(editionId, RegistrationType.Staff), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapPost("/editions/{editionId:guid}/staff-applications/close",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new CloseRegistrationCommand(editionId, RegistrationType.Staff), ct);
                 return Results.NoContent();
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 

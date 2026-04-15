@@ -15,6 +15,7 @@ import {
   EVENT_STATUS_LABEL, EVENT_STATUS_CHIP,
   REGISTRATION_KIND_LABEL,
 } from 'shared';
+import { EditionService } from '../../../../services/edition.service';
 
 @Component({
   selector: 'app-my-event-detail',
@@ -33,10 +34,11 @@ import {
   styleUrl: './my-event-detail.component.scss',
 })
 export class MyEventDetailComponent implements OnInit {
-  private readonly route    = inject(ActivatedRoute);
-  private readonly eventSvc = inject(EventService);
-  private readonly authSvc  = inject(AuthService);
-  private readonly fb       = inject(FormBuilder);
+  private readonly route      = inject(ActivatedRoute);
+  private readonly eventSvc   = inject(EventService);
+  private readonly authSvc    = inject(AuthService);
+  private readonly fb         = inject(FormBuilder);
+  private readonly editionSvc = inject(EditionService);
 
   readonly loading       = signal(true);
   readonly event         = signal<EventDto | null>(null);
@@ -109,6 +111,10 @@ export class MyEventDetailComponent implements OnInit {
 
   get currentPersonId(): string | null {
     return this.authSvc.personId();
+  }
+
+  get eventSubmissionsOpen(): boolean {
+    return this.editionSvc.edition()?.organiserRegistrationOpen ?? false;
   }
 
   get canCommentOnPublishedEvent(): boolean {
