@@ -56,7 +56,7 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
 
         await using var scope = Services.CreateAsyncScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var user = new ApplicationUser { UserName = email, Email = email };
+        var user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true };
         await userManager.CreateAsync(user, password);
 
         return (email, password);
@@ -131,7 +131,8 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
         {
             UserName = AdminEmail,
             Email = AdminEmail,
-            PersonId = adminPerson!.Id.Value
+            PersonId = adminPerson!.Id.Value,
+            EmailConfirmed = true
         };
         await userManager.CreateAsync(user, AdminPassword);
     }

@@ -49,3 +49,12 @@ form {
 
   &:hover { text-decoration: underline; }
 }
+
+.register-link {
+  text-align: center;
+  margin-top: 8px;
+  font-size: .875rem;
+  color: var(--brand-text-muted);
+
+  a { color: var(--brand-primary); }
+}

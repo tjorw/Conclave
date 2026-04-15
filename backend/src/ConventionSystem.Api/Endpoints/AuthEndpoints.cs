@@ -1,9 +1,11 @@
 using ConventionSystem.Api.Auth;
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -26,6 +28,12 @@ public static class AuthEndpoints
             var user = await userManager.FindByEmailAsync(request.Email);
             if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
                 return Results.Unauthorized();
+
+            if (!user.EmailConfirmed)
+                return Results.Problem(
+                    title: "E-postadressen är inte bekräftad.",
+                    detail: "Kontrollera din inkorg och klicka på bekräftelselänken.",
+                    statusCode: 403);
 
             var convention = await conventionRepo.GetSingleAsync(ct);
             if (convention is null)
@@ -51,7 +59,7 @@ public static class AuthEndpoints
                 }
                 else
                 {
-                    // Skapa nytt personkonto; namn samlas in i registreringsflödet
+                    // Skapa nytt personkonto – namn saknas i detta flöde, sätts via profilvyn
                     var person = convention.RegisterPerson(string.Empty, request.Email);
                     await personRepo.AddAndSaveAsync(person, ct);
                     personId = person.Id.Value;
@@ -65,6 +73,151 @@ public static class AuthEndpoints
             var token = IssueJwt(personId, isAdmin, configuration);
             return Results.Ok(new { token });
         });
+
+        app.MapPost("/auth/register", async (
+            RegisterRequest request,
+            UserManager<ApplicationUser> userManager,
+            IEmailService emailService,
+            IConfiguration configuration,
+            CancellationToken ct) =>
+        {
+            var user = new ApplicationUser
+            {
+                UserName = request.Email,
+                Email = request.Email
+            };
+
+            var result = await userManager.CreateAsync(user, request.Password);
+            if (!result.Succeeded)
+            {
+                if (result.Errors.Any(e => e.Code is "DuplicateEmail" or "DuplicateUserName"))
+                    return Results.Problem("E-postadressen används redan.", statusCode: 400);
+
+                var errors = string.Join(" ", result.Errors.Select(e => e.Description));
+                return Results.Problem(errors, statusCode: 400);
+            }
+
+            var emailToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            var frontendUrl = configuration["App:FrontendUrl"] ?? "http://localhost:4201";
+            var confirmLink = $"{frontendUrl}/confirm-email" +
+                              $"?email={Uri.EscapeDataString(request.Email)}" +
+                              $"&token={Uri.EscapeDataString(emailToken)}";
+
+            await emailService.SendEmailConfirmationAsync(request.Email, string.Empty, confirmLink, ct);
+
+            return Results.Ok();
+        });
+
+        app.MapPost("/auth/confirm-email", async (
+            ConfirmEmailRequest request,
+            UserManager<ApplicationUser> userManager,
+            CancellationToken ct) =>
+        {
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user is null)
+                return Results.Problem("Ogiltig länk.", statusCode: 400);
+
+            var result = await userManager.ConfirmEmailAsync(user, request.Token);
+            if (!result.Succeeded)
+                return Results.Problem("Länken är ogiltig eller har gått ut.", statusCode: 400);
+
+            return Results.Ok();
+        });
+
+        app.MapPost("/auth/resend-confirmation", async (
+            ResendConfirmationRequest request,
+            UserManager<ApplicationUser> userManager,
+            IPersonRepository personRepo,
+            IEmailService emailService,
+            IConfiguration configuration,
+            CancellationToken ct) =>
+        {
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user is not null && !user.EmailConfirmed)
+            {
+                var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+                var frontendUrl = configuration["App:FrontendUrl"] ?? "http://localhost:4201";
+                var confirmLink = $"{frontendUrl}/confirm-email" +
+                                  $"?email={Uri.EscapeDataString(request.Email)}" +
+                                  $"&token={Uri.EscapeDataString(token)}";
+
+                var name = user.PersonId.HasValue
+                    ? (await personRepo.GetByIdAsync(new PersonId(user.PersonId.Value), ct))?.Name ?? string.Empty
+                    : string.Empty;
+
+                await emailService.SendResendConfirmationAsync(request.Email, name, confirmLink, ct);
+            }
+
+            return Results.Ok();
+        });
+
+        app.MapPost("/auth/forgot-password", async (
+            ForgotPasswordRequest request,
+            UserManager<ApplicationUser> userManager,
+            IPersonRepository personRepo,
+            IEmailService emailService,
+            IConfiguration configuration,
+            CancellationToken ct) =>
+        {
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user is not null && user.EmailConfirmed)
+            {
+                var token = await userManager.GeneratePasswordResetTokenAsync(user);
+                var frontendUrl = configuration["App:FrontendUrl"] ?? "http://localhost:4201";
+                var resetLink = $"{frontendUrl}/reset-password" +
+                                $"?email={Uri.EscapeDataString(request.Email)}" +
+                                $"&token={Uri.EscapeDataString(token)}";
+
+                var name = user.PersonId.HasValue
+                    ? (await personRepo.GetByIdAsync(new PersonId(user.PersonId.Value), ct))?.Name ?? string.Empty
+                    : string.Empty;
+
+                await emailService.SendPasswordResetAsync(request.Email, name, resetLink, ct);
+            }
+
+            return Results.Ok();
+        });
+
+        app.MapPost("/auth/reset-password", async (
+            ResetPasswordRequest request,
+            UserManager<ApplicationUser> userManager,
+            CancellationToken ct) =>
+        {
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user is null)
+                return Results.Problem("Ogiltig återställningslänk.", statusCode: 400);
+
+            var result = await userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+            if (!result.Succeeded)
+                return Results.Problem("Länken är ogiltig eller har gått ut.", statusCode: 400);
+
+            return Results.Ok();
+        });
+
+        app.MapPut("/auth/password", async (
+            ChangePasswordRequest request,
+            ICurrentUser currentUser,
+            UserManager<ApplicationUser> userManager,
+            IPersonRepository personRepo,
+            IEmailService emailService,
+            CancellationToken ct) =>
+        {
+            var user = await userManager.Users
+                .FirstOrDefaultAsync(u => u.PersonId == currentUser.PersonId.Value, ct);
+            if (user is null)
+                return Results.Unauthorized();
+
+            var result = await userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(" ", result.Errors.Select(e => e.Description));
+                return Results.Problem(errors, statusCode: 400);
+            }
+
+            var person = await personRepo.GetByIdAsync(currentUser.PersonId, ct);
+            await emailService.SendPasswordChangedAsync(user.Email!, person?.Name ?? string.Empty, ct);
+            return Results.NoContent();
+        }).RequireAuthorization();
 
         return app;
     }
@@ -93,3 +246,9 @@ public static class AuthEndpoints
 }
 
 public record LoginRequest(string Email, string Password);
+public record RegisterRequest(string Email, string Password);
+public record ConfirmEmailRequest(string Email, string Token);
+public record ResendConfirmationRequest(string Email);
+public record ForgotPasswordRequest(string Email);
+public record ResetPasswordRequest(string Email, string Token, string NewPassword);
+public record ChangePasswordRequest(string CurrentPassword, string NewPassword);

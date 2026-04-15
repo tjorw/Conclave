@@ -1,0 +1,13 @@
+.centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  color: var(--brand-text-muted);
+}
+
+.muted {
+  color: var(--brand-text-muted);
+  margin-bottom: 24px;
+}

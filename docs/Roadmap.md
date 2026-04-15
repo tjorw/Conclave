@@ -256,12 +256,14 @@ Se `docs/public-mockup.html` för interaktiv skissbild av alla skärmar.
 - ~~Publika endpoints: `GET /feed/editions/{id}`, `GET /feed/events/{id}`, `GET /feed/active-edition`~~
 - ~~Aktiv upplaga: Convention-aggregatet lagrar `ActiveEditionId`, admin sätter via `POST /editions/{id}/set-active`~~
 
-#### 3.2.3 Konton, inloggning och profil
+#### ~~3.2.3 Konton, inloggning och profil~~ ✓ Klar
 
 **Registrering**
-- Registreringsformulär (`/register`): e-post + lösenord
-- `POST /auth/register` skapar `ApplicationUser` med `EmailConfirmed = false` och skickar bekräftelse-e-post
-- UC002-länkning sker vid `POST /auth/login` (som vanligt), inte vid registrering
+- Registreringsformulär (`/register`): namn, e-post och lösenord
+- `POST /auth/register` med `{ name, email, password }` skapar `ApplicationUser` med `Name`, `EmailConfirmed = false` och skickar bekräftelse-e-post
+- Returnerar `400` om e-postadressen redan är registrerad ("E-postadressen används redan.")
+- `ApplicationUser` utökas med `Name`-property (används av UC002 vid första login)
+- UC002-länkning sker vid `POST /auth/login` (som vanligt), inte vid registrering – men använder `user.Name` i stället för tomt namn vid personskapandet
 
 **E-postbekräftelse**
 - Bekräftelsesida (`/confirm-email?email=...&token=...`): anropas via länk i e-postmeddelande
@@ -282,9 +284,11 @@ Se `docs/public-mockup.html` för interaktiv skissbild av alla skärmar.
 - `PUT /auth/password` med `{ currentPassword, newPassword }` → `UserManager.ChangePasswordAsync`
 - `GET /me/profile`, `PUT /me/profile` för profilfälten
 
-*Kräver nya backend-endpoints:* `POST /auth/register`, `POST /auth/confirm-email`, `POST /auth/resend-confirmation`, `POST /auth/forgot-password`, `POST /auth/reset-password`, `PUT /auth/password`, `GET /me/profile`, `PUT /me/profile`
+*Kräver nya backend-endpoints:* `POST /auth/register`, `POST /auth/confirm-email`, `POST /auth/resend-confirmation`, `POST /auth/forgot-password`, `POST /auth/reset-password`, `PUT /auth/password`, `GET /me/profile` – (`PUT /me/profile` redan implementerad)
 
-*Kräver e-posttjänst:* `LoggingEmailService` i dev (loggar länkarna i konsolen utan SMTP). Fyra e-posttyper: välkommen+bekräftelse, skicka om bekräftelse, lösenordsåterställning, lösenord ändrat.
+*Kräver modellförändring:* `ApplicationUser` utökas med `string Name`-property; `POST /auth/login` uppdateras att läsa `user.Name` vid personskapandet i UC002, samt att returnera `403` om `EmailConfirmed == false`.
+
+*Kräver e-posttjänst:* `LoggingEmailService` i dev (loggar länkarna i konsolen utan SMTP). Tre nya metoder i `IEmailService`: `SendEmailConfirmationAsync`, `SendResendConfirmationAsync`, `SendPasswordChangedAsync` (`SendPasswordResetAsync` finns redan). Fyra e-posttyper totalt: välkommen+bekräftelse, skicka om bekräftelse, lösenordsåterställning, lösenord ändrat.
 
 #### 3.2.4 Mina sidor – hub och navigationsstruktur
 - `MinaSidorComponent` (hub): hälsningsbanner + kompakta statuskort per sektion
@@ -424,10 +428,9 @@ Använd denna som en enkel manuell tavla. Flytta rader mellan kolumnerna och boc
 
 | Backlog | Pågår | Klar |
 |--------|-------|------|
-| - [ ] `R01` Fas 3.2.3 Konton, inloggning och profil |  | - [x] `R00` Frontendtester i CI |
-| - [ ] `R02` Fas 3.1.8 Registreringsöversikt i admin |  | - [x] `R10` Fas 3.1.7b Bemanningsvy – genomgång och förfining |
-| - [ ] `R03` Fas 3.1.6b Evenemangsflöde – genomgång och förfining |  |  |
-| - [ ] `R04` Fas 3.2.4 Mina sidor – hub och navigationsstruktur |  |  |
+| - [ ] `R02` Fas 3.1.8 Registreringsöversikt i admin |  | - [x] `R00` Frontendtester i CI |
+| - [ ] `R03` Fas 3.1.6b Evenemangsflöde – genomgång och förfining |  | - [x] `R01` Fas 3.2.3 Konton, inloggning och profil |
+| - [ ] `R04` Fas 3.2.4 Mina sidor – hub och navigationsstruktur |  | - [x] `R10` Fas 3.1.7b Bemanningsvy – genomgång och förfining |
 | - [ ] `R05` Fas 3.2.5 Min biljett |  |  |
 | - [ ] `R06` Fas 3.2.6 Mitt program |  |  |
 | - [ ] `R07` Fas 3.2.7 Mina arrangemang |  |  |

@@ -48,7 +48,8 @@ public static class DevDataSeeder
         {
             UserName = AdminEmail,
             Email = AdminEmail,
-            PersonId = adminPerson!.Id.Value
+            PersonId = adminPerson!.Id.Value,
+            EmailConfirmed = true
         };
         await userManager.CreateAsync(user, AdminPassword);
 

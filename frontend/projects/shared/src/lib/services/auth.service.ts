@@ -2,7 +2,18 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { ENVIRONMENT } from '../environment/environment.token';
-import { JwtClaims, LoginRequest, LoginResponse } from '../models/auth.models';
+import {
+  ChangePasswordRequest,
+  ConfirmEmailRequest,
+  ForgotPasswordRequest,
+  JwtClaims,
+  LoginRequest,
+  LoginResponse,
+  MyProfileResponse,
+  RegisterRequest,
+  ResetPasswordRequest,
+  UpdateProfileRequest,
+} from '../models/auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -20,6 +31,38 @@ export class AuthService {
     return this.http
       .post<LoginResponse>(`${this.env.apiBaseUrl}/auth/login`, request)
       .pipe(tap(res => this.storeToken(res.token)));
+  }
+
+  register(request: RegisterRequest) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/auth/register`, request);
+  }
+
+  confirmEmail(request: ConfirmEmailRequest) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/auth/confirm-email`, request);
+  }
+
+  resendConfirmation(email: string) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/auth/resend-confirmation`, { email });
+  }
+
+  forgotPassword(request: ForgotPasswordRequest) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/auth/forgot-password`, request);
+  }
+
+  resetPassword(request: ResetPasswordRequest) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/auth/reset-password`, request);
+  }
+
+  changePassword(request: ChangePasswordRequest) {
+    return this.http.put<void>(`${this.env.apiBaseUrl}/auth/password`, request);
+  }
+
+  getProfile() {
+    return this.http.get<MyProfileResponse>(`${this.env.apiBaseUrl}/me/profile`);
+  }
+
+  updateProfile(request: UpdateProfileRequest) {
+    return this.http.put<void>(`${this.env.apiBaseUrl}/me/profile`, request);
   }
 
   logout(): void {

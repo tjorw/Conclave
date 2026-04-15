@@ -30,6 +30,32 @@ export const routes: Routes = [
           import('./features/login/login.component').then(m => m.LoginComponent),
       },
       {
+        path: 'register',
+        loadComponent: () =>
+          import('./features/register/register.component').then(m => m.RegisterComponent),
+      },
+      {
+        path: 'confirm-email',
+        loadComponent: () =>
+          import('./features/confirm-email/confirm-email.component').then(
+            m => m.ConfirmEmailComponent
+          ),
+      },
+      {
+        path: 'forgot-password',
+        loadComponent: () =>
+          import('./features/forgot-password/forgot-password.component').then(
+            m => m.ForgotPasswordComponent
+          ),
+      },
+      {
+        path: 'reset-password',
+        loadComponent: () =>
+          import('./features/reset-password/reset-password.component').then(
+            m => m.ResetPasswordComponent
+          ),
+      },
+      {
         path: 'mina-sidor',
         canActivate: [authGuard],
         children: [
@@ -38,6 +64,13 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/mina-sidor/mina-sidor.component').then(
                 m => m.MinaSidorComponent
+              ),
+          },
+          {
+            path: 'profil',
+            loadComponent: () =>
+              import('./features/mina-sidor/profil/profil.component').then(
+                m => m.ProfilComponent
               ),
           },
         ],

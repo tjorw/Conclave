@@ -1,16 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpErrorResponse } from '@angular/common/http';
-import { catchError, of, switchMap } from 'rxjs';
 import { AuthService } from 'shared';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -20,43 +19,35 @@ import { AuthService } from 'shared';
     MatInputModule,
     MatProgressSpinnerModule,
   ],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.scss',
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.scss',
 })
-export class LoginComponent {
-  private readonly auth   = inject(AuthService);
-  private readonly router = inject(Router);
-  private readonly fb     = inject(FormBuilder);
+export class RegisterComponent {
+  private readonly auth = inject(AuthService);
+  private readonly fb   = inject(FormBuilder);
 
   readonly loading = signal(false);
   readonly error   = signal<string | null>(null);
+  readonly success = signal(false);
 
   readonly form = this.fb.group({
     email:    ['', [Validators.required, Validators.email]],
-    password: ['', Validators.required],
+    password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
-  login(): void {
+  register(): void {
     if (this.form.invalid || this.loading()) return;
     this.loading.set(true);
     this.error.set(null);
     const { email, password } = this.form.getRawValue();
-    this.auth.login({ email: email!, password: password! }).pipe(
-      switchMap(() => this.auth.getProfile().pipe(catchError(() => of(null))))
-    ).subscribe({
-      next: profile => {
+    this.auth.register({ email: email!, password: password! }).subscribe({
+      next: () => {
         this.loading.set(false);
-        const target = !profile?.name
-          ? '/mina-sidor/profil?onboarding=true'
-          : '/mina-sidor';
-        this.router.navigateByUrl(target);
+        this.success.set(true);
       },
       error: (err: HttpErrorResponse) => {
-        if (err.status === 403) {
-          this.error.set('E-postadressen är inte bekräftad. Kontrollera din inkorg.');
-        } else {
-          this.error.set('Felaktig e-post eller lösenord.');
-        }
+        const detail = err.error?.detail ?? err.error?.title ?? 'Registreringen misslyckades. Försök igen.';
+        this.error.set(detail);
         this.loading.set(false);
       },
     });

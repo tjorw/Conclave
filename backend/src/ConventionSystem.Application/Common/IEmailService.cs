@@ -9,4 +9,7 @@ public interface IEmailService
     Task SendEventApprovedAsync(string toEmail, string toName, string eventTitle, CancellationToken ct = default);
     Task SendEventRejectedAsync(string toEmail, string toName, string eventTitle, string comment, CancellationToken ct = default);
     Task SendPasswordResetAsync(string toEmail, string toName, string resetLink, CancellationToken ct = default);
+    Task SendEmailConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default);
+    Task SendResendConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default);
+    Task SendPasswordChangedAsync(string toEmail, string toName, CancellationToken ct = default);
 }

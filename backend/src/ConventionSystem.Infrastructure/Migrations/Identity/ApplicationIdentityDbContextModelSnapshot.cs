@@ -18,7 +18,7 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("identity")
-                .HasAnnotation("ProductVersion", "9.0.14")
+                .HasAnnotation("ProductVersion", "9.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);

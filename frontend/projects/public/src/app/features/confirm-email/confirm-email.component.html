@@ -1,0 +1,37 @@
+<div class="auth-page">
+  <div class="auth-card">
+
+    @if (loading()) {
+      <div class="centered">
+        <mat-spinner diameter="40" />
+        <p>Bekräftar din e-postadress…</p>
+      </div>
+    } @else if (success()) {
+      <div class="success-banner">
+        <h1>E-postadressen bekräftad!</h1>
+        <p>Ditt konto är aktiverat. Du kan nu logga in.</p>
+        <a mat-flat-button routerLink="/login" class="submit-btn full-width">Logga in</a>
+      </div>
+    } @else {
+      <h1>Länken fungerade inte</h1>
+      <p class="muted">Bekräftelselänken är ogiltig eller har gått ut.</p>
+
+      @if (resent()) {
+        <div class="success-banner">
+          <p>En ny bekräftelselänk har skickats till din e-postadress.</p>
+        </div>
+      } @else {
+        <button mat-flat-button class="submit-btn full-width" (click)="resend()" [disabled]="resending()">
+          @if (resending()) {
+            <mat-spinner diameter="20" />
+          } @else {
+            Skicka ny bekräftelselänk
+          }
+        </button>
+      }
+
+      <p class="footer-link"><a routerLink="/login">Tillbaka till inloggning</a></p>
+    }
+
+  </div>
+</div>

@@ -49,4 +49,22 @@ public sealed class LoggingEmailService(ILogger<LoggingEmailService> logger) : I
         logger.LogInformation("[E-POST] Lösenordsåterställning → {Name} <{Email}>, länk: {Link}", toName, toEmail, resetLink);
         return Task.CompletedTask;
     }
+
+    public Task SendEmailConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default)
+    {
+        logger.LogInformation("[E-POST] Bekräfta e-post → {Name} <{Email}>, länk: {Link}", toName, toEmail, confirmLink);
+        return Task.CompletedTask;
+    }
+
+    public Task SendResendConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default)
+    {
+        logger.LogInformation("[E-POST] Ny bekräftelselänk → {Name} <{Email}>, länk: {Link}", toName, toEmail, confirmLink);
+        return Task.CompletedTask;
+    }
+
+    public Task SendPasswordChangedAsync(string toEmail, string toName, CancellationToken ct = default)
+    {
+        logger.LogInformation("[E-POST] Lösenord ändrat → {Name} <{Email}>", toName, toEmail);
+        return Task.CompletedTask;
+    }
 }
