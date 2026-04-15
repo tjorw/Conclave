@@ -704,7 +704,7 @@ Konventionsadministratör
 - Upplagan finns
 
 ## Flöde
-1. Administratören anger namn, pris (i öre) och kategori (Besökare/Arrangör/Staff)
+1. Administratören anger namn, pris (i öre), kategori (Besökare/Arrangör/Staff), `isSellable` och `isPubliclyVisible`
 2. Systemet skapar biljetttypen kopplad till upplagan
 3. Systemet returnerar det nya TicketTypeId
 
@@ -712,6 +712,8 @@ Konventionsadministratör
 - Namn får inte vara tomt
 - Pris måste vara >= 0
 - Kategorin avgör vilket registreringsflöde som får använda biljetttypen
+- `isSellable` – om true kan besökare köpa biljetten i det publika registreringsformuläret
+- `isPubliclyVisible` – om true visas biljetttypen i den publika prislistan/informationen
 
 ## Domänhändelser
 - Inga
@@ -719,6 +721,68 @@ Konventionsadministratör
 ## Acceptanskriterier
 - [x] Biljetttypen sparas och kopplas till korrekt EditionId
 - [x] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TK005 – Uppdatera biljetttyp
+
+## Sammanfattning
+En administratör uppdaterar namn, pris och synlighetsinställningar för en befintlig biljetttyp.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Biljetttypen finns
+
+## Flöde
+1. Administratören anger TicketTypeId, nytt namn, nytt pris, `isSellable` och `isPubliclyVisible`
+2. Systemet anropar `TicketType.Update(name, price, isSellable, isPubliclyVisible)`
+3. Systemet sparar ändringen
+
+## Affärsregler
+- Namn får inte vara tomt
+- Pris måste vara >= 0
+- Kategori (Besökare/Arrangör/Staff) kan inte ändras efter att biljetttypen skapats
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Namn, pris, `isSellable` och `isPubliclyVisible` uppdateras korrekt
+- [ ] Ogiltigt namn returnerar valideringsfel
+- [ ] Negativt pris returnerar valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TK006 – Ta bort biljetttyp
+
+## Sammanfattning
+En administratör tar bort en biljetttyp. Är inte möjligt om biljetter av typen redan utfärdats.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Biljetttypen finns
+- Inga biljetter av typen har utfärdats
+
+## Flöde
+1. Administratören anger TicketTypeId
+2. Systemet kontrollerar att inga biljetter av typen existerar
+3. Systemet tar bort biljetttypen
+
+## Affärsregler
+- Biljetttypen kan inte tas bort om det finns biljetter kopplade till den
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Biljetttypen tas bort om inga biljetter finns
+- [ ] Försök att ta bort en biljetttyp med utfärdade biljetter returnerar valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 

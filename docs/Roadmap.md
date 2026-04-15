@@ -260,9 +260,30 @@ När admin väljer person till en ansvarigpost (koordinator, funktionsområdes- 
 *Löser teknisk skuld:* "Skalbart val av ansvariga personer"
 
 #### 3.1.8 Registreringsöversikt
-- Biljettyper: skapa, visa
-- Besökarregistreringar: lista, bekräfta betalning, makulera biljett
-- *Kräver ny backend-endpoint:* `GET /editions/{id}/visitor-registrations`, `GET /editions/{id}/ticket-types`
+
+Ny menypost "Registrering" i admin-sidnavet, upplagecentrerad vy med två flikar: **Biljettyper** och **Besökarregistreringar**.
+
+**Biljettyper – full CRUD**
+- Lista alla biljettyper för aktiv upplaga
+- Skapa ny biljetttyp: namn, pris (i öre), kategori (Besökare/Arrangör/Staff), `isSellable`, `isPubliclyVisible`
+- Redigera: namn, pris, `isSellable`, `isPubliclyVisible` (kategori låses efter skapandet)
+- Ta bort: blockeras om biljetter av typen redan utfärdats
+
+Fälten `isSellable` och `isPubliclyVisible` styr publikt beteende:
+- `isSellable` – visas i besökarregistreringsformuläret och kan köpas av besökaren
+- `isPubliclyVisible` – visas i den publika listan/prislistan (t.ex. för info, även om inte säljbar)
+- Personalbiljetter och arrangörsbrickor är typiskt `isSellable=false, isPubliclyVisible=false`
+
+*Kräver domänändring:* `TicketType` utökas med `IsSellable` och `IsPubliclyVisible`. Ny domänmetod `Update(name, price, isSellable, isPubliclyVisible)`. Ny affärsregel: kan inte tas bort om biljetter av typen finns.
+
+*Kräver nya use cases:* UC-TK005 (Uppdatera biljetttyp), UC-TK006 (Ta bort biljetttyp).
+
+**Besökarregistreringar**
+- Lista alla registreringar för upplagan (enkelt, alla statuses, ingen filtrering)
+- Åtgärder per rad: Bekräfta betalning (VäntarPåBetalning → Bekräftad), Makulera biljett
+- Visar: personnamn, biljetttypnamn, status, datum
+
+*Kräver ny backend-endpoint:* `GET /editions/{id}/visitor-registrations`, `GET /editions/{id}/ticket-types`, `PUT /editions/{id}/ticket-types/{ticketTypeId}`, `DELETE /editions/{id}/ticket-types/{ticketTypeId}`
 
 #### 3.1.11 Öppna och stänga ansökan – arrangemang och funktionärer
 
@@ -508,7 +529,9 @@ Urvalslistor för koordinator- och ansvarigval hämtar från `/editions/{id}/sta
 | ~~`GET /feed/active-edition`~~ | ~~3.2.1–3.2.2 publik vy~~ ✓ Klar | Anonym |
 | ~~`POST /editions/{id}/set-active`~~ | ~~3.2.2 admin sätter aktiv upplaga~~ ✓ Klar | IsAdmin |
 | `GET /editions/{id}/visitor-registrations` | 3.1.8 registreringsöversikt | IsAdmin |
-| `GET /editions/{id}/ticket-types` | 3.1.8 biljettyper | Publik |
+| `GET /editions/{id}/ticket-types` | 3.1.8 biljettyper (admin + publik) | IsAdmin / Publik |
+| `PUT /editions/{id}/ticket-types/{ticketTypeId}` | 3.1.8 uppdatera biljetttyp | IsAdmin |
+| `DELETE /editions/{id}/ticket-types/{ticketTypeId}` | 3.1.8 ta bort biljetttyp | IsAdmin |
 | `GET /editions/{id}/my-visitor-registration` | 3.2.5 besökarregistrering | Autentiserad |
 | `GET /editions/{id}/my-session-registrations` | 3.2.6 mitt program | Autentiserad |
 | `GET /editions/{id}/my-events` | 3.2.7 arrangörsflöde | Autentiserad |
