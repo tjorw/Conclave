@@ -264,6 +264,45 @@ När admin väljer person till en ansvarigpost (koordinator, funktionsområdes- 
 - Besökarregistreringar: lista, bekräfta betalning, makulera biljett
 - *Kräver ny backend-endpoint:* `GET /editions/{id}/visitor-registrations`, `GET /editions/{id}/ticket-types`
 
+#### 3.1.11 Öppna och stänga ansökan – arrangemang och funktionärer
+
+Admin ska kunna styra när en upplaga tar emot arrangemangsansökningar respektive funktionärsansökningar. Flödet speglar redan befintlig besökarregistrering (3.1.4), men gäller två separata processer med egna öppna/stäng-kontroller.
+
+**Domän – `Edition`**
+- Två nya booleska flaggor: `EventSubmissionsOpen` och `StaffApplicationsOpen`
+- Fyra nya domänmetoder: `OpenEventSubmissions()`, `CloseEventSubmissions()`, `OpenStaffApplications()`, `CloseStaffApplications()`
+- Fyra nya domänundantag: `EventSubmissionsAlreadyOpenException`, `EventSubmissionsNotOpenException`, `StaffApplicationsAlreadyOpenException`, `StaffApplicationsNotOpenException`
+- `SubmitForReview`-kommandot kontrollerar att `EventSubmissionsOpen == true`; annars kastas `EventSubmissionsNotOpenException`
+- `SubmitStaffApplication`-kommandot kontrollerar att `StaffApplicationsOpen == true`; annars kastas `StaffApplicationsNotOpenException`
+
+**Nya commands**
+
+| Command | Domänmetod | Krav |
+|---------|------------|------|
+| `OpenEventSubmissionsCommand` | `edition.OpenEventSubmissions()` | IsAdmin |
+| `CloseEventSubmissionsCommand` | `edition.CloseEventSubmissions()` | IsAdmin |
+| `OpenStaffApplicationsCommand` | `edition.OpenStaffApplications()` | IsAdmin |
+| `CloseStaffApplicationsCommand` | `edition.CloseStaffApplications()` | IsAdmin |
+
+**Nya API-endpoints**
+
+| Endpoint | Beskrivning | Auth |
+|----------|-------------|------|
+| `POST /editions/{id}/event-submissions/open` | Öppnar arrangemangsansökan | IsAdmin |
+| `POST /editions/{id}/event-submissions/close` | Stänger arrangemangsansökan | IsAdmin |
+| `POST /editions/{id}/staff-applications/open` | Öppnar funktionärsansökan | IsAdmin |
+| `POST /editions/{id}/staff-applications/close` | Stänger funktionärsansökan | IsAdmin |
+
+**`EditionDto` utökas** med `eventSubmissionsOpen: bool` och `staffApplicationsOpen: bool` för att admin-appen och den publika appen ska kunna visa aktuell status och dölja formulär när ansökan är stängd.
+
+**Admin-UI**
+- Upplage-detaljvyn (3.1.4) utökas med två statusrader och två knappar: "Öppna arrangemangsansökan" / "Stäng arrangemangsansökan" och "Öppna funktionärsansökan" / "Stäng funktionärsansökan"
+- Knapparna växlar beroende på nuvarande status (visar alltid den relevanta åtgärden)
+
+**Publik UI**
+- `SubmitForReview`-knappen i arrangörsvyn döljs eller inaktiveras om `eventSubmissionsOpen == false`
+- Funktionärsansökningsformuläret (3.2.8) döljs om `staffApplicationsOpen == false`
+
 ---
 
 ### Fas 3.2 – Publik vy
@@ -365,6 +404,62 @@ Se `docs/public-mockup.html` för interaktiv skissbild av alla skärmar.
 - Avboka: `DELETE /session-registrations/{id}`
 - Anmälda sessioner syns under "Mitt program"
 
+#### 3.2.11 Personligt tidsschema – samlad vy i Mitt program
+
+En vy som visar *alla* egna engagemang under konventet i kronologisk ordning – oavsett vilken roll man har. Tanken är att besökaren ska kunna öppna ett enda ställe och se hela sin helg utan att behöva navigera mellan sektionerna.
+
+**Händelsetyper som ingår**
+
+| Typ | Källa | Visas som |
+|-----|-------|-----------|
+| Bokad session (besökare) | `SessionRegistration` | Primär – platsbiljett |
+| Bevakad session | `SessionWatch` | Sekundär – "Vill se" |
+| Session på eget arrangemang | `Event.Sessions` där personen är lead- eller medarrangör | Sekundär – "Arrangör" |
+| Tilldelat bemanningspass | `ShiftAssignment` (Confirmed/Assigned) | Primär – "Pass" |
+
+En session kan förekomma i flera kategorier (t.ex. arrangör *och* bevakning) – visas som en rad med kombinerade etiketter.
+
+**Kollisionsindikatorer**
+- Om två primära händelser överlappar i tid markeras de med en varningsindikator
+- Bevakning och arrangörsroll räknas inte som primärt block och utlöser inga varningar mot varandra
+
+**Backend – ny samlad query**
+- `GET /editions/{id}/my-schedule` returnerar alla händelser sorterade på starttid
+- Varje rad innehåller: `sessionId`, `eventTitle`, `start`, `end`, `venueName`, `type` (`booked | watched | organiser | shift`), `shiftId?`
+- Händelsetypen `shift` hämtar data från Staff-kontexten (cross-context read, samma mönster som `my-session-registrations`)
+
+**Frontend – tidslinjevy i "Mitt program"**
+- Ny flik eller vy under `/mina-sidor/program`: "Tidslinje" (komplement till befintlig sessionslista)
+- Grupperat per dag (Fredag / Lördag / Söndag)
+- Varje händelse visas som ett kort med tidsintervall, typ-chip (Bokat / Arrangör / Vill se / Pass) och lokal
+- Kolliderande primärhändelser markeras med orange bakgrund eller varningsikon
+
+Besökare ska kunna markera sessioner de är intresserade av utan att boka en plats. Markeringen syns i "Mitt program" som en separat sektion ("Vill se") och ger en personlig programöversikt även för sessioner med fri entré eller utan platskapacitet.
+
+**Avgränsning**
+- En bevakning är *inte* en platsbiljett – den reserverar ingen plats och påverkar inte kapacitetsräknare
+- Bevakning och bokning är oberoende: man kan bevaka en session man redan bokat, och avboka en bokning utan att ta bort bevakningen
+- Bevakning kräver inloggning men *inte* besökarregistrering (biljett)
+
+**Domän – ny entitet `SessionWatch`**
+- Tillhör Registration-kontexten
+- Fält: `PersonId`, `SessionId`, `EditionId`, `CreatedAt`
+- Unikt per `(PersonId, SessionId)` – inga dubletter
+- Inga statusövergångar: antingen bevakad eller inte
+
+**Nya API-endpoints**
+
+| Endpoint | Beskrivning | Auth |
+|----------|-------------|------|
+| `POST /sessions/{id}/watch` | Lägg till bevakning | Autentiserad |
+| `DELETE /sessions/{id}/watch` | Ta bort bevakning | Autentiserad |
+| `GET /editions/{id}/my-watched-sessions` | Lista bevakade sessioner | Autentiserad |
+
+**Frontend**
+- Evenemangsdetalj-sidan (publik, `/program/:id`) visar ett bokmärkesikons-knappar per session: fyllt = bevakad, tomt = ej bevakad
+- "Mitt program"-sektionen (3.2.6) delas i två: **Bokade** (platsbiljett) och **Vill se** (bevakning)
+- Bevakning kan läggas till/tas bort direkt från "Mitt program"-listan
+
 ---
 
 ### Backend-komplement som krävs under Fas 3
@@ -418,6 +513,14 @@ Urvalslistor för koordinator- och ansvarigval hämtar från `/editions/{id}/sta
 | `GET /editions/{id}/my-session-registrations` | 3.2.6 mitt program | Autentiserad |
 | `GET /editions/{id}/my-events` | 3.2.7 arrangörsflöde | Autentiserad |
 | `GET /editions/{id}/my-staff-application` | 3.2.8 staffansökan | Autentiserad |
+| `GET /editions/{id}/my-watched-sessions` | 3.2.10 bevakningslista | Autentiserad |
+| `POST /sessions/{id}/watch` | 3.2.10 lägg till bevakning | Autentiserad |
+| `DELETE /sessions/{id}/watch` | 3.2.10 ta bort bevakning | Autentiserad |
+| `GET /editions/{id}/my-schedule` | 3.2.11 samlat personligt tidsschema | Autentiserad |
+| `POST /editions/{id}/event-submissions/open` | 3.1.11 öppna arrangemangsansökan | IsAdmin |
+| `POST /editions/{id}/event-submissions/close` | 3.1.11 stänga arrangemangsansökan | IsAdmin |
+| `POST /editions/{id}/staff-applications/open` | 3.1.11 öppna funktionärsansökan | IsAdmin |
+| `POST /editions/{id}/staff-applications/close` | 3.1.11 stänga funktionärsansökan | IsAdmin |
 
 ---
 
@@ -459,10 +562,13 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 Använd en rad per punkt och ändra bara statusmarkören i början.
 
 - [ ] `R02` Fas 3.1.8 Registreringsöversikt i admin
+- [ ] `R12` Fas 3.1.11 Öppna och stänga ansökan – arrangemang och funktionärer
 - [ ] `R04` Fas 3.2.4 Mina sidor – hub och navigationsstruktur
 - [ ] `R05` Fas 3.2.5 Min biljett
 - [ ] `R06` Fas 3.2.6 Mitt program
 - [ ] `R09` Fas 3.2.9 Sessionsregistrering
+- [ ] `R13` Fas 3.2.10 Bevakningslista – sessioner utan platsbiljett
+- [ ] `R14` Fas 3.2.11 Personligt tidsschema – samlad vy i Mitt program
 - [ ] `R08` Fas 3.2.8 Min bemanning
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
 - [x] `R00` Frontendtester i CI
