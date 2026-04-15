@@ -33,10 +33,7 @@ export class ErrorPageComponent {
 
   readonly page = {
     ...ERROR_PAGE[this.code],
-    description:
-      this.code === '403' && this.reason === 'role'
-        ? 'Du är inloggad men saknar adminrättigheter. Du har loggats ut. Logga in med ett admin-konto för att fortsätta.'
-        : ERROR_PAGE[this.code].description,
+    description: ERROR_PAGE[this.code].description,
     icon: ICONS[this.code],
     link: LINKS[this.code],
   };
