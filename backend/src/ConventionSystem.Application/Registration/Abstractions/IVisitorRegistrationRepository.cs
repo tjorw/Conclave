@@ -11,6 +11,7 @@ public interface IVisitorRegistrationRepository
     Task<bool> HasActiveRegistrationAsync(PersonId personId, EditionId editionId, CancellationToken ct = default);
     Task<MyVisitorRegistrationDto?> GetByPersonAndEditionAsync(PersonId personId, EditionId editionId, CancellationToken ct = default);
     Task<IReadOnlyList<EditionVisitorDto>> ListConfirmedByEditionIdAsync(EditionId editionId, CancellationToken ct = default);
+    Task<IReadOnlyList<VisitorRegistrationAdminDto>> ListByEditionAsync(EditionId editionId, CancellationToken ct = default);
     Task AddAndSaveAsync(VisitorRegistration registration, CancellationToken ct = default);
     Task SaveAsync(CancellationToken ct = default);
 }

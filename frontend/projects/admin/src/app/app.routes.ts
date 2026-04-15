@@ -91,6 +91,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'registrations',
+        loadComponent: () =>
+          import('./features/registrations/registrations.component').then(
+            m => m.RegistrationsComponent
+          ),
+      },
+      {
         path: 'feeds',
         loadComponent: () =>
           import('./features/feeds/feeds.component').then(m => m.FeedsComponent),

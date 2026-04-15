@@ -1,6 +1,10 @@
 using ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
 using ConventionSystem.Application.Registration.Commands.AddStaffMember;
+using ConventionSystem.Application.Registration.Commands.DeleteTicketType;
+using ConventionSystem.Application.Registration.Commands.UpdateTicketType;
 using ConventionSystem.Application.Registration.Queries.GetMyVisitorRegistration;
+using ConventionSystem.Application.Registration.Queries.ListTicketTypes;
+using ConventionSystem.Application.Registration.Queries.ListVisitorRegistrations;
 using ConventionSystem.Application.Registration.Queries.GetMySessionRegistrations;
 using ConventionSystem.Application.Registration.Queries.GetMyStaffApplication;
 using ConventionSystem.Application.Staff.Queries.ListStaffApplications;
@@ -32,7 +36,8 @@ public static class RegistrationEndpoints
         app.MapPost("/editions/{editionId:guid}/ticket-types",
             async (Guid editionId, CreateTicketTypeRequest request, ISender sender, CancellationToken ct) =>
             {
-                var id = await sender.Send(new CreateTicketTypeCommand(editionId, request.Name, request.Price, request.Category), ct);
+                var id = await sender.Send(new CreateTicketTypeCommand(editionId, request.Name, request.Price, request.Category,
+                    request.IsSellable, request.IsPubliclyVisible), ct);
                 return Results.Created($"/ticket-types/{id}", new { id });
             }).RequireAuthorization();
 
@@ -184,6 +189,35 @@ public static class RegistrationEndpoints
                 Results.Ok(await sender.Send(new GetMyStaffApplicationQuery(editionId), ct)))
             .RequireAuthorization();
 
+        // 3.1.8 – Lista biljettyper
+        app.MapGet("/editions/{editionId:guid}/ticket-types",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListTicketTypesQuery(editionId), ct)))
+            .RequireAuthorization("IsAdmin");
+
+        // 3.1.8 – Uppdatera biljetttyp (UC-TK005)
+        app.MapPut("/editions/{editionId:guid}/ticket-types/{ticketTypeId:guid}",
+            async (Guid ticketTypeId, UpdateTicketTypeRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateTicketTypeCommand(ticketTypeId, request.Name, request.Price,
+                    request.IsSellable, request.IsPubliclyVisible), ct);
+                return Results.NoContent();
+            }).RequireAuthorization("IsAdmin");
+
+        // 3.1.8 – Ta bort biljetttyp (UC-TK006)
+        app.MapDelete("/editions/{editionId:guid}/ticket-types/{ticketTypeId:guid}",
+            async (Guid ticketTypeId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new DeleteTicketTypeCommand(ticketTypeId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization("IsAdmin");
+
+        // 3.1.8 – Lista besökarregistreringar
+        app.MapGet("/editions/{editionId:guid}/visitor-registrations",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListVisitorRegistrationsQuery(editionId), ct)))
+            .RequireAuthorization("IsAdmin");
+
         // UC-SA007: Lista staffansökningar per upplaga
         app.MapGet("/editions/{editionId:guid}/staff-applications",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
@@ -194,7 +228,8 @@ public static class RegistrationEndpoints
     }
 }
 
-public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category);
+public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, bool IsSellable, bool IsPubliclyVisible);
+public record UpdateTicketTypeRequest(string Name, int Price, bool IsSellable, bool IsPubliclyVisible);
 public record SubmitVisitorRegistrationRequest(Guid PersonId, Guid TicketTypeId);
 public record ConfirmPaymentRequest(string ExternalReference);
 public record IssueTicketRequest(Guid PersonId, Guid TicketTypeId);

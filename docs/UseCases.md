@@ -749,10 +749,10 @@ Konventionsadministratör
 - Inga
 
 ## Acceptanskriterier
-- [ ] Namn, pris, `isSellable` och `isPubliclyVisible` uppdateras korrekt
-- [ ] Ogiltigt namn returnerar valideringsfel
-- [ ] Negativt pris returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Namn, pris, `isSellable` och `isPubliclyVisible` uppdateras korrekt
+- [x] Ogiltigt namn returnerar valideringsfel
+- [x] Negativt pris returnerar valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
@@ -780,9 +780,9 @@ Konventionsadministratör
 - Inga
 
 ## Acceptanskriterier
-- [ ] Biljetttypen tas bort om inga biljetter finns
-- [ ] Försök att ta bort en biljetttyp med utfärdade biljetter returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Biljetttypen tas bort om inga biljetter finns
+- [x] Försök att ta bort en biljetttyp med utfärdade biljetter returnerar valideringsfel
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 

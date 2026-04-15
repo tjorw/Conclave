@@ -61,3 +61,13 @@ public sealed class TicketPerkNotFoundException()
     : DomainRuleViolationException(
         "Förmånen hittades inte.",
         "ticket_perk_not_found");
+
+public sealed class TicketTypeNotFoundException()
+    : DomainRuleViolationException(
+        "Biljetttypen hittades inte.",
+        "ticket_type_not_found");
+
+public sealed class TicketTypeHasIssuedTicketsException()
+    : DomainRuleViolationException(
+        "Biljetttypen kan inte tas bort eftersom biljetter av typen redan utfärdats.",
+        "ticket_type_has_issued_tickets");

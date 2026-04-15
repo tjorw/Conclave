@@ -6,6 +6,23 @@ public record EditionVisitorDto(
     string Email,
     string? Phone);
 
+public record TicketTypeAdminDto(
+    Guid Id,
+    string Name,
+    int Price,
+    string Category,
+    bool IsSellable,
+    bool IsPubliclyVisible);
+
+public record VisitorRegistrationAdminDto(
+    Guid Id,
+    Guid PersonId,
+    string PersonName,
+    string? TicketTypeName,
+    string Status,
+    DateTimeOffset RegisteredAt,
+    string? PaymentReference);
+
 public record MyVisitorRegistrationDto(
     Guid Id,
     string Status,

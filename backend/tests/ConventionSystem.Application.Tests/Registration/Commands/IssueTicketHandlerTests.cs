@@ -40,7 +40,7 @@ public class IssueTicketHandlerTests
         var edition = convention.CreateEdition("Konvent 2027", period, staffCoord.Id, evt.Id);
 
         var ticketTypeId = TicketTypeId.New();
-        var ticketType = new TicketType(ticketTypeId, edition.Id, "Standardbiljett", 50000, TicketTypeCategory.Visitor);
+        var ticketType = new TicketType(ticketTypeId, edition.Id, "Standardbiljett", 50000, TicketTypeCategory.Visitor, true, true);
 
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);

@@ -314,5 +314,91 @@
       </div>
     </mat-tab>
 
+    <!-- Biljettyper -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        Biljettyper <span class="tab-count">{{ ticketTypes().length }}</span>
+      </ng-template>
+
+      <div class="tab-content">
+        @if (ticketTypes().length > 0) {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Namn</th>
+                <th>Kategori</th>
+                <th class="align-right">Pris</th>
+                <th>Säljbar</th>
+                <th>Publik</th>
+                <th class="actions-col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tt of ticketTypes(); track tt.id) {
+                <tr>
+                  <td>{{ tt.name }}</td>
+                  <td>{{ ticketTypeCategoryLabel(tt.category) }}</td>
+                  <td class="align-right">{{ formatPrice(tt.price) }}</td>
+                  <td>
+                    <mat-icon [class]="tt.isSellable ? 'icon-yes' : 'icon-no'">
+                      {{ tt.isSellable ? 'check_circle' : 'cancel' }}
+                    </mat-icon>
+                  </td>
+                  <td>
+                    <mat-icon [class]="tt.isPubliclyVisible ? 'icon-yes' : 'icon-no'">
+                      {{ tt.isPubliclyVisible ? 'check_circle' : 'cancel' }}
+                    </mat-icon>
+                  </td>
+                  <td class="row-actions">
+                    <button mat-icon-button (click)="startEditTicketType(tt)" matTooltip="Redigera" [disabled]="saving()">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteTicketType(tt)" matTooltip="Ta bort" [disabled]="saving()">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="empty-hint">Inga biljettyper tillagda.</p>
+        }
+
+        @if (editingTicketType(); as ett) {
+          <form [formGroup]="editTicketTypeForm" (ngSubmit)="saveTicketType()" class="inline-form">
+            <h4 class="form-title">Redigera: {{ ett.name }}</h4>
+            <div class="form-row">
+              <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
+              <mat-form-field><mat-label>Pris (kr)</mat-label><input matInput type="number" formControlName="price" min="0" /></mat-form-field>
+              <mat-checkbox formControlName="isSellable">Säljbar</mat-checkbox>
+              <mat-checkbox formControlName="isPubliclyVisible">Synlig publikt</mat-checkbox>
+              <button mat-button type="button" (click)="editingTicketType.set(null)">Avbryt</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="editTicketTypeForm.invalid || saving()">Spara</button>
+            </div>
+          </form>
+        }
+
+        <form [formGroup]="addTicketTypeForm" (ngSubmit)="addTicketType()" class="inline-form">
+          <h4 class="form-title">Lägg till biljetttyp</h4>
+          <div class="form-row">
+            <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
+            <mat-form-field><mat-label>Pris (kr)</mat-label><input matInput type="number" formControlName="price" min="0" /></mat-form-field>
+            <mat-form-field>
+              <mat-label>Kategori</mat-label>
+              <mat-select formControlName="category">
+                @for (cat of ticketTypeCategories; track cat.value) {
+                  <mat-option [value]="cat.value">{{ cat.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-checkbox formControlName="isSellable">Säljbar</mat-checkbox>
+            <mat-checkbox formControlName="isPubliclyVisible">Synlig publikt</mat-checkbox>
+            <button mat-flat-button color="accent" type="submit" [disabled]="addTicketTypeForm.invalid || saving()">Lägg till</button>
+          </div>
+        </form>
+      </div>
+    </mat-tab>
+
   </mat-tab-group>
 }

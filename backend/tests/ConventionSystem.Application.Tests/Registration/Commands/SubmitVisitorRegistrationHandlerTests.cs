@@ -42,7 +42,7 @@ public class SubmitVisitorRegistrationHandlerTests
         if (visitorRegOpen)
             edition.OpenVisitorRegistration(admin.Id);
 
-        var ticketType = new TicketType(TicketTypeId.New(), edition.Id, "Helgbiljett", 15000, TicketTypeCategory.Visitor);
+        var ticketType = new TicketType(TicketTypeId.New(), edition.Id, "Helgbiljett", 15000, TicketTypeCategory.Visitor, true, true);
 
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _personRepo.GetByIdAsync(person.Id, Arg.Any<CancellationToken>()).Returns(person);
@@ -96,7 +96,7 @@ public class SubmitVisitorRegistrationHandlerTests
     public async Task Handle_WrongTicketTypeCategory_Throws()
     {
         var (_, person, edition, _) = Setup();
-        var staffTicketType = new TicketType(TicketTypeId.New(), edition.Id, "Staff-biljett", 0, TicketTypeCategory.Staff);
+        var staffTicketType = new TicketType(TicketTypeId.New(), edition.Id, "Staff-biljett", 0, TicketTypeCategory.Staff, false, false);
         _ticketTypeRepo.GetByIdAsync(staffTicketType.Id, Arg.Any<CancellationToken>()).Returns(staffTicketType);
 
         await Assert.ThrowsAsync<InvalidOperationException>(

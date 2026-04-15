@@ -26,6 +26,7 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 - **2.3 Integrationstester** – tester mot SQL Server (Testcontainers), täcker UC002 (first login), auth-flödet och publik feed; delad konvention per testklass, isolering via unika testkonton
 
 ### Klar – Fas 3 (delvis)
+- **3.1.8 Registreringsöversikt** – Biljettyper (full CRUD, `isSellable`/`isPubliclyVisible`), besökarregistreringar (lista, bekräfta betalning, makulera); ny menypost "Registrering" i admin-sidnavet
 - **3.0 Workspace och delad infrastruktur** – Angular monorepo med admin-app, publik-app och delat bibliotek; `AuthService` (signals), `authGuard`, `adminGuard`, `AuthInterceptor`, alla API-modeller
 - **3.1.1 Scaffold och layout** – App-shell med sidenav, toolbar, logout; lazy-loadade routes med `authGuard` + `adminGuard`; felsidor 401, 403, 404; `httpErrorInterceptor` omdirigerar API-401 till `/unauthorized`
 - **3.1.2 Inloggning** – Inloggningsformulär med Angular Material Reactive Forms, JWT sparas i sessionStorage, redirect vid lyckad inloggning, logout
@@ -584,7 +585,7 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 Använd en rad per punkt och ändra bara statusmarkören i början.
 
-- [ ] `R02` Fas 3.1.8 Registreringsöversikt i admin
+- [x] `R02` Fas 3.1.8 Registreringsöversikt i admin
 - [ ] `R12` Fas 3.1.11 Öppna och stänga ansökan – arrangemang och funktionärer
 - [ ] `R04` Fas 3.2.4 Mina sidor – hub och navigationsstruktur
 - [ ] `R05` Fas 3.2.5 Min biljett

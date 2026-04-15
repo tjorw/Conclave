@@ -1,0 +1,50 @@
+<div class="page-container">
+  <h1 class="page-title">Registrering</h1>
+
+  @if (error()) {
+    <p class="error-banner">{{ error() }}</p>
+  }
+
+  @if (!editionCtx.activeEdition()) {
+    <p class="muted">Välj en upplaga i verktygsfältet för att se registreringsdata.</p>
+  } @else if (loading()) {
+    <div class="loading-center"><mat-spinner diameter="40" /></div>
+  } @else {
+
+    <table class="data-table" aria-label="Besökarregistreringar">
+      <thead>
+        <tr>
+          <th>Person</th>
+          <th>Biljetttyp</th>
+          <th>Status</th>
+          <th>Registrerad</th>
+          <th>Betalningsref.</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (reg of visitorRegistrations(); track reg.id) {
+          <tr>
+            <td>{{ reg.personName }}</td>
+            <td>{{ reg.ticketTypeName ?? '–' }}</td>
+            <td>
+              <span [class]="'status-chip ' + statusChip(reg.status)">{{ statusLabel(reg.status) }}</span>
+            </td>
+            <td>{{ reg.registeredAt | date:'d/M/yy HH:mm' }}</td>
+            <td>{{ reg.paymentReference ?? '–' }}</td>
+            <td class="actions-cell">
+              @if (reg.status === 'PendingPayment') {
+                <button mat-stroked-button color="primary" [disabled]="saving()" (click)="confirmPayment(reg)">
+                  Bekräfta betalning
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="empty-row">Inga registreringar för denna upplaga.</td></tr>
+        }
+      </tbody>
+    </table>
+
+  }
+</div>

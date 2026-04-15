@@ -16,9 +16,12 @@ import {
   ConventionService,
   EditionDto,
   PersonDto,
+  RegistrationService,
   StaffAreaDto,
+  TicketTypeAdminDto,
   VenueDto,
 } from 'shared';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-edition-detail',
@@ -34,6 +37,7 @@ import {
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    MatCheckboxModule,
     MatTabsModule,
     MatTooltipModule,
   ],
@@ -45,6 +49,7 @@ export class EditionDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly svc = inject(ConventionService);
+  private readonly regSvc = inject(RegistrationService);
 
   readonly edition = signal<EditionDto | null>(null);
   readonly persons = signal<PersonDto[]>([]);
@@ -56,7 +61,11 @@ export class EditionDetailComponent implements OnInit {
   readonly editingEdition = signal(false);
   readonly editingVenue = signal<VenueDto | null>(null);
   readonly editingStaffArea = signal<StaffAreaDto | null>(null);
-  readonly editingCategory = signal<CategoryDto | null>(null);
+  readonly editingCategory   = signal<CategoryDto | null>(null);
+
+  // Biljettyper (laddas separat – inte en del av EditionDto)
+  readonly ticketTypes        = signal<TicketTypeAdminDto[]>([]);
+  readonly editingTicketType  = signal<TicketTypeAdminDto | null>(null);
 
   private handleError(context: string, err: unknown): void {
     const detail = (err as { error?: { detail?: string } })?.error?.detail;
@@ -121,6 +130,32 @@ export class EditionDetailComponent implements OnInit {
     responsibleId: ['', Validators.required],
   });
 
+  readonly ticketTypeCategories = [
+    { value: 'Visitor',   label: 'Besökare' },
+    { value: 'Organiser', label: 'Arrangör' },
+    { value: 'Staff',     label: 'Funktionär' },
+  ];
+
+  ticketTypeCategoryLabel(cat: string): string {
+    const map: Record<string, string> = { Visitor: 'Besökare', Organiser: 'Arrangör', Staff: 'Funktionär' };
+    return map[cat] ?? cat;
+  }
+
+  readonly addTicketTypeForm = this.fb.group({
+    name:              ['', Validators.required],
+    price:             [0, [Validators.required, Validators.min(0)]],
+    category:          ['Visitor', Validators.required],
+    isSellable:        [false],
+    isPubliclyVisible: [false],
+  });
+
+  readonly editTicketTypeForm = this.fb.group({
+    name:              ['', Validators.required],
+    price:             [0, [Validators.required, Validators.min(0)]],
+    isSellable:        [false],
+    isPubliclyVisible: [false],
+  });
+
   // ── Lifecycle ────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
@@ -137,11 +172,15 @@ export class EditionDetailComponent implements OnInit {
     this.svc.listPersons().subscribe({
       next: p => this.persons.set(p.filter(x => x.isActive)),
     });
+    this.regSvc.listTicketTypes(editionId).subscribe({
+      next: tt => this.ticketTypes.set(tt),
+    });
   }
 
   private reload(): void {
     const id = this.edition()!.id;
     this.svc.getEdition(id).subscribe({ next: e => this.edition.set(e) });
+    this.regSvc.listTicketTypes(id).subscribe({ next: tt => this.ticketTypes.set(tt) });
   }
 
   personName(id: string): string {
@@ -336,6 +375,66 @@ export class EditionDetailComponent implements OnInit {
       next: () => { this.reload(); this.saving.set(false); },
       error: (err) => this.handleError('Kunde inte ta bort kategori', err),
     });
+  }
+
+  // ── Biljettyper ──────────────────────────────────────────────────────────
+
+  addTicketType(): void {
+    if (this.addTicketTypeForm.invalid) return;
+    const v = this.addTicketTypeForm.value;
+    const editionId = this.edition()!.id;
+    this.saving.set(true);
+    this.regSvc.createTicketType(editionId, {
+      name: v.name!,
+      price: Math.round((v.price ?? 0) * 100),
+      category: v.category!,
+      isSellable: v.isSellable ?? false,
+      isPubliclyVisible: v.isPubliclyVisible ?? false,
+    }).subscribe({
+      next: () => { this.reload(); this.addTicketTypeForm.reset({ category: 'Visitor', price: 0 }); this.saving.set(false); },
+      error: (err) => this.handleError('Kunde inte skapa biljetttyp', err),
+    });
+  }
+
+  startEditTicketType(tt: TicketTypeAdminDto): void {
+    this.editTicketTypeForm.setValue({
+      name: tt.name,
+      price: tt.price / 100,
+      isSellable: tt.isSellable,
+      isPubliclyVisible: tt.isPubliclyVisible,
+    });
+    this.editingTicketType.set(tt);
+  }
+
+  saveTicketType(): void {
+    const target = this.editingTicketType();
+    if (!target || this.editTicketTypeForm.invalid) return;
+    const v = this.editTicketTypeForm.value;
+    const editionId = this.edition()!.id;
+    this.saving.set(true);
+    this.regSvc.updateTicketType(editionId, target.id, {
+      name: v.name!,
+      price: Math.round((v.price ?? 0) * 100),
+      isSellable: v.isSellable ?? false,
+      isPubliclyVisible: v.isPubliclyVisible ?? false,
+    }).subscribe({
+      next: () => { this.reload(); this.editingTicketType.set(null); this.saving.set(false); },
+      error: (err) => this.handleError('Kunde inte uppdatera biljetttyp', err),
+    });
+  }
+
+  deleteTicketType(tt: TicketTypeAdminDto): void {
+    if (!confirm(`Ta bort biljetttypen "${tt.name}"?`)) return;
+    const editionId = this.edition()!.id;
+    this.saving.set(true);
+    this.regSvc.deleteTicketType(editionId, tt.id).subscribe({
+      next: () => { this.reload(); this.saving.set(false); },
+      error: (err) => this.handleError('Kunde inte ta bort biljetttyp', err),
+    });
+  }
+
+  formatPrice(priceInOre: number): string {
+    return (priceInOre / 100).toLocaleString('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 });
   }
 
   // ── Hjälpmetoder ─────────────────────────────────────────────────────────

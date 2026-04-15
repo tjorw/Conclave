@@ -59,6 +59,54 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
         return new MyVisitorRegistrationDto(registration.Id.Value, registration.Status.ToString(), ticketTypeName);
     }
 
+    public async Task<IReadOnlyList<VisitorRegistrationAdminDto>> ListByEditionAsync(
+        EditionId editionId, CancellationToken ct = default)
+    {
+        var registrations = await db.VisitorRegistrations
+            .Where(r => r.EditionId == editionId)
+            .OrderBy(r => r.CreatedAt)
+            .ToListAsync(ct);
+
+        var personIds = registrations.Select(r => r.PersonId).Distinct().ToHashSet();
+        var personMap = await db.Persons
+            .Where(p => personIds.Contains(p.Id))
+            .Select(p => new { p.Id, p.Name })
+            .ToDictionaryAsync(p => p.Id, ct);
+
+        var ticketIds = registrations.Select(r => r.TicketId).Distinct().ToHashSet();
+        var ticketMap = await db.Tickets
+            .Where(t => ticketIds.Contains(t.Id))
+            .Select(t => new { t.Id, t.TicketTypeId })
+            .ToDictionaryAsync(t => t.Id, ct);
+
+        var ticketTypeIds = ticketMap.Values.Select(t => t.TicketTypeId).Distinct().ToHashSet();
+        var ticketTypeMap = await db.TicketTypes
+            .Where(tt => ticketTypeIds.Contains(tt.Id))
+            .Select(tt => new { tt.Id, tt.Name })
+            .ToDictionaryAsync(tt => tt.Id, ct);
+
+        return registrations.Select(r =>
+        {
+            personMap.TryGetValue(r.PersonId, out var person);
+            ticketMap.TryGetValue(r.TicketId, out var ticket);
+            string? ticketTypeName = null;
+            if (ticket is not null)
+            {
+                ticketTypeMap.TryGetValue(ticket.TicketTypeId, out var tt);
+                ticketTypeName = tt?.Name;
+            }
+
+            return new VisitorRegistrationAdminDto(
+                r.Id.Value,
+                r.PersonId.Value,
+                person?.Name ?? "",
+                ticketTypeName,
+                r.Status.ToString(),
+                r.CreatedAt,
+                r.PaymentReference);
+        }).ToList();
+    }
+
     public async Task AddAndSaveAsync(VisitorRegistration registration, CancellationToken ct = default)
     {
         db.VisitorRegistrations.Add(registration);

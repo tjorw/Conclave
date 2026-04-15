@@ -5,6 +5,25 @@ export interface TicketTypeDto {
   capacity: number | null;
 }
 
+export interface TicketTypeAdminDto {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  isSellable: boolean;
+  isPubliclyVisible: boolean;
+}
+
+export interface VisitorRegistrationAdminDto {
+  id: string;
+  personId: string;
+  personName: string;
+  ticketTypeName: string | null;
+  status: string;
+  registeredAt: string;
+  paymentReference: string | null;
+}
+
 export interface VisitorRegistrationDto {
   id: string;
   personId: string;

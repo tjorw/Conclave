@@ -7,4 +7,6 @@ public sealed record CreateTicketTypeCommand(
     Guid EditionId,
     string Name,
     int Price,
-    TicketTypeCategory Category) : IRequest<Guid>;
+    TicketTypeCategory Category,
+    bool IsSellable,
+    bool IsPubliclyVisible) : IRequest<Guid>;

@@ -9,6 +9,7 @@ export const NAV = {
   responsibles:   'Ansvariga',
   events:         'Evenemang',
   staffing:       'Bemanning',
+  registrations:  'Registrering',
   feeds:          'Feeds',
   logout:         'Logga ut',
   toggleMenu:     'Växla meny',

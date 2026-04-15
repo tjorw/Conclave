@@ -29,6 +29,14 @@ public sealed class TicketTypeConfiguration : IEntityTypeConfiguration<TicketTyp
             .HasConversion<string>()
             .HasMaxLength(50);
 
+        builder.Property(t => t.IsSellable)
+            .HasColumnName("is_sellable")
+            .HasDefaultValue(false);
+
+        builder.Property(t => t.IsPubliclyVisible)
+            .HasColumnName("is_publicly_visible")
+            .HasDefaultValue(false);
+
         builder.HasMany(t => t.Perks)
             .WithOne()
             .HasForeignKey("TicketTypeId")

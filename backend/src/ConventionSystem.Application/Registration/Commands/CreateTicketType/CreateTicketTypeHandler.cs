@@ -29,7 +29,8 @@ public sealed class CreateTicketTypeHandler(
         if (!convention.IsAdministrator(performedById))
             throw new InvalidOperationException("Utföraren har inte behörighet att skapa biljetttyper.");
 
-        var ticketType = new TicketType(TicketTypeId.New(), editionId, command.Name, command.Price, command.Category);
+        var ticketType = new TicketType(TicketTypeId.New(), editionId, command.Name, command.Price, command.Category,
+            command.IsSellable, command.IsPubliclyVisible);
         await ticketTypeRepository.AddAndSaveAsync(ticketType, ct);
         return ticketType.Id.Value;
     }
