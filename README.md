@@ -187,6 +187,48 @@ dotnet test backend/ConventionSystem.sln --filter "FullyQualifiedName!~Integrati
 dotnet test backend/ConventionSystem.sln
 ```
 
+#### Frontendtester (Vitest)
+
+```bash
+# Kör frontendtester
+cd frontend
+npm run test
+```
+
+Kör tester per app när du vill begränsa körningen:
+
+```bash
+# Endast admin
+cd frontend
+npm run test -- admin
+
+# Endast public
+cd frontend
+npm run test -- public
+```
+
+Tips: kör med watch-läge under utveckling för snabb återkoppling.
+
+```bash
+cd frontend
+npm run test -- --watch
+```
+
+Watch-läge per app:
+
+```bash
+# Endast admin
+cd frontend
+npm run test -- admin --watch
+
+# Endast public
+cd frontend
+npm run test -- public --watch
+```
+
+Testnivåer och minimikrav för frontend-PR:er beskrivs i
+`docs/Frontend.md` under avsnittet "Frontendtester".
+
 ## Lösningsstruktur
 
 ```

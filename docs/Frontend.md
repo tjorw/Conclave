@@ -332,6 +332,48 @@ då bara byta från direktimport till service-injektion, utan att ändra templat
 
 ---
 
+## Frontendtester
+
+Frontend ska testas vid all ändring som påverkar logik eller kritiska
+användarflöden. Målet är att minska regressionsrisk utan att skapa sköra,
+ytliga tester.
+
+### Minimikrav per PR
+
+1. Enhetstest för all ny eller ändrad logik i service, guard, interceptor,
+  adapter eller state/signal-flöde.
+2. Minst ett komponenttest för huvudflödet i den viktigaste komponenten i
+  ändringen.
+3. Minst ett negativt testfall för felhantering eller valideringsfel.
+4. Vid bugfix: ett regressionstest som hade fallerat före fixen.
+5. Frontendtester ska passera lokalt innan commit-förslag ges.
+
+### Vad som ska testas
+
+- Services: request/response-mappning, fel från API och fallback-beteende.
+- Interceptors: headers/token och hantering av 401/403/500.
+- Guards: tillåten respektive nekad route.
+- Komponenter: formulärvalidering, submit success/fail, loading och disabled state.
+- Signals/state: state transitions vid success, fail och reset.
+
+### Miniminivå per ändringstyp
+
+- Endast UI-text eller styling utan logikändring: inga nya tester krävs.
+- Ny komponent med logik: minst ett komponenttest och ett negativt test.
+- Ny service/metod: minst två enhetstester (happy path + error path).
+- Auth/behörighet/routing: minst två tester (allow + deny).
+- Bugfix: minst ett regressionstest.
+
+### PR-checklista
+
+1. Har all ny logik minst ett test?
+2. Finns minst ett fel- eller edge-case-test?
+3. Täcks kritiskt användarflöde av komponenttest?
+4. Har bugfix ett regressionstest?
+5. Passerar frontend-testkörning utan fel?
+
+---
+
 ## Publika appen (`projects/public`)
 
 > Appen är ännu inte påbörjad. Principerna nedan är avsiktsförklaringar
