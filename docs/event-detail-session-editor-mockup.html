@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Details Session Editor Mockup</title>
+  <style>
+    :root {
+      --bg: #f4f2ee;
+      --panel: #ffffff;
+      --line: #ddd6cd;
+      --ink: #231f19;
+      --muted: #6f665a;
+      --accent: #1f5a4a;
+      --accent-soft: #deede7;
+      --warn: #a55300;
+      --warn-soft: #fff2df;
+      --danger: #a82c20;
+      --danger-soft: #ffe8e4;
+      --hour-width: 68px;
+      --day-start: 8;
+      --day-end: 23;
+      --day-hours: 15;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 20% 0%, #fcfaf6 0%, #f4f2ee 48%, #ece8df 100%);
+      color: var(--ink);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+
+    .page {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 420px 1fr;
+    }
+
+    .header {
+      grid-column: 1 / -1;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      box-shadow: 0 7px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .title {
+      margin: 0;
+      font-size: 1.22rem;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      background: #fff;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-event { background: var(--accent); }
+    .dot-other { background: #9d9388; }
+    .dot-conflict { background: var(--danger); }
+    .dot-draft { background: var(--warn); }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 7px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .panel h2 {
+      margin: 0;
+      padding: 13px 15px;
+      font-size: 0.98rem;
+      border-bottom: 1px solid var(--line);
+      background: #fcfaf6;
+    }
+
+    .panel-body { padding: 14px 15px; }
+
+    .stack { display: grid; gap: 12px; }
+
+    .field { display: grid; gap: 6px; }
+
+    .field label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font: inherit;
+      background: #fff;
+    }
+
+    .grid-2 {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .status {
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.85rem;
+      border: 1px solid transparent;
+    }
+
+    .status.ok {
+      background: var(--accent-soft);
+      color: #1f5a4a;
+      border-color: #b8d9cc;
+    }
+
+    .status.warn {
+      background: var(--warn-soft);
+      color: #7c4a03;
+      border-color: #f2ce98;
+    }
+
+    .status.danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-color: #efb6af;
+    }
+
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font: inherit;
+      cursor: pointer;
+      font-size: 0.84rem;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn.ghost {
+      background: #fff;
+      border-color: var(--line);
+      color: var(--muted);
+    }
+
+    .session-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .session-item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 9px;
+      background: #fff;
+      display: grid;
+      gap: 5px;
+    }
+
+    .session-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .session-name {
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    .session-meta {
+      font-size: 0.77rem;
+      color: var(--muted);
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.72rem;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: #fff;
+    }
+
+    .badge.conflict {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-color: #efb6af;
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: 220px minmax(180px, 1fr);
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fcfaf6;
+    }
+
+    .filter-row select,
+    .filter-row input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font: inherit;
+      background: #fff;
+    }
+
+    .timeline-wrap { overflow: auto; padding: 12px; }
+
+    .timeline-grid {
+      min-width: calc(var(--hour-width) * var(--day-hours) + 220px);
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .left-head {
+      background: #faf7f2;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 8px 10px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .time-head {
+      display: grid;
+      grid-template-columns: repeat(var(--day-hours), var(--hour-width));
+      border-bottom: 1px solid var(--line);
+      background: #faf7f2;
+    }
+
+    .time-head div {
+      text-align: center;
+      font-size: 0.74rem;
+      color: var(--muted);
+      padding: 8px 0;
+      border-left: 1px dashed #e8e1d6;
+    }
+
+    .room-label {
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 9px;
+      font-size: 0.86rem;
+      background: #fff;
+    }
+
+    .room-meta {
+      font-size: 0.74rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .lane {
+      position: relative;
+      height: 78px;
+      border-bottom: 1px solid var(--line);
+      background-image: repeating-linear-gradient(
+        to right,
+        transparent,
+        transparent calc(var(--hour-width) - 1px),
+        #ece4d9 calc(var(--hour-width) - 1px),
+        #ece4d9 var(--hour-width)
+      );
+    }
+
+    .row-end .room-label,
+    .row-end .lane {
+      border-bottom: none;
+    }
+
+    .block {
+      position: absolute;
+      top: 14px;
+      height: 50px;
+      border-radius: 10px;
+      padding: 6px 8px;
+      color: #fff;
+      overflow: hidden;
+      font-size: 0.74rem;
+      line-height: 1.2;
+      border: 1px solid transparent;
+      box-shadow: 0 3px 8px rgba(0,0,0,.16);
+    }
+
+    .block.event {
+      background: linear-gradient(135deg, #24614f, #1d5444);
+      border-color: #1a4638;
+    }
+
+    .block.other {
+      background: linear-gradient(135deg, #8f877c, #7f766b);
+      border-color: #6f665a;
+      opacity: 0.78;
+    }
+
+    .block.draft {
+      background: linear-gradient(135deg, #c67a16, #b46904);
+      border-color: #915504;
+    }
+
+    .block.conflict {
+      background: linear-gradient(135deg, #b5392b, #9a271b);
+      border-color: #74180f;
+      opacity: 1;
+    }
+
+    @media (max-width: 1200px) {
+      .page { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="header">
+      <div>
+        <h1 class="title">Event details: skapa och redigera pass</h1>
+        <p class="subtitle">Du jobbar i ett event och far direktstod for schemalaggning samt overlap i samma lokal.</p>
+      </div>
+      <div class="chips">
+        <span class="chip"><span class="dot dot-event"></span> Pass i detta event</span>
+        <span class="chip"><span class="dot dot-other"></span> Andra event i lokalen</span>
+        <span class="chip"><span class="dot dot-conflict"></span> Overlap</span>
+        <span class="chip"><span class="dot dot-draft"></span> Redigerat forslag</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Passeditor</h2>
+      <div class="panel-body stack">
+        <div class="field">
+          <label>Pass i detta event</label>
+          <select id="editSessionSelect"></select>
+        </div>
+
+        <div class="field">
+          <label>Lokal</label>
+          <select id="editRoomSelect"></select>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Start</label>
+            <input id="editStart" type="time" />
+          </div>
+          <div class="field">
+            <label>Slut</label>
+            <input id="editEnd" type="time" />
+          </div>
+        </div>
+
+        <div id="editorStatus" class="status warn">Valj pass och justera tid/lokal for att se konfliktstatus.</div>
+
+        <div class="btn-row">
+          <button class="btn primary" type="button">Spara pass</button>
+          <button class="btn ghost" type="button">Aterstall</button>
+        </div>
+      </div>
+
+      <h2>Passoversikt for detta event</h2>
+      <div class="panel-body">
+        <ul id="eventSessionList" class="session-list"></ul>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Tidslinje for schemalaggning</h2>
+      <div class="filter-row">
+        <select id="buildingFilter"></select>
+        <input id="roomSearch" type="text" placeholder="Fritext for lokal, t.ex. sal, blackbox eller annex" />
+      </div>
+      <div class="timeline-wrap">
+        <div id="timeline" class="timeline-grid"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const dayStart = 8;
+    const dayEnd = 23;
+    const currentEvent = { id: "ev-42", name: "Kult och Kaos", category: "Lajv" };
+
+    const rooms = [
+      { id: "stora-salen", name: "Stora Salen", building: "Huvudbyggnaden", capacity: 180 },
+      { id: "a2", name: "A2 Verkstad", building: "Huvudbyggnaden", capacity: 55 },
+      { id: "spegel", name: "Spegelsalen", building: "Annexet", capacity: 90 },
+      { id: "blackbox", name: "Blackbox", building: "Kulturhuset", capacity: 120 },
+      { id: "nordic-1", name: "Nordic 1", building: "Kulturhuset", capacity: 70 },
+      { id: "labbet", name: "Labbet", building: "Annexet", capacity: 40 }
+    ];
+
+    const mySessions = [
+      { id: "ms-1", name: "Pass 1: Kultstart", roomId: "stora-salen", start: "10:00", end: "11:30" },
+      { id: "ms-2", name: "Pass 2: Mork process", roomId: "blackbox", start: "12:30", end: "14:00" },
+      { id: "ms-3", name: "Pass 3: Epilog", roomId: "blackbox", start: "15:00", end: "16:00" }
+    ];
+
+    const otherEventSessions = [
+      { id: "o-1", eventName: "Neon Nights", roomId: "stora-salen", start: "09:00", end: "10:30" },
+      { id: "o-2", eventName: "Panelsparet", roomId: "stora-salen", start: "11:20", end: "12:20" },
+      { id: "o-3", eventName: "Workshopsparet", roomId: "blackbox", start: "13:00", end: "15:00" },
+      { id: "o-4", eventName: "Mystik 101", roomId: "a2", start: "10:00", end: "11:30" },
+      { id: "o-5", eventName: "Storygame Night", roomId: "nordic-1", start: "14:00", end: "16:00" }
+    ];
+
+    const editSessionSelect = document.getElementById("editSessionSelect");
+    const editRoomSelect = document.getElementById("editRoomSelect");
+    const editStart = document.getElementById("editStart");
+    const editEnd = document.getElementById("editEnd");
+    const editorStatus = document.getElementById("editorStatus");
+    const eventSessionList = document.getElementById("eventSessionList");
+
+    const buildingFilter = document.getElementById("buildingFilter");
+    const roomSearch = document.getElementById("roomSearch");
+    const timeline = document.getElementById("timeline");
+
+    function toMinutes(hhmm) {
+      const [h, m] = hhmm.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function overlaps(a, b) {
+      return toMinutes(a.start) < toMinutes(b.end) && toMinutes(b.start) < toMinutes(a.end);
+    }
+
+    function byId(list, id) {
+      return list.find(item => item.id === id);
+    }
+
+    function roomById(id) {
+      return byId(rooms, id);
+    }
+
+    function normalize(v) {
+      return String(v || "").toLowerCase();
+    }
+
+    function getVisibleRooms() {
+      const building = buildingFilter.value;
+      const q = normalize(roomSearch.value).trim();
+
+      return rooms
+        .filter(r => building === "all" || r.building === building)
+        .filter(r => q === "" || normalize(r.name).includes(q) || normalize(r.building).includes(q));
+    }
+
+    function getDraft() {
+      const selectedId = editSessionSelect.value;
+      const base = byId(mySessions, selectedId);
+
+      if (!base) return null;
+      if (!editStart.value || !editEnd.value || !editRoomSelect.value) return null;
+      if (toMinutes(editEnd.value) <= toMinutes(editStart.value)) return null;
+
+      return {
+        id: "draft",
+        sourceId: base.id,
+        name: base.name,
+        roomId: editRoomSelect.value,
+        start: editStart.value,
+        end: editEnd.value,
+        isMine: true,
+        isDraft: true
+      };
+    }
+
+    function getMySessionsWithDraft() {
+      const draft = getDraft();
+      if (!draft) {
+        return mySessions.map(s => ({ ...s, isMine: true, isDraft: false }));
+      }
+
+      return mySessions
+        .filter(s => s.id !== draft.sourceId)
+        .map(s => ({ ...s, isMine: true, isDraft: false }))
+        .concat(draft);
+    }
+
+    function getConflictMap(myList, otherList) {
+      const all = [];
+      myList.forEach(s => all.push({ ...s, track: "mine" }));
+      otherList.forEach(s => all.push({ ...s, track: "other" }));
+
+      const conflictMap = new Map();
+      all.forEach(s => conflictMap.set(s.id, false));
+
+      for (let i = 0; i < all.length; i += 1) {
+        for (let j = i + 1; j < all.length; j += 1) {
+          const a = all[i];
+          const b = all[j];
+          if (a.roomId === b.roomId && overlaps(a, b)) {
+            conflictMap.set(a.id, true);
+            conflictMap.set(b.id, true);
+          }
+        }
+      }
+
+      return conflictMap;
+    }
+
+    function setEditorStatus() {
+      const draft = getDraft();
+      if (!draft) {
+        if (editStart.value && editEnd.value && toMinutes(editEnd.value) <= toMinutes(editStart.value)) {
+          editorStatus.className = "status danger";
+          editorStatus.textContent = "Ogiltig tid: sluttid maste vara efter starttid.";
+          return;
+        }
+        editorStatus.className = "status warn";
+        editorStatus.textContent = "Valj pass och justera tid/lokal for att se konfliktstatus.";
+        return;
+      }
+
+      const hasConflict = otherEventSessions
+        .filter(s => s.roomId === draft.roomId)
+        .some(s => overlaps(s, draft)) || mySessions
+          .filter(s => s.id !== draft.sourceId && s.roomId === draft.roomId)
+          .some(s => overlaps(s, draft));
+
+      if (hasConflict) {
+        editorStatus.className = "status danger";
+        editorStatus.textContent = "Konflikt: passet overlappar med annat pass i samma lokal.";
+      } else {
+        editorStatus.className = "status ok";
+        editorStatus.textContent = "Ingen overlap i vald lokal och tid.";
+      }
+    }
+
+    function renderSessionList(myList, conflictMap) {
+      eventSessionList.innerHTML = "";
+
+      myList
+        .sort((a, b) => toMinutes(a.start) - toMinutes(b.start))
+        .forEach(s => {
+          const li = document.createElement("li");
+          li.className = "session-item";
+
+          const room = roomById(s.roomId);
+          const conflict = conflictMap.get(s.id);
+
+          li.innerHTML =
+            '<div class="session-top">' +
+              '<div class="session-name">' + s.name + '</div>' +
+              '<span class="badge ' + (conflict ? 'conflict' : '') + '">' + (conflict ? 'Overlap' : 'OK') + '</span>' +
+            '</div>' +
+            '<div class="session-meta">' + s.start + ' - ' + s.end + ' · ' + room.name + '</div>';
+
+          eventSessionList.appendChild(li);
+        });
+    }
+
+    function renderTimeline(myList, otherList, conflictMap) {
+      const visibleRooms = getVisibleRooms();
+      const visibleRoomIds = new Set(visibleRooms.map(r => r.id));
+
+      const myVisible = myList.filter(s => visibleRoomIds.has(s.roomId));
+      const otherVisible = otherList.filter(s => visibleRoomIds.has(s.roomId));
+
+      timeline.innerHTML = "";
+
+      const leftHead = document.createElement("div");
+      leftHead.className = "left-head";
+      leftHead.textContent = "Lokaler";
+      timeline.appendChild(leftHead);
+
+      const timeHead = document.createElement("div");
+      timeHead.className = "time-head";
+      for (let h = dayStart; h < dayEnd; h += 1) {
+        const t = document.createElement("div");
+        t.textContent = String(h).padStart(2, "0") + ":00";
+        timeHead.appendChild(t);
+      }
+      timeline.appendChild(timeHead);
+
+      visibleRooms.forEach((room, idx) => {
+        const label = document.createElement("div");
+        label.className = "room-label" + (idx === visibleRooms.length - 1 ? " row-end" : "");
+        label.innerHTML = room.name + '<div class="room-meta">' + room.building + ' · Kapacitet ' + room.capacity + '</div>';
+        timeline.appendChild(label);
+
+        const lane = document.createElement("div");
+        lane.className = "lane" + (idx === visibleRooms.length - 1 ? " row-end" : "");
+
+        const rowSessions = [];
+        myVisible.filter(s => s.roomId === room.id).forEach(s => rowSessions.push({ ...s, type: "mine" }));
+        otherVisible.filter(s => s.roomId === room.id).forEach(s => rowSessions.push({ ...s, type: "other" }));
+
+        rowSessions.forEach(s => {
+          const block = document.createElement("div");
+          const width = toMinutes(s.end) - toMinutes(s.start);
+          const left = toMinutes(s.start) - dayStart * 60;
+          const conflict = conflictMap.get(s.id);
+
+          let className = "block " + (s.type === "mine" ? "event" : "other");
+          if (s.isDraft) className += " draft";
+          if (conflict) className += " conflict";
+          block.className = className;
+
+          block.style.left = (left / 60) * 68 + "px";
+          block.style.width = Math.max((width / 60) * 68 - 2, 34) + "px";
+
+          const label = s.type === "mine" ? currentEvent.name : s.eventName;
+          block.textContent = s.name + " · " + label;
+          lane.appendChild(block);
+        });
+
+        timeline.appendChild(lane);
+      });
+    }
+
+    function refresh() {
+      const myList = getMySessionsWithDraft();
+      const conflictMap = getConflictMap(myList, otherEventSessions);
+      setEditorStatus();
+      renderSessionList(myList, conflictMap);
+      renderTimeline(myList, otherEventSessions, conflictMap);
+    }
+
+    function initEditor() {
+      mySessions.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = s.name;
+        editSessionSelect.appendChild(opt);
+      });
+
+      rooms.forEach(r => {
+        const opt = document.createElement("option");
+        opt.value = r.id;
+        opt.textContent = r.name;
+        editRoomSelect.appendChild(opt);
+      });
+
+      editSessionSelect.value = mySessions[0].id;
+      const s = mySessions[0];
+      editRoomSelect.value = s.roomId;
+      editStart.value = s.start;
+      editEnd.value = s.end;
+    }
+
+    function syncFormWithSelectedSession() {
+      const s = byId(mySessions, editSessionSelect.value);
+      if (!s) return;
+      editRoomSelect.value = s.roomId;
+      editStart.value = s.start;
+      editEnd.value = s.end;
+      refresh();
+    }
+
+    function initTimelineFilters() {
+      const buildings = ["all", ...new Set(rooms.map(r => r.building))];
+      buildings.forEach(b => {
+        const opt = document.createElement("option");
+        opt.value = b;
+        opt.textContent = b === "all" ? "Alla byggnader" : b;
+        buildingFilter.appendChild(opt);
+      });
+      buildingFilter.value = "all";
+    }
+
+    initEditor();
+    initTimelineFilters();
+
+    [editRoomSelect, editStart, editEnd, roomSearch, buildingFilter].forEach(el => {
+      el.addEventListener("input", refresh);
+      el.addEventListener("change", refresh);
+    });
+
+    editSessionSelect.addEventListener("change", syncFormWithSelectedSession);
+
+    refresh();
+  </script>
+</body>
+</html>

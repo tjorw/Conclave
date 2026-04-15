@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Scheduling Mockup</title>
+  <style>
+    :root {
+      --bg: #f3f2ef;
+      --panel: #ffffff;
+      --ink: #23211d;
+      --muted: #6d675e;
+      --line: #ddd7cf;
+      --brand: #315c4f;
+      --brand-soft: #dcebe6;
+      --warn: #d06a00;
+      --warn-soft: #fff1df;
+      --danger: #b43b2d;
+      --danger-soft: #ffe9e5;
+      --ok: #2e7d32;
+      --ok-soft: #e6f4e7;
+      --hour-width: 72px;
+      --day-start: 8;
+      --day-end: 22;
+      --day-hours: 14;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      color: var(--ink);
+      background: radial-gradient(circle at 20% 10%, #fdfbf7 0%, #f3f2ef 45%, #ece9e2 100%);
+    }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 340px 1fr;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+    }
+
+    .panel h2 {
+      margin: 0;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      font-size: 1rem;
+      background: #fcfbf8;
+    }
+
+    .panel-body {
+      padding: 14px 16px;
+    }
+
+    .header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .title {
+      font-size: 1.3rem;
+      margin: 0;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin: 4px 0 0;
+      font-size: 0.9rem;
+    }
+
+    .legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #fff;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-normal { background: var(--brand); }
+    .dot-overlap { background: var(--danger); }
+    .dot-draft { background: var(--warn); }
+
+    .stack { display: grid; gap: 12px; }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font: inherit;
+      background: #fff;
+    }
+
+    .field textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .grid-2 {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .status {
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.86rem;
+      border: 1px solid transparent;
+    }
+
+    .status.ok {
+      background: var(--ok-soft);
+      color: var(--ok);
+      border-color: #badebc;
+    }
+
+    .status.warn {
+      background: var(--warn-soft);
+      color: #845003;
+      border-color: #f4cb90;
+    }
+
+    .status.danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-color: #f5b8b1;
+    }
+
+    .conflict-list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 7px;
+      font-size: 0.88rem;
+    }
+
+    .filter-wrap {
+      display: grid;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fcfbf8;
+    }
+
+    .filter-row {
+      display: grid;
+      gap: 8px;
+    }
+
+    .filter-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .filter-controls {
+      display: grid;
+      grid-template-columns: minmax(170px, 220px) minmax(180px, 1fr);
+      gap: 8px;
+    }
+
+    .filter-controls select,
+    .filter-controls input {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font: inherit;
+      background: #fff;
+    }
+
+    .timeline-wrap {
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .timeline-grid {
+      min-width: calc(var(--hour-width) * var(--day-hours) + 220px);
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .time-head {
+      grid-column: 2;
+      display: grid;
+      grid-template-columns: repeat(var(--day-hours), var(--hour-width));
+      background: #faf8f3;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .time-head div {
+      font-size: 0.76rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 8px 0;
+      border-left: 1px dashed #e6e0d6;
+    }
+
+    .left-head {
+      background: #faf8f3;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 8px 10px;
+      font-size: 0.76rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .room-label {
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 10px;
+      background: #fff;
+      font-size: 0.9rem;
+    }
+
+    .room-meta {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    .lane {
+      position: relative;
+      height: 80px;
+      border-bottom: 1px solid var(--line);
+      background-image: repeating-linear-gradient(
+        to right,
+        transparent,
+        transparent calc(var(--hour-width) - 1px),
+        #eee7dd calc(var(--hour-width) - 1px),
+        #eee7dd var(--hour-width)
+      );
+    }
+
+    .session {
+      position: absolute;
+      top: 14px;
+      height: 52px;
+      border-radius: 10px;
+      border: 1px solid #1f5142;
+      background: linear-gradient(135deg, #2f6353, #2a584a);
+      color: #fff;
+      padding: 6px 8px;
+      overflow: hidden;
+      box-shadow: 0 3px 8px rgba(20, 40, 34, 0.2);
+    }
+
+    .session .name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      line-height: 1.15;
+    }
+
+    .session .meta {
+      margin-top: 4px;
+      font-size: 0.72rem;
+      opacity: 0.93;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .session.overlap {
+      background: linear-gradient(135deg, #bf4231, #9f281f);
+      border-color: #7b170f;
+      box-shadow: 0 3px 8px rgba(128, 28, 20, 0.24);
+    }
+
+    .session.draft {
+      background: linear-gradient(135deg, #d2851c, #be6f09);
+      border-color: #8c5000;
+    }
+
+    .row-end .room-label,
+    .row-end .lane {
+      border-bottom: none;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 8px;
+    }
+
+    .request-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .request-item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 9px;
+      background: #fff;
+      display: grid;
+      gap: 5px;
+    }
+
+    .request-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .request-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .request-meta {
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+
+    .request-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-mini {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 0.76rem;
+      cursor: pointer;
+    }
+
+    .btn-mini.primary {
+      border-color: #1f5a4a;
+      background: #1f5a4a;
+      color: #fff;
+    }
+
+    .tag {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: #fff;
+    }
+
+    .tag.scheduled {
+      border-color: #badebc;
+      background: #e6f4e7;
+      color: #2e7d32;
+    }
+
+    @media (max-width: 1120px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="header">
+      <div>
+        <h1 class="title">Session schemalaggning</h1>
+        <p class="subtitle">Mockup: schemalagg befintliga eventsessioner och visualisera overlap i samma lokal.</p>
+      </div>
+      <div class="legend">
+        <span class="chip"><span class="dot dot-normal"></span> Bokad session</span>
+        <span class="chip"><span class="dot dot-overlap"></span> Overlap / konflikt</span>
+        <span class="chip"><span class="dot dot-draft"></span> Nytt forslag</span>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <h2>Nytt sessionsforslag</h2>
+      <div class="panel-body stack">
+        <div class="field">
+          <label>Eventsession</label>
+          <select id="draftSession"></select>
+        </div>
+
+        <div class="field">
+          <label>Lokal</label>
+          <select id="draftRoom"></select>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Start</label>
+            <input id="draftStart" type="time" value="11:30" />
+          </div>
+          <div class="field">
+            <label>Slut</label>
+            <input id="draftEnd" type="time" value="12:30" />
+          </div>
+        </div>
+
+        <div id="draftStatus" class="status warn">Valj lokal och tid for att se om forslaget overlappar.</div>
+
+        <div class="field">
+          <label>Kommentar till schemakoordinator</label>
+          <textarea placeholder="Ex: behov av stor golvyta och 20 min riggtid innan start."></textarea>
+        </div>
+
+        <div class="footer-note">
+          Tips: i riktig implementation kan denna panel ocksa visa forslag pa narliggande lediga tider.
+        </div>
+      </div>
+    </aside>
+
+    <aside class="panel">
+      <h2>Arrangorens passonskemal</h2>
+      <div class="panel-body">
+        <ul id="requestList" class="request-list"></ul>
+      </div>
+    </aside>
+
+    <section class="panel">
+      <h2>Konflikter i valt schemafonstrer</h2>
+      <div class="panel-body">
+        <ul id="conflictList" class="conflict-list"></ul>
+      </div>
+    </section>
+
+    <section class="panel" style="grid-column: 1 / -1;">
+      <h2>Dagvy per lokal</h2>
+      <div class="filter-wrap">
+        <div class="filter-row">
+          <div class="filter-label">Filtrera lokaler (byggnad + fritext)</div>
+          <div class="filter-controls">
+            <select id="roomBuildingFilter"></select>
+            <input id="roomTextFilter" type="text" placeholder="Sok lokal, t.ex. salen eller blackbox" />
+          </div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-label">Filtrera event (kategori + fritext)</div>
+          <div class="filter-controls">
+            <select id="eventCategoryFilter"></select>
+            <input id="eventTextFilter" type="text" placeholder="Sok event, t.ex. mystery eller panel" />
+          </div>
+        </div>
+      </div>
+      <div class="timeline-wrap">
+        <div id="timeline" class="timeline-grid"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const dayStart = 8;
+    const dayEnd = 22;
+    const rooms = [
+      { id: "stora-salen", name: "Stora Salen", building: "Huvudbyggnaden", capacity: 180 },
+      { id: "a2", name: "A2 - Verkstad", building: "Huvudbyggnaden", capacity: 55 },
+      { id: "spegelsalen", name: "Spegelsalen", building: "Annexet", capacity: 90 },
+      { id: "blackbox", name: "Blackbox", building: "Kulturhuset", capacity: 120 },
+      { id: "nordic-1", name: "Nordic 1", building: "Kulturhuset", capacity: 70 },
+      { id: "labbet", name: "Labbet", building: "Annexet", capacity: 40 }
+    ];
+
+    const events = [
+      { id: "ev-1", name: "Neon Nights", category: "Storygame", organiser: "Mikael" },
+      { id: "ev-2", name: "Panelsparet", category: "Panelsamtal", organiser: "Sara" },
+      { id: "ev-3", name: "Workshopsparet", category: "Workshop", organiser: "Nora" },
+      { id: "ev-4", name: "Mysterier i morker", category: "Lajv", organiser: "Hugo" },
+      { id: "ev-5", name: "Tarningar och teori", category: "Forelasning", organiser: "Kim" }
+    ];
+
+    const eventSessions = [
+      { id: "es-1", eventId: "ev-1", name: "Storygame: Neon City", host: "Mikael" },
+      { id: "es-2", eventId: "ev-2", name: "Panel: Speldesign", host: "Sara" },
+      { id: "es-3", eventId: "ev-3", name: "Lajvworkshop", host: "Nora" },
+      { id: "es-4", eventId: "ev-3", name: "Mala minis", host: "Jonas" },
+      { id: "es-5", eventId: "ev-1", name: "Actual Play", host: "Liv" },
+      { id: "es-6", eventId: "ev-4", name: "Mordmysterium", host: "Hugo" },
+      { id: "es-7", eventId: "ev-4", name: "Mork Borg one-shot", host: "Emma" },
+      { id: "es-8", eventId: "ev-2", name: "Panel: Spelledning i praktik", host: "Alex" },
+      { id: "es-9", eventId: "ev-5", name: "Forelasning: Tarningens psykologi", host: "Kim" }
+    ];
+
+    const organiserSessionRequests = [
+      {
+        id: "rq-1",
+        eventSessionId: "es-8",
+        preferredDurationMinutes: 90,
+        preferredSeats: 80,
+        preferredStartType: "FixedTime",
+        note: "Garna i panelrum med projektor."
+      },
+      {
+        id: "rq-2",
+        eventSessionId: "es-3",
+        preferredDurationMinutes: 60,
+        preferredSeats: 30,
+        preferredStartType: "FixedTime",
+        note: "Behover golvyta och fri passage runt deltagare."
+      },
+      {
+        id: "rq-3",
+        eventSessionId: "es-6",
+        preferredDurationMinutes: 120,
+        preferredSeats: 100,
+        preferredStartType: "FixedTime",
+        note: "Morklaggning och avskild lokal onskas."
+      }
+    ];
+
+    const sessions = [
+      { id: "s1", sessionId: "es-1", eventId: "ev-1", title: "Storygame: Neon City", roomId: "stora-salen", start: "09:00", end: "10:30", host: "Mikael" },
+      { id: "s2", sessionId: "es-2", eventId: "ev-2", title: "Panel: Speldesign", roomId: "stora-salen", start: "10:30", end: "11:30", host: "Sara" },
+      { id: "s3", sessionId: "es-3", eventId: "ev-3", title: "Lajvworkshop", roomId: "stora-salen", start: "11:00", end: "12:00", host: "Nora" },
+      { id: "s4", sessionId: "es-4", eventId: "ev-3", title: "Mala minis", roomId: "a2", start: "10:00", end: "12:00", host: "Jonas" },
+      { id: "s5", sessionId: "es-5", eventId: "ev-1", title: "Actual Play", roomId: "spegelsalen", start: "11:00", end: "13:00", host: "Liv" },
+      { id: "s6", sessionId: "es-6", eventId: "ev-4", title: "Mordmysterium", roomId: "blackbox", start: "12:00", end: "14:00", host: "Hugo" },
+      { id: "s7", sessionId: "es-7", eventId: "ev-4", title: "Mork Borg one-shot", roomId: "blackbox", start: "13:00", end: "15:00", host: "Emma" },
+      { id: "s8", sessionId: "es-9", eventId: "ev-5", title: "Forelasning: Tarningens psykologi", roomId: "nordic-1", start: "10:00", end: "11:00", host: "Kim" }
+    ];
+
+    const timeline = document.getElementById("timeline");
+    const conflictList = document.getElementById("conflictList");
+    const requestList = document.getElementById("requestList");
+    const roomBuildingFilter = document.getElementById("roomBuildingFilter");
+    const roomTextFilter = document.getElementById("roomTextFilter");
+    const eventCategoryFilter = document.getElementById("eventCategoryFilter");
+    const eventTextFilter = document.getElementById("eventTextFilter");
+    const draftRoom = document.getElementById("draftRoom");
+    const draftSession = document.getElementById("draftSession");
+    const draftStart = document.getElementById("draftStart");
+    const draftEnd = document.getElementById("draftEnd");
+    const draftStatus = document.getElementById("draftStatus");
+
+    function toMinutes(hhmm) {
+      const [h, m] = hhmm.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function overlaps(a, b) {
+      return toMinutes(a.start) < toMinutes(b.end) && toMinutes(b.start) < toMinutes(a.end);
+    }
+
+    function getRoomById(roomId) {
+      return rooms.find(r => r.id === roomId);
+    }
+
+    function getEventById(eventId) {
+      return events.find(e => e.id === eventId);
+    }
+
+    function getSessionTemplateById(sessionId) {
+      return eventSessions.find(s => s.id === sessionId);
+    }
+
+    function getRequestBySessionId(sessionId) {
+      return organiserSessionRequests.find(r => r.eventSessionId === sessionId) || null;
+    }
+
+    function addMinutes(hhmm, minutesToAdd) {
+      const minutes = toMinutes(hhmm) + minutesToAdd;
+      const safe = Math.max(minutes, dayStart * 60);
+      const h = Math.floor(safe / 60);
+      const m = safe % 60;
+      return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0");
+    }
+
+    function normalize(value) {
+      return String(value || "").toLowerCase();
+    }
+
+    function getFilteredRoomIds() {
+      const selectedBuilding = roomBuildingFilter.value;
+      const roomQuery = normalize(roomTextFilter.value).trim();
+
+      return new Set(
+        rooms
+          .filter(room => selectedBuilding === "all" || room.building === selectedBuilding)
+          .filter(room => roomQuery === "" || normalize(room.name).includes(roomQuery) || normalize(room.building).includes(roomQuery))
+          .map(room => room.id)
+      );
+    }
+
+    function getFilteredEventIds() {
+      const selectedCategory = eventCategoryFilter.value;
+      const eventQuery = normalize(eventTextFilter.value).trim();
+
+      return new Set(
+        events
+          .filter(event => selectedCategory === "all" || event.category === selectedCategory)
+          .filter(event => eventQuery === "" || normalize(event.name).includes(eventQuery) || normalize(event.category).includes(eventQuery))
+          .map(event => event.id)
+      );
+    }
+
+    function getVisibleRooms() {
+      const visibleRoomIds = getFilteredRoomIds();
+      return rooms.filter(r => visibleRoomIds.has(r.id));
+    }
+
+    function getVisibleSessions(list) {
+      const visibleRoomIds = getFilteredRoomIds();
+      const visibleEventIds = getFilteredEventIds();
+      return list.filter(s => visibleRoomIds.has(s.roomId) && visibleEventIds.has(s.eventId));
+    }
+
+    function getConflicts(list) {
+      const conflicts = [];
+      for (let i = 0; i < list.length; i += 1) {
+        for (let j = i + 1; j < list.length; j += 1) {
+          if (list[i].roomId === list[j].roomId && overlaps(list[i], list[j])) {
+            conflicts.push([list[i], list[j]]);
+          }
+        }
+      }
+      return conflicts;
+    }
+
+    function markOverlapMap(list) {
+      const map = new Map();
+      list.forEach(s => map.set(s.id, false));
+
+      getConflicts(list).forEach(([a, b]) => {
+        map.set(a.id, true);
+        map.set(b.id, true);
+      });
+      return map;
+    }
+
+    function renderTimeline(list, draft = null) {
+      const rendered = draft ? [...list, draft] : [...list];
+      const visibleRooms = getVisibleRooms();
+      const visibleSessions = getVisibleSessions(rendered);
+      const overlapMap = markOverlapMap(visibleSessions);
+
+      timeline.innerHTML = "";
+
+      const leftHead = document.createElement("div");
+      leftHead.className = "left-head";
+      leftHead.textContent = "Lokaler";
+      timeline.appendChild(leftHead);
+
+      const timeHead = document.createElement("div");
+      timeHead.className = "time-head";
+      for (let h = dayStart; h < dayEnd; h += 1) {
+        const tick = document.createElement("div");
+        tick.textContent = String(h).padStart(2, "0") + ":00";
+        timeHead.appendChild(tick);
+      }
+      timeline.appendChild(timeHead);
+
+      visibleRooms.forEach((room, idx) => {
+        const label = document.createElement("div");
+        label.className = "room-label" + (idx === visibleRooms.length - 1 ? " row-end" : "");
+        label.innerHTML = room.name + '<div class="room-meta">' + room.building + ' · Kapacitet ' + room.capacity + '</div>';
+        timeline.appendChild(label);
+
+        const lane = document.createElement("div");
+        lane.className = "lane" + (idx === visibleRooms.length - 1 ? " row-end" : "");
+
+        visibleSessions
+          .filter(s => s.roomId === room.id)
+          .forEach(s => {
+            const el = document.createElement("div");
+            const isOverlap = overlapMap.get(s.id);
+            const isDraft = s.id === "draft";
+            const eventName = getEventById(s.eventId)?.name || "Okant event";
+
+            el.className = "session" + (isOverlap ? " overlap" : "") + (isDraft ? " draft" : "");
+            const widthMinutes = toMinutes(s.end) - toMinutes(s.start);
+            const offsetMinutes = toMinutes(s.start) - dayStart * 60;
+
+            el.style.left = (offsetMinutes / 60) * 72 + "px";
+            el.style.width = Math.max((widthMinutes / 60) * 72 - 2, 32) + "px";
+
+            el.innerHTML = '<div class="name">' + s.title + '</div>' +
+              '<div class="meta">' + s.start + ' - ' + s.end + ' · ' + eventName + '</div>';
+
+            lane.appendChild(el);
+          });
+
+        timeline.appendChild(lane);
+      });
+
+      renderConflictList(visibleSessions);
+    }
+
+    function renderConflictList(list) {
+      const conflicts = getConflicts(list);
+      conflictList.innerHTML = "";
+
+      if (conflicts.length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "Inga konflikter i nuvarande schemafonstrer.";
+        conflictList.appendChild(li);
+        return;
+      }
+
+      conflicts.forEach(([a, b]) => {
+        const room = getRoomById(a.roomId);
+        const aEvent = getEventById(a.eventId)?.name || "Okant event";
+        const bEvent = getEventById(b.eventId)?.name || "Okant event";
+        const li = document.createElement("li");
+        li.textContent = room.name + ": \"" + a.title + "\" [" + aEvent + "] (" + a.start + "-" + a.end + ") overlappar med \"" + b.title + "\" [" + bEvent + "] (" + b.start + "-" + b.end + ").";
+        conflictList.appendChild(li);
+      });
+    }
+
+    function buildDraftSession() {
+      const start = draftStart.value;
+      const end = draftEnd.value;
+      const roomId = draftRoom.value;
+      const templateId = draftSession.value;
+      const template = getSessionTemplateById(templateId);
+
+      if (!start || !end || !roomId || !template) {
+        return null;
+      }
+
+      if (toMinutes(end) <= toMinutes(start)) {
+        draftStatus.className = "status danger";
+        draftStatus.textContent = "Ogiltig tid: sluttid maste vara efter starttid.";
+        return null;
+      }
+
+      const draft = {
+        id: "draft",
+        sessionId: template.id,
+        eventId: template.eventId,
+        title: template.name,
+        roomId,
+        start,
+        end,
+        host: template.host
+      };
+
+      const hasConflict = sessions
+        .filter(s => s.roomId === roomId)
+        .some(s => overlaps(s, draft));
+
+      if (hasConflict) {
+        draftStatus.className = "status danger";
+        draftStatus.textContent = "Konflikt: forslaget overlappar redan bokad session i samma lokal.";
+      } else {
+        draftStatus.className = "status ok";
+        draftStatus.textContent = "Ingen overlap i vald lokal. Forslaget kan placeras har.";
+      }
+
+      return draft;
+    }
+
+    function initFilterControls() {
+      const buildings = ["all", ...new Set(rooms.map(r => r.building))];
+      const categories = ["all", ...new Set(events.map(e => e.category))];
+
+      buildings.forEach(building => {
+        const option = document.createElement("option");
+        option.value = building;
+        option.textContent = building === "all" ? "Alla byggnader" : building;
+        roomBuildingFilter.appendChild(option);
+      });
+
+      categories.forEach(category => {
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category === "all" ? "Alla kategorier" : category;
+        eventCategoryFilter.appendChild(option);
+      });
+
+      roomBuildingFilter.value = "all";
+      eventCategoryFilter.value = "all";
+    }
+
+    function refresh() {
+      const draft = buildDraftSession();
+      renderTimeline(sessions, draft);
+    }
+
+    function initRoomSelect() {
+      rooms.forEach(room => {
+        const option = document.createElement("option");
+        option.value = room.id;
+        option.textContent = room.name;
+        draftRoom.appendChild(option);
+      });
+      draftRoom.value = "stora-salen";
+    }
+
+    function initSessionSelect() {
+      const scheduledSessionIds = new Set(sessions.map(s => s.sessionId));
+      const unscheduled = eventSessions.filter(s => !scheduledSessionIds.has(s.id));
+
+      unscheduled.forEach(s => {
+        const eventName = getEventById(s.eventId)?.name || "Okant event";
+        const option = document.createElement("option");
+        option.value = s.id;
+        option.textContent = eventName + " · " + s.name;
+        draftSession.appendChild(option);
+      });
+
+      if (unscheduled.length > 0) {
+        draftSession.value = unscheduled[0].id;
+      }
+    }
+
+    function renderRequestList() {
+      requestList.innerHTML = "";
+      const scheduledSessionIds = new Set(sessions.map(s => s.sessionId));
+
+      organiserSessionRequests.forEach(request => {
+        const sessionTemplate = getSessionTemplateById(request.eventSessionId);
+        if (!sessionTemplate) return;
+
+        const isScheduled = scheduledSessionIds.has(request.eventSessionId);
+        const eventName = getEventById(sessionTemplate.eventId)?.name || "Okant event";
+
+        const item = document.createElement("li");
+        item.className = "request-item";
+
+        const buttonHtml = isScheduled
+          ? '<button class="btn-mini" type="button" disabled>Redan schemalagd</button>'
+          : '<button class="btn-mini primary" data-session-id="' + sessionTemplate.id + '" data-duration="' + request.preferredDurationMinutes + '" type="button">Anvand i forslag</button>';
+
+        item.innerHTML =
+          '<div class="request-top">' +
+            '<div class="request-title">' + sessionTemplate.name + '</div>' +
+            '<span class="tag ' + (isScheduled ? 'scheduled' : '') + '">' + (isScheduled ? 'Schemalagd' : 'Ej schemalagd') + '</span>' +
+          '</div>' +
+          '<div class="request-meta">' + eventName + ' · ' + request.preferredDurationMinutes + ' min · ' + request.preferredSeats + ' platser · ' + request.preferredStartType + '</div>' +
+          '<div class="request-meta">' + request.note + '</div>' +
+          '<div class="request-actions">' + buttonHtml + '</div>';
+
+        requestList.appendChild(item);
+      });
+
+      requestList.querySelectorAll('button[data-session-id]').forEach(button => {
+        button.addEventListener("click", () => {
+          const sessionId = button.getAttribute("data-session-id");
+          const duration = Number(button.getAttribute("data-duration") || "0");
+          draftSession.value = sessionId;
+          if (draftStart.value && duration > 0) {
+            draftEnd.value = addMinutes(draftStart.value, duration);
+          }
+          refresh();
+        });
+      });
+    }
+
+    initRoomSelect();
+    initSessionSelect();
+    initFilterControls();
+    renderRequestList();
+
+    [draftRoom, draftSession, draftStart, draftEnd, roomBuildingFilter, roomTextFilter, eventCategoryFilter, eventTextFilter].forEach(el => {
+      el.addEventListener("input", refresh);
+      el.addEventListener("change", refresh);
+    });
+
+    refresh();
+  </script>
+</body>
+</html>
