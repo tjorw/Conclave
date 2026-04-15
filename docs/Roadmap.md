@@ -418,17 +418,28 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 ---
 
-## Nästa konkreta steg (förslag)
+## Kanban – Tänkt implementationsordning
 
-1. **Fas 3.1.10** – Rollvyer per upplaga: fyra read-only query-endpoints som deriverar rollerna ur befintliga register, rollfiltrerade urvalslistor
-2. **Tillämpa rollfiltrerat urval i gränssnittet** – Alla personval i admin-appen där rollen är staff-relaterad (ansvarigposter, tilldelning av funktionärer till pass) ska hämta urvalet från `/editions/{id}/staff`. Gäller koordinatorval på upplagan, funktionsområdes- och kategoriansvariga, samt tilldelning av bemanningspersoner i 3.1.7. Förutsätter att 3.1.10-endpointen är klar.
-3. **Fas 3.2.3** – Konton, inloggning och profil: backend-endpoints + publik app (registrering, e-postbekräftelse, glömt lösenord, lösenordsbyte, profilsida)
-4. **Fas 3.1.8** – Registreringsöversikt i admin (biljettyper, besökarregistreringar)
-5. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
-6. ~~**Fas 3.1.7b** – Bemanningsvy: genomgång och förfining~~ ✓ Klar
-7. **Fas 3.2.4** – Mina sidor – hub och navigationsstruktur
-8. **Fas 4.1** – Demo-deploy med fiktivt konvent
+Använd denna som en enkel manuell tavla. Flytta rader mellan kolumnerna och bocka av checklistan när något är klart.
 
+| Backlog | Pågår | Klar |
+|--------|-------|------|
+| - [ ] `R01` Fas 3.2.3 Konton, inloggning och profil |  | - [x] `R00` Frontendtester i CI |
+| - [ ] `R02` Fas 3.1.8 Registreringsöversikt i admin |  | - [x] `R10` Fas 3.1.7b Bemanningsvy – genomgång och förfining |
+| - [ ] `R03` Fas 3.1.6b Evenemangsflöde – genomgång och förfining |  |  |
+| - [ ] `R04` Fas 3.2.4 Mina sidor – hub och navigationsstruktur |  |  |
+| - [ ] `R05` Fas 3.2.5 Min biljett |  |  |
+| - [ ] `R06` Fas 3.2.6 Mitt program |  |  |
+| - [ ] `R07` Fas 3.2.7 Mina arrangemang |  |  |
+| - [ ] `R08` Fas 3.2.8 Min bemanning |  |  |
+| - [ ] `R09` Fas 3.2.9 Sessionsregistrering |  |  |
+| - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent |  |  |
+
+### Snabbregler för uppdatering
+- Behåll `Rxx`-id så att referenser i commits och PR-beskrivningar blir stabila.
+- När du startar något: flytta raden till kolumnen **Pågår**.
+- När du är klar: flytta raden till **Klar** och byt `- [ ]` till `- [x]`.
+- Om ordningen ändras: sortera raderna i **Backlog** uppifrån och ned efter ny prioritet.
 
 ---
 ## UX Justeringar
