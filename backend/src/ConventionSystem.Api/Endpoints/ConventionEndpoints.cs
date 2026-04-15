@@ -1,6 +1,7 @@
 using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Convention.Commands.AddAdministrator;
 using ConventionSystem.Application.Convention.Commands.CreateConvention;
+using ConventionSystem.Application.Convention.Commands.RemoveAdministrator;
 using ConventionSystem.Application.Convention.Queries.GetConvention;
 using ConventionSystem.Application.Convention.Queries.GetEdition;
 using ConventionSystem.Application.Convention.Queries.ListEditions;
@@ -46,6 +47,13 @@ public static class ConventionEndpoints
             async (Guid conventionId, AddAdministratorRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new AddAdministratorCommand(conventionId, request.PersonId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        group.MapDelete("/{conventionId:guid}/administrators/{personId:guid}",
+            async (Guid conventionId, Guid personId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveAdministratorCommand(conventionId, personId), ct);
                 return Results.NoContent();
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 

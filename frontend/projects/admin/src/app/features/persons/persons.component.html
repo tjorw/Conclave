@@ -164,6 +164,18 @@
                       </button>
                     }
                   }
+                  @if (person.isAdmin) {
+                    <button mat-icon-button color="warn" (click)="removeAdmin(person)"
+                      [matTooltip]="person.id === currentPersonId() ? TOOLTIP.removeSelfAdmin : TOOLTIP.removeAdmin"
+                      [disabled]="saving() || person.id === currentPersonId()">
+                      <mat-icon>shield</mat-icon>
+                    </button>
+                  } @else {
+                    <button mat-icon-button color="primary" (click)="makeAdmin(person)"
+                      [matTooltip]="TOOLTIP.makeAdmin" [disabled]="saving()">
+                      <mat-icon>admin_panel_settings</mat-icon>
+                    </button>
+                  }
                 }
               </td>
             </tr>

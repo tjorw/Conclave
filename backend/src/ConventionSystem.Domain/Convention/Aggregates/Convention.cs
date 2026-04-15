@@ -53,6 +53,18 @@ public sealed class Convention : AggregateRoot
         return admin;
     }
 
+    public void RemoveAdministrator(PersonId personId, PersonId performedById)
+    {
+        if (personId == performedById)
+            throw new InvalidOperationException("Du kan inte ta bort dig själv som administratör.");
+
+        var admin = _administrators.SingleOrDefault(a => a.PersonId == personId)
+            ?? throw new InvalidOperationException("Personen är inte administratör för denna konvention.");
+
+        _administrators.Remove(admin);
+        RaiseDomainEvent(new AdministratorRemoved(Id, personId, performedById, DateTimeOffset.UtcNow));
+    }
+
     public Person CreatePerson(string name, string email, string? phone = null)
     {
         var person = new Person(PersonId.New(), Id, name, email, phone);

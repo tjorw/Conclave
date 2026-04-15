@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
+  AuthService,
   ConventionService,
   EditionOrganiserDto,
   EditionResponsibleDto,
@@ -39,6 +40,7 @@ import { ACTION, CHIP, FIELD, PLACEHOLDER, TOOLTIP } from '../../labels/ui.label
 export class PersonsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly svc = inject(ConventionService);
+  private readonly auth = inject(AuthService);
   readonly editionContext = inject(EditionContextService);
 
   readonly ACTION      = ACTION;
@@ -59,6 +61,7 @@ export class PersonsComponent implements OnInit {
   readonly onlyEditionPersons = signal(true);
   readonly editionRolesMap = signal<Map<string, string[]>>(new Map());
   readonly rolesLoading = signal(false);
+  readonly currentPersonId = this.auth.personId;
 
   constructor() {
     effect(() => {
@@ -296,6 +299,41 @@ export class PersonsComponent implements OnInit {
       error: err => {
         this.saving.set(false);
         this.error.set(err?.error?.detail ?? 'Kunde inte ändra kontostatus.');
+      },
+    });
+  }
+
+  makeAdmin(person: PersonDto): void {
+    if (this.saving() || person.isAdmin) return;
+    this.saving.set(true);
+    this.svc.addAdministrator(person.id).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.load();
+      },
+      error: err => {
+        this.saving.set(false);
+        this.error.set(err?.error?.detail ?? 'Kunde inte lägga till admin.');
+      },
+    });
+  }
+
+  removeAdmin(person: PersonDto): void {
+    if (this.saving() || !person.isAdmin) return;
+    if (person.id === this.currentPersonId()) {
+      this.error.set('Du kan inte ta bort dig själv som admin.');
+      return;
+    }
+
+    this.saving.set(true);
+    this.svc.removeAdministrator(person.id).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.load();
+      },
+      error: err => {
+        this.saving.set(false);
+        this.error.set(err?.error?.detail ?? 'Kunde inte ta bort admin.');
       },
     });
   }

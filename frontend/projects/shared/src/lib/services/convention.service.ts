@@ -120,6 +120,14 @@ export class ConventionService {
     return this.http.get<PersonDto[]>(`${this.base}/persons`);
   }
 
+  addAdministrator(personId: string) {
+    return this.http.post<void>(`${this.base}/administrators`, { personId });
+  }
+
+  removeAdministrator(personId: string) {
+    return this.http.delete<void>(`${this.base}/administrators/${personId}`);
+  }
+
   getEdition(editionId: string) {
     return this.http.get<EditionDto>(`${this.env.apiBaseUrl}/editions/${editionId}`);
   }

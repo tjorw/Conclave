@@ -36,6 +36,9 @@ export const TOOLTIP = {
   sendResetLink: 'Skicka återställningslänk',
   lockAccount:   'Lås konto',
   unlockAccount: 'Lås upp konto',
+  makeAdmin:     'Gör till admin',
+  removeAdmin:   'Ta bort admin',
+  removeSelfAdmin: 'Du kan inte ta bort dig själv som admin',
   copyUrl:       'Kopiera URL',
   openInNewTab:  'Öppna i ny flik',
 } as const;
