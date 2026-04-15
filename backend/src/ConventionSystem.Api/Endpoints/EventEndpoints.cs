@@ -6,6 +6,7 @@ using ConventionSystem.Application.Event.Commands.ChangeCategory;
 using ConventionSystem.Application.Event.Commands.AddSessionRequest;
 using ConventionSystem.Application.Event.Commands.ApproveVersion;
 using ConventionSystem.Application.Event.Commands.CancelEvent;
+using ConventionSystem.Application.Event.Commands.DeleteEvent;
 using ConventionSystem.Application.Event.Commands.CreateEvent;
 using ConventionSystem.Application.Event.Commands.DeactivateSession;
 using ConventionSystem.Application.Event.Commands.UpdateSession;
@@ -184,6 +185,14 @@ public static class EventEndpoints
             async (Guid eventId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new CancelEventCommand(eventId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization();
+
+        // Ta bort evenemang (Draft eller Cancelled)
+        app.MapDelete("/events/{eventId:guid}",
+            async (Guid eventId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new DeleteEventCommand(eventId), ct);
                 return Results.NoContent();
             }).RequireAuthorization();
 

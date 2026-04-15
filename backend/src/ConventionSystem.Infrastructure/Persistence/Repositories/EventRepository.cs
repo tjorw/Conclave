@@ -246,6 +246,12 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
         return result;
     }
 
+    public async Task DeleteAsync(Domain.Event.Aggregates.Event ev, CancellationToken ct = default)
+    {
+        db.Events.Remove(ev);
+        await db.SaveChangesAsync(ct);
+    }
+
     public Task SaveAsync(CancellationToken ct = default)
         => db.SaveChangesAsync(ct);
 }

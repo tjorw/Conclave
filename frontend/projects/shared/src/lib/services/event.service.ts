@@ -79,6 +79,10 @@ export class EventService {
     );
   }
 
+  deleteEvent(eventId: string) {
+    return this.http.delete<void>(`${this.env.apiBaseUrl}/events/${eventId}`);
+  }
+
   returnToDraft(eventId: string) {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/events/${eventId}/return-to-draft`,

@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -35,6 +35,7 @@ import { EditionService } from '../../../../services/edition.service';
 })
 export class MyEventDetailComponent implements OnInit {
   private readonly route      = inject(ActivatedRoute);
+  private readonly router     = inject(Router);
   private readonly eventSvc   = inject(EventService);
   private readonly authSvc    = inject(AuthService);
   private readonly fb         = inject(FormBuilder);
@@ -47,6 +48,7 @@ export class MyEventDetailComponent implements OnInit {
   readonly draftError    = signal<string | null>(null);
   readonly submitting    = signal(false);
   readonly returning     = signal(false);
+  readonly deleting      = signal(false);
   readonly actionError   = signal<string | null>(null);
 
   readonly addingRequest  = signal(false);
@@ -115,6 +117,10 @@ export class MyEventDetailComponent implements OnInit {
 
   get eventSubmissionsOpen(): boolean {
     return this.editionSvc.edition()?.organiserRegistrationOpen ?? false;
+  }
+
+  get canDelete(): boolean {
+    return this.event()?.status === 'Draft';
   }
 
   get canCommentOnPublishedEvent(): boolean {
@@ -209,6 +215,19 @@ export class MyEventDetailComponent implements OnInit {
       error: (err: HttpErrorResponse) => {
         this.actionError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte återgå till utkast.');
         this.returning.set(false);
+      },
+    });
+  }
+
+  deleteEvent(): void {
+    if (this.deleting() || !confirm('Ta bort arrangemanget permanent?')) return;
+    this.deleting.set(true);
+    this.actionError.set(null);
+    this.eventSvc.deleteEvent(this.eventId).subscribe({
+      next: () => this.router.navigate(['/mina-sidor/arrangemang']),
+      error: (err: HttpErrorResponse) => {
+        this.actionError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte ta bort arrangemanget.');
+        this.deleting.set(false);
       },
     });
   }

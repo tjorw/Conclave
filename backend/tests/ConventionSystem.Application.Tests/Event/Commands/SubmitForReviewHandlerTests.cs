@@ -2,7 +2,6 @@ using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.SubmitForReview;
 using ConventionSystem.Application.Common;
-using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Event.Enums;
@@ -24,9 +23,9 @@ public class SubmitForReviewHandlerTests
         _handler = new SubmitForReviewHandler(_eventRepo, _editionRepo, _currentUser);
     }
 
-    private (Domain.Event.Aggregates.Event ev, Edition edition) CreateReadyEvent(bool organiserRegOpen = true)
+    private (Domain.Event.Aggregates.Event ev, Domain.Convention.Aggregates.Edition edition) CreateReadyEvent(bool organiserRegOpen = true)
     {
-        var convention = new Convention(ConventionId.New(), "Test Con", "test-con");
+        var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
         var staffPerson = convention.CreatePerson("Staff", "staff@test.com");
         var evtPerson = convention.CreatePerson("Event", "event@test.com");
         var period = new DatePeriod(new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3));
@@ -72,7 +71,7 @@ public class SubmitForReviewHandlerTests
     [Fact]
     public async Task Handle_MissingTitle_Throws()
     {
-        var convention = new Convention(ConventionId.New(), "Test Con", "test-con");
+        var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
         var staffPerson = convention.CreatePerson("Staff", "staff@test.com");
         var evtPerson = convention.CreatePerson("Event", "event@test.com");
         var period = new DatePeriod(new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3));

@@ -99,6 +99,12 @@
           @if (returning()) { <mat-spinner diameter="18" /> } @else { Dra tillbaka till utkast }
         </button>
       }
+      @if (canDelete) {
+        <button mat-stroked-button color="warn" class="action-btn" (click)="deleteEvent()"
+                [disabled]="deleting()">
+          @if (deleting()) { <mat-spinner diameter="18" /> } @else { Ta bort }
+        </button>
+      }
     </div>
 
     <!-- ── Redigera utkast ────────────────────────────────────────────── -->

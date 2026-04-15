@@ -65,6 +65,13 @@
         <mat-icon>event_busy</mat-icon>
         Ställ in
       </button>
+      @if (e.status === 'Draft' || e.status === 'Cancelled') {
+        <button mat-flat-button color="warn" (click)="deleteEvent()"
+          [disabled]="deleting()">
+          <mat-icon>delete</mat-icon>
+          Ta bort
+        </button>
+      }
     </div>
   }
 

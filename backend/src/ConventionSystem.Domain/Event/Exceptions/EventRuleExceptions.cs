@@ -116,3 +116,8 @@ public sealed class EventCommentAcknowledgeMustBeDoneByAuthorException()
     : DomainRuleViolationException(
         "Endast den som skapade kommentaren kan kvittera den.",
         "event_comment_acknowledge_must_be_done_by_author");
+
+public sealed class EventCannotBeDeletedException()
+    : DomainRuleViolationException(
+        "Arrangemanget kan bara tas bort om det är i utkastläge eller inställt.",
+        "event_cannot_be_deleted");

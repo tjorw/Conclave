@@ -56,6 +56,7 @@ export class EventDetailComponent implements OnInit {
   readonly categories = signal<CategoryDto[]>([]);
   readonly loading    = signal(true);
   readonly saving     = signal(false);
+  readonly deleting   = signal(false);
   readonly error      = signal<string | null>(null);
   readonly showRejectForm        = signal(false);
   readonly showAddRequestForm    = signal(false);
@@ -168,6 +169,18 @@ export class EventDetailComponent implements OnInit {
     this.svc.cancelEvent(ev.id).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
       error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte ställa in evenemanget.'); },
+    });
+  }
+
+  // ── Delete ───────────────────────────────────────────────────────────────
+
+  deleteEvent(): void {
+    const ev = this.event();
+    if (!ev || this.deleting() || !confirm(`Ta bort arrangemanget "${ev.title || '(utan titel)'}" permanent?`)) return;
+    this.deleting.set(true);
+    this.svc.deleteEvent(ev.id).subscribe({
+      next: () => this.router.navigate(['/events']),
+      error: err => { this.deleting.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte ta bort evenemanget.'); },
     });
   }
 
