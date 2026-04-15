@@ -1,0 +1,47 @@
+<div class="nytt-page page-container">
+
+  <div class="back-link">
+    <a routerLink="/my-pages/events">← Mina arrangemang</a>
+  </div>
+
+  <h1 class="page-title">Nytt arrangemang</h1>
+
+  @if (loading()) {
+    <div class="loading">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else {
+    <section class="card">
+      <h2>Välj kategori</h2>
+
+      @if (error()) {
+        <div class="error-banner">{{ error() }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="create()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Kategori</mat-label>
+          <mat-select formControlName="categoryId">
+            @for (cat of categories(); track cat.id) {
+              <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <p class="hint">
+          Du väljer titel, beskrivning och sessionönskemål i nästa steg.
+        </p>
+
+        <button mat-flat-button class="save-btn" type="submit"
+                [disabled]="form.invalid || saving()">
+          @if (saving()) {
+            <mat-spinner diameter="18" />
+          } @else {
+            Skapa arrangemang
+          }
+        </button>
+      </form>
+    </section>
+  }
+
+</div>

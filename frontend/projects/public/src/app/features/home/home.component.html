@@ -23,7 +23,7 @@
         <h2>Bli besökare</h2>
         <p>Köp en biljett och delta i massor av evenemang under helgen.</p>
         @if (ed.visitorRegistrationOpen) {
-          <a mat-flat-button class="btn-primary" routerLink="/mina-sidor/registrering">
+          <a mat-flat-button class="btn-primary" routerLink="/my-pages/registration">
             Registrera dig nu
           </a>
         } @else {
@@ -36,7 +36,7 @@
         <h2>Arrangera ett evenemang</h2>
         <p>Har du en idé till ett rollspel, brädspelssession eller seminarium? Skicka in det!</p>
         @if (ed.organiserRegistrationOpen) {
-          <a mat-flat-button class="btn-primary" routerLink="/mina-sidor/evenemang/nytt">
+          <a mat-flat-button class="btn-primary" routerLink="/my-pages/events/new">
             Skicka in evenemang
           </a>
         } @else {
@@ -49,7 +49,7 @@
         <h2>Bli funktionär</h2>
         <p>Hjälp till att driva konventet och jobba bakom kulisserna.</p>
         @if (ed.staffRegistrationOpen) {
-          <a mat-flat-button class="btn-primary" routerLink="/mina-sidor/staffansökan">
+          <a mat-flat-button class="btn-primary" routerLink="/my-pages/staff-application">
             Ansök nu
           </a>
         } @else {

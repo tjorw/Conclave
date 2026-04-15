@@ -125,6 +125,44 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
                 c.Id.Value, c.AuthorId.Value, c.Text, c.CreatedAt)).ToList());
     }
 
+    public async Task<IReadOnlyList<EventSummaryDto>> ListByEditionAndOrganiserAsync(
+        EditionId editionId, PersonId organiserId, CancellationToken ct = default)
+    {
+        var events = await db.Events
+            .Include(e => e.Sessions)
+            .Include(e => e.CoOrganisers)
+            .Where(e => e.EditionId == editionId &&
+                        (e.LeadOrganiserId == organiserId ||
+                         e.CoOrganisers.Any(c => c.PersonId == organiserId)))
+            .ToListAsync(ct);
+
+        var categoryNames = await db.Categories
+            .Where(c => EF.Property<EditionId>(c, "EditionId") == editionId)
+            .ToDictionaryAsync(c => c.Id, c => c.Name, ct);
+
+        return events.Select(e => new EventSummaryDto(
+            e.Id.Value,
+            e.EditionId.Value,
+            e.CategoryId.Value,
+            categoryNames.GetValueOrDefault(e.CategoryId),
+            e.LeadOrganiserId.Value,
+            null,
+            e.Status.ToString(),
+            string.IsNullOrEmpty(e.Title) ? null : e.Title,
+            e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active),
+            e.Description ?? "",
+            e.Sessions.Select(s => new SessionSummaryDto(
+                s.Id.Value,
+                s.VenueId.Value,
+                s.TimeSlot.Start,
+                s.TimeSlot.End,
+                s.MaxSeats,
+                s.StartType.ToString(),
+                s.Status.ToString()
+            )).ToList()
+        )).ToList();
+    }
+
     public async Task<IReadOnlyList<EditionOrganiserDto>> ListOrganisersByEditionIdAsync(EditionId editionId, CancellationToken ct = default)
     {
         var events = await db.Events

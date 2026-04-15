@@ -18,7 +18,7 @@
 
       <div class="nav-actions">
         @if (auth.isLoggedIn()) {
-          <a mat-button routerLink="/mina-sidor" routerLinkActive="nav-active">
+          <a mat-button routerLink="/my-pages" routerLinkActive="nav-active">
             <mat-icon>person</mat-icon>
             Mina sidor
           </a>
@@ -44,7 +44,7 @@
         <a routerLink="/program" routerLinkActive="nav-active"
           (click)="menuOpen.set(false)">Program</a>
         @if (auth.isLoggedIn()) {
-          <a routerLink="/mina-sidor" (click)="menuOpen.set(false)">
+          <a routerLink="/my-pages" (click)="menuOpen.set(false)">
             Mina sidor
           </a>
           <button (click)="logout()">Logga ut</button>

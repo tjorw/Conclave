@@ -1,0 +1,120 @@
+.arrangemang-page {
+  padding-top: 32px;
+  padding-bottom: 48px;
+  max-width: 760px;
+}
+
+.back-link {
+  margin-bottom: 8px;
+  font-size: .875rem;
+
+  a { color: var(--brand-primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: var(--brand-primary);
+  margin: 0;
+}
+
+.new-btn {
+  background-color: var(--brand-primary) !important;
+  color: #fff !important;
+  white-space: nowrap;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 64px 0;
+  color: var(--brand-text-muted);
+
+  p { margin: 0; font-size: 1rem; }
+}
+
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.event-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--brand-surface);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+  padding: 16px 20px;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow .15s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .1);
+  }
+}
+
+.event-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.event-title {
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--brand-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-category {
+  font-size: .825rem;
+  color: var(--brand-text-muted);
+}
+
+.event-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.session-count {
+  font-size: .825rem;
+  color: var(--brand-text-muted);
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: .75rem;
+  font-weight: 500;
+}
+
+.chip-grey   { background: #f0f0f0; color: #555; }
+.chip-orange { background: #fff3e0; color: #e65100; }
+.chip-green  { background: #e8f5e9; color: #2e7d32; }

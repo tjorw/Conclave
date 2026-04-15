@@ -47,8 +47,8 @@ export class LoginComponent {
       next: profile => {
         this.loading.set(false);
         const target = !profile?.name
-          ? '/mina-sidor/profil?onboarding=true'
-          : '/mina-sidor';
+          ? '/my-pages/profile?onboarding=true'
+          : '/my-pages';
         this.router.navigateByUrl(target);
       },
       error: (err: HttpErrorResponse) => {

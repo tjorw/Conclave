@@ -10,7 +10,7 @@ export const routes: Routes = [
       {
         path: '',
         loadComponent: () =>
-          import('./features/hem/hem.component').then(m => m.HemComponent),
+          import('./features/home/home.component').then(m => m.HomeComponent),
       },
       {
         path: 'program',
@@ -56,21 +56,42 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'mina-sidor',
+        path: 'my-pages',
         canActivate: [authGuard],
         children: [
           {
             path: '',
             loadComponent: () =>
-              import('./features/mina-sidor/mina-sidor.component').then(
-                m => m.MinaSidorComponent
+              import('./features/my-pages/my-pages.component').then(
+                m => m.MyPagesComponent
               ),
           },
           {
-            path: 'profil',
+            path: 'profile',
             loadComponent: () =>
-              import('./features/mina-sidor/profil/profil.component').then(
-                m => m.ProfilComponent
+              import('./features/my-pages/profile/profile.component').then(
+                m => m.ProfileComponent
+              ),
+          },
+          {
+            path: 'events/new',
+            loadComponent: () =>
+              import('./features/my-pages/my-events/create/create-event.component').then(
+                m => m.CreateEventComponent
+              ),
+          },
+          {
+            path: 'events/:id',
+            loadComponent: () =>
+              import('./features/my-pages/my-events/detail/my-event-detail.component').then(
+                m => m.MyEventDetailComponent
+              ),
+          },
+          {
+            path: 'events',
+            loadComponent: () =>
+              import('./features/my-pages/my-events/my-events.component').then(
+                m => m.MyEventsComponent
               ),
           },
         ],

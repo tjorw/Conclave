@@ -1,0 +1,179 @@
+<div class="detail-page page-container">
+
+  <div class="back-link">
+    <a routerLink="/my-pages/events">← Mina arrangemang</a>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else if (event(); as ev) {
+
+    <div class="page-header">
+      <h1 class="page-title">{{ ev.title || '(Namnlöst arrangemang)' }}</h1>
+      <span class="status-chip" [class]="statusChip[ev.status] || 'chip-grey'">
+        {{ statusLabel[ev.status] || ev.status }}
+      </span>
+    </div>
+
+    <!-- ── Adminkommentar ─────────────────────────────────────────────── -->
+    @if (adminComment; as comment) {
+      <div class="admin-comment-banner">
+        <strong>Kommentar från administratör:</strong> {{ comment }}
+      </div>
+    }
+
+    @if (actionError()) {
+      <div class="error-banner">{{ actionError() }}</div>
+    }
+
+    <!-- ── Åtgärdsknappar ─────────────────────────────────────────────── -->
+    <div class="actions">
+      @if (isDraft) {
+        <button mat-flat-button class="action-btn primary" (click)="submitForReview()"
+                [disabled]="submitting() || !ev.title">
+          @if (submitting()) { <mat-spinner diameter="18" /> } @else { Skicka in för granskning }
+        </button>
+      }
+      @if (ev.status === 'UnderReview') {
+        <button mat-stroked-button class="action-btn" (click)="returnToDraft()"
+                [disabled]="returning()">
+          @if (returning()) { <mat-spinner diameter="18" /> } @else { Dra tillbaka till utkast }
+        </button>
+      }
+    </div>
+
+    <!-- ── Redigera utkast ────────────────────────────────────────────── -->
+    @if (isDraft) {
+      <section class="card">
+        <h2>Arrangemagsuppgifter</h2>
+
+        @if (draftError()) {
+          <div class="error-banner">{{ draftError() }}</div>
+        }
+        @if (draftSaved()) {
+          <div class="success-inline">Sparat.</div>
+        }
+
+        <form [formGroup]="draftForm" (ngSubmit)="saveDraft()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Titel</mat-label>
+            <input matInput formControlName="title" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Beskrivning</mat-label>
+            <textarea matInput formControlName="description" rows="4"></textarea>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Registreringstyp</mat-label>
+            <mat-select formControlName="registrationType">
+              @for (t of registrationTypes; track t.value) {
+                <mat-option [value]="t.value">{{ t.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          @if (draftForm.value.registrationType === 'DropIn' || draftForm.value.registrationType === 'Combined') {
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Drop-in-regler (valfritt)</mat-label>
+              <textarea matInput formControlName="dropInRules" rows="2"></textarea>
+            </mat-form-field>
+          }
+
+          <button mat-flat-button class="save-btn" type="submit"
+                  [disabled]="draftForm.invalid || savingDraft()">
+            @if (savingDraft()) { <mat-spinner diameter="18" /> } @else { Spara }
+          </button>
+        </form>
+      </section>
+    } @else {
+      <!-- ── Readonly-vy (UnderReview / Published / Cancelled) ──────────── -->
+      <section class="card readonly-card">
+        <h2>Arrangemagsuppgifter</h2>
+        <dl>
+          <dt>Titel</dt>        <dd>{{ ev.title || '—' }}</dd>
+          <dt>Kategori</dt>     <dd>{{ ev.categoryName || '—' }}</dd>
+          <dt>Registrering</dt> <dd>{{ regKindLabel[ev.registrationType] || ev.registrationType }}</dd>
+          @if (ev.description) {
+            <dt>Beskrivning</dt>  <dd class="description">{{ ev.description }}</dd>
+          }
+        </dl>
+      </section>
+    }
+
+    <!-- ── Sessionönskemål ───────────────────────────────────────────── -->
+    <section class="card">
+      <h2>Sessionönskemål</h2>
+
+      @if (ev.sessionRequests.length > 0) {
+        <div class="request-list">
+          @for (req of ev.sessionRequests; track req.id) {
+            <div class="request-item">
+              <div class="request-info">
+                <span class="request-desc">{{ req.description || '(Ingen beskrivning)' }}</span>
+                <span class="request-meta">{{ req.durationMinutes }} min · {{ req.seats }} platser</span>
+              </div>
+              @if (isDraft) {
+                <button mat-icon-button class="remove-btn" (click)="removeSessionRequest(req.id)"
+                        title="Ta bort">✕</button>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="no-requests">Inga sessionönskemål ännu.</p>
+      }
+
+      @if (isDraft) {
+        <div class="request-form-section">
+          <h3>Lägg till sessionönskemål</h3>
+
+          @if (requestError()) {
+            <div class="error-banner">{{ requestError() }}</div>
+          }
+          @if (requestSaved()) {
+            <div class="success-inline">Sessionönskemål tillagt.</div>
+          }
+
+          <form [formGroup]="requestForm" (ngSubmit)="addSessionRequest()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Beskrivning</mat-label>
+              <textarea matInput formControlName="description" rows="2"></textarea>
+            </mat-form-field>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Längd (minuter)</mat-label>
+                <input matInput type="number" formControlName="durationMinutes" min="10" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Antal platser</mat-label>
+                <input matInput type="number" formControlName="seats" min="1" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Starttyp</mat-label>
+                <mat-select formControlName="startType">
+                  @for (t of startTypes; track t.value) {
+                    <mat-option [value]="t.value">{{ t.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <button mat-flat-button class="save-btn" type="submit"
+                    [disabled]="requestForm.invalid || addingRequest()">
+              @if (addingRequest()) { <mat-spinner diameter="18" /> } @else { Lägg till }
+            </button>
+          </form>
+        </div>
+      }
+    </section>
+
+  }
+
+</div>

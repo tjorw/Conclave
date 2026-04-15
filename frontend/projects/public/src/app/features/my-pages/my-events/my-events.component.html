@@ -1,0 +1,44 @@
+<div class="arrangemang-page page-container">
+
+  <div class="back-link">
+    <a routerLink="/my-pages">← Mina sidor</a>
+  </div>
+
+  <div class="page-header">
+    <h1 class="page-title">Mina arrangemang</h1>
+    <a mat-flat-button class="new-btn" routerLink="/my-pages/events/new">
+      + Nytt arrangemang
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else if (events().length === 0) {
+    <div class="empty-state">
+      <p>Du har inga arrangemang ännu.</p>
+      <a mat-flat-button class="new-btn" routerLink="/my-pages/events/new">
+        Skapa ditt första arrangemang
+      </a>
+    </div>
+  } @else {
+    <div class="event-list">
+      @for (ev of events(); track ev.id) {
+        <a class="event-card" [routerLink]="['/my-pages/events', ev.id]">
+          <div class="event-main">
+            <span class="event-title">{{ ev.title || '(Namnlöst arrangemang)' }}</span>
+            <span class="event-category">{{ ev.categoryName || '—' }}</span>
+          </div>
+          <div class="event-meta">
+            <span class="session-count">{{ ev.sessionCount }} session{{ ev.sessionCount !== 1 ? 'er' : '' }}</span>
+            <span class="status-chip" [class]="statusChip[ev.status] || 'chip-grey'">
+              {{ statusLabel[ev.status] || ev.status }}
+            </span>
+          </div>
+        </a>
+      }
+    </div>
+  }
+
+</div>

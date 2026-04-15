@@ -7,13 +7,13 @@ import { EditionService } from '../../services/edition.service';
 import { EventSummaryFeedDto } from 'shared';
 
 @Component({
-  selector: 'app-hem',
+  selector: 'app-home',
   standalone: true,
   imports: [DatePipe, RouterLink, MatButtonModule, MatIconModule],
-  templateUrl: './hem.component.html',
-  styleUrl: './hem.component.scss',
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss',
 })
-export class HemComponent {
+export class HomeComponent {
   readonly editionSvc = inject(EditionService);
 
   readonly featuredEvents = computed<EventSummaryFeedDto[]>(() =>

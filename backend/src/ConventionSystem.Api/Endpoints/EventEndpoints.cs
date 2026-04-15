@@ -15,6 +15,7 @@ using ConventionSystem.Application.Event.Commands.ScheduleSession;
 using ConventionSystem.Application.Event.Commands.SubmitForReview;
 using ConventionSystem.Application.Event.Queries.GetEvent;
 using ConventionSystem.Application.Event.Queries.ListEvents;
+using ConventionSystem.Application.Event.Queries.ListMyEvents;
 using ConventionSystem.Domain.Event.Enums;
 using MediatR;
 
@@ -27,6 +28,11 @@ public static class EventEndpoints
         app.MapGet("/editions/{editionId:guid}/events",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListEventsQuery(editionId), ct)));
+
+        app.MapGet("/editions/{editionId:guid}/my-events",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListMyEventsQuery(editionId), ct)))
+            .RequireAuthorization();
 
         app.MapGet("/events/{eventId:guid}", async (Guid eventId, ISender sender, CancellationToken ct) =>
         {

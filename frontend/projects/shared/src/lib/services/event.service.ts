@@ -14,6 +14,12 @@ export class EventService {
     );
   }
 
+  getMyEvents(editionId: string) {
+    return this.http.get<EventSummaryDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/my-events`
+    );
+  }
+
   getEvent(eventId: string) {
     return this.http.get<EventDto>(`${this.env.apiBaseUrl}/events/${eventId}`);
   }

@@ -9,7 +9,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from 'shared';
 
 @Component({
-  selector: 'app-profil',
+  selector: 'app-profile',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -19,10 +19,10 @@ import { AuthService } from 'shared';
     MatInputModule,
     MatProgressSpinnerModule,
   ],
-  templateUrl: './profil.component.html',
-  styleUrl: './profil.component.scss',
+  templateUrl: './profile.component.html',
+  styleUrl: './profile.component.scss',
 })
-export class ProfilComponent implements OnInit {
+export class ProfileComponent implements OnInit {
   private readonly auth  = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly fb    = inject(FormBuilder);
