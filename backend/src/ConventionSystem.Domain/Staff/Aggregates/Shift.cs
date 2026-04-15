@@ -2,6 +2,7 @@ using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Staff.Entities;
 using ConventionSystem.Domain.Staff.Enums;
+using ConventionSystem.Domain.Staff.Exceptions;
 using ConventionSystem.Domain.Staff.Events;
 using ConventionSystem.Domain.Staff.Ids;
 using ConventionSystem.Domain.Staff.ValueObjects;
@@ -36,14 +37,14 @@ public sealed class Shift : AggregateRoot
     public StaffAssignment AssignPerson(PersonId personId, PersonId assignedById)
     {
         if (Status is not (ShiftStatus.Planned or ShiftStatus.InProgress))
-            throw new InvalidOperationException("Kan bara tilldela personal till planerade eller pågående pass.");
+            throw new ShiftCannotAssignInCurrentStateException();
 
         if (StaffingRequirement.IsFullyStaffed(ActiveAssignmentCount()))
-            throw new InvalidOperationException("Passet har redan nått maximal bemanning.");
+            throw new ShiftAlreadyFullyStaffedException();
 
         if (_assignments.Any(a => a.PersonId == personId &&
             a.Status is not (StaffAssignmentStatus.Cancelled or StaffAssignmentStatus.Rejected)))
-            throw new InvalidOperationException("Personen är redan aktiv tilldelad detta pass.");
+            throw new PersonAlreadyAssignedToShiftException();
 
         var assignment = new StaffAssignment(StaffAssignmentId.New(), personId, assignedById);
         _assignments.Add(assignment);
@@ -75,7 +76,7 @@ public sealed class Shift : AggregateRoot
     public void Cancel(PersonId performedById)
     {
         if (Status != ShiftStatus.Planned)
-            throw new InvalidOperationException("Bara planerade pass kan ställas in.");
+            throw new ShiftCanOnlyBeCancelledWhenPlannedException();
 
         Status = ShiftStatus.Cancelled;
         RaiseDomainEvent(new ShiftCancelled(Id, StationId, performedById, DateTimeOffset.UtcNow));
@@ -83,7 +84,7 @@ public sealed class Shift : AggregateRoot
 
     private StaffAssignment GetAssignment(StaffAssignmentId assignmentId) =>
         _assignments.FirstOrDefault(a => a.Id == assignmentId)
-            ?? throw new InvalidOperationException("Tilldelningen hittades inte.");
+            ?? throw new StaffAssignmentNotFoundException();
 
     private int ActiveAssignmentCount() => _assignments.Count(a =>
         a.Status is not (StaffAssignmentStatus.Cancelled or StaffAssignmentStatus.Rejected));

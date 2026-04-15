@@ -1,6 +1,7 @@
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Staff.Aggregates;
 using ConventionSystem.Domain.Staff.Enums;
+using ConventionSystem.Domain.Staff.Exceptions;
 using ConventionSystem.Domain.Staff.Events;
 using ConventionSystem.Domain.Staff.Ids;
 using ConventionSystem.Domain.Staff.ValueObjects;
@@ -48,7 +49,7 @@ public class ShiftTests
         var shift = CreateShift(maxPersons: 1);
         shift.AssignPerson(PersonId.New(), PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(() => shift.AssignPerson(PersonId.New(), PersonId.New()));
+        Assert.Throws<ShiftAlreadyFullyStaffedException>(() => shift.AssignPerson(PersonId.New(), PersonId.New()));
     }
 
     [Fact]
@@ -58,7 +59,7 @@ public class ShiftTests
         var personId = PersonId.New();
         shift.AssignPerson(personId, PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(() => shift.AssignPerson(personId, PersonId.New()));
+        Assert.Throws<PersonAlreadyAssignedToShiftException>(() => shift.AssignPerson(personId, PersonId.New()));
     }
 
     [Fact]
@@ -67,7 +68,7 @@ public class ShiftTests
         var shift = CreateShift();
         shift.Cancel(PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(() => shift.AssignPerson(PersonId.New(), PersonId.New()));
+        Assert.Throws<ShiftCannotAssignInCurrentStateException>(() => shift.AssignPerson(PersonId.New(), PersonId.New()));
     }
 
     [Fact]
@@ -116,7 +117,7 @@ public class ShiftTests
         var assignment = shift.AssignPerson(PersonId.New(), PersonId.New());
         shift.RejectAssignment(assignment.Id);
 
-        Assert.Throws<InvalidOperationException>(() => shift.CancelAssignment(assignment.Id, PersonId.New()));
+        Assert.Throws<RejectedAssignmentCannotBeCancelledException>(() => shift.CancelAssignment(assignment.Id, PersonId.New()));
     }
 
     [Fact]
@@ -136,7 +137,7 @@ public class ShiftTests
         var shift = CreateShift();
         shift.Cancel(PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(() => shift.Cancel(PersonId.New()));
+        Assert.Throws<ShiftCanOnlyBeCancelledWhenPlannedException>(() => shift.Cancel(PersonId.New()));
     }
 
     [Fact]
