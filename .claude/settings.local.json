@@ -30,7 +30,9 @@
       "Bash(xargs ls:*)",
       "Bash(ls:*)",
       "Bash(dotnet list:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(dotnet tool:*)",
+      "Bash(ng test:*)"
     ]
   }
 }
