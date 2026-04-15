@@ -14,7 +14,7 @@ const ICONS: Record<ErrorCode, string> = {
 
 const LINKS: Record<ErrorCode, string> = {
   '401': '/login',
-  '403': '/',
+  '403': '/login',
   '404': '/',
 };
 
@@ -29,9 +29,14 @@ export class ErrorPageComponent {
   private readonly route = inject(ActivatedRoute);
 
   private readonly code = (this.route.snapshot.data['errorCode'] ?? '404') as ErrorCode;
+  private readonly reason = this.route.snapshot.queryParamMap.get('reason');
 
   readonly page = {
     ...ERROR_PAGE[this.code],
+    description:
+      this.code === '403' && this.reason === 'role'
+        ? 'Du är inloggad men saknar adminrättigheter. Du har loggats ut. Logga in med ett admin-konto för att fortsätta.'
+        : ERROR_PAGE[this.code].description,
     icon: ICONS[this.code],
     link: LINKS[this.code],
   };

@@ -10,7 +10,7 @@ export const ERROR_PAGE = {
     code:        '403',
     title:       'Ingen behörighet',
     description: 'Du har inte behörighet att se den här sidan. Adminrättigheter krävs.',
-    action:      'Tillbaka till start',
+    action:      'Till inloggning',
   },
   '404': {
     code:        '404',
