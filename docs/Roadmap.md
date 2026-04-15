@@ -426,18 +426,18 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 Använd en rad per punkt och ändra bara statusmarkören i början.
 
-- [ ] `R09` Fas 3.2.9 Sessionsregistrering
 - [ ] `R02` Fas 3.1.8 Registreringsöversikt i admin
 - [ ] `R03` Fas 3.1.6b Evenemangsflöde – genomgång och förfining
 - [ ] `R04` Fas 3.2.4 Mina sidor – hub och navigationsstruktur
 - [ ] `R05` Fas 3.2.5 Min biljett
 - [ ] `R06` Fas 3.2.6 Mitt program
-- [ ] `R07` Fas 3.2.7 Mina arrangemang
+- [ ] `R09` Fas 3.2.9 Sessionsregistrering
 - [ ] `R08` Fas 3.2.8 Min bemanning
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
 - [x] `R00` Frontendtester i CI
 - [x] `R01` Fas 3.2.3 Konton, inloggning och profil
 - [x] `R10` Fas 3.1.7b Bemanningsvy – genomgång och förfining
+- [x] `R07` Fas 3.2.7 Mina arrangemang
 
 ### Snabbregler för uppdatering
 - Behåll `Rxx`-id så att referenser i commits och PR-beskrivningar blir stabila.
