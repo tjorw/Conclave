@@ -1,5 +1,6 @@
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.ReactivatePerson;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using NSubstitute;
 
@@ -64,7 +65,7 @@ public class ReactivatePersonHandlerTests
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
         _personRepo.GetByIdAsync(person.Id, Arg.Any<CancellationToken>()).Returns(person);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<PersonAlreadyActiveException>(
             () => _handler.Handle(new ReactivatePersonCommand(person.Id.Value), default));
     }
 }

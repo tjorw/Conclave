@@ -1,6 +1,7 @@
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateStation;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using NSubstitute;
@@ -124,7 +125,7 @@ public class CreateStationHandlerTests
         var (_, admin, _, edition) = Setup();
         _currentUser.PersonId.Returns(admin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<StaffAreaNotFoundInEditionException>(
             () => _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, Guid.NewGuid()), default));
     }
 }

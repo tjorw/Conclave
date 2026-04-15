@@ -2,6 +2,7 @@ using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Convention.Enums;
 using ConventionSystem.Domain.Convention.Events;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 
@@ -50,11 +51,11 @@ public sealed class Edition : AggregateRoot
     public void Publish(PersonId performedById)
     {
         if (Status == EditionStatus.Published)
-            throw new InvalidOperationException("Upplagan är redan publicerad.");
+            throw new EditionAlreadyPublishedException();
         if (StaffCoordinatorId is null)
-            throw new InvalidOperationException("Upplagan måste ha en bemanningskoordinator innan den kan publiceras.");
+            throw new EditionStaffCoordinatorRequiredException();
         if (EventCoordinatorId is null)
-            throw new InvalidOperationException("Upplagan måste ha en evenemangskoordinator innan den kan publiceras.");
+            throw new EditionEventCoordinatorRequiredException();
 
         Status = EditionStatus.Published;
         RaiseDomainEvent(new EditionPublished(Id, performedById, DateTimeOffset.UtcNow));
@@ -64,7 +65,7 @@ public sealed class Edition : AggregateRoot
     {
         EnsurePublished();
         if (OrganiserRegistrationOpen)
-            throw new InvalidOperationException("Arrangörsregistrering är redan öppen.");
+            throw new OrganiserRegistrationAlreadyOpenException();
         OrganiserRegistrationOpen = true;
         RaiseDomainEvent(new RegistrationOpened(Id, RegistrationType.Organiser, performedById, DateTimeOffset.UtcNow));
     }
@@ -73,7 +74,7 @@ public sealed class Edition : AggregateRoot
     {
         EnsurePublished();
         if (StaffRegistrationOpen)
-            throw new InvalidOperationException("Personalregistrering är redan öppen.");
+            throw new StaffRegistrationAlreadyOpenException();
         StaffRegistrationOpen = true;
         RaiseDomainEvent(new RegistrationOpened(Id, RegistrationType.Staff, performedById, DateTimeOffset.UtcNow));
     }
@@ -82,7 +83,7 @@ public sealed class Edition : AggregateRoot
     {
         EnsurePublished();
         if (VisitorRegistrationOpen)
-            throw new InvalidOperationException("Besökarregistrering är redan öppen.");
+            throw new VisitorRegistrationAlreadyOpenException();
         VisitorRegistrationOpen = true;
         RaiseDomainEvent(new RegistrationOpened(Id, RegistrationType.Visitor, performedById, DateTimeOffset.UtcNow));
     }
@@ -104,7 +105,7 @@ public sealed class Edition : AggregateRoot
     public Station CreateStation(string name, StaffAreaId staffAreaId, string? description = null)
     {
         if (!_staffAreas.Any(sa => sa.Id == staffAreaId))
-            throw new InvalidOperationException("Funktionsområdet hittades inte på denna upplaga.");
+            throw new StaffAreaNotFoundInEditionException();
         var station = new Station(StationId.New(), staffAreaId, name, description);
         _stations.Add(station);
         return station;
@@ -113,14 +114,14 @@ public sealed class Edition : AggregateRoot
     public void UpdateStation(StationId stationId, string name, string? description)
     {
         var station = _stations.FirstOrDefault(s => s.Id == stationId)
-            ?? throw new InvalidOperationException("Stationen hittades inte på denna upplaga.");
+            ?? throw new StationNotFoundInEditionException();
         station.Update(name, description);
     }
 
     public Station RemoveStation(StationId stationId)
     {
         var station = _stations.FirstOrDefault(s => s.Id == stationId)
-            ?? throw new InvalidOperationException("Stationen hittades inte på denna upplaga.");
+            ?? throw new StationNotFoundInEditionException();
         _stations.Remove(station);
         return station;
     }
@@ -145,14 +146,14 @@ public sealed class Edition : AggregateRoot
     public void UpdateVenue(VenueId venueId, string name, string building, string? description)
     {
         var venue = _venues.FirstOrDefault(v => v.Id == venueId)
-            ?? throw new InvalidOperationException("Lokalen hittades inte på denna upplaga.");
+            ?? throw new VenueNotFoundInEditionException();
         venue.Update(name, building, description);
     }
 
     public Venue RemoveVenue(VenueId venueId)
     {
         var venue = _venues.FirstOrDefault(v => v.Id == venueId)
-            ?? throw new InvalidOperationException("Lokalen hittades inte på denna upplaga.");
+            ?? throw new VenueNotFoundInEditionException();
         _venues.Remove(venue);
         return venue;
     }
@@ -160,14 +161,14 @@ public sealed class Edition : AggregateRoot
     public void UpdateStaffArea(StaffAreaId staffAreaId, string name, string? description, PersonId responsibleId)
     {
         var area = _staffAreas.FirstOrDefault(sa => sa.Id == staffAreaId)
-            ?? throw new InvalidOperationException("Funktionsområdet hittades inte på denna upplaga.");
+            ?? throw new StaffAreaNotFoundInEditionException();
         area.Update(name, description, responsibleId);
     }
 
     public (StaffArea area, IReadOnlyList<Station> stations) RemoveStaffArea(StaffAreaId staffAreaId)
     {
         var area = _staffAreas.FirstOrDefault(sa => sa.Id == staffAreaId)
-            ?? throw new InvalidOperationException("Funktionsområdet hittades inte på denna upplaga.");
+            ?? throw new StaffAreaNotFoundInEditionException();
         var stations = _stations.Where(s => s.StaffAreaId == staffAreaId).ToList();
         foreach (var s in stations) _stations.Remove(s);
         _staffAreas.Remove(area);
@@ -177,14 +178,14 @@ public sealed class Edition : AggregateRoot
     public void UpdateCategory(CategoryId categoryId, string name, string? description, PersonId responsibleId)
     {
         var category = _categories.FirstOrDefault(c => c.Id == categoryId)
-            ?? throw new InvalidOperationException("Kategorin hittades inte på denna upplaga.");
+            ?? throw new CategoryNotFoundInEditionException();
         category.Update(name, description, responsibleId);
     }
 
     public Category RemoveCategory(CategoryId categoryId)
     {
         var category = _categories.FirstOrDefault(c => c.Id == categoryId)
-            ?? throw new InvalidOperationException("Kategorin hittades inte på denna upplaga.");
+            ?? throw new CategoryNotFoundInEditionException();
         _categories.Remove(category);
         return category;
     }
@@ -192,7 +193,7 @@ public sealed class Edition : AggregateRoot
     public void ChangeCategoryResponsible(CategoryId categoryId, PersonId newResponsibleId)
     {
         var category = _categories.FirstOrDefault(c => c.Id == categoryId)
-            ?? throw new InvalidOperationException($"Kategorin hittades inte på denna upplaga.");
+            ?? throw new CategoryNotFoundInEditionException();
         category.ChangeResponsible(newResponsibleId);
     }
 
@@ -219,7 +220,7 @@ public sealed class Edition : AggregateRoot
         IReadOnlyList<StaffArea> sourceStaffAreas, IReadOnlyList<Station> sourceStations, PersonId performedById)
     {
         if (Status != EditionStatus.Draft)
-            throw new InvalidOperationException("Kan bara kopiera struktur till en upplaga med status Utkast.");
+            throw new EditionMustBeDraftToCopyStructureException();
 
         _venues.Clear();
         _staffAreas.Clear();
@@ -249,6 +250,6 @@ public sealed class Edition : AggregateRoot
     private void EnsurePublished()
     {
         if (Status != EditionStatus.Published)
-            throw new InvalidOperationException("Upplagan måste vara publicerad innan registrering kan öppnas.");
+            throw new EditionMustBePublishedException();
     }
 }

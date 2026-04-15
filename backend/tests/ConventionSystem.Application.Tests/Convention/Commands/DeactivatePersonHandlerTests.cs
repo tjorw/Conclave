@@ -1,5 +1,6 @@
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.DeactivatePerson;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using NSubstitute;
 
@@ -60,7 +61,7 @@ public class DeactivatePersonHandlerTests
         var (convention, person) = Setup();
         convention.DeactivatePerson(person);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<PersonAlreadyInactiveException>(
             () => _handler.Handle(new DeactivatePersonCommand(person.Id.Value), default));
     }
 }

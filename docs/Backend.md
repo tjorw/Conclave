@@ -165,13 +165,13 @@ public sealed class CreateVenueHandler(
         var editionId = new EditionId(command.EditionId);
 
         var edition = await editionRepository.GetByIdWithStructureAsync(editionId, ct)
-            ?? throw new InvalidOperationException("Upplaga hittades inte.");
+            ?? throw new ResourceNotFoundException("Upplaga", command.EditionId.ToString());
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+            ?? throw new ResourceNotFoundException("Konvention", edition.ConventionId.Value.ToString());
 
         if (!convention.IsAdministrator(currentUser.PersonId))
-            throw new InvalidOperationException("Utföraren är inte administratör.");
+            throw new ForbiddenException("Utföraren är inte administratör.");
 
         var venue = edition.CreateVenue(command.Name, command.Building, command.Description);
         editionRepository.MarkAsAdded(venue);   // se EF Core-fallgrop
@@ -394,17 +394,20 @@ handlern, inte i endpointen.
 
 ### Felhantering
 
-`GlobalExceptionHandler` mappar undantag till `ProblemDetails`:
+`GlobalExceptionHandler` mappar undantag till `ProblemDetails` och sätter
+maskinläsbar `errorCode`.
 
 | Undantag | HTTP-status |
 |----------|-------------|
-| `InvalidOperationException` | 422 Unprocessable Entity |
+| `ResourceNotFoundException` | 404 Not Found |
+| `ForbiddenException` | 403 Forbidden |
+| `DomainRuleViolationException` (och subtyper) | 422 Unprocessable Entity |
 | `ArgumentException` | 400 Bad Request |
 | `UnauthorizedAccessException` | 401 Unauthorized |
 | Övrigt | 500 Internal Server Error |
 
 `detail`-fältet i `ProblemDetails` innehåller svenska felmeddelandet.
-Frontenden extraherar detta med `err?.error?.detail`.
+Frontenden kan använda både `err?.error?.detail` och `err?.error?.errorCode`.
 
 ---
 
@@ -422,7 +425,7 @@ public void Publish_WhenAlreadyPublished_Throws()
     edition.Publish(adminId);
     edition.ClearDomainEvents();  // isolera events från setup-stegen
 
-    Assert.Throws<InvalidOperationException>(() => edition.Publish(adminId));
+    Assert.Throws<EditionAlreadyPublishedException>(() => edition.Publish(adminId));
 }
 
 [Fact]

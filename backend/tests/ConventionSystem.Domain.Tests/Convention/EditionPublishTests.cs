@@ -1,4 +1,5 @@
 using ConventionSystem.Domain.Convention.Enums;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Events;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
@@ -45,6 +46,6 @@ public class EditionPublishTests
         var edition = CreateEdition();
         edition.Publish(PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(() => edition.Publish(PersonId.New()));
+        Assert.Throws<EditionAlreadyPublishedException>(() => edition.Publish(PersonId.New()));
     }
 }

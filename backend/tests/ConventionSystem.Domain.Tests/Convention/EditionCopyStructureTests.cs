@@ -1,4 +1,5 @@
 using ConventionSystem.Domain.Convention.Events;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 
@@ -119,7 +120,7 @@ public class EditionCopyStructureTests
         var (_, source, target) = CreateSetup();
         target.Publish(PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(
+        Assert.Throws<EditionMustBeDraftToCopyStructureException>(
             () => target.CopyStructure(source.Id, source.Venues, source.StaffAreas, source.Stations, PersonId.New()));
     }
 }

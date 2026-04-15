@@ -2,6 +2,7 @@ using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.PublishEdition;
 using ConventionSystem.Domain.Convention.Enums;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Convention.Aggregates;
@@ -90,7 +91,7 @@ public class PublishEditionHandlerTests
         edition.Publish(admin.Id);
         _currentUser.PersonId.Returns(admin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<EditionAlreadyPublishedException>(
             () => _handler.Handle(new PublishEditionCommand(edition.Id.Value), default));
     }
 }

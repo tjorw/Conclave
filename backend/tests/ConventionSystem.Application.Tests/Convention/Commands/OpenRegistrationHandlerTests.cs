@@ -2,6 +2,7 @@ using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.OpenRegistration;
 using ConventionSystem.Domain.Convention.Enums;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using NSubstitute;
@@ -95,7 +96,7 @@ public class OpenRegistrationHandlerTests
         edition.OpenVisitorRegistration(admin.Id);
         _currentUser.PersonId.Returns(admin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<VisitorRegistrationAlreadyOpenException>(
             () => _handler.Handle(new OpenRegistrationCommand(edition.Id.Value, RegistrationType.Visitor), default));
     }
 }

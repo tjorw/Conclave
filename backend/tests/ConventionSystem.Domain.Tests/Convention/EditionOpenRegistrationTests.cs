@@ -1,5 +1,6 @@
 using ConventionSystem.Domain.Convention.Events;
 using ConventionSystem.Domain.Convention.Enums;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 
@@ -71,7 +72,7 @@ public class EditionOpenRegistrationTests
         var period = new DatePeriod(new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3));
         var edition = convention.CreateEdition("Test", period, staff.Id, evt.Id);
 
-        Assert.Throws<InvalidOperationException>(() => edition.OpenOrganiserRegistration(PersonId.New()));
+        Assert.Throws<EditionMustBePublishedException>(() => edition.OpenOrganiserRegistration(PersonId.New()));
     }
 
     [Fact]
@@ -80,7 +81,7 @@ public class EditionOpenRegistrationTests
         var edition = CreatePublishedEdition();
         edition.OpenOrganiserRegistration(PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(() => edition.OpenOrganiserRegistration(PersonId.New()));
+        Assert.Throws<OrganiserRegistrationAlreadyOpenException>(() => edition.OpenOrganiserRegistration(PersonId.New()));
     }
 
     [Fact]
@@ -89,7 +90,7 @@ public class EditionOpenRegistrationTests
         var edition = CreatePublishedEdition();
         edition.OpenStaffRegistration(PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(() => edition.OpenStaffRegistration(PersonId.New()));
+        Assert.Throws<StaffRegistrationAlreadyOpenException>(() => edition.OpenStaffRegistration(PersonId.New()));
     }
 
     [Fact]
@@ -98,6 +99,6 @@ public class EditionOpenRegistrationTests
         var edition = CreatePublishedEdition();
         edition.OpenVisitorRegistration(PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(() => edition.OpenVisitorRegistration(PersonId.New()));
+        Assert.Throws<VisitorRegistrationAlreadyOpenException>(() => edition.OpenVisitorRegistration(PersonId.New()));
     }
 }

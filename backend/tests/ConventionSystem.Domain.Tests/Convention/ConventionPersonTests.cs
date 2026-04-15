@@ -1,4 +1,5 @@
 using ConventionSystem.Domain.Convention.Aggregates;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Events;
 using ConventionSystem.Domain.Convention.Ids;
 
@@ -75,7 +76,7 @@ public class ConventionPersonTests
         var otherConvention = CreateConvention();
         var person = otherConvention.CreatePerson("Anna", "anna@example.com");
 
-        Assert.Throws<InvalidOperationException>(
+        Assert.Throws<PersonDoesNotBelongToConventionException>(
             () => convention.UpdatePersonDetails(person, "Anna", "anna@example.com", null));
     }
 
@@ -114,7 +115,7 @@ public class ConventionPersonTests
         var person = convention.CreatePerson("Anna", "anna@example.com");
         convention.DeactivatePerson(person);
 
-        Assert.Throws<InvalidOperationException>(() => convention.DeactivatePerson(person));
+        Assert.Throws<PersonAlreadyInactiveException>(() => convention.DeactivatePerson(person));
     }
 
     [Fact]
@@ -124,7 +125,7 @@ public class ConventionPersonTests
         var otherConvention = CreateConvention();
         var person = otherConvention.CreatePerson("Anna", "anna@example.com");
 
-        Assert.Throws<InvalidOperationException>(() => convention.DeactivatePerson(person));
+        Assert.Throws<PersonDoesNotBelongToConventionException>(() => convention.DeactivatePerson(person));
     }
 
     // --- ReactivatePerson ---
@@ -164,7 +165,7 @@ public class ConventionPersonTests
         var convention = CreateConvention();
         var person = convention.CreatePerson("Anna", "anna@example.com");
 
-        Assert.Throws<InvalidOperationException>(() => convention.ReactivatePerson(person));
+        Assert.Throws<PersonAlreadyActiveException>(() => convention.ReactivatePerson(person));
     }
 
     [Fact]
@@ -175,6 +176,6 @@ public class ConventionPersonTests
         var person = otherConvention.CreatePerson("Anna", "anna@example.com");
         otherConvention.DeactivatePerson(person);
 
-        Assert.Throws<InvalidOperationException>(() => convention.ReactivatePerson(person));
+        Assert.Throws<PersonDoesNotBelongToConventionException>(() => convention.ReactivatePerson(person));
     }
 }

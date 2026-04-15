@@ -1,6 +1,7 @@
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CopyEditionStructure;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using NSubstitute;
@@ -118,7 +119,7 @@ public class CopyEditionStructureHandlerTests
         target.Publish(admin.Id);
         _currentUser.PersonId.Returns(admin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<EditionMustBeDraftToCopyStructureException>(
             () => _handler.Handle(new CopyEditionStructureCommand(target.Id.Value, source.Id.Value), default));
     }
 }

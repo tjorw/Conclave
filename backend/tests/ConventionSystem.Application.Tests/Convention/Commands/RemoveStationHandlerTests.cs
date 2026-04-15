@@ -1,6 +1,7 @@
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.RemoveStation;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using NSubstitute;
@@ -91,7 +92,7 @@ public class RemoveStationHandlerTests
         var (_, admin, _, edition) = Setup();
         _currentUser.PersonId.Returns(admin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<StationNotFoundInEditionException>(
             () => _handler.Handle(new RemoveStationCommand(edition.Id.Value, Guid.NewGuid()), default));
     }
 

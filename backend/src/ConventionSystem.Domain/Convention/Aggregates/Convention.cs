@@ -76,7 +76,7 @@ public sealed class Convention : AggregateRoot
     public void UpdatePersonDetails(Person person, string name, string email, string? phone)
     {
         if (person.ConventionId != Id)
-            throw new InvalidOperationException("Personen tillhör inte denna konvention.");
+            throw new PersonDoesNotBelongToConventionException();
         person.Update(name, email, phone);
         RaiseDomainEvent(new PersonUpdated(person.Id, Id, DateTimeOffset.UtcNow));
     }
@@ -84,9 +84,9 @@ public sealed class Convention : AggregateRoot
     public void DeactivatePerson(Person person)
     {
         if (person.ConventionId != Id)
-            throw new InvalidOperationException("Personen tillhör inte denna konvention.");
+            throw new PersonDoesNotBelongToConventionException();
         if (!person.IsActive)
-            throw new InvalidOperationException("Personen är redan inaktiverad.");
+            throw new PersonAlreadyInactiveException();
         person.Deactivate();
         RaiseDomainEvent(new PersonDeactivated(person.Id, Id, DateTimeOffset.UtcNow));
     }
@@ -94,9 +94,9 @@ public sealed class Convention : AggregateRoot
     public void ReactivatePerson(Person person)
     {
         if (person.ConventionId != Id)
-            throw new InvalidOperationException("Personen tillhör inte denna konvention.");
+            throw new PersonDoesNotBelongToConventionException();
         if (person.IsActive)
-            throw new InvalidOperationException("Personen är redan aktiv.");
+            throw new PersonAlreadyActiveException();
         person.Reactivate();
         RaiseDomainEvent(new PersonReactivated(person.Id, Id, DateTimeOffset.UtcNow));
     }

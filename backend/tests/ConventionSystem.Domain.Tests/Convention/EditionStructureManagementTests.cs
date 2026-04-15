@@ -1,4 +1,5 @@
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.ValueObjects;
 
 namespace ConventionSystem.Domain.Tests.Convention;
@@ -67,7 +68,7 @@ public class EditionStructureManagementTests
     {
         var (_, _, edition) = CreateEdition();
 
-        Assert.Throws<InvalidOperationException>(() =>
+        Assert.Throws<VenueNotFoundInEditionException>(() =>
             edition.UpdateVenue(VenueId.New(), "Namn", "Byggnad", null));
     }
 
@@ -100,7 +101,7 @@ public class EditionStructureManagementTests
     {
         var (_, _, edition) = CreateEdition();
 
-        Assert.Throws<InvalidOperationException>(() => edition.RemoveVenue(VenueId.New()));
+        Assert.Throws<VenueNotFoundInEditionException>(() => edition.RemoveVenue(VenueId.New()));
     }
 
     // ── UpdateStaffArea ─────────────────────────────────────────────────────
@@ -125,7 +126,7 @@ public class EditionStructureManagementTests
     {
         var (_, _, edition) = CreateEdition();
 
-        Assert.Throws<InvalidOperationException>(() =>
+        Assert.Throws<StaffAreaNotFoundInEditionException>(() =>
             edition.UpdateStaffArea(StaffAreaId.New(), "Namn", null, PersonId.New()));
     }
 
@@ -179,7 +180,7 @@ public class EditionStructureManagementTests
     {
         var (_, _, edition) = CreateEdition();
 
-        Assert.Throws<InvalidOperationException>(() => edition.RemoveStaffArea(StaffAreaId.New()));
+        Assert.Throws<StaffAreaNotFoundInEditionException>(() => edition.RemoveStaffArea(StaffAreaId.New()));
     }
 
     // ── UpdateCategory ──────────────────────────────────────────────────────
@@ -204,7 +205,7 @@ public class EditionStructureManagementTests
     {
         var (_, _, edition) = CreateEdition();
 
-        Assert.Throws<InvalidOperationException>(() =>
+        Assert.Throws<CategoryNotFoundInEditionException>(() =>
             edition.UpdateCategory(CategoryId.New(), "Namn", null, PersonId.New()));
     }
 
@@ -239,6 +240,6 @@ public class EditionStructureManagementTests
     {
         var (_, _, edition) = CreateEdition();
 
-        Assert.Throws<InvalidOperationException>(() => edition.RemoveCategory(CategoryId.New()));
+        Assert.Throws<CategoryNotFoundInEditionException>(() => edition.RemoveCategory(CategoryId.New()));
     }
 }
