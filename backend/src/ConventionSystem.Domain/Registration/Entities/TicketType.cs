@@ -1,6 +1,7 @@
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Enums;
+using ConventionSystem.Domain.Registration.Exceptions;
 using ConventionSystem.Domain.Registration.Ids;
 
 namespace ConventionSystem.Domain.Registration.Entities;
@@ -43,7 +44,7 @@ public sealed class TicketType : AggregateRoot
     public void RemovePerk(TicketPerkId perkId)
     {
         var perk = _perks.FirstOrDefault(p => p.Id == perkId)
-            ?? throw new InvalidOperationException("Förmånen hittades inte.");
+            ?? throw new TicketPerkNotFoundException();
         _perks.Remove(perk);
     }
 }

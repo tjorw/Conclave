@@ -1,6 +1,7 @@
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Enums;
+using ConventionSystem.Domain.Registration.Exceptions;
 using ConventionSystem.Domain.Registration.Events;
 using ConventionSystem.Domain.Registration.Ids;
 
@@ -35,7 +36,7 @@ public class TicketTests
         var ticket = CreateTicket();
         ticket.ConfirmPayment();
 
-        Assert.Throws<InvalidOperationException>(() => ticket.ConfirmPayment());
+        Assert.Throws<TicketNotReservedForPaymentException>(() => ticket.ConfirmPayment());
     }
 
     [Fact]
@@ -57,7 +58,7 @@ public class TicketTests
     {
         var ticket = CreateTicket();
 
-        Assert.Throws<InvalidOperationException>(() => ticket.Collect(PersonId.New()));
+        Assert.Throws<TicketNotPaidForCollectionException>(() => ticket.Collect(PersonId.New()));
     }
 
     [Fact]
@@ -77,6 +78,6 @@ public class TicketTests
         var ticket = CreateTicket();
         ticket.Revoke(PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(() => ticket.Revoke(PersonId.New()));
+        Assert.Throws<TicketAlreadyRevokedException>(() => ticket.Revoke(PersonId.New()));
     }
 }

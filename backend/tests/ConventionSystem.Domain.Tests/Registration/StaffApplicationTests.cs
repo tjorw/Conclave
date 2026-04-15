@@ -1,6 +1,7 @@
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Enums;
+using ConventionSystem.Domain.Registration.Exceptions;
 using ConventionSystem.Domain.Registration.Events;
 using ConventionSystem.Domain.Registration.Ids;
 
@@ -57,7 +58,7 @@ public class StaffApplicationTests
         var application = CreateApplication();
         application.Accept(PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(() => application.Accept(PersonId.New()));
+        Assert.Throws<StaffApplicationCannotBeAcceptedInCurrentStateException>(() => application.Accept(PersonId.New()));
     }
 
     [Fact]
@@ -66,7 +67,7 @@ public class StaffApplicationTests
         var application = CreateApplication();
         application.Reject(PersonId.New());
 
-        Assert.Throws<InvalidOperationException>(() => application.Reject(PersonId.New()));
+        Assert.Throws<StaffApplicationCannotBeRejectedInCurrentStateException>(() => application.Reject(PersonId.New()));
     }
 
     [Fact]
@@ -113,6 +114,6 @@ public class StaffApplicationTests
         var stationId = StationId.New();
         application.AddStationPreference(stationId);
 
-        Assert.Throws<InvalidOperationException>(() => application.AddStationPreference(stationId));
+        Assert.Throws<DuplicateStationPreferenceException>(() => application.AddStationPreference(stationId));
     }
 }

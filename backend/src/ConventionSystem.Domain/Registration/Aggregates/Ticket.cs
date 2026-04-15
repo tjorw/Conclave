@@ -1,6 +1,7 @@
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Enums;
+using ConventionSystem.Domain.Registration.Exceptions;
 using ConventionSystem.Domain.Registration.Events;
 using ConventionSystem.Domain.Registration.Ids;
 
@@ -34,7 +35,7 @@ public sealed class Ticket : AggregateRoot
     public void ConfirmPayment()
     {
         if (Status != TicketStatus.Reserved)
-            throw new InvalidOperationException("Biljetten kan bara betalas i reserverat läge.");
+            throw new TicketNotReservedForPaymentException();
 
         Status = TicketStatus.Paid;
     }
@@ -42,7 +43,7 @@ public sealed class Ticket : AggregateRoot
     public void Collect(PersonId performedById)
     {
         if (Status != TicketStatus.Paid)
-            throw new InvalidOperationException("Biljetten måste vara betald för att kunna hämtas ut.");
+            throw new TicketNotPaidForCollectionException();
 
         Status = TicketStatus.Collected;
         CollectedById = performedById;
@@ -53,7 +54,7 @@ public sealed class Ticket : AggregateRoot
     public void Revoke(PersonId performedById)
     {
         if (Status == TicketStatus.Revoked)
-            throw new InvalidOperationException("Biljetten är redan makulerad.");
+            throw new TicketAlreadyRevokedException();
 
         Status = TicketStatus.Revoked;
         RaiseDomainEvent(new TicketRevoked(Id, PersonId, performedById, DateTimeOffset.UtcNow));

@@ -1,6 +1,7 @@
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Enums;
+using ConventionSystem.Domain.Registration.Exceptions;
 using ConventionSystem.Domain.Registration.Events;
 using ConventionSystem.Domain.Registration.Ids;
 
@@ -31,7 +32,7 @@ public sealed class VisitorRegistration : AggregateRoot
     public void ConfirmPayment(string externalReferenceId)
     {
         if (Status != VisitorRegistrationStatus.PendingPayment)
-            throw new InvalidOperationException("Betalning kan bara bekräftas när registreringen väntar på betalning.");
+            throw new VisitorRegistrationPaymentStateInvalidException();
 
         PaymentReference = externalReferenceId;
         Status = VisitorRegistrationStatus.Confirmed;
@@ -41,7 +42,7 @@ public sealed class VisitorRegistration : AggregateRoot
     public void Cancel()
     {
         if (Status == VisitorRegistrationStatus.Cancelled)
-            throw new InvalidOperationException("Registreringen är redan avbokad.");
+            throw new VisitorRegistrationAlreadyCancelledException();
 
         Status = VisitorRegistrationStatus.Cancelled;
     }

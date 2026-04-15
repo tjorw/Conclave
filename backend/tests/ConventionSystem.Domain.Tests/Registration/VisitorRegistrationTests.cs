@@ -1,6 +1,7 @@
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Enums;
+using ConventionSystem.Domain.Registration.Exceptions;
 using ConventionSystem.Domain.Registration.Events;
 using ConventionSystem.Domain.Registration.Ids;
 
@@ -37,7 +38,7 @@ public class VisitorRegistrationTests
         var registration = CreateRegistration();
         registration.ConfirmPayment("REF-1");
 
-        Assert.Throws<InvalidOperationException>(() => registration.ConfirmPayment("REF-2"));
+        Assert.Throws<VisitorRegistrationPaymentStateInvalidException>(() => registration.ConfirmPayment("REF-2"));
     }
 
     [Fact]
@@ -56,6 +57,6 @@ public class VisitorRegistrationTests
         var registration = CreateRegistration();
         registration.Cancel();
 
-        Assert.Throws<InvalidOperationException>(() => registration.Cancel());
+        Assert.Throws<VisitorRegistrationAlreadyCancelledException>(() => registration.Cancel());
     }
 }

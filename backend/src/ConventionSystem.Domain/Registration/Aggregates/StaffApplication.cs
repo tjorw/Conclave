@@ -2,6 +2,7 @@ using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Entities;
 using ConventionSystem.Domain.Registration.Enums;
+using ConventionSystem.Domain.Registration.Exceptions;
 using ConventionSystem.Domain.Registration.Events;
 using ConventionSystem.Domain.Registration.Ids;
 using ConventionSystem.Domain.Registration.ValueObjects;
@@ -50,14 +51,14 @@ public sealed class StaffApplication : AggregateRoot
     public void RemoveAvailability(AvailabilityId availabilityId)
     {
         var availability = _availabilities.FirstOrDefault(a => a.Id == availabilityId)
-            ?? throw new InvalidOperationException("Tillgängligheten hittades inte.");
+            ?? throw new AvailabilityNotFoundException();
         _availabilities.Remove(availability);
     }
 
     public StationPreference AddStationPreference(StationId stationId)
     {
         if (_stationPreferences.Any(s => s.StationId == stationId))
-            throw new InvalidOperationException("Stationsönskemål för denna station finns redan.");
+            throw new DuplicateStationPreferenceException();
 
         var preference = new StationPreference(stationId);
         _stationPreferences.Add(preference);
@@ -67,14 +68,14 @@ public sealed class StaffApplication : AggregateRoot
     public void RemoveStationPreference(StationId stationId)
     {
         var preference = _stationPreferences.FirstOrDefault(s => s.StationId == stationId)
-            ?? throw new InvalidOperationException("Stationsönskemålet hittades inte.");
+            ?? throw new StationPreferenceNotFoundException();
         _stationPreferences.Remove(preference);
     }
 
     public void Accept(PersonId performedById)
     {
         if (Status != StaffApplicationStatus.Received && Status != StaffApplicationStatus.UnderReview)
-            throw new InvalidOperationException("Bara mottagna eller granskade ansökningar kan accepteras.");
+            throw new StaffApplicationCannotBeAcceptedInCurrentStateException();
 
         Status = StaffApplicationStatus.Confirmed;
         RaiseDomainEvent(new StaffApplicationAccepted(Id, PersonId, EditionId, performedById, DateTimeOffset.UtcNow));
@@ -83,7 +84,7 @@ public sealed class StaffApplication : AggregateRoot
     public void Reject(PersonId performedById)
     {
         if (Status != StaffApplicationStatus.Received && Status != StaffApplicationStatus.UnderReview)
-            throw new InvalidOperationException("Bara mottagna eller granskade ansökningar kan avslås.");
+            throw new StaffApplicationCannotBeRejectedInCurrentStateException();
 
         Status = StaffApplicationStatus.Rejected;
         RaiseDomainEvent(new StaffApplicationRejected(Id, PersonId, EditionId, performedById, DateTimeOffset.UtcNow));

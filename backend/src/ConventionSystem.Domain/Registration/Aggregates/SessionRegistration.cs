@@ -2,6 +2,7 @@ using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Registration.Enums;
+using ConventionSystem.Domain.Registration.Exceptions;
 using ConventionSystem.Domain.Registration.Events;
 using ConventionSystem.Domain.Registration.Ids;
 
@@ -31,7 +32,7 @@ public sealed class SessionRegistration : AggregateRoot
     public void Cancel()
     {
         if (Status == SessionRegistrationStatus.Cancelled)
-            throw new InvalidOperationException("Sessionsregistreringen är redan avbokad.");
+            throw new SessionRegistrationAlreadyCancelledException();
 
         Status = SessionRegistrationStatus.Cancelled;
         RaiseDomainEvent(new SessionRegistrationCancelled(Id, SessionId, PersonId, DateTimeOffset.UtcNow));
