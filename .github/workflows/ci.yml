@@ -16,6 +16,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Frontend tests
+        run: |
+          npx ng test admin --watch=false
+          npx ng test public --watch=false
+          npx ng test shared --watch=false
+        working-directory: frontend
+
       - name: Setup .NET 9
         uses: actions/setup-dotnet@v4
         with:
