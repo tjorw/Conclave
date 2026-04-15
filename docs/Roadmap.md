@@ -158,7 +158,38 @@ Rollbaserad app för konventionsadministratörer. Kräver `is_admin`-claim.
 - ~~Åtgärder: godkänn / avvisa med kommentar / ställ in / skicka in för granskning~~
 
 #### 3.1.6b Evenemangsflöde – genomgång och förfining
-Draftprocessen fungerar tekniskt men speglar inte fullt ut hur flödet ska fungera ur arrangörens och adminens perspektiv. Kräver ett dedikerat arbetspass där flödet beskrivs i detalj och implementationen justeras därefter.
+Mål: beskriva och införa ett komplett samarbetsflöde mellan arrangör (publik app) och admin (admin-app), från utkast till publicerat schema och vidare till hantering av ändringskommentarer.
+
+**Flöde (övergripande journey)**
+1. Publik: arrangör loggar in eller skapar konto.
+2. Publik: arrangör skapar arrangemang, fyller i sessionsönskemål och skickar in för granskning.
+3. Admin: ser att nytt arrangemang finns i granskningskön.
+4. Admin: granskar, justerar innehåll och schemalägger sessioner i salar så nära önskemålen som möjligt.
+5. Admin: publicerar arrangemanget.
+6. Publik: arrangör ser att arrangemanget är godkänt och hur schema/sessionsplacering ser ut.
+7. Publik: arrangör lämnar ändringsförslag som kommentar.
+8. Admin: ser obehandlade kommentarer, genomför justeringar, markerar kommentaren som behandlad och svarar med vad som ändrats.
+9. Publik: arrangör ser admins svar och kvitterar att kommentaren är hanterad.
+
+**Avgränsning och leveransnivå**
+- Detta är en epic/workflow och bryts ned i flera separata use cases i `docs/UseCases.md`.
+- Frontenddokumentation beskriver aktörernas journeys (arrangör respektive admin) och förväntad upplevelse per steg.
+
+**Statusmodell som ska vara tydlig i UI och API**
+- Arrangemang: Utkast -> Inskickad -> Under granskning -> Publicerad.
+- Kommentarer: Ny -> Under behandling -> Besvarad av admin -> Kvitterad av arrangör.
+
+**Definition of Done för 3.1.6b**
+- Flödet ovan går att genomföra utan manuella sidospår i båda apparna.
+- Arrangör och admin ser tydlig status i varje steg.
+- Kommentarer är spårbara med historik över fråga, åtgärd och kvittens.
+- Relevanta notifieringar eller tydliga indikatorer finns för nya/obehandlade ärenden.
+- `docs/UseCases.md` och `docs/Frontend.md` är uppdaterade enligt genomförd implementation.
+
+**Teststrategi (nuvarande beslut)**
+- Enhetstester och applikationstester per use case behålls som primär regressionssäkring.
+- Backend-integrationstester ska täcka hela serverkedjan för huvudscenariot i 3.1.6b.
+- Browserbaserade E2E-journeys skjuts upp och hanteras senare enligt posten i Teknisk skuld.
 
 #### ~~3.1.7 Bemanningshantering~~ ✓ Klar
 - ~~Passöversikt per station: `GET /stations/{id}/shifts`~~
@@ -398,6 +429,7 @@ Urvalslistor för koordinator- och ansvarigval hämtar från `/editions/{id}/sta
 | `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |
 | Social inloggning (OAuth) | ASP.NET Identity stöder det men inte implementerat | Låg |
 | **Feed-cachning och API-nyckel** | Feed-endpointsen är öppna och läser från databasen vid varje anrop. Vid hög trafik (t.ex. om ett CMS pollar ofta) bör svaren cachas (HTTP-headers `Cache-Control`/`ETag`, CDN-lager eller Redis). Vid behov av skyddade feeds kan en API-nyckel i header eller query-parameter läggas till utan att ändra URL-strukturen. | Medel – utvärdera inför produktion |
+| **E2E-test för journeys (admin + publik)** | Journey-flöden testas i nuläget via enhets- och integrationstester, men saknar UI-verifiering över hela kedjan. Lägg till browserbaserade E2E-scenarier för kritiska end-to-end-flöden (t.ex. 3.1.6b) när funktionerna stabiliserats. | Medel – planera efter implementation av 3.x-flöden |
 | `CreatePersonCommand` vs UC002 | Två vägar att skapa en person (admin-väg och auth-väg). Kan leda till inkonsekvens om e-post-uniqueness-kontrollen blockerar auth-skapande | Medel – se till att UC002-vägen aldrig kolliderar |
 | Idempotens i login-flödet | Race condition: två parallella första-inloggningar kan försöka skapa person simultaneously | Låg – unikt index är sista skyddet |
 | `ICurrentUser` i bakgrundsjobb | `ICurrentUser` läser från `HttpContext` och fungerar inte utanför HTTP-request-scopet. Bakgrundsjobb och seeders måste anropa domänmodellen direkt och förbigå handlers som kräver `ICurrentUser`. | Medel – dokumentera mönstret |
@@ -426,8 +458,8 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 Använd en rad per punkt och ändra bara statusmarkören i början.
 
-- [ ] `R02` Fas 3.1.8 Registreringsöversikt i admin
 - [ ] `R03` Fas 3.1.6b Evenemangsflöde – genomgång och förfining
+- [ ] `R02` Fas 3.1.8 Registreringsöversikt i admin
 - [ ] `R04` Fas 3.2.4 Mina sidor – hub och navigationsstruktur
 - [ ] `R05` Fas 3.2.5 Min biljett
 - [ ] `R06` Fas 3.2.6 Mitt program
