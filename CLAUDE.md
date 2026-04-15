@@ -155,6 +155,7 @@ hämtningsmetod).
 - Committa aldrig automatiskt. Fråga alltid användaren först.
 - Committa aldrig halvfärdigt eller trasigt arbete.
 - Varje commit ska representera en komplett, sammanhängande enhet.
+- Efter varje commit ska relevant dokumentation granskas och vid behov uppdateras så att den inte glider isär från koden.
 
 ## När ska vi fråga om commit
 Fråga "Redo att committa? Förslag: [meddelande]" när:
