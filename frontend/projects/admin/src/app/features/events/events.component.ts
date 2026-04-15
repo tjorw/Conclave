@@ -17,15 +17,11 @@ import {
   EventService,
   EventSummaryDto,
   PersonDto,
+  EVENT_STATUS_LABEL,
+  EVENT_STATUS_CHIP,
 } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
-
-const STATUS_LABELS: Record<string, string> = {
-  Draft:       'Utkast',
-  UnderReview: 'Under granskning',
-  Published:   'Publicerat',
-  Cancelled:   'Inställt',
-};
+import { ACTION, FIELD, TOOLTIP } from '../../labels/ui.labels';
 
 @Component({
   selector: 'app-events',
@@ -52,6 +48,10 @@ export class EventsComponent {
   private readonly router      = inject(Router);
   private readonly fb          = inject(FormBuilder);
   readonly editionContext      = inject(EditionContextService);
+
+  readonly ACTION  = ACTION;
+  readonly TOOLTIP = TOOLTIP;
+  readonly FIELD   = FIELD;
 
   readonly events     = signal<EventSummaryDto[]>([]);
   readonly persons    = signal<PersonDto[]>([]);
@@ -157,13 +157,10 @@ export class EventsComponent {
   }
 
   statusLabel(status: string): string {
-    return STATUS_LABELS[status] ?? status;
+    return EVENT_STATUS_LABEL[status] ?? status;
   }
 
   statusChipClass(status: string): string {
-    return (
-      { UnderReview: 'chip-orange', Published: 'chip-green', Draft: 'chip-grey', Cancelled: 'chip-grey' }[status]
-      ?? 'chip-grey'
-    );
+    return EVENT_STATUS_CHIP[status] ?? 'chip-grey';
   }
 }

@@ -13,7 +13,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { CategoryDto, ConventionService, DateTimeRangeComponent, EditionDto, EventDto, EventService, VenueDto } from 'shared';
+import {
+  CategoryDto, ConventionService, DateTimeRangeComponent, EditionDto, EventDto, EventService, VenueDto,
+  EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
+} from 'shared';
 import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
 
 @Component({
@@ -305,30 +308,19 @@ export class EventDetailComponent implements OnInit {
   }
 
   statusLabel(status: string): string {
-    const map: Record<string, string> = {
-      Draft: 'Utkast', UnderReview: 'Under granskning',
-      Published: 'Publicerat', Cancelled: 'Inställt',
-    };
-    return map[status] ?? status;
+    return EVENT_STATUS_LABEL[status] ?? status;
   }
 
   registrationLabel(type: string): string {
-    const map: Record<string, string> = {
-      DropIn: 'Drop-in', PreRegistration: 'Föranmälan', Combined: 'Kombinerat',
-    };
-    return map[type] ?? type;
+    return REGISTRATION_KIND_LABEL[type] ?? type;
   }
 
   startTypeLabel(type: string): string {
-    const map: Record<string, string> = {
-      FixedTime: 'Fast tid', Rolling: 'Löpande', Tournament: 'Turneringsformat',
-    };
-    return map[type] ?? type;
+    return START_TYPE_LABEL[type] ?? type;
   }
 
   sessionStatusLabel(status: string): string {
-    const map: Record<string, string> = { Active: 'Aktiv', Inactive: 'Inaktiv' };
-    return map[status] ?? status;
+    return SESSION_STATUS_LABEL[status] ?? status;
   }
 
   readonly sortedSessions = computed(() =>

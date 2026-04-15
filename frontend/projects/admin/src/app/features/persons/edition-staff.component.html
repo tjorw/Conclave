@@ -1,0 +1,127 @@
+<div class="page-header">
+  <h1>Funktionärer</h1>
+  <p class="subtitle">
+    @if (editionContext.activeEdition(); as e) {
+      Godkända funktionärer för <strong>{{ e.name }}</strong>
+    } @else {
+      Välj en upplaga i verktygsfältet
+    }
+  </p>
+</div>
+
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+@if (!editionContext.activeEdition()) {
+  <p class="no-edition">Välj en upplaga för att visa funktionärer.</p>
+} @else if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else {
+  <div class="action-bar">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [placeholder]="PLACEHOLDER.searchNameEmail" (input)="onSearch($event)" />
+    </mat-form-field>
+
+    @if (!showAddForm()) {
+      <button mat-stroked-button (click)="openAddForm()" class="add-btn">
+        <mat-icon>person_add</mat-icon> {{ ACTION.add }} funktionär
+      </button>
+    }
+  </div>
+
+  @if (showAddForm()) {
+    <mat-card class="add-form-card">
+      <mat-card-header>
+        <mat-card-title>{{ ACTION.add }} funktionär</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="addStaffForm" (ngSubmit)="submitAddStaff()" class="add-form">
+          <mat-form-field appearance="outline" class="form-field-full">
+            <mat-label>{{ FIELD.emailAddress }}</mat-label>
+            <input matInput formControlName="email" type="email" [placeholder]="PLACEHOLDER.emailExampleSv"
+              (input)="addEmailInput.set($any($event.target).value)" />
+            @if (addStaffForm.get('email')?.hasError('required')) {
+              <mat-error>E-postadress krävs</mat-error>
+            }
+            @if (addStaffForm.get('email')?.hasError('email')) {
+              <mat-error>Ogiltig e-postadress</mat-error>
+            }
+          </mat-form-field>
+
+          @if (matchedPerson(); as person) {
+            <div class="matched-person-info">
+              <mat-icon>person</mat-icon>
+              <span>Befintlig person: <strong>{{ person.name }}</strong></span>
+            </div>
+          } @else if (addEmailInput().trim()) {
+            <mat-form-field appearance="outline" class="form-field-full">
+              <mat-label>{{ FIELD.name }}</mat-label>
+              <input matInput formControlName="name" [placeholder]="PLACEHOLDER.nameExample"
+                (input)="addNameInput.set($any($event.target).value)" />
+              <mat-hint>Personen finns inte i registret – ange namn för att skapa.</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field-half">
+              <mat-label>{{ FIELD.phone }}</mat-label>
+              <input matInput formControlName="phone" [placeholder]="PLACEHOLDER.phone" />
+            </mat-form-field>
+          }
+
+          <mat-form-field appearance="outline" class="form-field-full">
+            <mat-label>{{ FIELD.note }}</mat-label>
+            <input matInput formControlName="note" placeholder="T.ex. rekryterad på mässan" />
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button type="button" mat-button (click)="cancelAddForm()">{{ ACTION.cancel }}</button>
+            <button type="submit" mat-flat-button color="primary"
+              [disabled]="addFormInvalid() || addSaving()">
+              @if (addSaving()) {
+                <mat-spinner diameter="18" />
+              } @else {
+                {{ ACTION.add }}
+              }
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <mat-card>
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Namn</th>
+            <th>E-post</th>
+            <th>Telefon</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of filtered(); track s.personId) {
+            <tr>
+              <td><strong>{{ s.personName }}</strong></td>
+              <td>{{ s.email }}</td>
+              <td class="muted">{{ s.phone || '–' }}</td>
+              <td class="muted">{{ applicationStatusLabel(s.applicationStatus) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="empty-cell">
+                @if (searchQuery()) {
+                  Inga funktionärer matchar sökningen.
+                } @else {
+                  Inga godkända funktionärer för denna upplaga.
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
+}

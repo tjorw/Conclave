@@ -27,6 +27,7 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
     {
         var applications = await db.StaffApplications
             .Include(a => a.StationPreferences)
+            .Include(a => a.Availabilities)
             .Where(a => a.EditionId == editionId)
             .OrderBy(a => a.CreatedAt)
             .ToListAsync(ct);
@@ -43,8 +44,32 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
             a.InterestDescription,
             a.Status.ToString(),
             a.CreatedAt,
-            a.StationPreferences.Select(p => p.StationId.Value).ToList()
+            a.StationPreferences.Select(p => p.StationId.Value).ToList(),
+            a.Availabilities.OrderBy(av => av.TimeSlot.Start)
+                            .Select(av => new StaffApplicationAvailabilityDto(av.TimeSlot.Start, av.TimeSlot.End))
+                            .ToList()
         )).ToList();
+    }
+
+    public async Task<IReadOnlyList<EditionStaffMemberDto>> ListApprovedByEditionIdAsync(EditionId editionId, CancellationToken ct = default)
+    {
+        var applications = await db.StaffApplications
+            .Where(a => a.EditionId == editionId &&
+                       (a.Status == StaffApplicationStatus.Assigned || a.Status == StaffApplicationStatus.Confirmed))
+            .OrderBy(a => a.CreatedAt)
+            .ToListAsync(ct);
+
+        var personIds = applications.Select(a => a.PersonId).Distinct().ToHashSet();
+        var personMap = await db.Persons
+            .Where(p => personIds.Contains(p.Id))
+            .Select(p => new { p.Id, p.Name, p.Email, p.Phone })
+            .ToDictionaryAsync(p => p.Id, ct);
+
+        return applications.Select(a =>
+        {
+            personMap.TryGetValue(a.PersonId, out var p);
+            return new EditionStaffMemberDto(a.PersonId.Value, p?.Name ?? "", p?.Email ?? "", p?.Phone, a.Status.ToString());
+        }).ToList();
     }
 
     public async Task AddAndSaveAsync(StaffApplication application, CancellationToken ct = default)

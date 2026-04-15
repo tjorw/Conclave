@@ -30,6 +30,9 @@ public sealed class RegisterForSessionHandler(
         if (ticket.PersonId != personId)
             throw new InvalidOperationException("Biljetten tillhör inte denna person.");
 
+        if (await sessionRegistrationRepository.HasRegistrationAsync(personId, sessionId, ct))
+            throw new InvalidOperationException("Personen är redan registrerad för denna session.");
+
         if (!registrationRuleService.ValidateSeatAvailability(sessionId))
             throw new InvalidOperationException("Det finns inga lediga platser på denna session.");
 

@@ -62,6 +62,13 @@ export class StaffService {
     );
   }
 
+  addStaffMember(editionId: string, body: { name: string; email: string; phone?: string | null; note?: string | null }) {
+    return this.http.post<{ id: string }>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/staff`,
+      body
+    );
+  }
+
   acceptApplication(applicationId: string) {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/staff-applications/${applicationId}/accept`,

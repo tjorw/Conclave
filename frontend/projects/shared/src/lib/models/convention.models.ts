@@ -68,3 +68,35 @@ export interface PersonDto {
   hasAccount: boolean;
   isLocked: boolean;
 }
+
+export interface EditionVisitorDto {
+  personId: string;
+  personName: string;
+  email: string;
+  phone: string | null;
+}
+
+export interface EditionOrganiserDto {
+  personId: string;
+  personName: string;
+  email: string;
+  phone: string | null;
+  eventId: string;
+  eventTitle: string;
+  role: string;
+}
+
+export interface EditionStaffMemberDto {
+  personId: string;
+  personName: string;
+  email: string;
+  phone: string | null;
+  applicationStatus: string;
+}
+
+export interface EditionResponsibleDto {
+  position: string;
+  personId: string | null;
+  personName: string | null;
+  email: string | null;
+}

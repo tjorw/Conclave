@@ -1,0 +1,60 @@
+<div class="page-header">
+  <h1>Ansvariga</h1>
+  <p class="subtitle">
+    @if (editionContext.activeEdition(); as e) {
+      Ansvariga positioner för <strong>{{ e.name }}</strong>
+    } @else {
+      Välj en upplaga i verktygsfältet
+    }
+  </p>
+</div>
+
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+@if (!editionContext.activeEdition()) {
+  <p class="no-edition">Välj en upplaga för att visa ansvariga.</p>
+} @else if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else {
+  <div class="action-bar">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [placeholder]="PLACEHOLDER.searchFunctionPerson" (input)="onSearch($event)" />
+    </mat-form-field>
+  </div>
+
+  <mat-card>
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Funktion</th>
+            <th>Person</th>
+            <th>E-post</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of filtered(); track r.position) {
+            <tr>
+              <td><strong>{{ r.position }}</strong></td>
+              <td [class.muted]="!r.personName">{{ r.personName || 'Ej tillsatt' }}</td>
+              <td class="muted">{{ r.email || '–' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3" class="empty-cell">
+                @if (searchQuery()) {
+                  Inga positioner matchar sökningen.
+                } @else {
+                  Inga ansvariga positioner definierade för denna upplaga.
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
+}

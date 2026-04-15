@@ -31,6 +31,15 @@ public record StaffAssignmentDto(
     string Status,
     DateTimeOffset AssignedAt);
 
+public record EditionStaffMemberDto(
+    Guid PersonId,
+    string PersonName,
+    string Email,
+    string? Phone,
+    string ApplicationStatus);
+
+public record StaffApplicationAvailabilityDto(DateTime Start, DateTime End);
+
 public record StaffApplicationSummaryDto(
     Guid Id,
     Guid PersonId,
@@ -38,4 +47,5 @@ public record StaffApplicationSummaryDto(
     string InterestDescription,
     string Status,
     DateTimeOffset CreatedAt,
-    IReadOnlyList<Guid> StationPreferenceIds);
+    IReadOnlyList<Guid> StationPreferenceIds,
+    IReadOnlyList<StaffApplicationAvailabilityDto> Availabilities);

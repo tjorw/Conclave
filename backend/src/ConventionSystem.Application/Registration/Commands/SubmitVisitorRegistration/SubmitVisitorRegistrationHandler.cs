@@ -32,6 +32,8 @@ public sealed class SubmitVisitorRegistrationHandler(
             ?? throw new InvalidOperationException($"Person '{command.PersonId}' hittades inte.");
         if (person.ConventionId != edition.ConventionId)
             throw new InvalidOperationException("Personen tillhör inte denna konvention.");
+        if (!person.IsActive)
+            throw new InvalidOperationException("Inaktiverade personer kan inte initiera nya registreringar.");
 
         var ticketType = await ticketTypeRepository.GetByIdAsync(ticketTypeId, ct)
             ?? throw new InvalidOperationException($"Biljetttypen '{command.TicketTypeId}' hittades inte.");

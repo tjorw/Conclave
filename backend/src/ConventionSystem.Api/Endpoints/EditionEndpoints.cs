@@ -1,6 +1,10 @@
 using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Convention.Commands.ChangeCategoryResponsible;
+using ConventionSystem.Application.Convention.Queries.ListEditionResponsibles;
 using ConventionSystem.Application.Convention.Commands.SetActiveEdition;
+using ConventionSystem.Application.Event.Queries.ListEditionOrganisers;
+using ConventionSystem.Application.Registration.Queries.ListEditionVisitors;
+using ConventionSystem.Application.Registration.Queries.ListEditionStaff;
 using ConventionSystem.Application.Convention.Commands.CopyEditionStructure;
 using ConventionSystem.Application.Convention.Commands.CreateCategory;
 using ConventionSystem.Application.Convention.Commands.CreateEdition;
@@ -109,6 +113,14 @@ public static class EditionEndpoints
                 return Results.NoContent();
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
+        // UC011 – Byt kategoriansvarig
+        app.MapPut("/editions/{editionId:guid}/categories/{categoryId:guid}/responsible",
+            async (Guid editionId, Guid categoryId, ChangeCategoryResponsibleRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new ChangeCategoryResponsibleCommand(editionId, categoryId, request.NewResponsibleId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
         app.MapPost("/editions/{editionId:guid}/categories",
             async (Guid editionId, CreateCategoryRequest request, ISender sender, CancellationToken ct) =>
             {
@@ -170,6 +182,26 @@ public static class EditionEndpoints
                 await sender.Send(new SetActiveEditionCommand(editionId), ct);
                 return Results.NoContent();
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapGet("/editions/{editionId:guid}/visitors",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListEditionVisitorsQuery(editionId), ct)))
+            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapGet("/editions/{editionId:guid}/organisers",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListEditionOrganisersQuery(editionId), ct)))
+            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapGet("/editions/{editionId:guid}/staff",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListEditionStaffQuery(editionId), ct)))
+            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapGet("/editions/{editionId:guid}/responsibles",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListEditionResponsiblesQuery(editionId), ct)))
+            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         return app;
     }

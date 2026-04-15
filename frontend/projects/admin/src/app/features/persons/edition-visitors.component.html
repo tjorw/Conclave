@@ -1,0 +1,60 @@
+<div class="page-header">
+  <h1>Besökare</h1>
+  <p class="subtitle">
+    @if (editionContext.activeEdition(); as e) {
+      Bekräftade besökare för <strong>{{ e.name }}</strong>
+    } @else {
+      Välj en upplaga i verktygsfältet
+    }
+  </p>
+</div>
+
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+@if (!editionContext.activeEdition()) {
+  <p class="no-edition">Välj en upplaga för att visa besökare.</p>
+} @else if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else {
+  <div class="action-bar">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [placeholder]="PLACEHOLDER.searchNameEmail" (input)="onSearch($event)" />
+    </mat-form-field>
+  </div>
+
+  <mat-card>
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Namn</th>
+            <th>E-post</th>
+            <th>Telefon</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (v of filtered(); track v.personId) {
+            <tr>
+              <td><strong>{{ v.personName }}</strong></td>
+              <td>{{ v.email }}</td>
+              <td class="muted">{{ v.phone || '–' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3" class="empty-cell">
+                @if (searchQuery()) {
+                  Inga besökare matchar sökningen.
+                } @else {
+                  Inga bekräftade besökare för denna upplaga.
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
+}

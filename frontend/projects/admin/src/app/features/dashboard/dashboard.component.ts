@@ -10,8 +10,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { ConventionDto, ConventionService, PersonDto } from 'shared';
+import { ConventionDto, ConventionService, PersonDto, EVENT_STATUS_LABEL } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
+import { ACTION, CHIP, FIELD, PLACEHOLDER } from '../../labels/ui.labels';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,6 +37,11 @@ export class DashboardComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   readonly editionContext = inject(EditionContextService);
+
+  readonly ACTION      = ACTION;
+  readonly CHIP        = CHIP;
+  readonly FIELD       = FIELD;
+  readonly PLACEHOLDER = PLACEHOLDER;
 
   readonly convention = signal<ConventionDto | null>(null);
   readonly persons = signal<PersonDto[]>([]);
@@ -91,7 +97,7 @@ export class DashboardComponent implements OnInit {
   }
 
   statusLabel(status: string): string {
-    return status === 'Published' ? 'Publicerad' : 'Utkast';
+    return EVENT_STATUS_LABEL[status] ?? status;
   }
 
   statusColor(status: string): string {

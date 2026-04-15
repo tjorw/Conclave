@@ -43,8 +43,6 @@
   margin-bottom: 24px;
 }
 
-.no-pad { padding: 0; }
-
 .selected-row {
   background: rgba(0, 0, 0, .04);
 }
@@ -133,16 +131,3 @@
   padding: 24px 0;
 }
 
-.spinner-center {
-  display: flex;
-  justify-content: center;
-  padding: 60px 0;
-}
-
-.error-banner {
-  background: #fdecea;
-  color: #b71c1c;
-  padding: 12px 16px;
-  border-radius: 4px;
-  margin-bottom: 16px;
-}

@@ -94,4 +94,16 @@ public class RegisterForSessionHandlerTests
             () => _handler.Handle(
                 new RegisterForSessionCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()), default));
     }
+
+    [Fact]
+    public async Task Handle_DuplicateRegistration_Throws()
+    {
+        var ticket = SetupPaidTicket();
+        var sessionId = Guid.NewGuid();
+        _sessionRegRepo.HasRegistrationAsync(Arg.Any<PersonId>(), Arg.Any<SessionId>(), Arg.Any<CancellationToken>()).Returns(true);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(
+                new RegisterForSessionCommand(sessionId, ticket.PersonId.Value, ticket.Id.Value), default));
+    }
 }

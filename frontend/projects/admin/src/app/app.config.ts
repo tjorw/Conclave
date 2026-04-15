@@ -6,6 +6,7 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { routes } from './app.routes';
 import { ENVIRONMENT, conventionInterceptor, authInterceptor, ConventionDto } from 'shared';
 import { environment } from '../environments/environment';
+import { httpErrorInterceptor } from './interceptors/http-error.interceptor';
 
 function loadConventionId(http: HttpClient) {
   return () =>
@@ -21,7 +22,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideAnimationsAsync(),
-    provideHttpClient(withInterceptors([conventionInterceptor, authInterceptor])),
+    provideHttpClient(withInterceptors([conventionInterceptor, authInterceptor, httpErrorInterceptor])),
     { provide: ENVIRONMENT, useValue: environment },
     {
       provide: APP_INITIALIZER,

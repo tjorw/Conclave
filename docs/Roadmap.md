@@ -27,12 +27,13 @@ Dokument för att spåra vad som är klart och vad som återstår inför produkt
 
 ### Klar – Fas 3 (delvis)
 - **3.0 Workspace och delad infrastruktur** – Angular monorepo med admin-app, publik-app och delat bibliotek; `AuthService` (signals), `authGuard`, `adminGuard`, `AuthInterceptor`, alla API-modeller
-- **3.1.1 Scaffold och layout** – App-shell med sidenav, toolbar, logout; lazy-loadade routes med `authGuard` + `adminGuard`
+- **3.1.1 Scaffold och layout** – App-shell med sidenav, toolbar, logout; lazy-loadade routes med `authGuard` + `adminGuard`; felsidor 401, 403, 404; `httpErrorInterceptor` omdirigerar API-401 till `/unauthorized`
 - **3.1.2 Inloggning** – Inloggningsformulär med Angular Material Reactive Forms, JWT sparas i sessionStorage, redirect vid lyckad inloggning, logout
 - **API-förbättringar** – CORS-policy för Angular-apparna, ConventionDbContext + ApplicationIdentityDbContext auto-migreras vid uppstart
 - **3.1.4 Konventionsstruktur** – Upplagehantering, lokaler, funktionsområden, kategorier med full CRUD; aktiv upplaga i sessionStorage-kontext; tabbar och tabelllistningar
 - **3.1.5 Personregister** – Personlista med sökning, skapa/redigera/avaktivera/återaktivera; admin-flagga; standardmönster för listningssidor dokumenterat
 - **3.1.9 Kontohantering** – `hasAccount`/`isLocked` i PersonDto, skicka återställningslänk, lås/lås upp konto
+- **3.1.10 Rollvyer per upplaga** – `GET /editions/{id}/visitors|organisers|staff|responsibles`; fyra nya flikar i upplage-detaljvyn (Besökare, Arrangörer, Funktionärer, Ansvariga)
 - **3.1.7 Bemanningshantering** – Passöversikt per station, skapa/ställa in pass, tilldela/bekräfta/avslå/avboka tilldelningar, staffansökningslista med acceptera/avslå; `GET /editions/{id}/staff-applications` implementerad
 - **3.2.1 Publik scaffold och layout** – ShellComponent med brandad topnav, CSS custom properties, lazy-loadade routes, `EditionService` med APP_INITIALIZER
 - **3.2.2 Hem och program** – Hemsida med hero och CTA-kort, programlista med dagsfilter och kategori-chips, evenemangsdetaljvy med sessionsexpandering; aktiv upplaga styrs av admin via `POST /editions/{id}/set-active`
@@ -119,7 +120,7 @@ Rollbaserad app för konventionsadministratörer. Kräver `is_admin`-claim.
 #### ~~3.1.1 Scaffold och layout~~ ✓ Klar
 - ~~App-shell: topbar, sidebar-navigation, content-area~~
 - ~~Routing: `AdminGuard` på alla routes utom login~~
-- Felsidor: 401, 403, 404 *(ej klar)*
+- ~~Felsidor: 401, 403, 404~~
 - ~~Lazy-loaded feature-routes per sektion~~
 
 #### ~~3.1.2 Inloggning~~ ✓ Klar
@@ -165,15 +166,18 @@ Draftprocessen fungerar tekniskt men speglar inte fullt ut hur flödet ska funge
 - ~~Staffansökanslista: acceptera/avslå~~
 - ~~`GET /editions/{id}/staff-applications` implementerad~~
 
-#### 3.1.7b Bemanningsvy – genomgång och förfining
-Bemanningsvyn fungerar tekniskt men behöver ett dedikerat arbetspass för att genomarbeta flödet ur bemanningskoordinatorns perspektiv – liknande 3.1.6b för evenemangsflödet.
+#### ~~3.1.7b Bemanningsvy – genomgång och förfining~~ ✓ Klar
+- ~~Ansökningslista med statusfilter (Att granska / Godkända / Avslagna / Alla) och räknare~~
+- ~~Acceptera / avslå ansökan direkt från listan~~
+- ~~Tillgänglighetsperioder visas per ansökan~~
+- ~~"Lägg till funktionär" – skapar person om ny e-post, återanvänder befintlig person annars; sätter ansökan direkt som Godkänd~~
 
 #### ~~3.1.9 Kontohantering i personregistret~~ ✓ Klar
 - ~~Personlistan visar om person har kopplat konto (`hasAccount`/`isLocked` i `PersonDto`)~~
 - ~~Knapp "Skicka återställningslänk" per person → `POST /persons/{id}/send-reset-link`~~
 - ~~Knapp "Lås konto" / "Lås upp konto" → `UserManager.SetLockoutEnabledAsync` + `SetLockoutEndDateAsync`~~
 
-#### 3.1.10 Rollvyer per upplaga
+#### ~~3.1.10 Rollvyer per upplaga~~ ✓ Klar
 
 Löser problemet med att urvalslistor idag visar hela personregistret utan filtrering. Ingen ny domänentitet – rollerna deriveras ur befintliga register via read-only query-endpoints.
 
@@ -194,31 +198,33 @@ Rollerna är inte lagrade – de är härledda. Varje vy frågar sin källtabell
 |----------|-------------|
 | `GET /editions/{id}/visitors` | Personlista – bekräftade besökarregistreringar |
 | `GET /editions/{id}/organisers` | Personlista – arrangörer (lead + co) på publicerade evenemang |
-| `GET /editions/{id}/staff` | Personlista – godkända funktionärsansökningar |
-| `GET /editions/{id}/responsibles` | Positionslista – en rad per ansvarigpost oavsett om den är tillsatt |
+| `GET /editions/{id}/staff` | Personlista – godkända funktionärsansökningar (`Assigned` eller `Confirmed`) |
+| `GET /editions/{id}/responsibles` | Funktionscentrerad positionslista – en rad per definierad ansvarigfunktion |
 
 **Ansvariga-vyn i detalj**
 
-Aggregerar alla definierade ansvarigpositioner för upplagan till en sökbar, read-only lista:
-- Bemanningskoordinator (`Edition.StaffCoordinatorId`)
-- Evenemangskoordinator (`Edition.EventCoordinatorId`)
-- En rad per funktionsområde (`StaffArea.ResponsibleId`)
-- En rad per kategori (`Category.ResponsibleId`)
-- En rad per publicerat evenemang – huvudarrangör (`Event.LeadOrganiserId`)
-- En rad per medarrangör på publicerade evenemang (`CoOrganiser.PersonId`)
+Funktionscentrerad vy: varje rad representerar en definierad funktion i upplagan, inte en person. Aggregerar:
+- Bemanningskoordinator (`Edition.StaffCoordinatorId`) – kan vara otillsatt
+- Evenemangskoordinator (`Edition.EventCoordinatorId`) – kan vara otillsatt
+- En rad per funktionsområde (`StaffArea.ResponsibleId`) – alltid tillsatt (obligatoriskt i domänen)
+- En rad per kategori (`Category.ResponsibleId`) – alltid tillsatt (obligatoriskt i domänen)
+- En rad per publicerat evenemang – huvudarrangör (`Event.LeadOrganiserId`) – alltid tillsatt
+- En rad per medarrangör på publicerade evenemang (`CoOrganiser.PersonId`) – alltid tillsatt
 
-Koordinator- och ansvarigposter utan tillsatt person visas som "Ej tillsatt". Arrangörsposter genereras bara för publicerade evenemang och är alltid tillsatta. Vyn är sökbar (på position eller personnamn).
+Koordinatorposter utan tillsatt person visas som "Ej tillsatt". Vyn är sökbar (på funktion eller personnamn).
+
+De tre övriga vyerna (Besökare, Arrangörer, Funktionärer) är personcentrerade: de visar vilka *personer* som har en given roll. Ansvariga-vyn är funktionscentrerad: den visar vilka *funktioner* som finns och vem som innehar dem.
 
 **Urvalslistor filtreras på funktionärer**
 
-När admin väljer person till en ansvarigpost (koordinator, areas- eller kategoriansvarig) hämtas urvalet från `/editions/{id}/staff` – det krävs en godkänd funktionärsansökan för att kunna tilldelas ett ansvar.
+När admin väljer person till en ansvarigpost (koordinator, funktionsområdes- eller kategoriansvarig) hämtas urvalet från `/editions/{id}/staff` – det krävs en godkänd funktionärsansökan (`Assigned` eller `Confirmed`) för att kunna tilldelas ett ansvar.
 
 **Edition Bootstrap**
-- `staffCoordinatorId` och `eventCoordinatorId` på `Edition` görs valfria – en ny upplaga kan skapas utan att positioner är tillsatta ännu
+- `staffCoordinatorId` och `eventCoordinatorId` på `Edition` är redan valfria – en ny upplaga kan skapas utan att koordinatorposterna är tillsatta
 
 **Frontend – fyra nya flikar/vyer under upplagekontext**
-- Besökare, Arrangörer, Funktionärer: personlistor med namn, e-post och relevant kontextinfo (t.ex. biljettyp, evenemangstitel, stationsval)
-- Ansvariga: positionstabell med sökfunktion, read-only
+- Besökare, Arrangörer, Funktionärer: personcentrerade listor med namn, e-post och relevant kontextinfo (t.ex. biljettyp, evenemangstitel, stationsval)
+- Ansvariga: funktionscentrerad positionstabell med sökfunktion, read-only
 
 *Löser teknisk skuld:* "Skalbart val av ansvariga personer"
 
@@ -275,9 +281,6 @@ Se `docs/public-mockup.html` för interaktiv skissbild av alla skärmar.
 - Profilsida (`/mina-sidor/profil`): visar namn/e-post/telefon, formulär för lösenordsbyte
 - `PUT /auth/password` med `{ currentPassword, newPassword }` → `UserManager.ChangePasswordAsync`
 - `GET /me/profile`, `PUT /me/profile` för profilfälten
-
-**Social inloggning**
-- Platshållar-knappar (Google, Facebook) – inte implementerat
 
 *Kräver nya backend-endpoints:* `POST /auth/register`, `POST /auth/confirm-email`, `POST /auth/resend-confirmation`, `POST /auth/forgot-password`, `POST /auth/reset-password`, `PUT /auth/password`, `GET /me/profile`, `PUT /me/profile`
 
@@ -417,13 +420,14 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 ## Nästa konkreta steg (förslag)
 
-1. **Fas 3.1.10** – Rollmodell per upplaga: `PersonEditionRole`-tabell, implicit tilldelning via domain events, manuell `Ansvarig`-hantering, rollfiltrerade urvalslistor
-2. **Fas 3.2.3** – Konton, inloggning och profil: backend-endpoints + publik app (registrering, e-postbekräftelse, glömt lösenord, lösenordsbyte, profilsida)
-3. **Fas 3.1.8** – Registreringsöversikt i admin (biljettyper, besökarregistreringar)
-4. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
-5. **Fas 3.1.7b** – Bemanningsvy: genomgång och förfining
-6. **Fas 3.2.4** – Mina sidor – hub och navigationsstruktur
-7. **Fas 4.1** – Demo-deploy med fiktivt konvent
+1. **Fas 3.1.10** – Rollvyer per upplaga: fyra read-only query-endpoints som deriverar rollerna ur befintliga register, rollfiltrerade urvalslistor
+2. **Tillämpa rollfiltrerat urval i gränssnittet** – Alla personval i admin-appen där rollen är staff-relaterad (ansvarigposter, tilldelning av funktionärer till pass) ska hämta urvalet från `/editions/{id}/staff`. Gäller koordinatorval på upplagan, funktionsområdes- och kategoriansvariga, samt tilldelning av bemanningspersoner i 3.1.7. Förutsätter att 3.1.10-endpointen är klar.
+3. **Fas 3.2.3** – Konton, inloggning och profil: backend-endpoints + publik app (registrering, e-postbekräftelse, glömt lösenord, lösenordsbyte, profilsida)
+4. **Fas 3.1.8** – Registreringsöversikt i admin (biljettyper, besökarregistreringar)
+5. **Fas 3.1.6b** – Evenemangsflöde: genomgång och förfining av draftprocessen
+6. ~~**Fas 3.1.7b** – Bemanningsvy: genomgång och förfining~~ ✓ Klar
+7. **Fas 3.2.4** – Mina sidor – hub och navigationsstruktur
+8. **Fas 4.1** – Demo-deploy med fiktivt konvent
 
 
 ---

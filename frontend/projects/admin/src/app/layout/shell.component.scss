@@ -42,6 +42,16 @@
   background: rgba(0, 0, 0, 0.08);
 }
 
+.nav-section-label {
+  display: block;
+  padding: 12px 16px 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.45;
+}
+
 .edition-picker {
   margin-right: 8px;
 

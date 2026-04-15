@@ -125,6 +125,56 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
                 c.Id.Value, c.AuthorId.Value, c.Text, c.CreatedAt)).ToList());
     }
 
+    public async Task<IReadOnlyList<EditionOrganiserDto>> ListOrganisersByEditionIdAsync(EditionId editionId, CancellationToken ct = default)
+    {
+        var events = await db.Events
+            .Include(e => e.CoOrganisers)
+            .Where(e => e.EditionId == editionId && e.Status == Domain.Event.Enums.EventStatus.Published)
+            .OrderBy(e => e.Title)
+            .ToListAsync(ct);
+
+        var personIds = new HashSet<Domain.Convention.Ids.PersonId>();
+        foreach (var ev in events)
+        {
+            personIds.Add(ev.LeadOrganiserId);
+            foreach (var co in ev.CoOrganisers) personIds.Add(co.PersonId);
+        }
+
+        var personMap = await db.Persons
+            .Where(p => personIds.Contains(p.Id))
+            .Select(p => new { p.Id, p.Name, p.Email, p.Phone })
+            .ToDictionaryAsync(p => p.Id, ct);
+
+        var result = new List<EditionOrganiserDto>();
+        foreach (var ev in events)
+        {
+            personMap.TryGetValue(ev.LeadOrganiserId, out var lead);
+            result.Add(new EditionOrganiserDto(
+                ev.LeadOrganiserId.Value,
+                lead?.Name ?? "",
+                lead?.Email ?? "",
+                lead?.Phone,
+                ev.Id.Value,
+                ev.Title,
+                "Huvudarrangör"));
+
+            foreach (var co in ev.CoOrganisers)
+            {
+                personMap.TryGetValue(co.PersonId, out var coP);
+                result.Add(new EditionOrganiserDto(
+                    co.PersonId.Value,
+                    coP?.Name ?? "",
+                    coP?.Email ?? "",
+                    coP?.Phone,
+                    ev.Id.Value,
+                    ev.Title,
+                    "Medarrangör"));
+            }
+        }
+
+        return result;
+    }
+
     public Task SaveAsync(CancellationToken ct = default)
         => db.SaveChangesAsync(ct);
 }

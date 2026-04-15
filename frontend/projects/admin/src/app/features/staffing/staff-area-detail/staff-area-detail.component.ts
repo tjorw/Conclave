@@ -14,6 +14,7 @@ import { EditionContextService } from '../../../services/edition-context.service
 import {
   ConventionService, DateTimeRangeComponent, EditionDto, PersonDto, ShiftDto, ShiftSummaryDto,
   StaffService, StaffAreaDto, StationDto,
+  ASSIGNMENT_STATUS_LABEL, SHIFT_STATUS_LABEL,
 } from 'shared';
 import { MatDividerModule } from '@angular/material/divider';
 
@@ -298,15 +299,11 @@ export class StaffAreaDetailComponent {
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   assignmentStatusLabel(status: string): string {
-    const map: Record<string, string> = {
-      Pending: 'Väntar', Confirmed: 'Bekräftad', Rejected: 'Avslagen', Cancelled: 'Avbokad',
-    };
-    return map[status] ?? status;
+    return ASSIGNMENT_STATUS_LABEL[status] ?? status;
   }
 
   shiftStatusLabel(status: string): string {
-    const map: Record<string, string> = { Open: 'Öppet', Full: 'Fullt', Cancelled: 'Inställt' };
-    return map[status] ?? status;
+    return SHIFT_STATUS_LABEL[status] ?? status;
   }
 
   get shiftMin(): string | undefined { return this.edition()?.start.slice(0, 16); }

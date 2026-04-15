@@ -32,6 +32,11 @@ export interface StaffAssignmentDto {
   assignedAt: string;
 }
 
+export interface StaffApplicationAvailabilityDto {
+  start: string;
+  end: string;
+}
+
 export interface StaffApplicationSummaryDto {
   id: string;
   personId: string;
@@ -40,4 +45,5 @@ export interface StaffApplicationSummaryDto {
   status: string;
   createdAt: string;
   stationPreferenceIds: string[];
+  availabilities: StaffApplicationAvailabilityDto[];
 }

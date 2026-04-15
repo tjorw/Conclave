@@ -1,6 +1,16 @@
 <div class="page-header">
   <h1>Personer</h1>
-  <p class="subtitle">Alla registrerade personer i konventionen</p>
+  <p class="subtitle">
+    @if (editionContext.activeEdition(); as e) {
+      @if (onlyEditionPersons()) {
+        Knutna till <strong>{{ e.name }}</strong>
+      } @else {
+        Alla registrerade personer i konventionen
+      }
+    } @else {
+      Alla registrerade personer i konventionen
+    }
+  </p>
 </div>
 
 @if (error()) {
@@ -10,8 +20,24 @@
 <div class="action-bar">
   <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
     <mat-icon matPrefix>search</mat-icon>
-    <input matInput placeholder="Sök namn eller e-post…" (input)="onSearch($event)" />
+    <input matInput [placeholder]="PLACEHOLDER.searchNameEmail" (input)="onSearch($event)" />
   </mat-form-field>
+  @if (editionContext.activeEdition(); as e) {
+    <button mat-stroked-button
+      [color]="onlyEditionPersons() ? 'primary' : undefined"
+      (click)="onlyEditionPersons.update(v => !v)"
+      [matTooltip]="onlyEditionPersons() ? 'Visa alla personer' : 'Filtrera till ' + e.name"
+      class="edition-filter-btn">
+      @if (rolesLoading()) {
+        <mat-spinner diameter="16" />
+      } @else if (onlyEditionPersons()) {
+        <mat-icon>filter_alt</mat-icon>
+      } @else {
+        <mat-icon>filter_alt_off</mat-icon>
+      }
+      {{ e.name }}
+    </button>
+  }
   <span class="spacer"></span>
   <button mat-flat-button color="primary" (click)="toggleCreateForm()">
     <mat-icon>add</mat-icon>
@@ -27,24 +53,24 @@
     <mat-card-content>
       <form [formGroup]="createForm" class="form-row">
         <mat-form-field appearance="outline">
-          <mat-label>Namn *</mat-label>
-          <input matInput formControlName="name" placeholder="För- och efternamn" />
+          <mat-label>{{ FIELD.name }} *</mat-label>
+          <input matInput formControlName="name" [placeholder]="PLACEHOLDER.fullName" />
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>E-post *</mat-label>
-          <input matInput formControlName="email" type="email" placeholder="namn@example.com" />
+          <mat-label>{{ FIELD.email }} *</mat-label>
+          <input matInput formControlName="email" type="email" [placeholder]="PLACEHOLDER.emailExample" />
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>Telefon</mat-label>
-          <input matInput formControlName="phone" placeholder="Valfritt" />
+          <mat-label>{{ FIELD.phone }}</mat-label>
+          <input matInput formControlName="phone" [placeholder]="PLACEHOLDER.optional" />
         </mat-form-field>
       </form>
     </mat-card-content>
     <mat-card-actions align="end">
-      <button mat-button type="button" (click)="toggleCreateForm()">Avbryt</button>
+      <button mat-button type="button" (click)="toggleCreateForm()">{{ ACTION.cancel }}</button>
       <button mat-flat-button color="primary" (click)="create()"
         [disabled]="createForm.invalid || saving()">
-        @if (saving()) { <mat-spinner diameter="18" /> } @else { Skapa }
+        @if (saving()) { <mat-spinner diameter="18" /> } @else { {{ ACTION.create }} }
       </button>
     </mat-card-actions>
   </mat-card>
@@ -73,64 +99,67 @@
               <td><strong>{{ person.name }}</strong></td>
               <td>{{ person.email }}</td>
               <td>{{ person.phone ?? '–' }}</td>
-              <td>
+              <td class="roles-cell">
                 @if (person.isAdmin) {
-                  <span class="chip chip-blue">Admin</span>
+                  <span class="chip chip-blue">{{ CHIP.admin }}</span>
+                }
+                @for (role of personRoles(person.id); track role) {
+                  <span class="chip" [class]="roleChipClass(role)">{{ role }}</span>
                 }
               </td>
               <td>
                 @if (person.isActive) {
-                  <span class="chip chip-green">Aktiv</span>
+                  <span class="chip chip-green">{{ CHIP.active }}</span>
                 } @else {
-                  <span class="chip chip-grey">Inaktiv</span>
+                  <span class="chip chip-grey">{{ CHIP.inactive }}</span>
                 }
               </td>
               <td>
                 @if (person.hasAccount && person.isLocked) {
-                  <span class="chip chip-red">Låst</span>
+                  <span class="chip chip-red">{{ CHIP.locked }}</span>
                 } @else if (person.hasAccount) {
-                  <span class="chip chip-green">Konto</span>
+                  <span class="chip chip-green">{{ CHIP.hasAccount }}</span>
                 } @else {
-                  <span class="chip chip-grey">Inget konto</span>
+                  <span class="chip chip-grey">{{ CHIP.noAccount }}</span>
                 }
               </td>
               <td class="row-actions">
                 @if (editingPerson()?.id === person.id) {
                   <button mat-icon-button color="primary" (click)="saveEdit()"
-                    [disabled]="editForm.invalid || saving()" matTooltip="Spara">
+                    [disabled]="editForm.invalid || saving()" [matTooltip]="TOOLTIP.save">
                     <mat-icon>check</mat-icon>
                   </button>
-                  <button mat-icon-button (click)="cancelEdit()" matTooltip="Avbryt">
+                  <button mat-icon-button (click)="cancelEdit()" [matTooltip]="TOOLTIP.cancel">
                     <mat-icon>close</mat-icon>
                   </button>
                 } @else {
-                  <button mat-icon-button (click)="startEdit(person)" matTooltip="Redigera">
+                  <button mat-icon-button (click)="startEdit(person)" [matTooltip]="TOOLTIP.edit">
                     <mat-icon>edit</mat-icon>
                   </button>
                   @if (person.isActive) {
                     <button mat-icon-button color="warn" (click)="deactivate(person)"
-                      matTooltip="Avaktivera" [disabled]="saving()">
+                      [matTooltip]="TOOLTIP.deactivate" [disabled]="saving()">
                       <mat-icon>person_off</mat-icon>
                     </button>
                   } @else {
                     <button mat-icon-button (click)="reactivate(person)"
-                      matTooltip="Återaktivera" [disabled]="saving()">
+                      [matTooltip]="TOOLTIP.reactivate" [disabled]="saving()">
                       <mat-icon>person</mat-icon>
                     </button>
                   }
                   @if (person.hasAccount) {
                     <button mat-icon-button (click)="sendResetLink(person)"
-                      matTooltip="Skicka återställningslänk" [disabled]="saving()">
+                      [matTooltip]="TOOLTIP.sendResetLink" [disabled]="saving()">
                       <mat-icon>key</mat-icon>
                     </button>
                     @if (person.isLocked) {
                       <button mat-icon-button color="primary" (click)="toggleLock(person)"
-                        matTooltip="Lås upp konto" [disabled]="saving()">
+                        [matTooltip]="TOOLTIP.unlockAccount" [disabled]="saving()">
                         <mat-icon>lock_open</mat-icon>
                       </button>
                     } @else {
                       <button mat-icon-button color="warn" (click)="toggleLock(person)"
-                        matTooltip="Lås konto" [disabled]="saving()">
+                        [matTooltip]="TOOLTIP.lockAccount" [disabled]="saving()">
                         <mat-icon>lock</mat-icon>
                       </button>
                     }
@@ -143,15 +172,15 @@
                 <td colspan="7">
                   <form [formGroup]="editForm" (ngSubmit)="saveEdit()" class="form-row">
                     <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                      <mat-label>Namn</mat-label>
+                      <mat-label>{{ FIELD.name }}</mat-label>
                       <input matInput formControlName="name" />
                     </mat-form-field>
                     <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                      <mat-label>E-post</mat-label>
+                      <mat-label>{{ FIELD.email }}</mat-label>
                       <input matInput formControlName="email" type="email" />
                     </mat-form-field>
                     <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                      <mat-label>Telefon</mat-label>
+                      <mat-label>{{ FIELD.phone }}</mat-label>
                       <input matInput formControlName="phone" />
                     </mat-form-field>
                   </form>
@@ -161,8 +190,13 @@
           } @empty {
             <tr>
               <td colspan="7" class="empty-cell">
-                @if (searchQuery()) { Inga personer matchar sökningen. }
-                @else { Inga personer registrerade ännu. }
+                @if (searchQuery()) {
+                  Inga personer matchar sökningen.
+                } @else if (onlyEditionPersons() && editionContext.activeEdition()) {
+                  Inga personer knutna till denna upplaga ännu.
+                } @else {
+                  Inga personer registrerade ännu.
+                }
               </td>
             </tr>
           }

@@ -18,9 +18,9 @@ public sealed class SessionRegistrationRepository(ConventionDbContext db) : ISes
                      && r.Status == Domain.Registration.Enums.SessionRegistrationStatus.Confirmed)
             .ToListAsync(ct);
 
-    public Task<bool> HasRegistrationAsync(PersonId personId, SessionRegistrationId sessionId, CancellationToken ct = default)
+    public Task<bool> HasRegistrationAsync(PersonId personId, SessionId sessionId, CancellationToken ct = default)
         => db.SessionRegistrations.AnyAsync(
-            r => r.PersonId == personId && r.Id == sessionId
+            r => r.PersonId == personId && r.SessionId == sessionId
               && r.Status != Domain.Registration.Enums.SessionRegistrationStatus.Cancelled, ct);
 
     public async Task AddAndSaveAsync(SessionRegistration registration, CancellationToken ct = default)

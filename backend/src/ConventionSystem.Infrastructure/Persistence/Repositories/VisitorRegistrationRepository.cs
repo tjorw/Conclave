@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Registration.Abstractions;
+using ConventionSystem.Application.Registration.Queries;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Enums;
@@ -15,6 +16,26 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
     public Task<bool> HasActiveRegistrationAsync(PersonId personId, EditionId editionId, CancellationToken ct = default)
         => db.VisitorRegistrations.AnyAsync(
             r => r.PersonId == personId && r.EditionId == editionId && r.Status != VisitorRegistrationStatus.Cancelled, ct);
+
+    public async Task<IReadOnlyList<EditionVisitorDto>> ListConfirmedByEditionIdAsync(EditionId editionId, CancellationToken ct = default)
+    {
+        var registrations = await db.VisitorRegistrations
+            .Where(r => r.EditionId == editionId && r.Status == VisitorRegistrationStatus.Confirmed)
+            .OrderBy(r => r.CreatedAt)
+            .ToListAsync(ct);
+
+        var personIds = registrations.Select(r => r.PersonId).Distinct().ToHashSet();
+        var personMap = await db.Persons
+            .Where(p => personIds.Contains(p.Id))
+            .Select(p => new { p.Id, p.Name, p.Email, p.Phone })
+            .ToDictionaryAsync(p => p.Id, ct);
+
+        return registrations.Select(r =>
+        {
+            personMap.TryGetValue(r.PersonId, out var p);
+            return new EditionVisitorDto(r.PersonId.Value, p?.Name ?? "", p?.Email ?? "", p?.Phone);
+        }).ToList();
+    }
 
     public async Task AddAndSaveAsync(VisitorRegistration registration, CancellationToken ct = default)
     {

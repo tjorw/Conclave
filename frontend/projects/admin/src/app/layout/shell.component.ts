@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +10,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { AuthService } from 'shared';
 import { EditionContextService } from '../services/edition-context.service';
+import { NAV } from '../labels/nav.labels';
+import { ACTION } from '../labels/ui.labels';
 
 @Component({
   selector: 'app-shell',
@@ -17,6 +20,7 @@ import { EditionContextService } from '../services/edition-context.service';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
+    MatDividerModule,
     MatSidenavModule,
     MatToolbarModule,
     MatIconModule,
@@ -32,6 +36,9 @@ export class ShellComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   readonly editionContext = inject(EditionContextService);
+
+  readonly NAV    = NAV;
+  readonly ACTION = ACTION;
 
   ngOnInit(): void {
     this.editionContext.load();
