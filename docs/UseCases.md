@@ -1365,23 +1365,24 @@ Huvudarrangör
 # UC-EV006 – Skicka in för granskning
 
 ## Sammanfattning
-Huvudarrangören skickar in evenemangets utkast för granskning av kategoriansvarig.
+Arrangören skickar in evenemangets utkast för granskning av kategoriansvarig.
 
 ## Aktör
-Huvudarrangör
+Huvudarrangör eller medarrangör
 
 ## Förutsättningar
 - Evenemanget finns och har status Utkast
 - Evenemanget har titel och beskrivning ifyllda
 
 ## Flöde
-1. Huvudarrangören anger EventId
+1. Arrangören anger EventId
 2. Systemet anropar `SubmitForReview()` – evenemangets status övergår till UnderReview
 3. Systemet sparar ändringen
 
 ## Affärsregler
 - Bara ett Utkast-evenemang kan skickas in för granskning
 - Titel och beskrivning måste vara ifyllda
+- Utföraren måste vara huvudarrangör eller medarrangör för evenemanget
 
 ## Domänhändelser
 - `EventSubmittedForReview { eventId, occurredAt }`
@@ -1390,6 +1391,7 @@ Huvudarrangör
 - [x] Evenemangsstatus övergår till UnderReview
 - [x] Inskickning utan titel returnerar ett valideringsfel
 - [x] Inskickning av ett redan granskat evenemang returnerar ett valideringsfel
+- [x] Obehörig utförare returnerar behörighetsfel
 - [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
@@ -1566,3 +1568,53 @@ Kategoriansvarig eller konventionsadministratör
 - [x] Inställning av ett redan inställt evenemang returnerar ett valideringsfel
 - [x] Obehörig utförare returnerar ett valideringsfel
 - [x] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EV012 – Hantera ändringsförslag efter publicering
+
+## Sammanfattning
+När ett evenemang är publicerat kan arrangören lämna ett ändringsförslag som kommentar. Kategoriansvarig eller administratör svarar och markerar kommentaren som hanterad. Arrangören kvitterar därefter svaret.
+
+## Aktör
+Arrangör, kategoriansvarig eller konventionsadministratör
+
+## Förutsättningar
+- Evenemanget finns och har status Published
+- Arrangören är huvudarrangör eller medarrangör för evenemanget
+- Svarande är kategoriansvarig för evenemangets kategori eller admin
+
+## Flöde – Arrangör lämnar kommentar
+1. Arrangören anger EventId och kommentartext
+2. Systemet validerar att utföraren är arrangör för evenemanget
+3. Systemet lägger till en `EventComment` med status `New` och `RequiresHandling = true`
+4. Systemet sparar ändringen
+
+## Flöde – Admin/kategoriansvarig svarar
+1. Utföraren anger EventId, CommentId och svarstext
+2. Systemet validerar behörighet (kategoriansvarig eller admin)
+3. Systemet uppdaterar kommentaren till status `Responded` och sparar svar, handläggare och tidpunkt
+4. Systemet sparar ändringen
+
+## Flöde – Arrangör kvitterar svar
+1. Arrangören anger EventId och CommentId
+2. Systemet validerar att utföraren är arrangör och kommentarförfattare
+3. Systemet uppdaterar kommentaren till status `Acknowledged` och sätter kvitteringsmetadata
+4. Systemet sparar ändringen
+
+## Affärsregler
+- Flödet gäller endast publicerade evenemang
+- Kommentartext och svarstext får inte vara tomma
+- Endast kommentarer med `RequiresHandling = true` kan svaras på eller kvitteras
+- Endast kommentarens författare får kvittera kommentaren
+
+## Domänhändelser
+- Inga nya domänhändelser krävs i nuläget (statusförändringar lagras på kommentaren)
+
+## Acceptanskriterier
+- [x] Arrangör kan lämna ändringsförslag på publicerat evenemang
+- [x] Obehörig användare får behörighetsfel vid kommentar/svar/kvittens
+- [x] Admin eller kategoriansvarig kan svara på kommentar och markera den som hanterad
+- [x] Arrangör kan kvittera svarad kommentar
+- [x] Admin-listning visar antal öppna kommentarer per evenemang
+- [x] Kommandohanterare och domänregler har tillhörande enhetstester

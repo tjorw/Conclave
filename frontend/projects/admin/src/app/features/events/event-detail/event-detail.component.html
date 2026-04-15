@@ -91,6 +91,47 @@
     </mat-card>
   }
 
+  @if (e.status === 'Published') {
+    <mat-card class="content-card">
+      <mat-card-header>
+        <mat-card-title>Obehandlade kommentarer</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @for (comment of pendingComments(); track comment.id) {
+          <div class="comment-item">
+            <div class="comment-meta">
+              <span class="chip chip-orange">{{ commentStatusLabel[comment.status] }}</span>
+              <strong>{{ comment.authorName ?? comment.authorId }}</strong>
+              <span>{{ comment.createdAt | date:'yyyy-MM-dd HH:mm' }}</span>
+            </div>
+            <p class="comment-text">{{ comment.text }}</p>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Beskriv vad som justerats</mat-label>
+              <textarea
+                matInput
+                rows="3"
+                [value]="commentResponse(comment.id)"
+                (input)="setCommentResponse(comment.id, $any($event.target).value)"></textarea>
+            </mat-form-field>
+
+            <div class="comment-actions">
+              <button
+                mat-flat-button
+                color="primary"
+                (click)="respondToComment(comment.id)"
+                [disabled]="saving() || !commentResponse(comment.id).trim()">
+                Markera behandlad och svara
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <p class="empty-state">Inga obehandlade kommentarer.</p>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+
   <!-- Tabs -->
   <mat-tab-group animationDuration="0ms" class="content-tabs">
 

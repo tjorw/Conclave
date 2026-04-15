@@ -8,6 +8,7 @@ export interface EventSummaryDto {
   status: string;
   title: string | null;
   sessionCount: number;
+  pendingCommentCount: number;
 }
 
 export interface EventDto {
@@ -51,6 +52,15 @@ export interface SessionDto {
 export interface EventCommentDto {
   id: string;
   authorId: string;
+  authorName: string | null;
   text: string;
+  status: string;
+  requiresHandling: boolean;
+  handlingComment: string | null;
+  handledById: string | null;
+  handledByName: string | null;
+  handledAt: string | null;
+  acknowledgedById: string | null;
+  acknowledgedAt: string | null;
   createdAt: string;
 }

@@ -19,6 +19,7 @@ public record EventSummaryDto(
     string Status,
     string? Title,
     int SessionCount,
+    int PendingCommentCount,
     string Description,
     IReadOnlyList<SessionSummaryDto> Sessions);
 
@@ -69,5 +70,14 @@ public record SessionDto(
 public record EventCommentDto(
     Guid Id,
     Guid AuthorId,
+    string? AuthorName,
     string Text,
+    string Status,
+    bool RequiresHandling,
+    string? HandlingComment,
+    Guid? HandledById,
+    string? HandledByName,
+    DateTimeOffset? HandledAt,
+    Guid? AcknowledgedById,
+    DateTimeOffset? AcknowledgedAt,
     DateTimeOffset CreatedAt);

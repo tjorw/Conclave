@@ -1,16 +1,16 @@
-using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
 using MediatR;
 
-namespace ConventionSystem.Application.Event.Commands.SubmitForReview;
+namespace ConventionSystem.Application.Event.Commands.AddEventComment;
 
-public sealed class SubmitForReviewHandler(
+public sealed class AddEventCommentHandler(
     IEventRepository eventRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<SubmitForReviewCommand>
+    : IRequestHandler<AddEventCommentCommand>
 {
-    public async Task Handle(SubmitForReviewCommand command, CancellationToken ct)
+    public async Task Handle(AddEventCommentCommand command, CancellationToken ct)
     {
         var performedById = currentUser.PersonId;
 
@@ -18,9 +18,9 @@ public sealed class SubmitForReviewHandler(
             ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");
 
         if (!ev.IsOrganiser(performedById))
-            throw new UnauthorizedAccessException("Utföraren har inte behörighet att skicka in detta evenemang för granskning.");
+            throw new UnauthorizedAccessException("Utföraren har inte behörighet att kommentera detta evenemang.");
 
-        ev.SubmitForReview();
+        ev.AddOrganiserComment(performedById, command.Comment);
         await eventRepository.SaveAsync(ct);
     }
 }

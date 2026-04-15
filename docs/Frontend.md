@@ -619,3 +619,41 @@ features/
       detail/        – MyEventComponent (authGuard)
     staff/           – StaffApplicationComponent (authGuard)
 ```
+
+---
+
+### Implementerat arbetsflöde 3.1.6b (arrangör/admin)
+
+Följande flöde är implementerat i både admin-appen och publika appen för redan publicerade evenemang:
+
+1. Arrangör öppnar sitt evenemang under Mina sidor och skickar ändringsförslag som kommentar.
+2. Admin ser öppna kommentarer i eventlistan via antal/badge och via filter för obehandlade kommentarer.
+3. Admin öppnar evenemangsdetaljen och svarar på kommentaren (markeras som hanterad).
+4. Arrangör ser admins svar i sin eventdetalj och kan kvittera kommentaren.
+
+Detta ger ett spårbart feedback-loop utan att låsa upp redigering av publicerat innehåll.
+
+#### Admin-UI
+
+- Eventlista visar `pendingCommentCount` per rad.
+- Filter för "Obehandlade kommentarer" visar endast event med öppna kommentarer.
+- Eventdetalj visar sektion med öppna kommentarer och svarsfält per kommentar.
+
+#### Publik UI (Mina sidor)
+
+- Eventdetalj för arrangör visar formulär för ändringsförslag när status är `Published`.
+- Kommentarslista visar status, svarstext och metadata.
+- Kvitteringsknapp visas endast för kommentarer som:
+  - kräver hantering,
+  - tillhör inloggad arrangör,
+  - har status `Responded`.
+
+#### API-kopplingar i shared EventService
+
+Följande auth-skyddade endpointar används för kommentarflödet:
+
+- `POST /events/{eventId}/comments`
+- `POST /events/{eventId}/comments/{commentId}/respond`
+- `POST /events/{eventId}/comments/{commentId}/acknowledge`
+
+Tillhörande delade modeller innehåller kommentarstatus (`New`, `InProgress`, `Responded`, `Acknowledged`) och fält för handläggning/kvittens.

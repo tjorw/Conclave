@@ -69,6 +69,9 @@ export class EventsComponent {
 
   readonly filteredEvents = computed(() => {
     const f = this.filter();
+    if (f === 'PendingComments') {
+      return this.events().filter(e => e.pendingCommentCount > 0);
+    }
     return f === 'All' ? this.events() : this.events().filter(e => e.status === f);
   });
 
@@ -80,6 +83,7 @@ export class EventsComponent {
       published:   all.filter(e => e.status === 'Published').length,
       draft:       all.filter(e => e.status === 'Draft').length,
       cancelled:   all.filter(e => e.status === 'Cancelled').length,
+      pendingComments: all.filter(e => e.pendingCommentCount > 0).length,
     };
   });
 

@@ -28,3 +28,10 @@ export const SESSION_STATUS_LABEL: Record<string, string> = {
   Active:   'Aktiv',
   Inactive: 'Inaktiv',
 };
+
+export const EVENT_COMMENT_STATUS_LABEL: Record<string, string> = {
+  New:          'Ny',
+  InProgress:   'Under behandling',
+  Responded:    'Besvarad',
+  Acknowledged: 'Kvitterad',
+};

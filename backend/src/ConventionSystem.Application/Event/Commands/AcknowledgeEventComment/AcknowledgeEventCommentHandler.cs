@@ -1,0 +1,26 @@
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Event.Abstractions;
+using ConventionSystem.Domain.Event.Ids;
+using MediatR;
+
+namespace ConventionSystem.Application.Event.Commands.AcknowledgeEventComment;
+
+public sealed class AcknowledgeEventCommentHandler(
+    IEventRepository eventRepository,
+    ICurrentUser currentUser)
+    : IRequestHandler<AcknowledgeEventCommentCommand>
+{
+    public async Task Handle(AcknowledgeEventCommentCommand command, CancellationToken ct)
+    {
+        var performedById = currentUser.PersonId;
+
+        var ev = await eventRepository.GetByIdWithCommentsAndCoOrganisersAsync(new EventId(command.EventId), ct)
+            ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");
+
+        if (!ev.IsOrganiser(performedById))
+            throw new UnauthorizedAccessException("Utföraren har inte behörighet att kvittera kommentarer för detta evenemang.");
+
+        ev.AcknowledgeComment(new EventCommentId(command.CommentId), performedById);
+        await eventRepository.SaveAsync(ct);
+    }
+}

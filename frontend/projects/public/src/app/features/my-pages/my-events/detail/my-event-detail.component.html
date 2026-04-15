@@ -28,6 +28,59 @@
       <div class="error-banner">{{ actionError() }}</div>
     }
 
+    @if (canCommentOnPublishedEvent) {
+      <section class="card">
+        <h2>Föreslå ändring</h2>
+        <p class="help-text">Lämna en kommentar om du vill föreslå en justering av schema eller upplägg.</p>
+
+        @if (commentError()) {
+          <div class="error-banner">{{ commentError() }}</div>
+        }
+        @if (commentSaved()) {
+          <div class="success-inline">Ändringsförslag skickat.</div>
+        }
+
+        <form [formGroup]="commentForm" (ngSubmit)="addChangeComment()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Kommentar</mat-label>
+            <textarea matInput formControlName="text" rows="3"></textarea>
+          </mat-form-field>
+
+          <button mat-flat-button class="save-btn" type="submit"
+                  [disabled]="commentForm.invalid || addingComment()">
+            @if (addingComment()) { <mat-spinner diameter="18" /> } @else { Skicka ändringsförslag }
+          </button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Kommentarer</h2>
+
+        @for (comment of event()?.comments ?? []; track comment.id) {
+          <div class="request-item">
+            <div class="request-info">
+              <span class="request-desc">{{ comment.text }}</span>
+              <span class="request-meta">
+                {{ comment.authorName || comment.authorId }} ·
+                {{ comment.createdAt | date:'yyyy-MM-dd HH:mm' }} ·
+                {{ commentStatusLabel[comment.status] || comment.status }}
+              </span>
+              @if (comment.handlingComment) {
+                <div class="admin-comment-banner"><strong>Admins svar:</strong> {{ comment.handlingComment }}</div>
+              }
+            </div>
+            @if (comment.requiresHandling && comment.authorId === currentPersonId && comment.status === 'Responded') {
+              <button mat-stroked-button class="action-btn" (click)="acknowledgeComment(comment.id)" [disabled]="acknowledging()">
+                Kvittera som hanterad
+              </button>
+            }
+          </div>
+        } @empty {
+          <p class="no-requests">Inga kommentarer ännu.</p>
+        }
+      </section>
+    }
+
     <!-- ── Åtgärdsknappar ─────────────────────────────────────────────── -->
     <div class="actions">
       @if (isDraft) {

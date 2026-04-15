@@ -15,6 +15,9 @@
     <mat-button-toggle value="Published">
       Publicerade <span class="count-badge">{{ counts().published }}</span>
     </mat-button-toggle>
+    <mat-button-toggle value="PendingComments">
+      Obehandlade kommentarer <span class="count-badge">{{ counts().pendingComments }}</span>
+    </mat-button-toggle>
     <mat-button-toggle value="Draft">
       Utkast <span class="count-badge">{{ counts().draft }}</span>
     </mat-button-toggle>
@@ -79,6 +82,7 @@
             <th>Kategori</th>
             <th>Arrangör</th>
             <th>Sessioner</th>
+            <th>Kommentarer</th>
             <th>Status</th>
             <th class="actions-col"></th>
           </tr>
@@ -90,6 +94,13 @@
               <td>{{ event.categoryName ?? '–' }}</td>
               <td>{{ event.leadOrganiserName ?? '–' }}</td>
               <td>{{ event.sessionCount }}</td>
+              <td>
+                @if (event.pendingCommentCount > 0) {
+                  <span class="chip chip-orange">{{ event.pendingCommentCount }} öppna</span>
+                } @else {
+                  <span class="chip chip-grey">Inga öppna</span>
+                }
+              </td>
               <td>
                 <span class="chip {{ statusChipClass(event.status) }}">
                   {{ statusLabel(event.status) }}
@@ -103,7 +114,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="6" class="empty-cell">Inga evenemang i denna kategori.</td>
+              <td colspan="7" class="empty-cell">Inga evenemang i denna kategori.</td>
             </tr>
           }
         </tbody>

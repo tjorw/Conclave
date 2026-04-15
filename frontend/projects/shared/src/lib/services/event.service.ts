@@ -93,6 +93,27 @@ export class EventService {
     );
   }
 
+  addEventComment(eventId: string, comment: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/comments`,
+      { comment }
+    );
+  }
+
+  respondToEventComment(eventId: string, commentId: string, response: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/comments/${commentId}/respond`,
+      { response }
+    );
+  }
+
+  acknowledgeEventComment(eventId: string, commentId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/comments/${commentId}/acknowledge`,
+      {}
+    );
+  }
+
   scheduleSession(eventId: string, venueId: string, startTime: string, endTime: string, maxSeats: number, startType: string) {
     return this.http.post<{ id: string }>(
       `${this.env.apiBaseUrl}/events/${eventId}/sessions`,

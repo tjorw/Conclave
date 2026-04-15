@@ -1,6 +1,7 @@
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Queries;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Event.Ids;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,10 +33,22 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .Include(e => e.Sessions)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
+    public Task<Domain.Event.Aggregates.Event?> GetByIdWithCommentsAsync(EventId id, CancellationToken ct = default)
+        => db.Events
+            .Include(e => e.Comments)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
+    public Task<Domain.Event.Aggregates.Event?> GetByIdWithCommentsAndCoOrganisersAsync(EventId id, CancellationToken ct = default)
+        => db.Events
+            .Include(e => e.Comments)
+            .Include(e => e.CoOrganisers)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
     public async Task<IReadOnlyList<EventSummaryDto>> ListByEditionIdAsync(EditionId id, CancellationToken ct = default)
     {
         var events = await db.Events
             .Include(e => e.Sessions)
+            .Include(e => e.Comments)
             .Where(e => e.EditionId == id)
             .ToListAsync(ct);
 
@@ -58,6 +71,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             e.Status.ToString(),
             string.IsNullOrEmpty(e.Title) ? null : e.Title,
             e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active),
+            e.Comments.Count(c => c.RequiresHandling && (c.Status == EventCommentStatus.New || c.Status == EventCommentStatus.InProgress)),
             e.Description ?? "",
             e.Sessions.Select(s => new SessionSummaryDto(
                 s.Id.Value,
@@ -89,6 +103,11 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
 
         var personIds = new List<PersonId> { ev.LeadOrganiserId };
         if (category is not null) personIds.Add(category.ResponsibleId);
+        foreach (var comment in ev.Comments)
+        {
+            personIds.Add(comment.AuthorId);
+            if (comment.HandledById is not null) personIds.Add(comment.HandledById.Value);
+        }
 
         var personNames = await db.Persons
             .Where(p => personIds.Contains(p.Id))
@@ -122,7 +141,19 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
                 s.TimeSlot.Start, s.TimeSlot.End,
                 s.MaxSeats, s.StartType.ToString(), s.Status.ToString())).ToList(),
             ev.Comments.Select(c => new EventCommentDto(
-                c.Id.Value, c.AuthorId.Value, c.Text, c.CreatedAt)).ToList());
+                c.Id.Value,
+                c.AuthorId.Value,
+                personNames.GetValueOrDefault(c.AuthorId.Value),
+                c.Text,
+                c.Status.ToString(),
+                c.RequiresHandling,
+                c.HandlingComment,
+                c.HandledById?.Value,
+                c.HandledById is not null ? personNames.GetValueOrDefault(c.HandledById.Value.Value) : null,
+                c.HandledAt,
+                c.AcknowledgedById?.Value,
+                c.AcknowledgedAt,
+                c.CreatedAt)).ToList());
     }
 
     public async Task<IReadOnlyList<EventSummaryDto>> ListByEditionAndOrganiserAsync(
@@ -131,6 +162,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
         var events = await db.Events
             .Include(e => e.Sessions)
             .Include(e => e.CoOrganisers)
+            .Include(e => e.Comments)
             .Where(e => e.EditionId == editionId &&
                         (e.LeadOrganiserId == organiserId ||
                          e.CoOrganisers.Any(c => c.PersonId == organiserId)))
@@ -150,6 +182,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             e.Status.ToString(),
             string.IsNullOrEmpty(e.Title) ? null : e.Title,
             e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active),
+            e.Comments.Count(c => c.RequiresHandling && (c.Status == EventCommentStatus.New || c.Status == EventCommentStatus.InProgress)),
             e.Description ?? "",
             e.Sessions.Select(s => new SessionSummaryDto(
                 s.Id.Value,

@@ -142,11 +142,48 @@ public sealed class Event : AggregateRoot
             throw new EventNotUnderReviewException();
 
         Status = EventStatus.Draft;
-        var eventComment = new EventComment(EventCommentId.New(), Id, responsibleId, comment);
+        var eventComment = new EventComment(EventCommentId.New(), Id, responsibleId, comment, requiresHandling: false);
         _comments.Add(eventComment);
 
         RaiseDomainEvent(new EventRejected(Id, LeadOrganiserId, responsibleId, Title, comment, DateTimeOffset.UtcNow));
         return eventComment;
+    }
+
+    public EventComment AddOrganiserComment(PersonId organiserId, string text)
+    {
+        if (Status != EventStatus.Published)
+            throw new EventNotPublishedException();
+        if (string.IsNullOrWhiteSpace(text))
+            throw new EventCommentTextRequiredException();
+
+        var comment = new EventComment(EventCommentId.New(), Id, organiserId, text, requiresHandling: true);
+        _comments.Add(comment);
+        return comment;
+    }
+
+    public void RespondToComment(EventCommentId commentId, PersonId handledById, string response)
+    {
+        if (Status != EventStatus.Published)
+            throw new EventNotPublishedException();
+
+        var comment = _comments.FirstOrDefault(c => c.Id == commentId)
+            ?? throw new EventCommentNotFoundException();
+
+        comment.Respond(handledById, response);
+    }
+
+    public void AcknowledgeComment(EventCommentId commentId, PersonId acknowledgedById)
+    {
+        if (Status != EventStatus.Published)
+            throw new EventNotPublishedException();
+
+        var comment = _comments.FirstOrDefault(c => c.Id == commentId)
+            ?? throw new EventCommentNotFoundException();
+
+        if (comment.AuthorId != acknowledgedById)
+            throw new EventCommentAcknowledgeMustBeDoneByAuthorException();
+
+        comment.Acknowledge(acknowledgedById);
     }
 
     public void CancelEvent(PersonId responsibleId)
@@ -192,4 +229,7 @@ public sealed class Event : AggregateRoot
         _coOrganisers.Add(coOrganiser);
         return coOrganiser;
     }
+
+    public bool IsOrganiser(PersonId personId)
+        => LeadOrganiserId == personId || _coOrganisers.Any(c => c.PersonId == personId);
 }

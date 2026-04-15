@@ -71,3 +71,48 @@ public sealed class SessionAlreadyInactiveException()
     : DomainRuleViolationException(
         "Sessionen är redan inaktiv.",
         "session_already_inactive");
+
+public sealed class EventNotPublishedException()
+    : DomainRuleViolationException(
+        "Evenemanget måste vara publicerat för att kommentarer ska kunna hanteras i detta flöde.",
+        "event_not_published");
+
+public sealed class EventCommentNotFoundException()
+    : DomainRuleViolationException(
+        "Kommentaren hittades inte.",
+        "event_comment_not_found");
+
+public sealed class EventCommentDoesNotRequireHandlingException()
+    : DomainRuleViolationException(
+        "Kommentaren kräver inte hantering.",
+        "event_comment_does_not_require_handling");
+
+public sealed class EventCommentAlreadyRespondedException()
+    : DomainRuleViolationException(
+        "Kommentaren är redan besvarad.",
+        "event_comment_already_responded");
+
+public sealed class EventCommentResponseRequiredException()
+    : DomainRuleViolationException(
+        "Ett svar måste anges när kommentaren hanteras.",
+        "event_comment_response_required");
+
+public sealed class EventCommentTextRequiredException()
+    : DomainRuleViolationException(
+        "Kommentaren får inte vara tom.",
+        "event_comment_text_required");
+
+public sealed class EventCommentNotRespondedException()
+    : DomainRuleViolationException(
+        "Kommentaren måste vara besvarad innan den kan kvitteras.",
+        "event_comment_not_responded");
+
+public sealed class EventCommentAlreadyAcknowledgedException()
+    : DomainRuleViolationException(
+        "Kommentaren är redan kvitterad.",
+        "event_comment_already_acknowledged");
+
+public sealed class EventCommentAcknowledgeMustBeDoneByAuthorException()
+    : DomainRuleViolationException(
+        "Endast den som skapade kommentaren kan kvittera den.",
+        "event_comment_acknowledge_must_be_done_by_author");

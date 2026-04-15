@@ -1,5 +1,7 @@
 using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Event.Commands.AddCoOrganiser;
+using ConventionSystem.Application.Event.Commands.AddEventComment;
+using ConventionSystem.Application.Event.Commands.AcknowledgeEventComment;
 using ConventionSystem.Application.Event.Commands.ChangeCategory;
 using ConventionSystem.Application.Event.Commands.AddSessionRequest;
 using ConventionSystem.Application.Event.Commands.ApproveVersion;
@@ -11,6 +13,7 @@ using ConventionSystem.Application.Event.Commands.EditEventDraft;
 using ConventionSystem.Application.Event.Commands.RejectVersion;
 using ConventionSystem.Application.Event.Commands.RemoveSessionRequest;
 using ConventionSystem.Application.Event.Commands.ReturnToDraft;
+using ConventionSystem.Application.Event.Commands.RespondToEventComment;
 using ConventionSystem.Application.Event.Commands.ScheduleSession;
 using ConventionSystem.Application.Event.Commands.SubmitForReview;
 using ConventionSystem.Application.Event.Queries.GetEvent;
@@ -100,6 +103,30 @@ public static class EventEndpoints
                 return Results.NoContent();
             }).RequireAuthorization();
 
+        // 3.1.6b – Arrangör lämnar ändringsförslag via kommentar
+        app.MapPost("/events/{eventId:guid}/comments",
+            async (Guid eventId, AddEventCommentRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new AddEventCommentCommand(eventId, request.Comment), ct);
+                return Results.NoContent();
+            }).RequireAuthorization();
+
+        // 3.1.6b – Admin svarar och markerar kommentar som behandlad
+        app.MapPost("/events/{eventId:guid}/comments/{commentId:guid}/respond",
+            async (Guid eventId, Guid commentId, RespondToEventCommentRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RespondToEventCommentCommand(eventId, commentId, request.Response), ct);
+                return Results.NoContent();
+            }).RequireAuthorization();
+
+        // 3.1.6b – Arrangör kvitterar admins svar
+        app.MapPost("/events/{eventId:guid}/comments/{commentId:guid}/acknowledge",
+            async (Guid eventId, Guid commentId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new AcknowledgeEventCommentCommand(eventId, commentId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization();
+
         // UC-EV007 – Godkänn evenemangsversion
         app.MapPost("/events/{eventId:guid}/approve",
             async (Guid eventId, ISender sender, CancellationToken ct) =>
@@ -170,5 +197,7 @@ public record EditEventDraftRequest(string Title, string Description, Registrati
 public record AddSessionRequestRequest(string Description, int DurationMinutes, int Seats, StartType StartType);
 public record AddCoOrganiserRequest(Guid PersonId, Guid ConventionId);
 public record RejectVersionRequest(string Comment);
+public record AddEventCommentRequest(string Comment);
+public record RespondToEventCommentRequest(string Response);
 public record ScheduleSessionRequest(Guid VenueId, DateTime StartTime, DateTime EndTime, int MaxSeats, StartType StartType);
 public record UpdateSessionRequest(Guid VenueId, DateTime StartTime, DateTime EndTime, int MaxSeats, StartType StartType);

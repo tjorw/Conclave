@@ -124,6 +124,34 @@ public sealed class EventCommentConfiguration : IEntityTypeConfiguration<EventCo
             .HasConversion(id => id.Value, value => new PersonId(value))
             .HasColumnName("author_id");
 
+        builder.Property(c => c.Status)
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasColumnName("status");
+
+        builder.Property(c => c.RequiresHandling)
+            .HasColumnName("requires_handling");
+
+        builder.Property(c => c.HandlingComment)
+            .HasMaxLength(2000)
+            .HasColumnName("handling_comment");
+
+        builder.Property(c => c.HandledById)
+            .HasConversion(
+                id => id.HasValue ? id.Value.Value : (Guid?)null,
+                value => value.HasValue ? new PersonId(value.Value) : (PersonId?)null)
+            .HasColumnName("handled_by_id");
+
+        builder.Property(c => c.HandledAt).HasColumnName("handled_at");
+
+        builder.Property(c => c.AcknowledgedById)
+            .HasConversion(
+                id => id.HasValue ? id.Value.Value : (Guid?)null,
+                value => value.HasValue ? new PersonId(value.Value) : (PersonId?)null)
+            .HasColumnName("acknowledged_by_id");
+
+        builder.Property(c => c.AcknowledgedAt).HasColumnName("acknowledged_at");
+
         builder.Property(c => c.Text).HasMaxLength(2000).IsRequired();
         builder.Property(c => c.CreatedAt).HasColumnName("created_at");
     }

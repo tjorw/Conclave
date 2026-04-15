@@ -15,7 +15,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   CategoryDto, ConventionService, DateTimeRangeComponent, EditionDto, EventDto, EventService, VenueDto,
-  EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
+  EVENT_COMMENT_STATUS_LABEL, EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
 } from 'shared';
 import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
 
@@ -61,6 +61,7 @@ export class EventDetailComponent implements OnInit {
   readonly showAddRequestForm    = signal(false);
   readonly showAddSessionForm    = signal(false);
   readonly editingSessionId      = signal<string | null>(null);
+  readonly commentResponses      = signal<Record<string, string>>({});
 
   readonly rejectForm = this.fb.group({
     comment: ['', [Validators.required, Validators.minLength(5)]],
@@ -106,6 +107,12 @@ export class EventDetailComponent implements OnInit {
       error: () => { this.error.set('Kunde inte hämta evenemanget.'); this.loading.set(false); },
     });
   }
+
+  readonly pendingComments = computed(() =>
+    (this.event()?.comments ?? []).filter(c => c.requiresHandling && c.status !== 'Responded' && c.status !== 'Acknowledged')
+  );
+
+  readonly commentStatusLabel = EVENT_COMMENT_STATUS_LABEL;
 
   // ── Category ────────────────────────────────────────────────────────────
 
@@ -309,6 +316,38 @@ export class EventDetailComponent implements OnInit {
 
   statusLabel(status: string): string {
     return EVENT_STATUS_LABEL[status] ?? status;
+  }
+
+  commentResponse(commentId: string): string {
+    return this.commentResponses()[commentId] ?? '';
+  }
+
+  setCommentResponse(commentId: string, value: string): void {
+    this.commentResponses.update(map => ({ ...map, [commentId]: value }));
+  }
+
+  respondToComment(commentId: string): void {
+    const ev = this.event();
+    if (!ev || this.saving()) return;
+    const response = this.commentResponse(commentId).trim();
+    if (!response) return;
+
+    this.saving.set(true);
+    this.svc.respondToEventComment(ev.id, commentId, response).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.commentResponses.update(map => {
+          const next = { ...map };
+          delete next[commentId];
+          return next;
+        });
+        this.reload();
+      },
+      error: err => {
+        this.saving.set(false);
+        this.error.set(err?.error?.detail ?? 'Kunde inte hantera kommentaren.');
+      },
+    });
   }
 
   registrationLabel(type: string): string {

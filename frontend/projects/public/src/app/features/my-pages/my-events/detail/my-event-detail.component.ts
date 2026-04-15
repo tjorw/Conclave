@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -8,6 +9,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
+  AuthService,
+  EVENT_COMMENT_STATUS_LABEL,
   EventService, EventDto,
   EVENT_STATUS_LABEL, EVENT_STATUS_CHIP,
   REGISTRATION_KIND_LABEL,
@@ -17,6 +20,7 @@ import {
   selector: 'app-my-event-detail',
   standalone: true,
   imports: [
+    DatePipe,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
@@ -31,6 +35,7 @@ import {
 export class MyEventDetailComponent implements OnInit {
   private readonly route    = inject(ActivatedRoute);
   private readonly eventSvc = inject(EventService);
+  private readonly authSvc  = inject(AuthService);
   private readonly fb       = inject(FormBuilder);
 
   readonly loading       = signal(true);
@@ -45,10 +50,15 @@ export class MyEventDetailComponent implements OnInit {
   readonly addingRequest  = signal(false);
   readonly requestSaved   = signal(false);
   readonly requestError   = signal<string | null>(null);
+  readonly addingComment  = signal(false);
+  readonly commentSaved   = signal(false);
+  readonly commentError   = signal<string | null>(null);
+  readonly acknowledging  = signal(false);
 
   readonly statusLabel = EVENT_STATUS_LABEL;
   readonly statusChip  = EVENT_STATUS_CHIP;
   readonly regKindLabel = REGISTRATION_KIND_LABEL;
+  readonly commentStatusLabel = EVENT_COMMENT_STATUS_LABEL;
 
   readonly registrationTypes = [
     { value: 'DropIn',          label: 'Drop-in' },
@@ -76,6 +86,10 @@ export class MyEventDetailComponent implements OnInit {
     startType:        ['FixedTime', Validators.required],
   });
 
+  readonly commentForm = this.fb.group({
+    text: ['', [Validators.required, Validators.minLength(5)]],
+  });
+
   get eventId(): string {
     return this.route.snapshot.paramMap.get('id')!;
   }
@@ -87,10 +101,18 @@ export class MyEventDetailComponent implements OnInit {
   get adminComment(): string | null {
     const ev = this.event();
     if (!ev) return null;
-    const comments = [...ev.comments].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-    return comments[0]?.text ?? null;
+    const adminComments = ev.comments
+      .filter(c => !c.requiresHandling)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return adminComments[0]?.text ?? null;
+  }
+
+  get currentPersonId(): string | null {
+    return this.authSvc.personId();
+  }
+
+  get canCommentOnPublishedEvent(): boolean {
+    return this.event()?.status === 'Published';
   }
 
   ngOnInit(): void {
@@ -181,6 +203,44 @@ export class MyEventDetailComponent implements OnInit {
       error: (err: HttpErrorResponse) => {
         this.actionError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte återgå till utkast.');
         this.returning.set(false);
+      },
+    });
+  }
+
+  addChangeComment(): void {
+    if (this.commentForm.invalid || this.addingComment()) return;
+    this.addingComment.set(true);
+    this.commentSaved.set(false);
+    this.commentError.set(null);
+
+    const text = this.commentForm.getRawValue().text!;
+    this.eventSvc.addEventComment(this.eventId, text).subscribe({
+      next: () => {
+        this.addingComment.set(false);
+        this.commentSaved.set(true);
+        this.commentForm.reset({ text: '' });
+        this.loadEvent();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.commentError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte skicka ändringsförslaget.');
+        this.addingComment.set(false);
+      },
+    });
+  }
+
+  acknowledgeComment(commentId: string): void {
+    if (this.acknowledging()) return;
+    this.acknowledging.set(true);
+    this.actionError.set(null);
+
+    this.eventSvc.acknowledgeEventComment(this.eventId, commentId).subscribe({
+      next: () => {
+        this.acknowledging.set(false);
+        this.loadEvent();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.actionError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte kvittera kommentaren.');
+        this.acknowledging.set(false);
       },
     });
   }
