@@ -52,7 +52,9 @@ export class MyPagesComponent implements OnInit {
       this.userName.set(result.profile?.name ?? null);
       this.myEvents.set(result.events);
       this.myTicket.set(result.ticket);
-      this.mySessions.set(result.sessions);
+      this.mySessions.set([...result.sessions].sort((a, b) =>
+        new Date(a.start).getTime() - new Date(b.start).getTime()
+      ));
       this.myApplication.set(result.application);
       this.loading.set(false);
     });

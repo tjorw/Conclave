@@ -50,7 +50,8 @@ export class ProgramComponent {
   readonly loading = computed(() => !this.editionSvc.edition());
 
   dayLabel(iso: string): string {
-    return new Date(iso).toLocaleDateString('sv-SE', { weekday: 'long' });
+    const [year, month, day] = iso.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('sv-SE', { weekday: 'long' });
   }
 
   firstSessionLabel(event: EventSummaryFeedDto): string {
@@ -72,6 +73,10 @@ export class ProgramComponent {
   }
 
   private dateOnly(isoString: string): string {
-    return new Date(isoString).toISOString().slice(0, 10);
+    const d = new Date(isoString);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }
