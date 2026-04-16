@@ -3,8 +3,10 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { EditionService } from '../../../services/edition.service';
-import { MySessionRegistrationSummaryDto, RegistrationService } from 'shared';
+import { MySessionRegistrationSummaryDto, MyWatchedSessionSummaryDto, RegistrationService } from 'shared';
 
 @Component({
   selector: 'app-my-program',
@@ -19,8 +21,10 @@ export class MyProgramComponent implements OnInit {
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly sessions = signal<MySessionRegistrationSummaryDto[]>([]);
+  readonly bookedSessions = signal<MySessionRegistrationSummaryDto[]>([]);
+  readonly watchedSessions = signal<MyWatchedSessionSummaryDto[]>([]);
   readonly cancellingId = signal<string | null>(null);
+  readonly unwatchingSessionId = signal<string | null>(null);
 
   ngOnInit(): void {
     this.loadSessions();
@@ -36,12 +40,32 @@ export class MyProgramComponent implements OnInit {
 
     this.regSvc.cancelSessionRegistration(registrationId).subscribe({
       next: () => {
-        this.sessions.update(items => items.filter(item => item.id !== registrationId));
+        this.bookedSessions.update(items => items.filter(item => item.id !== registrationId));
         this.cancellingId.set(null);
       },
       error: () => {
         this.error.set('Kunde inte avboka sessionen just nu. Försök igen.');
         this.cancellingId.set(null);
+      },
+    });
+  }
+
+  removeWatch(sessionId: string): void {
+    if (this.unwatchingSessionId()) {
+      return;
+    }
+
+    this.unwatchingSessionId.set(sessionId);
+    this.error.set(null);
+
+    this.regSvc.unwatchSession(sessionId).subscribe({
+      next: () => {
+        this.watchedSessions.update(items => items.filter(item => item.sessionId !== sessionId));
+        this.unwatchingSessionId.set(null);
+      },
+      error: () => {
+        this.error.set('Kunde inte ta bort bevakningen just nu. Försök igen.');
+        this.unwatchingSessionId.set(null);
       },
     });
   }
@@ -65,9 +89,15 @@ export class MyProgramComponent implements OnInit {
       return;
     }
 
-    this.regSvc.getMySessionRegistrations(editionId).subscribe({
-      next: sessions => {
-        this.sessions.set([...sessions].sort((a, b) =>
+    forkJoin({
+      booked: this.regSvc.getMySessionRegistrations(editionId).pipe(catchError(() => of([] as MySessionRegistrationSummaryDto[]))),
+      watched: this.regSvc.getMyWatchedSessions(editionId).pipe(catchError(() => of([] as MyWatchedSessionSummaryDto[]))),
+    }).subscribe({
+      next: result => {
+        this.bookedSessions.set([...result.booked].sort((a, b) =>
+          new Date(a.start).getTime() - new Date(b.start).getTime()
+        ));
+        this.watchedSessions.set([...result.watched].sort((a, b) =>
           new Date(a.start).getTime() - new Date(b.start).getTime()
         ));
         this.loading.set(false);

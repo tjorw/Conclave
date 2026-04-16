@@ -4,6 +4,7 @@ import { ENVIRONMENT } from '../environment/environment.token';
 import {
   MyVisitorRegistrationDto,
   MySessionRegistrationSummaryDto,
+  MyWatchedSessionSummaryDto,
   MyStaffApplicationDto,
   TicketTypeAdminDto,
   VisitorTicketTypeDto,
@@ -50,6 +51,25 @@ export class RegistrationService {
   cancelSessionRegistration(registrationId: string) {
     return this.http.delete<void>(
       `${this.env.apiBaseUrl}/session-registrations/${registrationId}`
+    );
+  }
+
+  watchSession(sessionId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/sessions/${sessionId}/watch`,
+      {}
+    );
+  }
+
+  unwatchSession(sessionId: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/sessions/${sessionId}/watch`
+    );
+  }
+
+  getMyWatchedSessions(editionId: string) {
+    return this.http.get<MyWatchedSessionSummaryDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/my-watched-sessions`
     );
   }
 

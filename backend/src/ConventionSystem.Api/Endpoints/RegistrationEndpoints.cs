@@ -1,21 +1,13 @@
 using ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
-using ConventionSystem.Application.Registration.Commands.AddStaffMember;
-using ConventionSystem.Application.Registration.Commands.DeleteTicketType;
-using ConventionSystem.Application.Registration.Commands.UpdateTicketType;
-using ConventionSystem.Application.Registration.Queries.GetMyVisitorRegistration;
-using ConventionSystem.Application.Registration.Queries.ListTicketTypes;
-using ConventionSystem.Application.Registration.Queries.ListAvailableTicketTypes;
-using ConventionSystem.Application.Registration.Queries.ListVisitorRegistrations;
-using ConventionSystem.Application.Registration.Queries.GetMySessionRegistrations;
-using ConventionSystem.Application.Registration.Queries.GetMyStaffApplication;
-using ConventionSystem.Application.Staff.Queries.ListStaffApplications;
 using ConventionSystem.Application.Registration.Commands.AddAvailability;
+using ConventionSystem.Application.Registration.Commands.AddStaffMember;
 using ConventionSystem.Application.Registration.Commands.AddStationPreference;
 using ConventionSystem.Application.Registration.Commands.CancelSessionRegistration;
 using ConventionSystem.Application.Registration.Commands.CancelVisitorRegistration;
 using ConventionSystem.Application.Registration.Commands.CollectTicket;
 using ConventionSystem.Application.Registration.Commands.ConfirmVisitorRegistrationPayment;
 using ConventionSystem.Application.Registration.Commands.CreateTicketType;
+using ConventionSystem.Application.Registration.Commands.DeleteTicketType;
 using ConventionSystem.Application.Registration.Commands.IssueTicket;
 using ConventionSystem.Application.Registration.Commands.RegisterForSession;
 using ConventionSystem.Application.Registration.Commands.RejectStaffApplication;
@@ -24,6 +16,17 @@ using ConventionSystem.Application.Registration.Commands.RemoveStationPreference
 using ConventionSystem.Application.Registration.Commands.RevokeTicket;
 using ConventionSystem.Application.Registration.Commands.SubmitStaffApplication;
 using ConventionSystem.Application.Registration.Commands.SubmitVisitorRegistration;
+using ConventionSystem.Application.Registration.Commands.UnwatchSession;
+using ConventionSystem.Application.Registration.Commands.UpdateTicketType;
+using ConventionSystem.Application.Registration.Commands.WatchSession;
+using ConventionSystem.Application.Registration.Queries.GetMySessionRegistrations;
+using ConventionSystem.Application.Registration.Queries.GetMyStaffApplication;
+using ConventionSystem.Application.Registration.Queries.GetMyVisitorRegistration;
+using ConventionSystem.Application.Registration.Queries.GetMyWatchedSessions;
+using ConventionSystem.Application.Registration.Queries.ListAvailableTicketTypes;
+using ConventionSystem.Application.Registration.Queries.ListTicketTypes;
+using ConventionSystem.Application.Registration.Queries.ListVisitorRegistrations;
+using ConventionSystem.Application.Staff.Queries.ListStaffApplications;
 using ConventionSystem.Domain.Registration.Enums;
 using MediatR;
 
@@ -162,6 +165,22 @@ public static class RegistrationEndpoints
                 return Results.NoContent();
             }).RequireAuthorization();
 
+        // 3.2.10 – Lägg till bevakning
+        app.MapPost("/sessions/{sessionId:guid}/watch",
+            async (Guid sessionId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new WatchSessionCommand(sessionId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization();
+
+        // 3.2.10 – Ta bort bevakning
+        app.MapDelete("/sessions/{sessionId:guid}/watch",
+            async (Guid sessionId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UnwatchSessionCommand(sessionId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization();
+
         // Admin: lägg till bekräftad funktionär (find-or-create person)
         app.MapPost("/editions/{editionId:guid}/staff",
             async (Guid editionId, AddStaffMemberRequest request, ISender sender, CancellationToken ct) =>
@@ -188,6 +207,12 @@ public static class RegistrationEndpoints
         app.MapGet("/editions/{editionId:guid}/my-session-registrations",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new GetMySessionRegistrationsQuery(editionId), ct)))
+            .RequireAuthorization();
+
+        // 3.2.10 – Mina bevakade sessioner
+        app.MapGet("/editions/{editionId:guid}/my-watched-sessions",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetMyWatchedSessionsQuery(editionId), ct)))
             .RequireAuthorization();
 
         // 3.2.4 – Min staffansökan

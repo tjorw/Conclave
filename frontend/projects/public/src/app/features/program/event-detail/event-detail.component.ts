@@ -9,6 +9,7 @@ import {
   FeedService,
   EventFeedDto,
   MySessionRegistrationSummaryDto,
+  MyWatchedSessionSummaryDto,
   RegistrationService,
   REGISTRATION_KIND_LABEL,
   SessionFeedDto,
@@ -34,8 +35,10 @@ export class EventDetailComponent implements OnInit {
   readonly actionError = signal<string | null>(null);
   readonly registrationLoading = signal(false);
   readonly submittingSessionId = signal<string | null>(null);
+  readonly submittingWatchSessionId = signal<string | null>(null);
   readonly myTicketId = signal<string | null>(null);
   readonly mySessionRegistrations = signal<Record<string, string>>({});
+  readonly myWatchedSessions = signal<Record<string, true>>({});
 
   // Expanderade sessioner
   readonly expandedSessions = signal<Set<string>>(new Set());
@@ -106,6 +109,30 @@ export class EventDetailComponent implements OnInit {
     return !!this.mySessionRegistrations()[sessionId];
   }
 
+  isWatched(sessionId: string): boolean {
+    return !!this.myWatchedSessions()[sessionId];
+  }
+
+  onWatchToggle(session: SessionFeedDto, event: MouseEvent): void {
+    event.stopPropagation();
+
+    if (!this.authSvc.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (this.registrationLoading() || this.submittingWatchSessionId()) {
+      return;
+    }
+
+    if (this.isWatched(session.id)) {
+      this.unwatchSession(session.id);
+      return;
+    }
+
+    this.watchSession(session.id);
+  }
+
   onSessionAction(session: SessionFeedDto): void {
     if (!this.authSvc.isLoggedIn()) {
       this.router.navigate(['/login']);
@@ -135,11 +162,16 @@ export class EventDetailComponent implements OnInit {
     forkJoin({
       ticket: this.regSvc.getMyVisitorRegistration(editionId).pipe(catchError(() => of(null))),
       sessions: this.regSvc.getMySessionRegistrations(editionId).pipe(catchError(() => of([] as MySessionRegistrationSummaryDto[]))),
+      watched: this.regSvc.getMyWatchedSessions(editionId).pipe(catchError(() => of([] as MyWatchedSessionSummaryDto[]))),
     }).subscribe({
       next: result => {
         this.myTicketId.set(result.ticket?.ticketId ?? null);
         this.mySessionRegistrations.set(result.sessions.reduce<Record<string, string>>((map, item) => {
           map[item.sessionId] = item.id;
+          return map;
+        }, {}));
+        this.myWatchedSessions.set(result.watched.reduce<Record<string, true>>((map, item) => {
+          map[item.sessionId] = true;
           return map;
         }, {}));
         this.registrationLoading.set(false);
@@ -197,6 +229,42 @@ export class EventDetailComponent implements OnInit {
       error: () => {
         this.actionError.set('Kunde inte avboka sessionen just nu.');
         this.submittingSessionId.set(null);
+      },
+    });
+  }
+
+  private watchSession(sessionId: string): void {
+    this.submittingWatchSessionId.set(sessionId);
+    this.actionError.set(null);
+
+    this.regSvc.watchSession(sessionId).subscribe({
+      next: () => {
+        this.myWatchedSessions.update(current => ({ ...current, [sessionId]: true }));
+        this.submittingWatchSessionId.set(null);
+      },
+      error: () => {
+        this.actionError.set('Kunde inte bevaka sessionen just nu.');
+        this.submittingWatchSessionId.set(null);
+      },
+    });
+  }
+
+  private unwatchSession(sessionId: string): void {
+    this.submittingWatchSessionId.set(sessionId);
+    this.actionError.set(null);
+
+    this.regSvc.unwatchSession(sessionId).subscribe({
+      next: () => {
+        this.myWatchedSessions.update(current => {
+          const next = { ...current };
+          delete next[sessionId];
+          return next;
+        });
+        this.submittingWatchSessionId.set(null);
+      },
+      error: () => {
+        this.actionError.set('Kunde inte ta bort bevakningen just nu.');
+        this.submittingWatchSessionId.set(null);
       },
     });
   }

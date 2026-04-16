@@ -43,6 +43,14 @@ public record MySessionRegistrationSummaryDto(
     string VenueName,
     string Status);
 
+public record MyWatchedSessionSummaryDto(
+    Guid SessionId,
+    string EventTitle,
+    DateTime Start,
+    DateTime End,
+    string VenueName,
+    DateTimeOffset CreatedAt);
+
 public record MyStaffApplicationDto(
     Guid Id,
     string Status);

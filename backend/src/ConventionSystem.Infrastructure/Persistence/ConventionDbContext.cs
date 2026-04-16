@@ -24,6 +24,7 @@ public sealed class ConventionDbContext(DbContextOptions<ConventionDbContext> op
     // Registration
     public DbSet<VisitorRegistration> VisitorRegistrations => Set<VisitorRegistration>();
     public DbSet<SessionRegistration> SessionRegistrations => Set<SessionRegistration>();
+    public DbSet<SessionWatch> SessionWatches => Set<SessionWatch>();
     public DbSet<StaffApplication> StaffApplications => Set<StaffApplication>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<TicketType> TicketTypes => Set<TicketType>();

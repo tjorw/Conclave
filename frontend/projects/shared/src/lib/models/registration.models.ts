@@ -83,6 +83,15 @@ export interface MySessionRegistrationSummaryDto {
   status: string;
 }
 
+export interface MyWatchedSessionSummaryDto {
+  sessionId: string;
+  eventTitle: string;
+  start: string;
+  end: string;
+  venueName: string;
+  createdAt: string;
+}
+
 export interface MyStaffApplicationDto {
   id: string;
   status: string;

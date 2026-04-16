@@ -34,6 +34,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IVisitorRegistrationRepository, VisitorRegistrationRepository>();
         services.AddScoped<IStaffApplicationRepository, StaffApplicationRepository>();
         services.AddScoped<ISessionRegistrationRepository, SessionRegistrationRepository>();
+        services.AddScoped<ISessionWatchRepository, SessionWatchRepository>();
         services.AddScoped<IRegistrationRuleService, StubRegistrationRuleService>();
 
         services.AddScoped<IEmailService, LoggingEmailService>();

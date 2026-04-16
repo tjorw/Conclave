@@ -74,6 +74,16 @@
                       {{ capacityLabel(s) }}
                     </span>
                   </div>
+                  <button
+                    class="watch-btn"
+                    [class.active]="isWatched(s.id)"
+                    mat-icon-button
+                    type="button"
+                    [disabled]="registrationLoading() || submittingWatchSessionId() === s.id"
+                    [attr.aria-label]="isWatched(s.id) ? 'Ta bort bevakning' : 'Bevaka session'"
+                    (click)="onWatchToggle(s, $event)">
+                    <mat-icon>{{ isWatched(s.id) ? 'bookmark' : 'bookmark_border' }}</mat-icon>
+                  </button>
                   <mat-icon class="expand-btn">
                     {{ expandedSessions().has(s.id) ? 'expand_less' : 'expand_more' }}
                   </mat-icon>
