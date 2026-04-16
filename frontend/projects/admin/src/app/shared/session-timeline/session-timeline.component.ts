@@ -14,6 +14,7 @@ interface SessionBlock {
   left: number;
   width: number;
   isOwn: boolean;
+  isPlaced: boolean;
   hasConflict: boolean;
 }
 
@@ -39,12 +40,13 @@ const ROW_HEIGHT        = 40;
 })
 export class SessionTimelineComponent {
   readonly sessions       = input.required<EditionSessionDto[]>();
-  readonly currentEventId = input.required<string>();
+  readonly currentEventId = input<string | null>(null);
   readonly editingVenueId = input<string | null>(null);
   readonly venues         = input<VenueDto[]>([]);
   readonly draft          = input<DraftBlock | null>(null);
   readonly editionStart   = input<string | null>(null);
   readonly editionEnd     = input<string | null>(null);
+  readonly showAllVenues  = input(false);
 
   readonly VENUE_LABEL_WIDTH = VENUE_LABEL_WIDTH;
   readonly ROW_HEIGHT        = ROW_HEIGHT;
@@ -117,10 +119,19 @@ export class SessionTimelineComponent {
   // ── Venues & sessions ────────────────────────────────────────────────────
 
   readonly visibleVenues = computed(() => {
+    if (this.showAllVenues()) {
+      return this.venues();
+    }
+
+    const currentEventId = this.currentEventId();
+    if (!currentEventId) {
+      return [] as VenueDto[];
+    }
+
     // Lokaler där det aktuella evenemanget har aktiva sessioner
     const ownVenueIds = new Set(
       this.sessions()
-        .filter(s => s.eventId === this.currentEventId() && s.status === 'Active')
+        .filter(s => s.eventId === currentEventId && s.status === 'Active')
         .map(s => s.venueId)
     );
     // Plus lokalen som just nu redigeras/läggs till i formuläret
@@ -156,6 +167,7 @@ export class SessionTimelineComponent {
   private readonly sessionBlocksByVenue = computed(() => {
     const { from } = this.timeRange();
     const conflicts = this.conflictingSessionIds();
+    const currentEventId = this.currentEventId();
     const map = new Map<string, SessionBlock[]>();
 
     for (const s of this.sessions()) {
@@ -169,7 +181,8 @@ export class SessionTimelineComponent {
         session: s,
         left,
         width,
-        isOwn:       s.eventId === this.currentEventId(),
+        isOwn:       !!currentEventId && s.eventId === currentEventId,
+        isPlaced:    this.showAllVenues(),
         hasConflict: conflicts.has(s.sessionId),
       };
       if (!map.has(s.venueId)) map.set(s.venueId, []);

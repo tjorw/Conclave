@@ -180,6 +180,13 @@ public static class EventEndpoints
                 return Results.NoContent();
             }).RequireAuthorization();
 
+        app.MapDelete("/events/{eventId:guid}/sessions/{sessionId:guid}",
+            async (Guid eventId, Guid sessionId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new DeactivateSessionCommand(eventId, sessionId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
         // UC-EV011 – Ställ in evenemang
         app.MapPost("/events/{eventId:guid}/cancel",
             async (Guid eventId, ISender sender, CancellationToken ct) =>

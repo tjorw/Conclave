@@ -58,6 +58,7 @@ export const FIELD = {
   phone:            'Telefon',
   description:      'Beskrivning',
   title:            'Titel',
+  event:            'Evenemang',
   startDate:        'Startdatum',
   endDate:          'Slutdatum',
   note:             'Anteckning (valfritt)',

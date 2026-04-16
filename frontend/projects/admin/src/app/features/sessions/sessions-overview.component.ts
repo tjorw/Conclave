@@ -1,0 +1,346 @@
+import { DatePipe } from '@angular/common';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { Observable, forkJoin, of, switchMap } from 'rxjs';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import {
+  ConventionService,
+  EditionDto,
+  EditionSessionDto,
+  EventDto,
+  EventService,
+  START_TYPE_LABEL,
+  VenueDto,
+} from 'shared';
+import { ERROR } from '../../labels/errors.labels';
+import { SESSIONS_OVERVIEW } from '../../labels/pages.labels';
+import { ACTION, FIELD, TOOLTIP } from '../../labels/ui.labels';
+import { EditionContextService } from '../../services/edition-context.service';
+import { DraftBlock, SessionTimelineComponent } from '../../shared/session-timeline/session-timeline.component';
+
+@Component({
+  selector: 'app-sessions-overview',
+  standalone: true,
+  imports: [
+    DatePipe,
+    RouterLink,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatProgressSpinnerModule,
+    MatSelectModule,
+    MatTooltipModule,
+    SessionTimelineComponent,
+  ],
+  templateUrl: './sessions-overview.component.html',
+  styleUrl: './sessions-overview.component.scss',
+})
+export class SessionsOverviewComponent {
+  private readonly eventSvc = inject(EventService);
+  private readonly conventionSvc = inject(ConventionService);
+  private readonly fb = inject(FormBuilder);
+
+  readonly editionContext = inject(EditionContextService);
+
+  readonly PAGE = SESSIONS_OVERVIEW;
+  readonly ACTION = ACTION;
+  readonly TOOLTIP = TOOLTIP;
+  readonly FIELD = FIELD;
+
+  readonly edition = signal<EditionDto | null>(null);
+  readonly events = signal<EventDto[]>([]);
+  readonly sessions = signal<EditionSessionDto[]>([]);
+  readonly loading = signal(false);
+  readonly saving = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly editingSessionId = signal<string | null>(null);
+
+  readonly day = signal<string | null>(null);
+
+  readonly form = this.fb.group({
+    eventId: ['', Validators.required],
+    venueId: ['', Validators.required],
+    startTime: ['', Validators.required],
+    endTime: ['', Validators.required],
+    maxSeats: [20, [Validators.required, Validators.min(1)]],
+    startType: ['FixedTime', Validators.required],
+    note: [''],
+  });
+
+  private readonly formValues = toSignal(this.form.valueChanges, {
+    initialValue: this.form.value,
+  });
+
+  readonly startTypes = (Object.entries(START_TYPE_LABEL) as [string, string][])
+    .map(([value, label]) => ({ value, label }));
+
+  readonly dayOptions = computed(() => {
+    const ed = this.edition();
+    if (!ed) return [] as string[];
+
+    const options: string[] = [];
+    const start = this.parseDateLocal(ed.start);
+    const end = this.parseDateLocal(ed.end);
+
+    for (const d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      options.push(this.formatDateOnly(d));
+    }
+
+    return options;
+  });
+
+  readonly requestsForSelectedEvent = computed(() => {
+    const eventId = this.formValues()?.eventId ?? '';
+    const event = this.events().find(e => e.id === eventId);
+    return event?.sessionRequests ?? [];
+  });
+
+  readonly sortedSessions = computed(() =>
+    [...this.sessions()].sort((a, b) =>
+      new Date(a.start).getTime() - new Date(b.start).getTime()
+    )
+  );
+
+  readonly filteredSessions = computed(() => {
+    const selectedDay = this.day();
+
+    return this.sortedSessions().filter(s => {
+      if (selectedDay && !s.start.startsWith(selectedDay)) return false;
+      return true;
+    });
+  });
+
+  readonly filteredVenues = computed(() => {
+    return this.edition()?.venues ?? [];
+  });
+
+  readonly timelineDraft = computed<DraftBlock | null>(() => {
+    const values = this.formValues();
+    if (!values?.startTime || !values?.endTime) return null;
+
+    return {
+      start: values.startTime,
+      end: values.endTime,
+      sessionId: this.editingSessionId() ?? undefined,
+    };
+  });
+
+  readonly hasConflict = computed(() => {
+    const values = this.formValues();
+    if (!values?.venueId || !values?.startTime || !values?.endTime) return false;
+
+    const start = new Date(values.startTime).getTime();
+    const end = new Date(values.endTime).getTime();
+    const editingId = this.editingSessionId();
+
+    return this.filteredSessions().some(s => {
+      if (s.venueId !== values.venueId) return false;
+      if (editingId && s.sessionId === editingId) return false;
+
+      const sStart = new Date(s.start).getTime();
+      const sEnd = new Date(s.end).getTime();
+      return start < sEnd && end > sStart;
+    });
+  });
+
+  constructor() {
+    effect(() => {
+      const activeEdition = this.editionContext.activeEdition();
+      if (!activeEdition) return;
+      this.loadData(activeEdition.id);
+    });
+  }
+
+  setDay(value: string): void {
+    this.day.set(value);
+  }
+
+  startEdit(session: EditionSessionDto): void {
+    this.editingSessionId.set(session.sessionId);
+    this.form.patchValue({
+      eventId: session.eventId,
+      venueId: session.venueId,
+      startTime: this.toLocalDateTimeInput(session.start),
+      endTime: this.toLocalDateTimeInput(session.end),
+      maxSeats: session.maxSeats,
+      startType: session.startType,
+      note: '',
+    });
+  }
+
+  resetForm(): void {
+    this.editingSessionId.set(null);
+    this.form.reset({
+      eventId: '',
+      venueId: '',
+      startTime: '',
+      endTime: '',
+      maxSeats: 20,
+      startType: 'FixedTime',
+      note: '',
+    });
+  }
+
+  saveSession(): void {
+    const values = this.form.getRawValue();
+    if (this.form.invalid || this.saving()) return;
+
+    const sessionId = this.editingSessionId();
+    this.saving.set(true);
+
+    const action$: Observable<unknown> = sessionId
+      ? this.eventSvc.updateSession(
+        values.eventId!,
+        sessionId,
+        values.venueId!,
+        values.startTime!,
+        values.endTime!,
+        values.maxSeats!,
+        values.startType!
+      )
+      : this.eventSvc.scheduleSession(
+        values.eventId!,
+        values.venueId!,
+        values.startTime!,
+        values.endTime!,
+        values.maxSeats!,
+        values.startType!
+      );
+
+    action$.subscribe({
+      next: () => {
+        this.saving.set(false);
+        const editionId = this.editionContext.activeEdition()?.id;
+        if (editionId) this.refreshSessions(editionId);
+        this.resetForm();
+      },
+      error: (err: unknown) => {
+        this.saving.set(false);
+        const detail = (err as { error?: { detail?: string } })?.error?.detail;
+        this.error.set(detail ?? (sessionId ? ERROR.saveSession : ERROR.scheduleSession));
+      },
+    });
+  }
+
+  deactivateSession(session: EditionSessionDto): void {
+    if (this.saving()) return;
+
+    this.saving.set(true);
+    this.eventSvc.deactivateSession(session.eventId, session.sessionId).subscribe({
+      next: () => {
+        this.saving.set(false);
+        const editionId = this.editionContext.activeEdition()?.id;
+        if (editionId) this.refreshSessions(editionId);
+      },
+      error: (err: unknown) => {
+        this.saving.set(false);
+        const detail = (err as { error?: { detail?: string } })?.error?.detail;
+        this.error.set(detail ?? ERROR.deactivateSession);
+      },
+    });
+  }
+
+  eventTitle(eventId: string): string {
+    return this.events().find(e => e.id === eventId)?.title ?? eventId;
+  }
+
+  venueById(venueId: string): VenueDto | null {
+    return this.edition()?.venues.find(v => v.id === venueId) ?? null;
+  }
+
+  startTypeLabel(value: string): string {
+    return START_TYPE_LABEL[value] ?? value;
+  }
+
+  formatDayLabel(day: string): string {
+    const date = this.parseDateLocal(day);
+    return date.toLocaleDateString('sv-SE', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'short',
+    });
+  }
+
+  private loadData(editionId: string): void {
+    this.loading.set(true);
+    this.error.set(null);
+
+    forkJoin({
+      edition: this.conventionSvc.getEdition(editionId),
+      sessions: this.eventSvc.getEditionSessions(editionId),
+      eventSummaries: this.eventSvc.listEvents(editionId),
+    }).pipe(
+      switchMap(({ edition, sessions, eventSummaries }) => {
+        if (!eventSummaries.length) {
+          return of({ edition, sessions, events: [] as EventDto[] });
+        }
+
+        return forkJoin(eventSummaries.map(e => this.eventSvc.getEvent(e.id))).pipe(
+          switchMap(events => of({ edition, sessions, events }))
+        );
+      })
+    ).subscribe({
+      next: ({ edition, sessions, events }) => {
+        this.edition.set(edition);
+        this.sessions.set(sessions);
+        this.events.set(events);
+
+        const dayOptions = this.dayOptions();
+        const currentDay = this.day();
+        if (!currentDay || !dayOptions.includes(currentDay)) {
+          this.day.set(dayOptions[0] ?? null);
+        }
+
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.error.set(ERROR.fetchEvents);
+      },
+    });
+  }
+
+  private refreshSessions(editionId: string): void {
+    this.eventSvc.getEditionSessions(editionId).subscribe({
+      next: sessions => this.sessions.set(sessions),
+    });
+  }
+
+  private formatDateOnly(date: Date): string {
+    const y = date.getFullYear();
+    const m = `${date.getMonth() + 1}`.padStart(2, '0');
+    const d = `${date.getDate()}`.padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  private parseDateLocal(value: string): Date {
+    const [year, month, day] = value.split('T')[0].split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  private addMinutesLocal(start: string, minutes: number): string {
+    const date = new Date(start);
+    date.setMinutes(date.getMinutes() + minutes);
+    return this.toLocalDateTimeInput(date.toISOString());
+  }
+
+  private toLocalDateTimeInput(value: string): string {
+    const date = new Date(value);
+    const offset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+  }
+}

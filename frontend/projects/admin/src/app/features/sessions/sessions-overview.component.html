@@ -1,0 +1,187 @@
+<div class="page-header">
+  <h1>{{ PAGE.title }}</h1>
+  <p class="subtitle">{{ PAGE.subtitle }}</p>
+</div>
+
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="spinner-center"><mat-spinner diameter="48" /></div>
+} @else {
+  <mat-card class="panel-card">
+    <mat-card-header>
+      <mat-card-title>{{ PAGE.formTitle }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="form" class="schedule-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ FIELD.event }}</mat-label>
+          <mat-select formControlName="eventId" [disabled]="editingSessionId() !== null">
+            @for (event of events(); track event.id) {
+              <mat-option [value]="event.id">{{ event.title }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (form.getRawValue().eventId) {
+          <div class="request-list">
+            <strong>{{ PAGE.requestsForEventTitle }}</strong>
+            @if (requestsForSelectedEvent().length > 0) {
+              <ul>
+                @for (request of requestsForSelectedEvent(); track request.id) {
+                  <li>
+                    <span>{{ request.description }}</span>
+                    <small>{{ request.durationMinutes }} min · {{ request.seats }} platser · {{ startTypeLabel(request.startType) }}</small>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <span>{{ PAGE.noRequestsForEvent }}</span>
+            }
+          </div>
+        }
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ FIELD.venue }}</mat-label>
+          <mat-select formControlName="venueId">
+            @for (venue of filteredVenues(); track venue.id) {
+              <mat-option [value]="venue.id">{{ venue.name }} · {{ venue.building }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <div class="time-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ PAGE.start }}</mat-label>
+            <input matInput type="datetime-local" formControlName="startTime" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ PAGE.end }}</mat-label>
+            <input matInput type="datetime-local" formControlName="endTime" />
+          </mat-form-field>
+        </div>
+
+        <div class="time-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ FIELD.maxSeats }}</mat-label>
+            <input matInput type="number" min="1" formControlName="maxSeats" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ FIELD.startType }}</mat-label>
+            <mat-select formControlName="startType">
+              @for (startType of startTypes; track startType.value) {
+                <mat-option [value]="startType.value">{{ startType.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ FIELD.note }}</mat-label>
+          <textarea matInput rows="2" formControlName="note"></textarea>
+        </mat-form-field>
+
+        @if (hasConflict()) {
+          <div class="conflict-status">
+            <mat-icon>warning</mat-icon>
+            {{ PAGE.conflictDetected }}
+          </div>
+        }
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions align="end" class="panel-actions">
+      @if (editingSessionId()) {
+        <button mat-button (click)="resetForm()">{{ ACTION.cancel }}</button>
+      }
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="saveSession()"
+        [disabled]="saving() || form.invalid || hasConflict()">
+        @if (editingSessionId()) {
+          {{ PAGE.updateSession }}
+        } @else {
+          {{ ACTION.schedule }}
+        }
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card class="timeline-card">
+    <mat-card-header>
+      <mat-card-title>{{ PAGE.timelineTitle }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="toolbar-row">
+        <mat-button-toggle-group [value]="day()" (change)="setDay($event.value)">
+          @for (option of dayOptions(); track option) {
+            <mat-button-toggle [value]="option">{{ formatDayLabel(option) }}</mat-button-toggle>
+          }
+        </mat-button-toggle-group>
+      </div>
+
+      <app-session-timeline
+        [sessions]="filteredSessions()"
+        [currentEventId]="form.getRawValue().eventId || null"
+        [editingVenueId]="form.getRawValue().venueId || null"
+        [venues]="filteredVenues()"
+        [draft]="timelineDraft()"
+        [editionStart]="day()"
+        [editionEnd]="day()"
+        [showAllVenues]="true" />
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="scheduled-card">
+    <mat-card-header>
+      <mat-card-title>{{ PAGE.scheduledTitle }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ PAGE.eventColumn }}</th>
+            <th>{{ PAGE.start }}</th>
+            <th>{{ PAGE.end }}</th>
+            <th>{{ FIELD.venue }}</th>
+            <th>{{ FIELD.maxSeats }}</th>
+            <th>{{ FIELD.startType }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (session of filteredSessions(); track session.sessionId) {
+            <tr>
+              <td>
+                <a [routerLink]="['/events', session.eventId]">{{ session.eventTitle }}</a>
+              </td>
+              <td>{{ session.start | date:'yyyy-MM-dd HH:mm' }}</td>
+              <td>{{ session.end | date:'HH:mm' }}</td>
+              <td>{{ venueById(session.venueId)?.name ?? session.venueId }}</td>
+              <td>{{ session.maxSeats }}</td>
+              <td>{{ startTypeLabel(session.startType) }}</td>
+              <td class="row-actions">
+                <button mat-icon-button [matTooltip]="TOOLTIP.edit" (click)="startEdit(session)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button [matTooltip]="TOOLTIP.inactivate" (click)="deactivateSession(session)">
+                  <mat-icon>block</mat-icon>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-cell">{{ PAGE.noSessions }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
+}

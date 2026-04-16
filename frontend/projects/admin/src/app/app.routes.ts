@@ -77,6 +77,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'sessions',
+        loadComponent: () =>
+          import('./features/sessions/sessions-overview.component').then(
+            m => m.SessionsOverviewComponent
+          ),
+      },
+      {
         path: 'staffing',
         loadComponent: () =>
           import('./features/staffing/staffing.component').then(

@@ -86,6 +86,22 @@ export const SESSION_TIMELINE = {
   legendConflict: 'Konflikt',
 } as const;
 
+export const SESSIONS_OVERVIEW = {
+  title:            'Schemaläggning',
+  subtitle:         'Global vy för att placera, flytta och verifiera alla sessioner i upplagan.',
+  formTitle:        'Schemalägg session',
+  requestsForEventTitle: 'Sessionönskemål för valt evenemang',
+  noRequestsForEvent: 'Det finns inga registrerade sessionönskemål för evenemanget.',
+  timelineTitle:    'Tidslinje',
+  scheduledTitle:   'Schemalagda sessioner',
+  noSessions:       'Inga schemalagda sessioner i aktuellt urval.',
+  conflictDetected: 'Konflikt upptäckt: sessionen överlappar annan session i samma lokal.',
+  updateSession:    'Uppdatera session',
+  eventColumn:      'Evenemang',
+  start:            'Start',
+  end:              'Slut',
+} as const;
+
 export const ERROR_PAGE = {
   '401': {
     code:        '401',

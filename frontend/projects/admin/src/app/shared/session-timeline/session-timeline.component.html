@@ -62,8 +62,9 @@
             <!-- Session blocks -->
             @for (block of getBlocksForVenue(venue.id); track block.session.sessionId) {
               <div class="tl-block"
+                [class.placed]="block.isPlaced && !block.hasConflict"
                 [class.own]="block.isOwn && !block.hasConflict"
-                [class.other]="!block.isOwn && !block.hasConflict"
+                [class.other]="!block.isPlaced && !block.isOwn && !block.hasConflict"
                 [class.conflict]="block.hasConflict"
                 [style.left.px]="block.left"
                 [style.width.px]="block.width"

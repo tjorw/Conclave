@@ -1,0 +1,86 @@
+:host {
+  display: block;
+}
+
+.panel-card {
+  margin-bottom: 16px;
+}
+
+.schedule-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.time-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.panel-actions {
+  gap: 8px;
+}
+
+.request-list {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #f5f7fa;
+  border: 1px solid #dbe2ea;
+  font-size: 0.85rem;
+  color: #1f2937;
+
+  ul {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 6px;
+  }
+
+  li {
+    display: grid;
+    gap: 1px;
+  }
+
+  small {
+    color: #4b5563;
+    font-size: 0.78rem;
+  }
+}
+
+.conflict-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+  color: #b71c1c;
+  font-weight: 500;
+}
+
+.timeline-card,
+.scheduled-card {
+  margin-top: 16px;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+  .time-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -133,9 +133,8 @@ export class EventService {
   }
 
   deactivateSession(eventId: string, sessionId: string) {
-    return this.http.post<void>(
-      `${this.env.apiBaseUrl}/events/${eventId}/sessions/${sessionId}/deactivate`,
-      {}
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/sessions/${sessionId}`
     );
   }
 

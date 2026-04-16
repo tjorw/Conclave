@@ -8,6 +8,7 @@ export const NAV = {
   staff:          'Funktionärer',
   responsibles:   'Ansvariga',
   events:         'Evenemang',
+  sessions:       'Schemaläggning',
   staffing:       'Bemanning',
   registrations:  'Registrering',
   feeds:          'Feeds',
