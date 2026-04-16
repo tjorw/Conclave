@@ -107,19 +107,3 @@
   font-weight: 500;
 }
 
-.hub-nav {
-  display: flex;
-  gap: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--brand-divider, #e5e7eb);
-}
-
-.nav-link {
-  font-size: 0.875rem;
-  color: var(--brand-primary);
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
