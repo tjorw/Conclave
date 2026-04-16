@@ -80,7 +80,7 @@ export class EventDetailComponent implements OnInit {
       return 'red';
     }
 
-    var ratio = s.bookedSeats / s.maxSeats;
+    const ratio = s.bookedSeats / s.maxSeats;
     if (ratio >= 0.9) {
       return 'red';
     }
@@ -219,8 +219,7 @@ export class EventDetailComponent implements OnInit {
     this.regSvc.cancelSessionRegistration(registrationId).subscribe({
       next: () => {
         this.mySessionRegistrations.update(current => {
-          const next = { ...current };
-          delete next[sessionId];
+          const { [sessionId]: _, ...next } = current;
           return next;
         });
         this.updateBookedSeats(sessionId, -1);
@@ -256,8 +255,7 @@ export class EventDetailComponent implements OnInit {
     this.regSvc.unwatchSession(sessionId).subscribe({
       next: () => {
         this.myWatchedSessions.update(current => {
-          const next = { ...current };
-          delete next[sessionId];
+          const { [sessionId]: _, ...next } = current;
           return next;
         });
         this.submittingWatchSessionId.set(null);

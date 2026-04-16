@@ -6,7 +6,7 @@ import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { AuthService, MyVisitorRegistrationDto, RegistrationService, VisitorTicketTypeDto } from 'shared';
+import { AuthService, MyVisitorRegistrationDto, RegistrationService, TICKET_PAYMENT_STATUS_LABEL, VisitorTicketTypeDto } from 'shared';
 import { catchError, of } from 'rxjs';
 import { EditionService } from '../../../services/edition.service';
 
@@ -90,10 +90,7 @@ export class MyTicketComponent implements OnInit {
   }
 
   paymentStatusLabel(status: string): string {
-    if (status === 'Confirmed') return 'Betald';
-    if (status === 'PendingPayment') return 'Inväntar betalning';
-    if (status === 'Cancelled') return 'Avbokad';
-    return status;
+    return TICKET_PAYMENT_STATUS_LABEL[status] ?? status;
   }
 
   referenceNumber(id: string): string {

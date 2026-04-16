@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,7 +22,7 @@ import { AuthService } from 'shared';
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss',
 })
-export class ResetPasswordComponent implements OnInit {
+export class ResetPasswordComponent implements OnInit, OnDestroy {
   private readonly auth   = inject(AuthService);
   private readonly route  = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -35,11 +35,18 @@ export class ResetPasswordComponent implements OnInit {
 
   private email = '';
   private token = '';
+  private redirectTimeout: ReturnType<typeof setTimeout> | null = null;
 
   readonly form = this.fb.group({
     password:        ['', [Validators.required, Validators.minLength(6)]],
     confirmPassword: ['', Validators.required],
   });
+
+  ngOnDestroy(): void {
+    if (this.redirectTimeout !== null) {
+      clearTimeout(this.redirectTimeout);
+    }
+  }
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
@@ -71,7 +78,7 @@ export class ResetPasswordComponent implements OnInit {
       next: () => {
         this.loading.set(false);
         this.success.set(true);
-        setTimeout(() => this.router.navigateByUrl('/login'), 2000);
+        this.redirectTimeout = setTimeout(() => this.router.navigateByUrl('/login'), 2000);
       },
       error: (err: HttpErrorResponse) => {
         const detail = err.error?.detail ?? err.error?.title ?? 'Länken är ogiltig eller har gått ut.';

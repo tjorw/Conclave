@@ -23,7 +23,7 @@ export class ProgramComponent {
     const days = new Set<string>();
     for (const ev of (this.editionSvc.edition()?.events ?? [])) {
       for (const s of ev.sessions) {
-        days.add(new Date(s.start).toISOString().slice(0, 10));
+        days.add(this.dateOnly(s.start));
       }
     }
     return Array.from(days).sort();
@@ -41,7 +41,7 @@ export class ProgramComponent {
     return events.filter(ev => {
       const matchesCat = !cat || ev.categoryId === cat;
       const matchesDay = day === 'alla' || ev.sessions.some(s =>
-        new Date(s.start).toISOString().slice(0, 10) === day
+        this.dateOnly(s.start) === day
       );
       return matchesCat && matchesDay;
     });
@@ -57,7 +57,7 @@ export class ProgramComponent {
     const day  = this.selectedDay();
     const sessions = day === 'alla'
       ? event.sessions
-      : event.sessions.filter(s => new Date(s.start).toISOString().slice(0, 10) === day);
+      : event.sessions.filter(s => this.dateOnly(s.start) === day);
     const s = sessions[0] ?? event.sessions[0];
     if (!s) return '';
     const d = new Date(s.start);
@@ -69,5 +69,9 @@ export class ProgramComponent {
 
   toggleCategory(id: string): void {
     this.selectedCategory.update(c => c === id ? null : id);
+  }
+
+  private dateOnly(isoString: string): string {
+    return new Date(isoString).toISOString().slice(0, 10);
   }
 }

@@ -6,7 +6,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { EditionService } from '../../../services/edition.service';
-import { MySessionRegistrationSummaryDto, MyWatchedSessionSummaryDto, RegistrationService } from 'shared';
+import { MySessionRegistrationSummaryDto, MyWatchedSessionSummaryDto, RegistrationService, SESSION_REGISTRATION_STATUS_LABEL } from 'shared';
 
 @Component({
   selector: 'app-my-program',
@@ -71,15 +71,7 @@ export class MyProgramComponent implements OnInit {
   }
 
   sessionStatusLabel(status: string): string {
-    if (status === 'Confirmed') {
-      return 'Bekräftad';
-    }
-
-    if (status === 'Cancelled') {
-      return 'Avbokad';
-    }
-
-    return status;
+    return SESSION_REGISTRATION_STATUS_LABEL[status] ?? status;
   }
 
   private loadSessions(): void {

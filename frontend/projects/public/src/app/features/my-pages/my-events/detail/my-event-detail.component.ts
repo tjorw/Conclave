@@ -190,6 +190,9 @@ export class MyEventDetailComponent implements OnInit {
   removeSessionRequest(requestId: string): void {
     this.eventSvc.removeSessionRequest(this.eventId, requestId).subscribe({
       next: () => this.loadEvent(),
+      error: (err: HttpErrorResponse) => {
+        this.actionError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte ta bort sessionönskemålet.');
+      },
     });
   }
 
@@ -224,7 +227,7 @@ export class MyEventDetailComponent implements OnInit {
     this.deleting.set(true);
     this.actionError.set(null);
     this.eventSvc.deleteEvent(this.eventId).subscribe({
-      next: () => this.router.navigate(['/mina-sidor/arrangemang']),
+      next: () => this.router.navigate(['/my-pages/events']),
       error: (err: HttpErrorResponse) => {
         this.actionError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte ta bort arrangemanget.');
         this.deleting.set(false);
