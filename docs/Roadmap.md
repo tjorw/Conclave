@@ -9,22 +9,11 @@ Spårar vad som återstår inför produktionsstart.
 Prioriterad lista – ej startade överst, klara underst.
 
 - [ ] `R15` Fas 3.1.12 Globalt schemaläggningsverktyg (admin)
-- [ ] `R16` Fas 3.1.13 Sessionsredigerare i evenemangsdetalj (admin)
 - [ ] `R05` Fas 3.2.5 Min biljett
 - [ ] `R13` Fas 3.2.10 Bevakningslista – sessioner utan platsbiljett
 - [ ] `R14` Fas 3.2.11 Personligt tidsschema – samlad vy i Mitt program
 - [ ] `R08` Fas 3.2.8 Min bemanning
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
-- [x] `R00` Frontendtester i CI
-- [x] `R01` Fas 3.2.3 Konton, inloggning och profil
-- [x] `R02` Fas 3.1.8 Registreringsöversikt i admin
-- [x] `R03` Fas 3.1.6b Evenemangsflöde – genomgång och förfining
-- [x] `R04` Fas 3.2.4 Mina sidor – hub och navigationsstruktur
-- [x] `R06` Fas 3.2.6 Mitt program
-- [x] `R07` Fas 3.2.7 Mina arrangemang
-- [x] `R09` Fas 3.2.9 Sessionsregistrering
-- [x] `R10` Fas 3.1.7b Bemanningsvy – genomgång och förfining
-- [x] `R12` Fas 3.1.11 Öppna och stänga ansökan – arrangemang och funktionärer
 
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
 
@@ -76,43 +65,6 @@ Tvådelad vy: vänster sidopanel med åtgärdsformulär och höger tidslinjepane
 - Ny lazy-loadad route: `/sessions` i admin-appen
 - `SessionsOverviewComponent`: laddar `GET /editions/{id}/sessions` + `GET /editions/{id}` (lokaler, kategorier) i parallell
 - `TimelineComponent`: gemensam komponent som också används i 3.1.13 nedan
-
----
-
-#### 3.1.13 Sessionsredigerare i evenemangsdetalj (admin)
-
-Kompletterar den befintliga formulärbaserade sessionsvyn med en valfri tidslinjevy. Enkla formulärkontroller behålls för snabb datainmatning; tidslinjevyn är ett alternativ att växla till när man vill se lokalens kontext.
-
-**Princip: två lägen, inte ett ersatt**
-
-Sessionsfliksn erbjuder en växlingsknapp "Visa tidslinje" / "Dölj tidslinje":
-- **Standardläge (formulär):** befintliga kontroller – lokal, starttid, sluttid, platser, starttyp, Spara/Återställ/Inaktivera.
-- **Tidslinjläge (komplement):** tidslinjen visas bredvid formuläret och uppdateras reaktivt när lokal eller tider ändras i formuläret.
-
-**Tidslinjevy**
-- Tid 08:00–23:00, vertikal layout med vald lokal som kontext
-- Sessionblock med färgkodning:
-  - Grön – eget evenemangs sessioner
-  - Grå – andra evenemang i samma lokal (read-only)
-  - Orange – session under aktiv redigering / ny session
-  - Röd – konflikt
-- Tidslinjen uppdateras när användaren byter lokal eller tid i formuläret
-
-**Datakälla**
-- Egna sessioner: redan hämtade via `GET /events/{id}` (ingår i `EventDto`)
-- Andra evenemang i lokal: hämtas från `GET /editions/{id}/sessions` (se 3.1.12), filtreras i frontend på vald lokal – laddas lazy när tidslinjeläget aktiveras för första gången
-
-**Gemensam komponent: `TimelineComponent`**
-
-| Input | Typ | Beskrivning |
-|-------|-----|-------------|
-| `sessions` | `SessionBlock[]` | Alla sessioner att rendera |
-| `highlightEventId` | `string \| null` | Eget evenemang (grön färg) |
-| `draftBlock` | `DraftBlock \| null` | Pågående redigering (orange) |
-| `venues` | `VenueDto[]` | Lokal-metadata |
-| `selectedVenueId` | `string \| null` | Filtrerar tidslinjen till en lokal |
-
-Konflikter beräknas internt i komponenten baserat på `draftBlock` mot `sessions`.
 
 ---
 
@@ -226,18 +178,3 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - `environment.ts` konfigureras med rätt `conventionId` och `apiBaseUrl`
 - Admin-konto skapas via `CreateConventionCommand` + `UserManager`
 - Välkomstmejl med inloggningsuppgifter för konventets admin
-
----
-
-## UX Justeringar
-Uppdatera även frontenddokumentationen där dessa fixar görs.
-
-### UX001 Datum och tid i formulär
-**I administrationsgränssnittet**
-* Gränssnittet skall hjälpa till med att:
-  * om slutdatum inte är satt: utifrån en input parameter till controllen sätta slutdatum/tid med den offseten. ex 1h.
-  * om sluttiden är satt och man justerar starttiden, så skall sluttiden justeras med motsvarande
-  * göra det enklare att endast välja de datum som är mellan start och slut på konventet.
-
-### UX002 Datum och tid i listor
-* Sortera tabeller som innehåller start och sluttid efter starttid i fallande ordning som standard
