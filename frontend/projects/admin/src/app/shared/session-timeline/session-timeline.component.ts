@@ -14,7 +14,6 @@ interface SessionBlock {
   left: number;
   width: number;
   isOwn: boolean;
-  isPlaced: boolean;
   hasConflict: boolean;
 }
 
@@ -183,7 +182,6 @@ export class SessionTimelineComponent {
         left,
         width,
         isOwn:       !!currentEventId && s.eventId === currentEventId,
-        isPlaced:    this.showAllVenues(),
         hasConflict: conflicts.has(s.sessionId),
       };
       if (!map.has(s.venueId)) map.set(s.venueId, []);
