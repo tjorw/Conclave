@@ -73,10 +73,8 @@ export class MyProgramComponent implements OnInit {
         isPrimary: false,
       }));
 
-    const organiserSessionIds = new Set(organiser.map(item => item.sessionId).filter((id): id is string => !!id));
-
     const watched = this.watchedSessions()
-      .filter(session => !bookedSessionIds.has(session.sessionId) && !organiserSessionIds.has(session.sessionId))
+      .filter(session => !!session.sessionId)
       .map<MyScheduleItemDto>(session => ({
         sessionId: session.sessionId,
         shiftId: null,
@@ -87,6 +85,19 @@ export class MyProgramComponent implements OnInit {
         type: 'Watching',
         isPrimary: false,
       }));
+
+    // One timeline card per session: keep highest priority engagement type.
+    // Priority order is the concatenation order below: Booked > Organiser > Watching.
+    const sessionItemsBySessionId = new Map<string, MyScheduleItemDto>();
+    for (const item of [...booked, ...organiser, ...watched]) {
+      if (!item.sessionId) {
+        continue;
+      }
+
+      if (!sessionItemsBySessionId.has(item.sessionId)) {
+        sessionItemsBySessionId.set(item.sessionId, item);
+      }
+    }
 
     const shifts = this.assignedShifts().map<MyScheduleItemDto>(shift => ({
       sessionId: null,
@@ -99,7 +110,7 @@ export class MyProgramComponent implements OnInit {
       isPrimary: true,
     }));
 
-    return [...booked, ...organiser, ...watched, ...shifts]
+    return [...sessionItemsBySessionId.values(), ...shifts]
       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
   });
 
@@ -181,6 +192,10 @@ export class MyProgramComponent implements OnInit {
 
   private itemId(item: MyScheduleItemDto): string {
     return item.sessionId ?? item.shiftId ?? '';
+  }
+
+  timelineTrackId(item: MyScheduleItemDto): string {
+    return `${item.type}:${item.sessionId ?? item.shiftId ?? ''}:${item.start}:${item.end}`;
   }
 
   private toArray(value: unknown): unknown[] {

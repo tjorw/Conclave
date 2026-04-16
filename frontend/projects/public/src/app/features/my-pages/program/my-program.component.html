@@ -106,7 +106,7 @@
               <section class="day-section">
                 <h2 class="day-heading">{{ group.day }}</h2>
                 <div class="timeline-list">
-                  @for (item of group.items; track (item.sessionId ?? item.shiftId)) {
+                  @for (item of group.items; track timelineTrackId(item)) {
                     <article
                       class="timeline-card"
                       [class.primary]="item.isPrimary"
