@@ -108,10 +108,28 @@
   margin-bottom: 12px;
 }
 
+.filters-row {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+.filter-field {
+  min-width: 200px;
+}
+
+.filter-search {
+  min-width: 260px;
+}
+
 @media (max-width: 768px) {
   .workspace-layout,
   .workspace-layout.details-open {
     grid-template-columns: 1fr;
+  }
+
+  .filter-field,
+  .filter-search {
+    min-width: 100%;
   }
 
   .time-grid {

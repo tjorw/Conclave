@@ -1,0 +1,92 @@
+@if (visibleEvents().length === 0 && !draftBlock()) {
+  <div class="etl-empty">
+    <mat-icon>schedule</mat-icon>
+    <span>{{ TL.empty }}</span>
+  </div>
+} @else {
+  @if (hasConflict()) {
+    <div class="etl-conflict-banner">
+      <mat-icon>warning</mat-icon>
+      {{ TL.conflictBanner }}
+    </div>
+  }
+
+  <div class="etl-scroll">
+    <div class="etl-header" [style.padding-left.px]="EVENT_LABEL_WIDTH">
+      <div class="etl-days" [style.width.px]="totalWidth()">
+        @for (seg of daySegments(); track seg.label) {
+          <div class="etl-day" [style.left.px]="seg.left" [style.width.px]="seg.width">
+            {{ seg.label }}
+          </div>
+        }
+      </div>
+
+      <div class="etl-hours" [style.width.px]="totalWidth()">
+        @for (m of hourMarkers(); track m.left) {
+          <div class="etl-hour-tick" [style.left.px]="m.left">
+            <span>{{ m.label }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="etl-body">
+      @for (row of visibleEvents(); track row.eventId) {
+        <div class="etl-row" [style.height.px]="ROW_HEIGHT">
+          <div
+            class="etl-event-label"
+            [style.width.px]="EVENT_LABEL_WIDTH"
+            [style.height.px]="ROW_HEIGHT"
+            [class.editing]="currentEventId() === row.eventId">
+            {{ row.eventTitle }}
+          </div>
+
+          <div class="etl-track" [style.width.px]="totalWidth()" [style.height.px]="ROW_HEIGHT">
+            @for (m of hourMarkers(); track m.left) {
+              <div class="etl-grid-line" [style.left.px]="m.left"></div>
+            }
+
+            @for (block of getBlocksForEvent(row.eventId); track block.session.sessionId) {
+              <div
+                class="etl-block"
+                role="button"
+                tabindex="0"
+                [class.own]="block.isOwn && !block.hasConflict"
+                [class.other]="!block.isOwn && !block.hasConflict"
+                [class.conflict]="block.hasConflict"
+                [style.left.px]="block.left"
+                [style.width.px]="block.width"
+                [title]="venueName(block.session.venueId) + ' ' + formatTime(block.session.start) + '–' + formatTime(block.session.end)"
+                (click)="selectSession(block.session.sessionId)"
+                (keydown.enter)="selectSession(block.session.sessionId)"
+                (keydown.space)="selectSession(block.session.sessionId); $event.preventDefault()">
+                <span class="etl-block-label">{{ venueName(block.session.venueId) }}</span>
+                <span class="etl-block-time">{{ formatTime(block.session.start) }}–{{ formatTime(block.session.end) }}</span>
+              </div>
+            }
+
+            @if (draftBlock(); as db) {
+              @if (db.eventId === row.eventId) {
+                <div
+                  class="etl-block draft"
+                  [class.conflict]="db.hasConflict"
+                  [style.left.px]="db.left"
+                  [style.width.px]="db.width"
+                  [title]="TL.draftTitle">
+                  <span class="etl-block-label">{{ db.hasConflict ? TL.conflict : TL.inProgress }}</span>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="etl-legend">
+    <span class="etl-legend-dot own">Samma sal</span>
+    <span class="etl-legend-dot other">Övriga salar</span>
+    <span class="etl-legend-dot draft">{{ TL.legendDraft }}</span>
+    <span class="etl-legend-dot conflict">{{ TL.legendConflict }}</span>
+  </div>
+}

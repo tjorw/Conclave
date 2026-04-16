@@ -27,6 +27,7 @@ import { ERROR } from '../../labels/errors.labels';
 import { SESSIONS_OVERVIEW } from '../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../labels/ui.labels';
 import { EditionContextService } from '../../services/edition-context.service';
+import { EventTimelineComponent } from '../../shared/event-timeline/event-timeline.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog/confirm-dialog.component';
 import { DraftBlock, SessionTimelineComponent } from '../../shared/session-timeline/session-timeline.component';
 
@@ -46,6 +47,7 @@ import { DraftBlock, SessionTimelineComponent } from '../../shared/session-timel
     MatProgressSpinnerModule,
     MatSelectModule,
     MatTooltipModule,
+    EventTimelineComponent,
     SessionTimelineComponent,
   ],
   templateUrl: './sessions-overview.component.html',
@@ -73,7 +75,11 @@ export class SessionsOverviewComponent {
   readonly editingSessionId = signal<string | null>(null);
 
   readonly day = signal<string | null>(null);
+  readonly schedulePerspective = signal<'venue' | 'event'>('venue');
   readonly viewMode = signal<'timeline' | 'table'>('timeline');
+  readonly buildingFilter = signal<string>('all');
+  readonly categoryFilter = signal<string>('all');
+  readonly searchText = signal('');
 
   readonly form = this.fb.group({
     eventId: ['', Validators.required],
@@ -119,17 +125,70 @@ export class SessionsOverviewComponent {
     )
   );
 
+  readonly buildingOptions = computed(() => {
+    const buildings = new Set(
+      (this.edition()?.venues ?? [])
+        .map(v => (v.building ?? '').trim())
+        .filter(v => v.length > 0)
+    );
+
+    return [...buildings].sort((a, b) => a.localeCompare(b, 'sv-SE'));
+  });
+
+  readonly categoryOptions = computed(() => {
+    const categories = new Map<string, string>();
+    for (const event of this.events()) {
+      const name = event.categoryName?.trim() || event.categoryId;
+      categories.set(event.categoryId, name);
+    }
+    return [...categories.entries()]
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'sv-SE'));
+  });
+
+  private readonly eventCategoryMap = computed(() => {
+    const map = new Map<string, string>();
+    for (const event of this.events()) {
+      map.set(event.id, event.categoryId);
+    }
+    return map;
+  });
+
   readonly filteredSessions = computed(() => {
     const selectedDay = this.day();
+    const perspective = this.schedulePerspective();
+    const selectedBuilding = this.buildingFilter();
+    const selectedCategory = this.categoryFilter();
+    const search = this.searchText().trim().toLowerCase();
 
     return this.sortedSessions().filter(s => {
       if (selectedDay && !s.start.startsWith(selectedDay)) return false;
+
+      const venue = this.venueById(s.venueId);
+
+      if (perspective === 'venue' && selectedBuilding !== 'all') {
+        if ((venue?.building ?? '') !== selectedBuilding) return false;
+      }
+
+      if (perspective === 'event' && selectedCategory !== 'all') {
+        if (this.eventCategoryMap().get(s.eventId) !== selectedCategory) return false;
+      }
+
+      if (search.length > 0) {
+        const haystack = `${s.eventTitle} ${venue?.name ?? ''} ${venue?.building ?? ''}`.toLowerCase();
+        if (!haystack.includes(search)) return false;
+      }
+
       return true;
     });
   });
 
   readonly filteredVenues = computed(() => {
-    return this.edition()?.venues ?? [];
+    const venues = this.edition()?.venues ?? [];
+    if (this.schedulePerspective() === 'venue' && this.buildingFilter() !== 'all') {
+      return venues.filter(v => v.building === this.buildingFilter());
+    }
+    return venues;
   });
 
   readonly timelineDraft = computed<DraftBlock | null>(() => {
@@ -178,6 +237,13 @@ export class SessionsOverviewComponent {
 
   setDay(value: string): void {
     this.day.set(value);
+  }
+
+  setSchedulePerspective(value: 'venue' | 'event'): void {
+    this.schedulePerspective.set(value);
+    this.buildingFilter.set('all');
+    this.categoryFilter.set('all');
+    this.searchText.set('');
   }
 
   setViewMode(value: 'timeline' | 'table'): void {
@@ -296,6 +362,12 @@ export class SessionsOverviewComponent {
 
   startTypeLabel(value: string): string {
     return START_TYPE_LABEL[value] ?? value;
+  }
+
+  timelineTitle(): string {
+    return this.schedulePerspective() === 'venue'
+      ? this.PAGE.timelineTitleVenue
+      : this.PAGE.timelineTitleEvent;
   }
 
   formatDayLabel(day: string): string {

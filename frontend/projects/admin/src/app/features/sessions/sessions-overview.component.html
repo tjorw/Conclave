@@ -18,10 +18,46 @@
           }
         </mat-button-toggle-group>
 
+        <mat-button-toggle-group [value]="schedulePerspective()" (change)="setSchedulePerspective($event.value)">
+          <mat-button-toggle value="venue">{{ PAGE.perspectiveVenue }}</mat-button-toggle>
+          <mat-button-toggle value="event">{{ PAGE.perspectiveEvent }}</mat-button-toggle>
+        </mat-button-toggle-group>
+
         <mat-button-toggle-group [value]="viewMode()" (change)="setViewMode($event.value)">
           <mat-button-toggle value="timeline">{{ PAGE.timelineView }}</mat-button-toggle>
           <mat-button-toggle value="table">{{ PAGE.tableView }}</mat-button-toggle>
         </mat-button-toggle-group>
+      </div>
+
+      <div class="toolbar-row filters-row">
+        @if (schedulePerspective() === 'venue') {
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>{{ PAGE.buildingFilter }}</mat-label>
+            <mat-select [value]="buildingFilter()" (selectionChange)="buildingFilter.set($event.value)">
+              <mat-option value="all">{{ PAGE.allOption }}</mat-option>
+              @for (building of buildingOptions(); track building) {
+                <mat-option [value]="building">{{ building }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+
+        @if (schedulePerspective() === 'event') {
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>{{ PAGE.categoryFilter }}</mat-label>
+            <mat-select [value]="categoryFilter()" (selectionChange)="categoryFilter.set($event.value)">
+              <mat-option value="all">{{ PAGE.allOption }}</mat-option>
+              @for (category of categoryOptions(); track category.id) {
+                <mat-option [value]="category.id">{{ category.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+
+        <mat-form-field appearance="outline" class="filter-field filter-search">
+          <mat-label>{{ PAGE.searchFilter }}</mat-label>
+          <input matInput [value]="searchText()" (input)="searchText.set($any($event.target).value)" />
+        </mat-form-field>
       </div>
     </mat-card-content>
   </mat-card>
@@ -31,10 +67,11 @@
       @if (viewMode() === 'timeline') {
       <mat-card class="timeline-card">
         <mat-card-header>
-          <mat-card-title>{{ PAGE.timelineTitle }}</mat-card-title>
+          <mat-card-title>{{ timelineTitle() }}</mat-card-title>
         </mat-card-header>
 
         <mat-card-content>
+          @if (schedulePerspective() === 'venue') {
           <app-session-timeline
             [sessions]="filteredSessions()"
             [currentEventId]="form.getRawValue().eventId || null"
@@ -45,6 +82,19 @@
             [editionEnd]="day()"
             [showAllVenues]="true"
             (sessionSelected)="onTimelineSessionSelected($event)" />
+          }
+
+          @if (schedulePerspective() === 'event') {
+          <app-event-timeline
+            [sessions]="filteredSessions()"
+            [currentEventId]="form.getRawValue().eventId || null"
+            [editingVenueId]="form.getRawValue().venueId || null"
+            [venues]="filteredVenues()"
+            [draft]="timelineDraft()"
+            [editionStart]="day()"
+            [editionEnd]="day()"
+            (sessionSelected)="onTimelineSessionSelected($event)" />
+          }
         </mat-card-content>
       </mat-card>
       }
