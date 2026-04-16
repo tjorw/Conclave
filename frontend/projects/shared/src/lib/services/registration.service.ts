@@ -6,6 +6,7 @@ import {
   MySessionRegistrationSummaryDto,
   MyStaffApplicationDto,
   TicketTypeAdminDto,
+  VisitorTicketTypeDto,
   VisitorRegistrationAdminDto,
 } from '../models/registration.models';
 
@@ -17,6 +18,19 @@ export class RegistrationService {
   getMyVisitorRegistration(editionId: string) {
     return this.http.get<MyVisitorRegistrationDto | null>(
       `${this.env.apiBaseUrl}/editions/${editionId}/my-visitor-registration`
+    );
+  }
+
+  getAvailableTicketTypes(editionId: string) {
+    return this.http.get<VisitorTicketTypeDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/available-ticket-types`
+    );
+  }
+
+  submitVisitorRegistration(editionId: string, personId: string, ticketTypeId: string) {
+    return this.http.post<{ id: string }>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/visitor-registrations`,
+      { personId, ticketTypeId }
     );
   }
 

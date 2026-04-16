@@ -8,11 +8,11 @@ Spårar vad som återstår inför produktionsstart.
 
 Prioriterad lista – ej startade överst, klara underst.
 
-- [ ] `R05` Fas 3.2.5 Min biljett
 - [ ] `R13` Fas 3.2.10 Bevakningslista – sessioner utan platsbiljett
 - [ ] `R14` Fas 3.2.11 Personligt tidsschema – samlad vy i Mitt program
 - [ ] `R08` Fas 3.2.8 Min bemanning
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
+- [x] `R05` Fas 3.2.5 Min biljett
 
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
 

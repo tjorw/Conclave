@@ -5,6 +5,12 @@ export interface TicketTypeDto {
   capacity: number | null;
 }
 
+export interface VisitorTicketTypeDto {
+  id: string;
+  name: string;
+  price: number;
+}
+
 export interface TicketTypeAdminDto {
   id: string;
   name: string;

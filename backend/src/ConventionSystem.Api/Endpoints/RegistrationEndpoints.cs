@@ -4,6 +4,7 @@ using ConventionSystem.Application.Registration.Commands.DeleteTicketType;
 using ConventionSystem.Application.Registration.Commands.UpdateTicketType;
 using ConventionSystem.Application.Registration.Queries.GetMyVisitorRegistration;
 using ConventionSystem.Application.Registration.Queries.ListTicketTypes;
+using ConventionSystem.Application.Registration.Queries.ListAvailableTicketTypes;
 using ConventionSystem.Application.Registration.Queries.ListVisitorRegistrations;
 using ConventionSystem.Application.Registration.Queries.GetMySessionRegistrations;
 using ConventionSystem.Application.Registration.Queries.GetMyStaffApplication;
@@ -175,6 +176,12 @@ public static class RegistrationEndpoints
         app.MapGet("/editions/{editionId:guid}/my-visitor-registration",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new GetMyVisitorRegistrationQuery(editionId), ct)))
+            .RequireAuthorization();
+
+        // 3.2.5 – Valbara biljettyper för besökare
+        app.MapGet("/editions/{editionId:guid}/available-ticket-types",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListAvailableTicketTypesQuery(editionId), ct)))
             .RequireAuthorization();
 
         // 3.2.4 – Mina sessionsregistreringar

@@ -1,0 +1,97 @@
+<div class="ticket-page page-container">
+  <div class="back-link">
+    <a routerLink="/my-pages">← Mina sidor</a>
+  </div>
+
+  <header class="page-header">
+    <h1 class="page-title">Min biljett</h1>
+  </header>
+
+  @if (error()) {
+    <p class="error-banner">{{ error() }}</p>
+  }
+
+  @if (registration() && !loadingRegistration()) {
+    @if (registration(); as ticket) {
+      <section class="card status-card">
+        <h2>Din registrering</h2>
+        <dl class="status-list">
+          <div>
+            <dt>Biljetttyp</dt>
+            <dd>{{ ticket.ticketTypeName ?? 'Ej angiven' }}</dd>
+          </div>
+          <div>
+            <dt>Referensnummer</dt>
+            <dd>{{ referenceNumber(ticket.id) }}</dd>
+          </div>
+          <div>
+            <dt>Betalningsstatus</dt>
+            <dd>
+              <span [class]="ticket.status === 'Confirmed' ? 'status-chip green' : 'status-chip orange'">
+                {{ paymentStatusLabel(ticket.status) }}
+              </span>
+            </dd>
+          </div>
+        </dl>
+
+        <p class="payment-info">
+          Betalning hanteras separat. När vi har registrerat din betalning uppdateras statusen automatiskt.
+        </p>
+      </section>
+    }
+  } @else {
+    <section class="card form-card">
+      @if (!visitorRegistrationOpen()) {
+        <h2>Biljettbokning stängd</h2>
+        <p class="registration-closed">Besöksregistrering är inte öppen för denna upplaga.</p>
+      } @else {
+        <h2>Välj biljett</h2>
+        <form [formGroup]="registrationForm" (ngSubmit)="submitRegistration()">
+          @if (!loadingTicketTypes() && ticketTypes().length === 0) {
+            <p class="empty-ticket-types">Det finns inga valbara biljetter just nu.</p>
+          } @else {
+            <div class="ticket-options" role="radiogroup" aria-label="Biljettalternativ">
+              @if (loadingTicketTypes()) {
+                <p class="ticket-loading">Laddar biljetter...</p>
+              } @else {
+                @for (ticketType of ticketTypes(); track ticketType.id) {
+                  <label
+                    class="ticket-option"
+                    [class.selected]="registrationForm.controls.ticketTypeId.value === ticketType.id">
+                    <input
+                      class="ticket-option-input"
+                      type="radio"
+                      formControlName="ticketTypeId"
+                      [value]="ticketType.id" />
+                    <span class="ticket-option-name">{{ ticketType.name }}</span>
+                    <span class="ticket-option-price">{{ ticketType.price / 100 | currency:'SEK':'symbol':'1.0-0':'sv-SE' }}</span>
+                  </label>
+                }
+              }
+            </div>
+          }
+
+          <mat-checkbox formControlName="termsAccepted" class="terms-checkbox">
+            Jag godkänner villkoren för deltagande.
+          </mat-checkbox>
+
+          <p class="payment-info">
+            Betalning sker separat efter registrering. Du får betalningsinstruktioner via arrangören.
+          </p>
+
+          <button
+            mat-flat-button
+            class="submit-btn"
+            type="submit"
+            [disabled]="loadingTicketTypes() || ticketTypes().length === 0 || registrationForm.invalid || submitting()">
+            @if (submitting()) {
+              <mat-spinner diameter="18" />
+            } @else {
+              Boka biljett
+            }
+          </button>
+        </form>
+      }
+    </section>
+  }
+</div>

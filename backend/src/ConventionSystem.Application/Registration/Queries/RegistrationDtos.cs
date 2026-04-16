@@ -14,6 +14,11 @@ public record TicketTypeAdminDto(
     bool IsSellable,
     bool IsPubliclyVisible);
 
+public record VisitorTicketTypeDto(
+    Guid Id,
+    string Name,
+    int Price);
+
 public record VisitorRegistrationAdminDto(
     Guid Id,
     Guid PersonId,
