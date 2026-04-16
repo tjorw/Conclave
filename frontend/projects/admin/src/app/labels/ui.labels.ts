@@ -16,7 +16,12 @@ export const ACTION = {
   assign:      'Tilldela',
   confirm:     'Bekräfta',
   send:        'Skicka',
-  open:        'Öppna',
+  open:          'Öppna',
+  change:        'Byt',
+  schedule:      'Schemalägg',
+  close:         'Stäng',
+  sendRejection: 'Skicka avvisning',
+  markHandled:   'Markera behandlad och svara',
 } as const;
 
 /** Tooltip-texter för ikonknappar. */
@@ -41,6 +46,8 @@ export const TOOLTIP = {
   removeSelfAdmin: 'Du kan inte ta bort dig själv som admin',
   copyUrl:       'Kopiera URL',
   openInNewTab:  'Öppna i ny flik',
+  hideTimeline:  'Dölj tidslinje',
+  showTimeline:  'Visa tidslinje',
 } as const;
 
 /** Formulärfältsetiketter (mat-label). */
@@ -82,6 +89,24 @@ export const PLACEHOLDER = {
   editionName:          't.ex. Conclave 2026',
   optional:             'Valfritt',
 } as const;
+
+/** Rollnamn för en persons roll inom en upplaga. */
+export const PERSON_EDITION_ROLE = {
+  visitor:     'Besökare',
+  organiser:   'Arrangör',
+  staff:       'Funktionär',
+  coordinator: 'Koordinator',
+  responsible: 'Ansvarig',
+} as const;
+
+/** CSS-klasser för upplaga-rollpillar. */
+export const PERSON_EDITION_ROLE_CHIP: Record<string, string> = {
+  Besökare:    'chip-green',
+  Arrangör:    'chip-blue',
+  Funktionär:  'chip-blue',
+  Koordinator: 'chip-red',
+  Ansvarig:    'chip-grey',
+};
 
 /** Statuspillar för person och konto. */
 export const CHIP = {

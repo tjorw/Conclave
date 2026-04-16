@@ -21,6 +21,7 @@ import {
   EVENT_STATUS_CHIP,
 } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
+import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../labels/ui.labels';
 
 @Component({
@@ -102,7 +103,7 @@ export class EventsComponent {
     this.error.set(null);
     this.eventSvc.listEvents(editionId).subscribe({
       next: events => { this.events.set(events); this.loading.set(false); },
-      error: () => { this.error.set('Kunde inte ladda evenemang.'); this.loading.set(false); },
+      error: () => { this.error.set(ERROR.fetchEvents); this.loading.set(false); },
     });
   }
 
@@ -135,7 +136,7 @@ export class EventsComponent {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? 'Kunde inte skapa evenemang.');
+        this.error.set(err?.error?.detail ?? ERROR.createEvent);
       },
     });
   }
@@ -151,7 +152,7 @@ export class EventsComponent {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? 'Kunde inte ställa in evenemanget.');
+        this.error.set(err?.error?.detail ?? ERROR.cancelEvent);
       },
     });
   }

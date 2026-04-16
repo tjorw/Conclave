@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,7 +20,11 @@ import {
   EVENT_COMMENT_STATUS_LABEL, EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
 } from 'shared';
 import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
 import { DraftBlock, SessionTimelineComponent } from '../../../shared/session-timeline/session-timeline.component';
+import { ERROR } from '../../../labels/errors.labels';
+import { EVENT_DETAIL } from '../../../labels/pages.labels';
+import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
 
 @Component({
   selector: 'app-event-detail',
@@ -52,6 +57,20 @@ export class EventDetailComponent implements OnInit {
   private readonly conSvc     = inject(ConventionService);
   private readonly fb         = inject(FormBuilder);
   private readonly dialog     = inject(MatDialog);
+
+  private openConfirm(data: ConfirmDialogData) {
+    return this.dialog
+      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, { data, width: '400px' })
+      .afterClosed()
+      .pipe(map(result => result === true));
+  }
+
+  readonly ACTION        = ACTION;
+  readonly TOOLTIP       = TOOLTIP;
+  readonly FIELD         = FIELD;
+  readonly PAGE          = EVENT_DETAIL;
+  readonly registrationTypes = (Object.entries(REGISTRATION_KIND_LABEL) as [string, string][]).map(([value, label]) => ({ value, label }));
+  readonly startTypes        = (Object.entries(START_TYPE_LABEL) as [string, string][]).map(([value, label]) => ({ value, label }));
 
   readonly event      = signal<EventDto | null>(null);
   readonly edition    = signal<EditionDto | null>(null);
@@ -130,7 +149,7 @@ export class EventDetailComponent implements OnInit {
           },
         });
       },
-      error: () => { this.error.set('Kunde inte hämta evenemanget.'); this.loading.set(false); },
+      error: () => { this.error.set(ERROR.fetchEvent); this.loading.set(false); },
     });
   }
 
@@ -154,7 +173,7 @@ export class EventDetailComponent implements OnInit {
       this.saving.set(true);
       this.svc.changeCategory(ev.id, newCategoryId).subscribe({
         next: () => { this.saving.set(false); this.reload(); },
-        error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte byta kategori.'); },
+        error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.changeCategory); },
       });
     });
   }
@@ -167,7 +186,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.approveEvent(ev.id).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte godkänna evenemanget.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.approveEvent); },
     });
   }
 
@@ -181,7 +200,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.rejectEvent(ev.id, comment).subscribe({
       next: () => { this.saving.set(false); this.showRejectForm.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte avvisa evenemanget.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.rejectEvent); },
     });
   }
 
@@ -193,7 +212,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.cancelEvent(ev.id).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte ställa in evenemanget.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.cancelEvent); },
     });
   }
 
@@ -201,11 +220,17 @@ export class EventDetailComponent implements OnInit {
 
   deleteEvent(): void {
     const ev = this.event();
-    if (!ev || this.deleting() || !confirm(`Ta bort arrangemanget "${ev.title || '(utan titel)'}" permanent?`)) return;
-    this.deleting.set(true);
-    this.svc.deleteEvent(ev.id).subscribe({
-      next: () => this.router.navigate(['/events']),
-      error: err => { this.deleting.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte ta bort evenemanget.'); },
+    if (!ev || this.deleting()) return;
+    this.openConfirm({
+      title:   this.PAGE.deleteTitle,
+      message: this.PAGE.deleteMessage(ev.title || this.PAGE.noName),
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+      this.deleting.set(true);
+      this.svc.deleteEvent(ev.id).subscribe({
+        next: () => this.router.navigate(['/events']),
+        error: err => { this.deleting.set(false); this.error.set(err?.error?.detail ?? ERROR.deleteEvent); },
+      });
     });
   }
 
@@ -218,7 +243,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.updateDraft(ev.id, title!, description!, registrationType!, dropInRules || null).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte spara utkastet.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.saveDraft); },
     });
   }
 
@@ -236,7 +261,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.addSessionRequest(ev.id, description!, durationMinutes!, seats!, startType!).subscribe({
       next: () => { this.saving.set(false); this.showAddRequestForm.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte lägga till sessionönskemål.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.addSessionRequest); },
     });
   }
 
@@ -246,7 +271,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.removeSessionRequest(ev.id, requestId).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte ta bort sessionönskemål.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.removeSessionRequest); },
     });
   }
 
@@ -286,7 +311,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.scheduleSession(ev.id, venueId!, startTime!, endTime!, maxSeats!, startType!).subscribe({
       next: () => { this.saving.set(false); this.showAddSessionForm.set(false); this.reload(); this.refreshEditionSessions(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte schemalägga sessionen.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.scheduleSession); },
     });
   }
 
@@ -298,7 +323,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.updateSession(ev.id, sessionId, venueId!, startTime!, endTime!, maxSeats!, startType!).subscribe({
       next: () => { this.saving.set(false); this.editingSessionId.set(null); this.reload(); this.refreshEditionSessions(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte spara sessionen.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.saveSession); },
     });
   }
 
@@ -308,7 +333,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.deactivateSession(ev.id, sessionId).subscribe({
       next: () => { this.saving.set(false); this.reload(); this.refreshEditionSessions(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte inaktivera sessionen.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.deactivateSession); },
     });
   }
 
@@ -320,7 +345,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.returnToDraft(ev.id).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte återställa evenemanget till utkast.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.returnToDraft); },
     });
   }
 
@@ -330,7 +355,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.submitForReview(ev.id).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte skicka in evenemanget för granskning.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.submitForReview); },
     });
   }
 
@@ -415,7 +440,7 @@ export class EventDetailComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? 'Kunde inte hantera kommentaren.');
+        this.error.set(err?.error?.detail ?? ERROR.respondToComment);
       },
     });
   }

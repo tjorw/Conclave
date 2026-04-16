@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -16,13 +17,13 @@ public sealed class ChangeCategoryHandler(
     public async Task Handle(ChangeCategoryCommand command, CancellationToken ct)
     {
         var ev = await eventRepository.GetByIdAsync(new EventId(command.EventId), ct)
-            ?? throw new InvalidOperationException("Evenemanget hittades inte.");
+            ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());
 
         var edition = await editionRepository.GetByIdWithCategoriesAsync(ev.EditionId, ct)
-            ?? throw new InvalidOperationException("Upplagan hittades inte.");
+            ?? throw new ResourceNotFoundException("Upplaga", ev.EditionId.Value.ToString());
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+            ?? throw new ResourceNotFoundException("Konvention", edition.ConventionId.Value.ToString());
 
         if (!convention.IsAdministrator(currentUser.PersonId))
             throw new UnauthorizedAccessException("Utföraren är inte administratör.");

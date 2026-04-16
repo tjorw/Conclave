@@ -18,7 +18,8 @@ import {
   PersonDto,
 } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
-import { ACTION, CHIP, FIELD, PLACEHOLDER, TOOLTIP } from '../../labels/ui.labels';
+import { ERROR } from '../../labels/errors.labels';
+import { ACTION, CHIP, FIELD, PERSON_EDITION_ROLE, PERSON_EDITION_ROLE_CHIP, PLACEHOLDER, TOOLTIP } from '../../labels/ui.labels';
 
 @Component({
   selector: 'app-persons',
@@ -107,15 +108,15 @@ export class PersonsComponent implements OnInit {
       map.get(pid)!.add(role);
     };
 
-    for (const v of visitors) add(v.personId, 'Besökare');
-    for (const o of organisers) add(o.personId, 'Arrangör');
-    for (const s of staff) add(s.personId, 'Funktionär');
+    for (const v of visitors)   add(v.personId, PERSON_EDITION_ROLE.visitor);
+    for (const o of organisers) add(o.personId, PERSON_EDITION_ROLE.organiser);
+    for (const s of staff)      add(s.personId, PERSON_EDITION_ROLE.staff);
     for (const r of responsibles) {
       if (!r.personId) continue;
       if (r.position === 'Bemanningskoordinator' || r.position === 'Evenemangskoordinator') {
-        add(r.personId, 'Koordinator');
+        add(r.personId, PERSON_EDITION_ROLE.coordinator);
       } else if (r.position.startsWith('Funktionsområdesansvarig') || r.position.startsWith('Kategoriansvarig')) {
-        add(r.personId, 'Ansvarig');
+        add(r.personId, PERSON_EDITION_ROLE.responsible);
       }
     }
 
@@ -127,14 +128,7 @@ export class PersonsComponent implements OnInit {
   }
 
   roleChipClass(role: string): string {
-    switch (role) {
-      case 'Besökare':    return 'chip-green';
-      case 'Arrangör':    return 'chip-blue';
-      case 'Funktionär':  return 'chip-blue';
-      case 'Koordinator': return 'chip-red';
-      case 'Ansvarig':    return 'chip-grey';
-      default:            return 'chip-grey';
-    }
+    return PERSON_EDITION_ROLE_CHIP[role] ?? 'chip-grey';
   }
 
   readonly filteredPersons = computed(() => {
@@ -175,7 +169,7 @@ export class PersonsComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Kunde inte ladda personlistan.');
+        this.error.set(ERROR.fetchPersons);
         this.loading.set(false);
       },
     });
@@ -203,7 +197,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? 'Kunde inte skapa person.');
+        this.error.set(err?.error?.detail ?? ERROR.createPerson);
       },
     });
   }
@@ -235,7 +229,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? 'Kunde inte uppdatera person.');
+        this.error.set(err?.error?.detail ?? ERROR.updatePerson);
       },
     });
   }
@@ -250,7 +244,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? 'Kunde inte avaktivera person.');
+        this.error.set(err?.error?.detail ?? ERROR.deactivatePerson);
       },
     });
   }
@@ -265,7 +259,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? 'Kunde inte återaktivera person.');
+        this.error.set(err?.error?.detail ?? ERROR.reactivatePerson);
       },
     });
   }
@@ -280,7 +274,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? 'Kunde inte skicka återställningslänk.');
+        this.error.set(err?.error?.detail ?? ERROR.sendResetLink);
       },
     });
   }
@@ -298,7 +292,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? 'Kunde inte ändra kontostatus.');
+        this.error.set(err?.error?.detail ?? ERROR.setLock);
       },
     });
   }
@@ -313,7 +307,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? 'Kunde inte lägga till admin.');
+        this.error.set(err?.error?.detail ?? ERROR.setAdmin);
       },
     });
   }
@@ -333,7 +327,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? 'Kunde inte ta bort admin.');
+        this.error.set(err?.error?.detail ?? ERROR.setAdmin);
       },
     });
   }

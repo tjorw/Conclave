@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Event.Exceptions;
@@ -15,7 +16,7 @@ public sealed class DeleteEventHandler(
     public async Task Handle(DeleteEventCommand command, CancellationToken ct)
     {
         var ev = await eventRepository.GetByIdWithCoOrganisersAsync(new EventId(command.EventId), ct)
-            ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());
 
         if (!currentUser.IsAdmin && !ev.IsOrganiser(currentUser.PersonId))
             throw new UnauthorizedAccessException("Utföraren har inte behörighet att ta bort detta evenemang.");

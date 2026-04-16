@@ -5,7 +5,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { DatePipe } from '@angular/common';
 import { EditionContextService } from '../../services/edition-context.service';
-import { RegistrationService, VisitorRegistrationAdminDto } from 'shared';
+import { ERROR } from '../../labels/errors.labels';
+import {
+  RegistrationService,
+  VisitorRegistrationAdminDto,
+  VISITOR_REGISTRATION_STATUS_LABEL,
+  VISITOR_REGISTRATION_STATUS_CHIP,
+} from 'shared';
 
 @Component({
   selector: 'app-registrations',
@@ -41,7 +47,7 @@ export class RegistrationsComponent {
     this.loading.set(true);
     this.svc.listVisitorRegistrations(editionId).subscribe({
       next: vr => { this.visitorRegistrations.set(vr); this.loading.set(false); },
-      error: () => { this.error.set('Kunde inte hämta registreringar.'); this.loading.set(false); },
+      error: () => { this.error.set(ERROR.fetchRegistrations); this.loading.set(false); },
     });
   }
 
@@ -62,20 +68,15 @@ export class RegistrationsComponent {
     this.saving.set(true);
     this.svc.confirmVisitorPayment(reg.id, ref).subscribe({
       next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte bekräfta betalning', err),
+      error: (err) => this.handleError(ERROR.confirmPayment, err),
     });
   }
 
   statusLabel(status: string): string {
-    const map: Record<string, string> = {
-      PendingPayment: 'Väntar på betalning',
-      Confirmed: 'Bekräftad',
-      Cancelled: 'Avbokad',
-    };
-    return map[status] ?? status;
+    return VISITOR_REGISTRATION_STATUS_LABEL[status] ?? status;
   }
 
   statusChip(status: string): string {
-    return status === 'Confirmed' ? 'chip-green' : status === 'Cancelled' ? 'chip-grey' : 'chip-orange';
+    return VISITOR_REGISTRATION_STATUS_CHIP[status] ?? 'chip-orange';
   }
 }

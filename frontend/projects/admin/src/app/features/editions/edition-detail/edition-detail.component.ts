@@ -1,9 +1,11 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { map } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -22,6 +24,10 @@ import {
   VenueDto,
 } from 'shared';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { ERROR } from '../../../labels/errors.labels';
+import { EDITION_DETAIL } from '../../../labels/pages.labels';
+import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-edition-detail',
@@ -45,11 +51,19 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
   styleUrl: './edition-detail.component.scss',
 })
 export class EditionDetailComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
+  private readonly route  = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly fb = inject(FormBuilder);
-  private readonly svc = inject(ConventionService);
+  private readonly fb     = inject(FormBuilder);
+  private readonly svc    = inject(ConventionService);
   private readonly regSvc = inject(RegistrationService);
+  private readonly dialog = inject(MatDialog);
+
+  private openConfirm(data: ConfirmDialogData) {
+    return this.dialog
+      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, { data, width: '400px' })
+      .afterClosed()
+      .pipe(map(result => result === true));
+  }
 
   readonly edition = signal<EditionDto | null>(null);
   readonly persons = signal<PersonDto[]>([]);
@@ -72,6 +86,11 @@ export class EditionDetailComponent implements OnInit {
     this.error.set(detail ? `${context}: ${detail}` : context);
     this.saving.set(false);
   }
+
+  readonly ACTION  = ACTION;
+  readonly TOOLTIP = TOOLTIP;
+  readonly FIELD   = FIELD;
+  readonly PAGE    = EDITION_DETAIL;
 
   readonly isDraft = computed(() => this.edition()?.status === 'Draft');
   readonly isPublished = computed(() => this.edition()?.status === 'Published');
@@ -167,7 +186,7 @@ export class EditionDetailComponent implements OnInit {
     this.loading.set(true);
     this.svc.getEdition(editionId).subscribe({
       next: e => { this.edition.set(e); this.loading.set(false); },
-      error: () => { this.error.set('Kunde inte hämta upplagedata.'); this.loading.set(false); },
+      error: () => { this.error.set(ERROR.fetchEdition); this.loading.set(false); },
     });
     this.svc.listPersons().subscribe({
       next: p => this.persons.set(p.filter(x => x.isActive)),
@@ -197,16 +216,22 @@ export class EditionDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.setActiveEdition(this.edition()!.id).subscribe({
       next: () => { this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte sätta aktiv upplaga', err),
+      error: (err) => this.handleError(ERROR.setActiveEdition, err),
     });
   }
 
   publish(): void {
-    if (!confirm('Publicera upplagan? Den kan inte återgå till utkast.')) return;
-    this.saving.set(true);
-    this.svc.publishEdition(this.edition()!.id).subscribe({
-      next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => this.handleError('Publicering misslyckades', err),
+    this.openConfirm({
+      title:        this.PAGE.publishConfirmTitle,
+      message:      this.PAGE.publishConfirmMessage,
+      confirmLabel: this.PAGE.publishAction,
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+      this.saving.set(true);
+      this.svc.publishEdition(this.edition()!.id).subscribe({
+        next: () => { this.reload(); this.saving.set(false); },
+        error: (err) => this.handleError(ERROR.publishEdition, err),
+      });
     });
   }
 
@@ -214,7 +239,7 @@ export class EditionDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.openRegistration(this.edition()!.id, type).subscribe({
       next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte öppna registrering', err),
+      error: (err) => this.handleError(ERROR.openRegistration, err),
     });
   }
 
@@ -232,7 +257,7 @@ export class EditionDetailComponent implements OnInit {
       : this.svc.openEventSubmissions(this.edition()!.id);
     call.subscribe({
       next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte ändra arrangemangsansökan', err),
+      error: (err) => this.handleError(ERROR.toggleEventSub, err),
     });
   }
 
@@ -244,7 +269,7 @@ export class EditionDetailComponent implements OnInit {
       : this.svc.openStaffApplications(this.edition()!.id);
     call.subscribe({
       next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte ändra funktionärsansökan', err),
+      error: (err) => this.handleError(ERROR.toggleStaffApps, err),
     });
   }
 
@@ -274,7 +299,7 @@ export class EditionDetailComponent implements OnInit {
       eventCoordinatorId: v.eventCoordinatorId!,
     }).subscribe({
       next: () => { this.reload(); this.editingEdition.set(false); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte uppdatera upplagan', err),
+      error: (err) => this.handleError(ERROR.updateEdition, err),
     });
   }
 
@@ -288,7 +313,7 @@ export class EditionDetailComponent implements OnInit {
       name: v.name!, building: v.building!, description: v.description || null,
     }).subscribe({
       next: () => { this.reload(); this.venueForm.reset(); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte skapa lokal', err),
+      error: (err) => this.handleError(ERROR.createVenue, err),
     });
   }
 
@@ -306,17 +331,20 @@ export class EditionDetailComponent implements OnInit {
       name: v.name!, building: v.building!, description: v.description || null,
     }).subscribe({
       next: () => { this.reload(); this.editingVenue.set(null); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte uppdatera lokal', err),
+      error: (err) => this.handleError(ERROR.updateVenue, err),
     });
   }
 
   deleteVenue(venue: VenueDto): void {
-    if (!confirm(`Ta bort lokalen "${venue.name}"?`)) return;
-    this.saving.set(true);
-    this.svc.removeVenue(this.edition()!.id, venue.id).subscribe({
-      next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte ta bort lokal', err),
-    });
+    this.openConfirm({ title: this.PAGE.deleteVenueTitle, message: this.PAGE.deleteVenueMessage(venue.name) })
+      .subscribe(confirmed => {
+        if (!confirmed) return;
+        this.saving.set(true);
+        this.svc.removeVenue(this.edition()!.id, venue.id).subscribe({
+          next: () => { this.reload(); this.saving.set(false); },
+          error: (err) => this.handleError(ERROR.deleteVenue, err),
+        });
+      });
   }
 
   // ── Funktionsområden ─────────────────────────────────────────────────────
@@ -329,7 +357,7 @@ export class EditionDetailComponent implements OnInit {
       name: v.name!, description: v.description || null, responsibleId: v.responsibleId!,
     }).subscribe({
       next: () => { this.reload(); this.staffAreaForm.reset(); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte skapa funktionsområde', err),
+      error: (err) => this.handleError(ERROR.createStaffArea, err),
     });
   }
 
@@ -347,17 +375,20 @@ export class EditionDetailComponent implements OnInit {
       name: v.name!, description: v.description || null, responsibleId: v.responsibleId!,
     }).subscribe({
       next: () => { this.reload(); this.editingStaffArea.set(null); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte uppdatera funktionsområde', err),
+      error: (err) => this.handleError(ERROR.updateStaffArea, err),
     });
   }
 
   deleteStaffArea(area: StaffAreaDto): void {
-    if (!confirm(`Ta bort funktionsområdet "${area.name}"? Alla tillhörande stationer tas också bort.`)) return;
-    this.saving.set(true);
-    this.svc.removeStaffArea(this.edition()!.id, area.id).subscribe({
-      next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte ta bort funktionsområde', err),
-    });
+    this.openConfirm({ title: this.PAGE.deleteStaffAreaTitle, message: this.PAGE.deleteStaffAreaMessage(area.name) })
+      .subscribe(confirmed => {
+        if (!confirmed) return;
+        this.saving.set(true);
+        this.svc.removeStaffArea(this.edition()!.id, area.id).subscribe({
+          next: () => { this.reload(); this.saving.set(false); },
+          error: (err) => this.handleError(ERROR.deleteStaffArea, err),
+        });
+      });
   }
 
   // ── Kategorier ───────────────────────────────────────────────────────────
@@ -370,7 +401,7 @@ export class EditionDetailComponent implements OnInit {
       name: v.name!, description: v.description || null, responsibleId: v.responsibleId!,
     }).subscribe({
       next: () => { this.reload(); this.categoryForm.reset(); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte skapa kategori', err),
+      error: (err) => this.handleError(ERROR.createCategory, err),
     });
   }
 
@@ -388,17 +419,20 @@ export class EditionDetailComponent implements OnInit {
       name: v.name!, description: v.description || null, responsibleId: v.responsibleId!,
     }).subscribe({
       next: () => { this.reload(); this.editingCategory.set(null); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte uppdatera kategori', err),
+      error: (err) => this.handleError(ERROR.updateCategory, err),
     });
   }
 
   deleteCategory(category: CategoryDto): void {
-    if (!confirm(`Ta bort kategorin "${category.name}"?`)) return;
-    this.saving.set(true);
-    this.svc.removeCategory(this.edition()!.id, category.id).subscribe({
-      next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte ta bort kategori', err),
-    });
+    this.openConfirm({ title: this.PAGE.deleteCategoryTitle, message: this.PAGE.deleteCategoryMessage(category.name) })
+      .subscribe(confirmed => {
+        if (!confirmed) return;
+        this.saving.set(true);
+        this.svc.removeCategory(this.edition()!.id, category.id).subscribe({
+          next: () => { this.reload(); this.saving.set(false); },
+          error: (err) => this.handleError(ERROR.deleteCategory, err),
+        });
+      });
   }
 
   // ── Biljettyper ──────────────────────────────────────────────────────────
@@ -416,7 +450,7 @@ export class EditionDetailComponent implements OnInit {
       isPubliclyVisible: v.isPubliclyVisible ?? false,
     }).subscribe({
       next: () => { this.reload(); this.addTicketTypeForm.reset({ category: 'Visitor', price: 0 }); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte skapa biljetttyp', err),
+      error: (err) => this.handleError(ERROR.createTicketType, err),
     });
   }
 
@@ -443,18 +477,21 @@ export class EditionDetailComponent implements OnInit {
       isPubliclyVisible: v.isPubliclyVisible ?? false,
     }).subscribe({
       next: () => { this.reload(); this.editingTicketType.set(null); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte uppdatera biljetttyp', err),
+      error: (err) => this.handleError(ERROR.updateTicketType, err),
     });
   }
 
   deleteTicketType(tt: TicketTypeAdminDto): void {
-    if (!confirm(`Ta bort biljetttypen "${tt.name}"?`)) return;
-    const editionId = this.edition()!.id;
-    this.saving.set(true);
-    this.regSvc.deleteTicketType(editionId, tt.id).subscribe({
-      next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => this.handleError('Kunde inte ta bort biljetttyp', err),
-    });
+    this.openConfirm({ title: this.PAGE.deleteTicketTypeTitle, message: this.PAGE.deleteTicketTypeMessage(tt.name) })
+      .subscribe(confirmed => {
+        if (!confirmed) return;
+        const editionId = this.edition()!.id;
+        this.saving.set(true);
+        this.regSvc.deleteTicketType(editionId, tt.id).subscribe({
+          next: () => { this.reload(); this.saving.set(false); },
+          error: (err) => this.handleError(ERROR.deleteTicketType, err),
+        });
+      });
   }
 
   formatPrice(priceInOre: number): string {

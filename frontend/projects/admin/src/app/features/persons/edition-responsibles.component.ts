@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConventionService, EditionResponsibleDto } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
+import { ERROR } from '../../labels/errors.labels';
 import { FIELD, PLACEHOLDER } from '../../labels/ui.labels';
 
 @Component({
@@ -50,7 +51,7 @@ export class EditionResponsiblesComponent {
     this.error.set(null);
     this.svc.listEditionResponsibles(editionId).subscribe({
       next: r => { this.responsibles.set(r); this.loading.set(false); },
-      error: () => { this.error.set('Kunde inte hämta ansvariga.'); this.loading.set(false); },
+      error: () => { this.error.set(ERROR.fetchResponsibles); this.loading.set(false); },
     });
   }
 

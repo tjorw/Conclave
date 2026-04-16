@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
 using MediatR;
@@ -15,7 +16,7 @@ public sealed class AddEventCommentHandler(
         var performedById = currentUser.PersonId;
 
         var ev = await eventRepository.GetByIdWithCoOrganisersAsync(new EventId(command.EventId), ct)
-            ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());
 
         if (!ev.IsOrganiser(performedById))
             throw new UnauthorizedAccessException("Utföraren har inte behörighet att kommentera detta evenemang.");

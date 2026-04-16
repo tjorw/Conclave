@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConventionService, EditionVisitorDto } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
+import { ERROR } from '../../labels/errors.labels';
 import { FIELD, PLACEHOLDER } from '../../labels/ui.labels';
 
 @Component({
@@ -50,7 +51,7 @@ export class EditionVisitorsComponent {
     this.error.set(null);
     this.svc.listEditionVisitors(editionId).subscribe({
       next: v => { this.visitors.set(v); this.loading.set(false); },
-      error: () => { this.error.set('Kunde inte hämta besökare.'); this.loading.set(false); },
+      error: () => { this.error.set(ERROR.fetchVisitors); this.loading.set(false); },
     });
   }
 

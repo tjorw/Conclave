@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.DeleteEvent;
 using ConventionSystem.Domain.Convention.Ids;
@@ -106,7 +107,7 @@ public class DeleteEventHandlerTests
         _eventRepo.GetByIdWithCoOrganisersAsync(Arg.Any<EventId>(), Arg.Any<CancellationToken>())
             .Returns((Domain.Event.Aggregates.Event?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new DeleteEventCommand(Guid.NewGuid()), default));
     }
 }

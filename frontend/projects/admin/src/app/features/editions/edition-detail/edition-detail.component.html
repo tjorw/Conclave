@@ -9,26 +9,26 @@
   <!-- ── Sidhuvud ── -->
   <div class="page-header">
     <a routerLink="/dashboard" class="back-link">
-      <mat-icon>arrow_back</mat-icon> Dashboard
+      <mat-icon>arrow_back</mat-icon> {{ PAGE.backLink }}
     </a>
     <div class="title-row">
       <h1 class="page-title">{{ e.name }}</h1>
       <mat-chip-set>
         <mat-chip [color]="isPublished() ? 'primary' : 'default'" highlighted>
-          {{ isPublished() ? 'Publicerad' : 'Utkast' }}
+          {{ isPublished() ? PAGE.statusPublished : PAGE.statusDraft }}
         </mat-chip>
       </mat-chip-set>
-      <button mat-icon-button (click)="startEditEdition()" matTooltip="Redigera grunddata" [disabled]="saving()">
+      <button mat-icon-button (click)="startEditEdition()" [matTooltip]="PAGE.editTooltip" [disabled]="saving()">
         <mat-icon>edit</mat-icon>
       </button>
     </div>
     <div class="page-meta">
       <span class="meta-item"><mat-icon>calendar_today</mat-icon>{{ formatDate(e.start) }} – {{ formatDate(e.end) }}</span>
       @if (e.staffCoordinatorId) {
-        <span class="meta-item"><mat-icon>manage_accounts</mat-icon>Staff: {{ personName(e.staffCoordinatorId) }}</span>
+        <span class="meta-item"><mat-icon>manage_accounts</mat-icon>{{ PAGE.staffLabel }} {{ personName(e.staffCoordinatorId) }}</span>
       }
       @if (e.eventCoordinatorId) {
-        <span class="meta-item"><mat-icon>event</mat-icon>Evenemang: {{ personName(e.eventCoordinatorId) }}</span>
+        <span class="meta-item"><mat-icon>event</mat-icon>{{ PAGE.eventLabel }} {{ personName(e.eventCoordinatorId) }}</span>
       }
     </div>
   </div>
@@ -36,26 +36,26 @@
   <!-- ── Redigera upplaga ── -->
   @if (editingEdition()) {
     <mat-card class="edit-card">
-      <mat-card-header><mat-card-title>Redigera grunddata</mat-card-title></mat-card-header>
+      <mat-card-header><mat-card-title>{{ PAGE.editTitle }}</mat-card-title></mat-card-header>
       <mat-card-content>
         <form [formGroup]="editEditionForm" (ngSubmit)="saveEdition()" class="edit-form">
           <div class="form-row">
             <mat-form-field>
-              <mat-label>Namn</mat-label>
+              <mat-label>{{ FIELD.name }}</mat-label>
               <input matInput formControlName="name" />
             </mat-form-field>
             <mat-form-field>
-              <mat-label>Startdatum</mat-label>
+              <mat-label>{{ FIELD.startDate }}</mat-label>
               <input matInput type="date" formControlName="startDate" />
             </mat-form-field>
             <mat-form-field>
-              <mat-label>Slutdatum</mat-label>
+              <mat-label>{{ FIELD.endDate }}</mat-label>
               <input matInput type="date" formControlName="endDate" />
             </mat-form-field>
           </div>
           <div class="form-row">
             <mat-form-field>
-              <mat-label>Staffkoordinator</mat-label>
+              <mat-label>{{ FIELD.staffCoord }}</mat-label>
               <mat-select formControlName="staffCoordinatorId">
                 @for (p of persons(); track p.id) {
                   <mat-option [value]="p.id">{{ p.name }}</mat-option>
@@ -63,7 +63,7 @@
               </mat-select>
             </mat-form-field>
             <mat-form-field>
-              <mat-label>Evenemangskoordinator</mat-label>
+              <mat-label>{{ FIELD.eventCoord }}</mat-label>
               <mat-select formControlName="eventCoordinatorId">
                 @for (p of persons(); track p.id) {
                   <mat-option [value]="p.id">{{ p.name }}</mat-option>
@@ -85,18 +85,18 @@
     <mat-card-content class="actions-row">
       @if (isDraft()) {
         <button mat-flat-button color="primary" [disabled]="saving()" (click)="publish()">
-          <mat-icon>publish</mat-icon> Publicera upplaga
+          <mat-icon>publish</mat-icon> {{ PAGE.publishAction }}
         </button>
       }
       <button mat-stroked-button color="primary" (click)="setActive()" [disabled]="saving()">
-        <mat-icon>public</mat-icon> Sätt som aktiv
+        <mat-icon>public</mat-icon> {{ PAGE.setActiveAction }}
       </button>
       <button
         mat-stroked-button
         [disabled]="saving() || !isPublished() || registrationOpen('visitor')"
-        [matTooltip]="registrationOpen('visitor') ? 'Redan öppen' : (!isPublished() ? 'Kräver publicerad upplaga' : '')"
+        [matTooltip]="registrationOpen('visitor') ? PAGE.alreadyOpen : (!isPublished() ? PAGE.requiresPublished : '')"
         (click)="openRegistration('visitor')">
-        Besökarregistrering
+        {{ PAGE.visitorRegLabel }}
         @if (registrationOpen('visitor')) { <mat-icon>check</mat-icon> }
       </button>
     </mat-card-content>
@@ -107,29 +107,29 @@
     <mat-card class="actions-card">
       <mat-card-content class="actions-row">
         <div class="submission-status">
-          <span class="status-label">Arrangemangsansökan:</span>
+          <span class="status-label">{{ PAGE.organiserSubLabel }}</span>
           <mat-chip [color]="edition()!.organiserRegistrationOpen ? 'primary' : 'default'" highlighted>
-            {{ edition()!.organiserRegistrationOpen ? 'Öppen' : 'Stängd' }}
+            {{ edition()!.organiserRegistrationOpen ? PAGE.statusOpen : PAGE.statusClosed }}
           </mat-chip>
           <button
             mat-stroked-button
             [color]="edition()!.organiserRegistrationOpen ? 'warn' : 'primary'"
             [disabled]="saving()"
             (click)="toggleEventSubmissions()">
-            {{ edition()!.organiserRegistrationOpen ? 'Stäng' : 'Öppna' }}
+            {{ edition()!.organiserRegistrationOpen ? ACTION.close : ACTION.open }}
           </button>
         </div>
         <div class="submission-status">
-          <span class="status-label">Funktionärsansökan:</span>
+          <span class="status-label">{{ PAGE.staffSubLabel }}</span>
           <mat-chip [color]="edition()!.staffRegistrationOpen ? 'primary' : 'default'" highlighted>
-            {{ edition()!.staffRegistrationOpen ? 'Öppen' : 'Stängd' }}
+            {{ edition()!.staffRegistrationOpen ? PAGE.statusOpen : PAGE.statusClosed }}
           </mat-chip>
           <button
             mat-stroked-button
             [color]="edition()!.staffRegistrationOpen ? 'warn' : 'primary'"
             [disabled]="saving()"
             (click)="toggleStaffApplications()">
-            {{ edition()!.staffRegistrationOpen ? 'Stäng' : 'Öppna' }}
+            {{ edition()!.staffRegistrationOpen ? ACTION.close : ACTION.open }}
           </button>
         </div>
       </mat-card-content>
@@ -158,10 +158,10 @@
                   <td>{{ v.building }}</td>
                   <td class="muted">{{ v.description || '–' }}</td>
                   <td class="row-actions">
-                    <button mat-icon-button (click)="startEditVenue(v)" matTooltip="Redigera" [disabled]="saving()">
+                    <button mat-icon-button (click)="startEditVenue(v)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="deleteVenue(v)" matTooltip="Ta bort" [disabled]="saving()">
+                    <button mat-icon-button color="warn" (click)="deleteVenue(v)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </td>
@@ -227,10 +227,10 @@
                     </div>
                   </td>
                   <td class="row-actions">
-                    <button mat-icon-button (click)="startEditStaffArea(area)" matTooltip="Redigera" [disabled]="saving()">
+                    <button mat-icon-button (click)="startEditStaffArea(area)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="deleteStaffArea(area)" matTooltip="Ta bort" [disabled]="saving()">
+                    <button mat-icon-button color="warn" (click)="deleteStaffArea(area)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </td>
@@ -296,10 +296,10 @@
                   <td class="muted">{{ c.description || '–' }}</td>
                   <td>{{ personName(c.responsibleId) }}</td>
                   <td class="row-actions">
-                    <button mat-icon-button (click)="startEditCategory(c)" matTooltip="Redigera" [disabled]="saving()">
+                    <button mat-icon-button (click)="startEditCategory(c)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="deleteCategory(c)" matTooltip="Ta bort" [disabled]="saving()">
+                    <button mat-icon-button color="warn" (click)="deleteCategory(c)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </td>
@@ -382,10 +382,10 @@
                     </mat-icon>
                   </td>
                   <td class="row-actions">
-                    <button mat-icon-button (click)="startEditTicketType(tt)" matTooltip="Redigera" [disabled]="saving()">
+                    <button mat-icon-button (click)="startEditTicketType(tt)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="deleteTicketType(tt)" matTooltip="Ta bort" [disabled]="saving()">
+                    <button mat-icon-button color="warn" (click)="deleteTicketType(tt)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </td>
@@ -401,12 +401,12 @@
           <form [formGroup]="editTicketTypeForm" (ngSubmit)="saveTicketType()" class="inline-form">
             <h4 class="form-title">Redigera: {{ ett.name }}</h4>
             <div class="form-row">
-              <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
-              <mat-form-field><mat-label>Pris (kr)</mat-label><input matInput type="number" formControlName="price" min="0" /></mat-form-field>
-              <mat-checkbox formControlName="isSellable">Säljbar</mat-checkbox>
-              <mat-checkbox formControlName="isPubliclyVisible">Synlig publikt</mat-checkbox>
-              <button mat-button type="button" (click)="editingTicketType.set(null)">Avbryt</button>
-              <button mat-flat-button color="primary" type="submit" [disabled]="editTicketTypeForm.invalid || saving()">Spara</button>
+              <mat-form-field><mat-label>{{ FIELD.name }}</mat-label><input matInput formControlName="name" /></mat-form-field>
+              <mat-form-field><mat-label>{{ PAGE.fieldPrice }}</mat-label><input matInput type="number" formControlName="price" min="0" /></mat-form-field>
+              <mat-checkbox formControlName="isSellable">{{ PAGE.fieldSellable }}</mat-checkbox>
+              <mat-checkbox formControlName="isPubliclyVisible">{{ PAGE.fieldPubliclyVisible }}</mat-checkbox>
+              <button mat-button type="button" (click)="editingTicketType.set(null)">{{ ACTION.cancel }}</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="editTicketTypeForm.invalid || saving()">{{ ACTION.save }}</button>
             </div>
           </form>
         }
@@ -414,19 +414,19 @@
         <form [formGroup]="addTicketTypeForm" (ngSubmit)="addTicketType()" class="inline-form">
           <h4 class="form-title">Lägg till biljetttyp</h4>
           <div class="form-row">
-            <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
-            <mat-form-field><mat-label>Pris (kr)</mat-label><input matInput type="number" formControlName="price" min="0" /></mat-form-field>
+            <mat-form-field><mat-label>{{ FIELD.name }}</mat-label><input matInput formControlName="name" /></mat-form-field>
+            <mat-form-field><mat-label>{{ PAGE.fieldPrice }}</mat-label><input matInput type="number" formControlName="price" min="0" /></mat-form-field>
             <mat-form-field>
-              <mat-label>Kategori</mat-label>
+              <mat-label>{{ FIELD.category }}</mat-label>
               <mat-select formControlName="category">
                 @for (cat of ticketTypeCategories; track cat.value) {
                   <mat-option [value]="cat.value">{{ cat.label }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
-            <mat-checkbox formControlName="isSellable">Säljbar</mat-checkbox>
-            <mat-checkbox formControlName="isPubliclyVisible">Synlig publikt</mat-checkbox>
-            <button mat-flat-button color="accent" type="submit" [disabled]="addTicketTypeForm.invalid || saving()">Lägg till</button>
+            <mat-checkbox formControlName="isSellable">{{ PAGE.fieldSellable }}</mat-checkbox>
+            <mat-checkbox formControlName="isPubliclyVisible">{{ PAGE.fieldPubliclyVisible }}</mat-checkbox>
+            <button mat-flat-button color="accent" type="submit" [disabled]="addTicketTypeForm.invalid || saving()">{{ ACTION.add }}</button>
           </div>
         </form>
       </div>

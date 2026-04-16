@@ -1,6 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { EditionSessionDto, VenueDto } from 'shared';
+import { SESSION_TIMELINE } from '../../labels/pages.labels';
 
 export interface DraftBlock {
   start: string;
@@ -47,6 +48,7 @@ export class SessionTimelineComponent {
 
   readonly VENUE_LABEL_WIDTH = VENUE_LABEL_WIDTH;
   readonly ROW_HEIGHT        = ROW_HEIGHT;
+  readonly TL                = SESSION_TIMELINE;
 
   // ── Time range ───────────────────────────────────────────────────────────
 

@@ -11,6 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditionContextService } from '../../../services/edition-context.service';
+import { ERROR } from '../../../labels/errors.labels';
 import {
   ConventionService, DateTimeRangeComponent, EditionDto, PersonDto, ShiftDto, ShiftSummaryDto,
   StaffService, StaffAreaDto, StationDto,
@@ -107,7 +108,7 @@ export class StaffAreaDetailComponent {
         this.edition.set(ed);
         this.loadShiftsForArea(ed);
       },
-      error: () => { this.error.set('Kunde inte ladda upplagan.'); this.loading.set(false); },
+      error: () => { this.error.set(ERROR.fetchEdition); this.loading.set(false); },
     });
   }
 
@@ -175,12 +176,12 @@ export class StaffAreaDetailComponent {
     if (editing) {
       this.conventionSvc.updateStation(editionId, editing.id, { name: name!, description: description || null }).subscribe({
         next: () => { this.saving.set(false); this.cancelStationForm(); this.reloadEdition(); },
-        error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte uppdatera stationen.'); },
+        error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.updateStation); },
       });
     } else {
       this.conventionSvc.createStation(editionId, { name: name!, description: description || null, staffAreaId: this.areaId() }).subscribe({
         next: () => { this.saving.set(false); this.cancelStationForm(); this.reloadEdition(); },
-        error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte skapa stationen.'); },
+        error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.createStation); },
       });
     }
   }
@@ -192,7 +193,7 @@ export class StaffAreaDetailComponent {
     this.saving.set(true);
     this.conventionSvc.removeStation(editionId, station.id).subscribe({
       next: () => { this.saving.set(false); this.reloadEdition(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte ta bort stationen.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.removeStation); },
     });
   }
 
@@ -231,7 +232,7 @@ export class StaffAreaDetailComponent {
         const ed = this.edition();
         if (ed) this.loadShiftsForArea(ed);
       },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte skapa passet.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.createShift); },
     });
   }
 
@@ -245,7 +246,7 @@ export class StaffAreaDetailComponent {
         const ed = this.edition();
         if (ed) this.loadShiftsForArea(ed);
       },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte ställa in passet.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.cancelShift); },
     });
   }
 
@@ -258,7 +259,7 @@ export class StaffAreaDetailComponent {
     this.saving.set(true);
     this.svc.assignPerson(shift.id, personId!).subscribe({
       next: () => { this.saving.set(false); this.reloadShift(shift.id); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte tilldela personen.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.assignPerson); },
     });
   }
 
@@ -268,7 +269,7 @@ export class StaffAreaDetailComponent {
     this.saving.set(true);
     this.svc.confirmAssignment(shift.id, assignmentId).subscribe({
       next: () => { this.saving.set(false); this.reloadShift(shift.id); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte bekräfta.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.confirmAssignment); },
     });
   }
 
@@ -278,7 +279,7 @@ export class StaffAreaDetailComponent {
     this.saving.set(true);
     this.svc.rejectAssignment(shift.id, assignmentId).subscribe({
       next: () => { this.saving.set(false); this.reloadShift(shift.id); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte avslå.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.rejectAssignment); },
     });
   }
 
@@ -288,7 +289,7 @@ export class StaffAreaDetailComponent {
     this.saving.set(true);
     this.svc.cancelAssignment(shift.id, assignmentId).subscribe({
       next: () => { this.saving.set(false); this.reloadShift(shift.id); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte ta bort tilldelningen.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.unassignPerson); },
     });
   }
 

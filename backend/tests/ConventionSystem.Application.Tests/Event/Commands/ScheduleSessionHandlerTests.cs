@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.ScheduleSession;
@@ -105,7 +106,7 @@ public class ScheduleSessionHandlerTests
         var outsider = convention.CreatePerson("Utomstående", "other@example.com");
         _currentUser.PersonId.Returns(outsider.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
             _handler.Handle(new ScheduleSessionCommand(
                 ev.Id.Value, venueId.Value,
                 new DateTime(2027, 3, 1, 10, 0, 0),

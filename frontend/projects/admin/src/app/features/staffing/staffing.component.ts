@@ -9,6 +9,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DatePipe } from '@angular/common';
 import { EditionContextService } from '../../services/edition-context.service';
+import { ERROR } from '../../labels/errors.labels';
 import { TOOLTIP } from '../../labels/ui.labels';
 import {
   ConventionService, EditionDto, StaffApplicationSummaryDto, StaffService,
@@ -82,7 +83,7 @@ export class StaffingComponent {
 
     this.conventionSvc.getEdition(editionId).subscribe({
       next: ed => { this.edition.set(ed); this.loading.set(false); },
-      error: () => { this.error.set('Kunde inte ladda upplagan.'); this.loading.set(false); },
+      error: () => { this.error.set(ERROR.fetchEdition); this.loading.set(false); },
     });
   }
 
@@ -110,7 +111,7 @@ export class StaffingComponent {
     if (!summary) return;
     this.svc.listStaffApplications(summary.id).subscribe({
       next: apps => { this.applications.set(apps); this.applicationsLoaded.set(true); },
-      error: () => this.error.set('Kunde inte hämta ansökningar.'),
+      error: () => this.error.set(ERROR.fetchStaffApplications),
     });
   }
 
@@ -119,7 +120,7 @@ export class StaffingComponent {
     if (!summary) return;
     this.svc.listStaffApplications(summary.id).subscribe({
       next: apps => this.applications.set(apps),
-      error: () => this.error.set('Kunde inte uppdatera ansökningslistan.'),
+      error: () => this.error.set(ERROR.fetchStaffApplications),
     });
   }
 
@@ -128,7 +129,7 @@ export class StaffingComponent {
     this.saving.set(true);
     this.svc.acceptApplication(app.id).subscribe({
       next: () => { this.saving.set(false); this.reloadApplications(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte acceptera ansökan.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.acceptApplication); },
     });
   }
 
@@ -137,7 +138,7 @@ export class StaffingComponent {
     this.saving.set(true);
     this.svc.rejectApplication(app.id).subscribe({
       next: () => { this.saving.set(false); this.reloadApplications(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? 'Kunde inte avslå ansökan.'); },
+      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.rejectApplication); },
     });
   }
 

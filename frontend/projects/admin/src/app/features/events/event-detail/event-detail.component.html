@@ -6,10 +6,10 @@
 
   <div class="page-header">
     <a routerLink="/events" class="back-link">
-      <mat-icon>arrow_back</mat-icon> Evenemang
+      <mat-icon>arrow_back</mat-icon> {{ PAGE.backLink }}
     </a>
     <div class="title-row">
-      <h1 class="page-title">{{ e.title || '(Inget namn)' }}</h1>
+      <h1 class="page-title">{{ e.title || PAGE.noName }}</h1>
       <span class="chip {{ e.status === 'UnderReview' ? 'chip-orange' : e.status === 'Published' ? 'chip-green' : 'chip-grey' }}">
         {{ statusLabel(e.status) }}
       </span>
@@ -23,7 +23,7 @@
         @if (e.status !== 'Cancelled') {
           <button mat-stroked-button class="meta-edit-btn" (click)="openChangeCategoryDialog()"
             [disabled]="saving()">
-            Byt
+            {{ ACTION.change }}
           </button>
         }
       </span>
@@ -77,22 +77,22 @@
 
   @if (showRejectForm()) {
     <mat-card class="reject-card">
-      <mat-card-header><mat-card-title>Avvisa evenemang</mat-card-title></mat-card-header>
+      <mat-card-header><mat-card-title>{{ PAGE.rejectTitle }}</mat-card-title></mat-card-header>
       <mat-card-content>
-        <p class="reject-hint">Ange en kommentar som förklarar varför evenemanget avvisas. Arrangören kan se kommentaren.</p>
+        <p class="reject-hint">{{ PAGE.rejectHint }}</p>
         <form [formGroup]="rejectForm">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Kommentar *</mat-label>
+            <mat-label>{{ FIELD.comment }} *</mat-label>
             <textarea matInput formControlName="comment" rows="4"
-              placeholder="Beskriv vad som behöver ändras…"></textarea>
+              [placeholder]="PAGE.rejectCommentPlaceholder"></textarea>
           </mat-form-field>
         </form>
       </mat-card-content>
       <mat-card-actions align="end">
-        <button mat-button (click)="cancelReject()">Avbryt</button>
+        <button mat-button (click)="cancelReject()">{{ ACTION.cancel }}</button>
         <button mat-flat-button color="warn" (click)="submitReject()"
           [disabled]="rejectForm.invalid || saving()">
-          @if (saving()) { <mat-spinner diameter="18" /> } @else { Skicka avvisning }
+          @if (saving()) { <mat-spinner diameter="18" /> } @else { {{ PAGE.sendRejection }} }
         </button>
       </mat-card-actions>
     </mat-card>
@@ -101,7 +101,7 @@
   @if (e.status === 'Published') {
     <mat-card class="content-card">
       <mat-card-header>
-        <mat-card-title>Obehandlade kommentarer</mat-card-title>
+        <mat-card-title>{{ PAGE.pendingCommentsTitle }}</mat-card-title>
       </mat-card-header>
       <mat-card-content>
         @for (comment of pendingComments(); track comment.id) {
@@ -114,7 +114,7 @@
             <p class="comment-text">{{ comment.text }}</p>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Beskriv vad som justerats</mat-label>
+              <mat-label>{{ PAGE.responseFieldLabel }}</mat-label>
               <textarea
                 matInput
                 rows="3"
@@ -128,12 +128,12 @@
                 color="primary"
                 (click)="respondToComment(comment.id)"
                 [disabled]="saving() || !commentResponse(comment.id).trim()">
-                Markera behandlad och svara
+                {{ ACTION.markHandled }}
               </button>
             </div>
           </div>
         } @empty {
-          <p class="empty-state">Inga obehandlade kommentarer.</p>
+          <p class="empty-state">{{ PAGE.noComments }}</p>
         }
       </mat-card-content>
     </mat-card>
@@ -142,35 +142,35 @@
   <!-- Tabs -->
   <mat-tab-group animationDuration="0ms" class="content-tabs">
 
-    <mat-tab label="Detaljer">
+    <mat-tab [label]="PAGE.detailsTab">
       <mat-card class="content-card tab-card">
         <mat-card-content>
           <form [formGroup]="editForm" class="edit-form">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Titel</mat-label>
-              <input matInput formControlName="title" placeholder="Evenemangets titel" />
+              <mat-label>{{ FIELD.title }}</mat-label>
+              <input matInput formControlName="title" [placeholder]="PAGE.titlePlaceholder" />
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Beskrivning</mat-label>
+              <mat-label>{{ FIELD.description }}</mat-label>
               <textarea matInput formControlName="description" rows="6"
-                placeholder="Beskriv evenemanget…"></textarea>
+                [placeholder]="PAGE.descriptionPlaceholder"></textarea>
             </mat-form-field>
 
             <div class="form-row">
               <mat-form-field appearance="outline">
-                <mat-label>Registreringstyp</mat-label>
+                <mat-label>{{ FIELD.registrationType }}</mat-label>
                 <mat-select formControlName="registrationType">
-                  <mat-option value="DropIn">Drop-in</mat-option>
-                  <mat-option value="PreRegistration">Föranmälan</mat-option>
-                  <mat-option value="Combined">Kombinerat</mat-option>
+                  @for (rt of registrationTypes; track rt.value) {
+                    <mat-option [value]="rt.value">{{ rt.label }}</mat-option>
+                  }
                 </mat-select>
               </mat-form-field>
 
               @if (editForm.get('registrationType')?.value === 'DropIn') {
                 <mat-form-field appearance="outline" class="flex-grow">
-                  <mat-label>Drop-in-regler</mat-label>
-                  <input matInput formControlName="dropInRules" placeholder="Beskriv hur drop-in fungerar" />
+                  <mat-label>{{ FIELD.dropInRules }}</mat-label>
+                  <input matInput formControlName="dropInRules" [placeholder]="PAGE.dropInPlaceholder" />
                 </mat-form-field>
               }
             </div>
@@ -185,14 +185,14 @@
       </mat-card>
     </mat-tab>
 
-    <mat-tab label="Schema">
+    <mat-tab [label]="PAGE.scheduleTab">
       <div [class.schema-with-timeline]="showTimeline()">
         <div class="schema-forms">
 
       <!-- Sessionönskemål -->
       <mat-card class="content-card tab-card">
         <mat-card-header>
-          <mat-card-title>Sessionönskemål</mat-card-title>
+          <mat-card-title>{{ PAGE.requestsTitle }}</mat-card-title>
         </mat-card-header>
         <mat-card-content class="no-pad">
           <table class="data-table">
@@ -215,7 +215,7 @@
                 </tr>
               } @empty {
                 @if (!showAddRequestForm()) {
-                  <tr><td colspan="5" class="empty-cell">Inga sessionönskemål.</td></tr>
+                  <tr><td colspan="5" class="empty-cell">{{ PAGE.requestsEmpty }}</td></tr>
                 }
               }
             </tbody>
@@ -237,11 +237,11 @@
                   <input matInput formControlName="seats" type="number" min="1" />
                 </mat-form-field>
                 <mat-form-field appearance="outline">
-                  <mat-label>Starttyp</mat-label>
+                  <mat-label>{{ FIELD.startType }}</mat-label>
                   <mat-select formControlName="startType">
-                    <mat-option value="FixedTime">Fast tid</mat-option>
-                    <mat-option value="Rolling">Löpande</mat-option>
-                    <mat-option value="Tournament">Turneringsformat</mat-option>
+                    @for (st of startTypes; track st.value) {
+                      <mat-option [value]="st.value">{{ st.label }}</mat-option>
+                    }
                   </mat-select>
                 </mat-form-field>
               </form>
@@ -258,7 +258,7 @@
         <mat-card-actions>
           <button mat-stroked-button (click)="toggleAddRequestForm()" [disabled]="saving()">
             <mat-icon>add</mat-icon>
-            Lägg till sessionönskemål
+            {{ PAGE.addRequestAction }}
           </button>
         </mat-card-actions>
       </mat-card>
@@ -266,17 +266,17 @@
       <!-- Schemalagda sessioner -->
       <mat-card class="content-card tab-card">
         <mat-card-header>
-          <mat-card-title>Schemalagda sessioner</mat-card-title>
+          <mat-card-title>{{ PAGE.sessionsTitle }}</mat-card-title>
           <button mat-icon-button class="timeline-toggle"
             (click)="toggleTimeline()"
-            [matTooltip]="showTimeline() ? 'Dölj tidslinje' : 'Visa tidslinje'"
+            [matTooltip]="showTimeline() ? TOOLTIP.hideTimeline : TOOLTIP.showTimeline"
             [color]="showTimeline() ? 'primary' : ''">
             <mat-icon>timeline</mat-icon>
           </button>
         </mat-card-header>
         <mat-card-content class="no-pad">
           @if (e.sessions.length === 0 && !showAddSessionForm()) {
-            <p class="empty-state">Inga sessioner schemalagda ännu.</p>
+            <p class="empty-state">{{ PAGE.sessionsEmpty }}</p>
           }
           @if (e.sessions.length > 0) {
             <table class="data-table">
@@ -294,11 +294,11 @@
                     <td><span class="chip chip-grey">{{ sessionStatusLabel(s.status) }}</span></td>
                     <td class="action-cell">
                       @if (s.status === 'Active') {
-                        <button mat-icon-button [matTooltip]="'Redigera'" [disabled]="saving()"
+                        <button mat-icon-button [matTooltip]="TOOLTIP.edit" [disabled]="saving()"
                           (click)="startEditSession(s.id)">
                           <mat-icon>edit</mat-icon>
                         </button>
-                        <button mat-icon-button [matTooltip]="'Inaktivera'" [disabled]="saving()"
+                        <button mat-icon-button [matTooltip]="TOOLTIP.inactivate" [disabled]="saving()"
                           (click)="deactivateSession(s.id)">
                           <mat-icon>block</mat-icon>
                         </button>
@@ -310,7 +310,7 @@
                       <td colspan="7" class="inline-form-cell">
                         <form [formGroup]="sessionForm" class="inline-form">
                           <mat-form-field appearance="outline">
-                            <mat-label>Lokal</mat-label>
+                            <mat-label>{{ FIELD.venue }}</mat-label>
                             <mat-select formControlName="venueId">
                               @for (v of venues(); track v.id) {
                                 <mat-option [value]="v.id">{{ v.name }}</mat-option>
@@ -323,15 +323,15 @@
                             [min]="sessionMin"
                             [max]="sessionMax" />
                           <mat-form-field appearance="outline">
-                            <mat-label>Max platser</mat-label>
+                            <mat-label>{{ FIELD.maxSeats }}</mat-label>
                             <input matInput type="number" formControlName="maxSeats" />
                           </mat-form-field>
                           <mat-form-field appearance="outline">
-                            <mat-label>Starttyp</mat-label>
+                            <mat-label>{{ FIELD.startType }}</mat-label>
                             <mat-select formControlName="startType">
-                              <mat-option value="FixedTime">Fast tid</mat-option>
-                              <mat-option value="Rolling">Löpande</mat-option>
-                              <mat-option value="Tournament">Turneringsformat</mat-option>
+                              @for (st of startTypes; track st.value) {
+                                <mat-option [value]="st.value">{{ st.label }}</mat-option>
+                              }
                             </mat-select>
                           </mat-form-field>
                         </form>
@@ -353,7 +353,7 @@
             <div class="inline-form-container">
               <form [formGroup]="sessionForm" class="inline-form">
                 <mat-form-field appearance="outline">
-                  <mat-label>Lokal</mat-label>
+                  <mat-label>{{ FIELD.venue }}</mat-label>
                   <mat-select formControlName="venueId">
                     @for (v of venues(); track v.id) {
                       <mat-option [value]="v.id">{{ v.name }}</mat-option>
@@ -366,23 +366,23 @@
                   [min]="sessionMin"
                   [max]="sessionMax" />
                 <mat-form-field appearance="outline">
-                  <mat-label>Max platser</mat-label>
+                  <mat-label>{{ FIELD.maxSeats }}</mat-label>
                   <input matInput type="number" formControlName="maxSeats" />
                 </mat-form-field>
                 <mat-form-field appearance="outline">
-                  <mat-label>Starttyp</mat-label>
+                  <mat-label>{{ FIELD.startType }}</mat-label>
                   <mat-select formControlName="startType">
-                    <mat-option value="FixedTime">Fast tid</mat-option>
-                    <mat-option value="Rolling">Löpande</mat-option>
-                    <mat-option value="Tournament">Turneringsformat</mat-option>
+                    @for (st of startTypes; track st.value) {
+                      <mat-option [value]="st.value">{{ st.label }}</mat-option>
+                    }
                   </mat-select>
                 </mat-form-field>
               </form>
               <div class="inline-form-actions">
-                <button mat-button (click)="toggleAddSessionForm()">Avbryt</button>
+                <button mat-button (click)="toggleAddSessionForm()">{{ ACTION.cancel }}</button>
                 <button mat-flat-button color="primary" (click)="scheduleSession()"
                   [disabled]="sessionForm.invalid || saving()">
-                  @if (saving()) { <mat-spinner diameter="18" /> } @else { Schemalägg }
+                  @if (saving()) { <mat-spinner diameter="18" /> } @else { {{ ACTION.schedule }} }
                 </button>
               </div>
             </div>
@@ -391,7 +391,7 @@
         <mat-card-actions>
           <button mat-stroked-button (click)="toggleAddSessionForm()" [disabled]="saving() || !!editingSessionId()">
             <mat-icon>add</mat-icon>
-            Schemalägg session
+            {{ PAGE.addSessionAction }}
           </button>
         </mat-card-actions>
       </mat-card>
@@ -401,7 +401,7 @@
         @if (showTimeline()) {
           <mat-card class="content-card tab-card">
             <mat-card-header>
-              <mat-card-title>Tidslinje</mat-card-title>
+              <mat-card-title>{{ PAGE.timelineTitle }}</mat-card-title>
             </mat-card-header>
             <mat-card-content class="no-pad">
               @if (timelineLoading()) {

@@ -12,6 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { ConventionDto, ConventionService, PersonDto, EVENT_STATUS_LABEL } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
+import { ERROR } from '../../labels/errors.labels';
 import { ACTION, CHIP, FIELD, PLACEHOLDER } from '../../labels/ui.labels';
 
 @Component({
@@ -60,7 +61,7 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.conventionService.getCurrentConvention().subscribe({
       next: c => { this.convention.set(c); this.loading.set(false); },
-      error: () => { this.error.set('Kunde inte hämta konventionsdata.'); this.loading.set(false); },
+      error: () => { this.error.set(ERROR.fetchDashboard); this.loading.set(false); },
     });
     this.conventionService.listPersons().subscribe({
       next: p => this.persons.set(p.filter(x => x.isActive)),
@@ -90,7 +91,7 @@ export class DashboardComponent implements OnInit {
       },
       error: err => {
         const detail = (err as { error?: { detail?: string } })?.error?.detail;
-        this.error.set(detail ?? 'Kunde inte skapa upplaga.');
+        this.error.set(detail ?? ERROR.createEdition);
         this.saving.set(false);
       },
     });

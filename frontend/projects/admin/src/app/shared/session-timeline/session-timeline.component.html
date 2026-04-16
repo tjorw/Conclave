@@ -1,13 +1,13 @@
 @if (visibleVenues().length === 0 && !draftBlock()) {
   <div class="tl-empty">
     <mat-icon>schedule</mat-icon>
-    <span>Inga sessioner schemalagda ännu. Välj lokal och tid i formuläret för att se ett förslag.</span>
+    <span>{{ TL.empty }}</span>
   </div>
 } @else {
   @if (hasConflict()) {
     <div class="tl-conflict-banner">
       <mat-icon>warning</mat-icon>
-      Tidskonflikten – den pågående sessionen krockar med en annan session i samma lokal.
+      {{ TL.conflictBanner }}
     </div>
   }
 
@@ -80,8 +80,8 @@
                   [class.conflict]="db.hasConflict"
                   [style.left.px]="db.left"
                   [style.width.px]="db.width"
-                  title="Pågår / förslag">
-                  <span class="tl-block-label">{{ db.hasConflict ? 'Konflikt!' : 'Pågår…' }}</span>
+                  [title]="TL.draftTitle">
+                  <span class="tl-block-label">{{ db.hasConflict ? TL.conflict : TL.inProgress }}</span>
                 </div>
               }
             }
@@ -95,9 +95,9 @@
 
   <!-- Legend -->
   <div class="tl-legend">
-    <span class="tl-legend-dot own">Eget evenemang</span>
-    <span class="tl-legend-dot other">Annat evenemang</span>
-    <span class="tl-legend-dot draft">Pågår / förslag</span>
-    <span class="tl-legend-dot conflict">Konflikt</span>
+    <span class="tl-legend-dot own">{{ TL.legendOwn }}</span>
+    <span class="tl-legend-dot other">{{ TL.legendOther }}</span>
+    <span class="tl-legend-dot draft">{{ TL.legendDraft }}</span>
+    <span class="tl-legend-dot conflict">{{ TL.legendConflict }}</span>
   </div>
 }

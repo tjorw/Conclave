@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.ChangeCategory;
@@ -98,7 +99,7 @@ public class ChangeCategoryHandlerTests
         var missingEventId = Guid.NewGuid();
         _eventRepo.GetByIdAsync(Arg.Any<EventId>(), Arg.Any<CancellationToken>()).Returns((Domain.Event.Aggregates.Event?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new ChangeCategoryCommand(missingEventId, newCategory.Id.Value), default));
     }
 }

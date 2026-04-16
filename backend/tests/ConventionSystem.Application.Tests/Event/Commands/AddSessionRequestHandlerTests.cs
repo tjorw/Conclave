@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.AddSessionRequest;
 using ConventionSystem.Domain.Convention.Ids;
@@ -64,7 +65,7 @@ public class AddSessionRequestHandlerTests
         _eventRepo.GetByIdWithSessionRequestsAsync(Arg.Any<EventId>(), Arg.Any<CancellationToken>())
             .Returns((Domain.Event.Aggregates.Event?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
             _handler.Handle(
                 new AddSessionRequestCommand(Guid.NewGuid(), "Beskrivning", 120, 4, StartType.FixedTime), default));
     }

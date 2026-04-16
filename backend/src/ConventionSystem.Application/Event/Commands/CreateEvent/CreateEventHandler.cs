@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Enums;
@@ -21,7 +22,7 @@ public sealed class CreateEventHandler(
         var conventionId = new ConventionId(command.ConventionId);
 
         var edition = await editionRepository.GetByIdWithCategoriesAsync(editionId, ct)
-            ?? throw new InvalidOperationException($"Upplagan '{command.EditionId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Upplaga", command.EditionId.ToString());
 
         if (edition.Status != EditionStatus.Published)
             throw new InvalidOperationException("Upplagan måste vara publicerad innan evenemang kan skapas.");
@@ -30,7 +31,7 @@ public sealed class CreateEventHandler(
             throw new InvalidOperationException("Kategorin hittades inte på denna upplaga.");
 
         var person = await personRepository.GetByIdAsync(leadOrganiserId, ct)
-            ?? throw new InvalidOperationException($"Person '{command.LeadOrganiserId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Person", command.LeadOrganiserId.ToString());
         if (person.ConventionId != conventionId)
             throw new InvalidOperationException("Personen tillhör inte denna konvention.");
 

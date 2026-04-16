@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -17,10 +18,10 @@ public sealed class AddCoOrganiserHandler(
         var conventionId = new ConventionId(command.ConventionId);
 
         var ev = await eventRepository.GetByIdWithCoOrganisersAsync(new EventId(command.EventId), ct)
-            ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());
 
         var person = await personRepository.GetByIdAsync(personId, ct)
-            ?? throw new InvalidOperationException($"Person '{command.PersonId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Person", command.PersonId.ToString());
         if (person.ConventionId != conventionId)
             throw new InvalidOperationException("Personen tillhör inte denna konvention.");
 

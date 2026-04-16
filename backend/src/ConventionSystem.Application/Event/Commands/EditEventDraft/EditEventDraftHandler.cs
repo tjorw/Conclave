@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
 using MediatR;
@@ -10,7 +11,7 @@ public sealed class EditEventDraftHandler(IEventRepository eventRepository)
     public async Task Handle(EditEventDraftCommand command, CancellationToken ct)
     {
         var ev = await eventRepository.GetByIdAsync(new EventId(command.EventId), ct)
-            ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());
 
         ev.EditTitle(command.Title);
         ev.EditDescription(command.Description);

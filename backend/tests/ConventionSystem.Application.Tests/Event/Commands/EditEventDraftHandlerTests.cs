@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.EditEventDraft;
 using ConventionSystem.Domain.Convention.Ids;
@@ -67,7 +68,7 @@ public class EditEventDraftHandlerTests
         _eventRepo.GetByIdAsync(Arg.Any<EventId>(), Arg.Any<CancellationToken>())
             .Returns((Domain.Event.Aggregates.Event?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
             _handler.Handle(
                 new EditEventDraftCommand(Guid.NewGuid(), "Titel", "Beskrivning", RegistrationType.PreRegistration, null), default));
     }

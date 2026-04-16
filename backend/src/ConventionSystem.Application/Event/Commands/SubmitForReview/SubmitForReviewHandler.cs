@@ -1,6 +1,7 @@
-using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
 using MediatR;
 
@@ -17,7 +18,7 @@ public sealed class SubmitForReviewHandler(
         var performedById = currentUser.PersonId;
 
         var ev = await eventRepository.GetByIdWithCoOrganisersAsync(new EventId(command.EventId), ct)
-            ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());
 
         if (!ev.IsOrganiser(performedById))
             throw new UnauthorizedAccessException("Utföraren har inte behörighet att skicka in detta evenemang för granskning.");
@@ -25,7 +26,7 @@ public sealed class SubmitForReviewHandler(
         if (!currentUser.IsAdmin)
         {
             var edition = await editionRepository.GetByIdAsync(ev.EditionId, ct)
-                ?? throw new InvalidOperationException($"Upplagan för evenemanget hittades inte.");
+                ?? throw new ResourceNotFoundException("Upplaga", ev.EditionId.Value.ToString());
             if (!edition.OrganiserRegistrationOpen)
                 throw new InvalidOperationException("Arrangemangsansökan är inte öppen.");
         }

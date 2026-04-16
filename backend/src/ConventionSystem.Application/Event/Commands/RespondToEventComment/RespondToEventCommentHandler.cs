@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
@@ -18,13 +19,13 @@ public sealed class RespondToEventCommentHandler(
         var performedById = currentUser.PersonId;
 
         var ev = await eventRepository.GetByIdWithCommentsAsync(new EventId(command.EventId), ct)
-            ?? throw new InvalidOperationException($"Evenemanget '{command.EventId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());
 
         var edition = await editionRepository.GetByIdWithCategoriesAsync(ev.EditionId, ct)
-            ?? throw new InvalidOperationException("Upplagan hittades inte.");
+            ?? throw new ResourceNotFoundException("Upplaga", ev.EditionId.Value.ToString());
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+            ?? throw new ResourceNotFoundException("Konvention", edition.ConventionId.Value.ToString());
 
         if (!convention.IsAdministrator(performedById)
             && !edition.IsCategoryResponsible(ev.CategoryId, performedById))

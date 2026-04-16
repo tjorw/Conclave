@@ -32,6 +32,7 @@ export * from './lib/guards/admin.guard';
 
 // Labels
 export * from './lib/labels/event.labels';
+export * from './lib/labels/registration.labels';
 export * from './lib/labels/staff.labels';
 
 // Components

@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConventionService, EditionStaffMemberDto, PersonDto, StaffService, STAFF_APPLICATION_STATUS_LABEL } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
+import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, PLACEHOLDER, TOOLTIP } from '../../labels/ui.labels';
 
 @Component({
@@ -86,7 +87,7 @@ export class EditionStaffComponent {
     this.error.set(null);
     this.svc.listEditionStaff(editionId).subscribe({
       next: s => { this.staff.set(s); this.loading.set(false); },
-      error: () => { this.error.set('Kunde inte hämta funktionärer.'); this.loading.set(false); },
+      error: () => { this.error.set(ERROR.fetchStaff); this.loading.set(false); },
     });
   }
 
@@ -145,7 +146,7 @@ export class EditionStaffComponent {
       },
       error: err => {
         this.addSaving.set(false);
-        this.error.set(err?.error?.detail ?? 'Kunde inte lägga till funktionär.');
+        this.error.set(err?.error?.detail ?? ERROR.addStaffMember);
       },
     });
   }

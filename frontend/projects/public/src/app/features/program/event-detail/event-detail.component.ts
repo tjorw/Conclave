@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { FeedService, EventFeedDto, SessionFeedDto } from 'shared';
+import { FeedService, EventFeedDto, SessionFeedDto, REGISTRATION_KIND_LABEL } from 'shared';
 
 @Component({
   selector: 'app-event-detail',
@@ -47,6 +47,6 @@ export class EventDetailComponent implements OnInit {
   }
 
   registrationLabel(type: string): string {
-    return { DropIn: 'Drop-in', PreRegistration: 'Föranmälan', Combined: 'Drop-in och föranmälan' }[type] ?? type;
+    return REGISTRATION_KIND_LABEL[type] ?? type;
   }
 }
