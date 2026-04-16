@@ -8,7 +8,6 @@ Spårar vad som återstår inför produktionsstart.
 
 Prioriterad lista – ej startade överst, klara underst.
 
-- [ ] `R15` Fas 3.1.12 Globalt schemaläggningsverktyg (admin)
 - [ ] `R05` Fas 3.2.5 Min biljett
 - [ ] `R13` Fas 3.2.10 Bevakningslista – sessioner utan platsbiljett
 - [ ] `R14` Fas 3.2.11 Personligt tidsschema – samlad vy i Mitt program
@@ -23,48 +22,6 @@ Prioriterad lista – ej startade överst, klara underst.
 
 ### Admin-app
 
-#### 3.1.12 Globalt schemaläggningsverktyg (admin)
-
-Ny menypost "Schemaläggning" i admin-sidnavet. Ger konventionsadmin en samlad vy över alla sessioner och möjlighet att placera, flytta och verifiera schemaläggning utan att behöva navigera in i varje enskilt evenemang.
-
-**Skärmlayout**
-
-Tvådelad vy: vänster sidopanel med åtgärdsformulär och höger tidslinjepanel.
-
-*Sidopanel*
-- **Förslagsformulär:** välj evenemang → välj sessionönskemål (dropdown med önskemålets tid/platser), välj lokal, sätt start- och sluttid, konfliktindikator (röd varning direkt om överlapp detekteras), valfri intern kommentar
-- **"Ta in önskemål"**-knapp på varje rad i önskemålslistan: fyller i formuläret med önskemålets parametrar som startpunkt
-- **Sessionönskemålslista:** visar alla oschemalagda önskemål (evenemangstitel, önskad tid, platser, typ), sorterade per evenemang
-
-*Tidslinjepanel*
-- Dag-flikar (en per konventdag) eller datumväljare
-- Lokaler som rader, tid (08:00–22:00) som x-axel
-- Sessionblock med färgkodning:
-  - Grön – placerad session
-  - Orange – pågående redigering / förslag
-  - Röd – konflikt (överlapp i samma lokal och tid)
-- Filter: byggnad (grupperar lokaler), kategori, fritextsökning
-
-**Konfliktdetektering**
-- Sker i frontend mot lokalt cachad sessionlista
-- En session är i konflikt om start/slut överlappar med en annan session i samma lokal
-- Konflikten visas i formuläret (röd statusrad) och i tidslinjen (röd block)
-
-**Åtgärder**
-- Spara nytt sessionblock → `POST /events/{eventId}/sessions`
-- Uppdatera befintlig session → `PUT /events/{eventId}/sessions/{sessionId}`
-- Inaktivera session → `DELETE /events/{eventId}/sessions/{sessionId}`
-
-**Backend – ny query-endpoint**
-
-| Endpoint | Beskrivning | Auth |
-|----------|-------------|------|
-| `GET /editions/{id}/sessions` | Alla sessioner för upplagan: `sessionId`, `eventId`, `eventTitle`, `venueId`, `start`, `end`, `maxSeats`, `startType`, `status` | IsAdmin |
-
-**Frontend**
-- Ny lazy-loadad route: `/sessions` i admin-appen
-- `SessionsOverviewComponent`: laddar `GET /editions/{id}/sessions` + `GET /editions/{id}` (lokaler, kategorier) i parallell
-- `TimelineComponent`: gemensam komponent som också används i 3.1.13 nedan
 
 ---
 
