@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { EditionSessionDto, VenueDto } from 'shared';
 import { SESSION_TIMELINE } from '../../labels/pages.labels';
@@ -47,6 +47,7 @@ export class SessionTimelineComponent {
   readonly editionStart   = input<string | null>(null);
   readonly editionEnd     = input<string | null>(null);
   readonly showAllVenues  = input(false);
+  readonly sessionSelected = output<string>();
 
   readonly VENUE_LABEL_WIDTH = VENUE_LABEL_WIDTH;
   readonly ROW_HEIGHT        = ROW_HEIGHT;
@@ -215,6 +216,10 @@ export class SessionTimelineComponent {
   formatTime(iso: string): string {
     const d = new Date(iso);
     return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+  }
+
+  selectSession(sessionId: string): void {
+    this.sessionSelected.emit(sessionId);
   }
 
   private parseDateLocal(s: string): Date {

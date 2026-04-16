@@ -62,13 +62,18 @@
             <!-- Session blocks -->
             @for (block of getBlocksForVenue(venue.id); track block.session.sessionId) {
               <div class="tl-block"
+                role="button"
+                tabindex="0"
                 [class.placed]="block.isPlaced && !block.hasConflict"
                 [class.own]="block.isOwn && !block.hasConflict"
                 [class.other]="!block.isPlaced && !block.isOwn && !block.hasConflict"
                 [class.conflict]="block.hasConflict"
                 [style.left.px]="block.left"
                 [style.width.px]="block.width"
-                [title]="block.session.eventTitle + ' ' + formatTime(block.session.start) + '–' + formatTime(block.session.end)">
+                [title]="block.session.eventTitle + ' ' + formatTime(block.session.start) + '–' + formatTime(block.session.end)"
+                (click)="selectSession(block.session.sessionId)"
+                (keydown.enter)="selectSession(block.session.sessionId)"
+                (keydown.space)="selectSession(block.session.sessionId); $event.preventDefault()">
                 <span class="tl-block-label">{{ block.session.eventTitle }}</span>
                 <span class="tl-block-time">{{ formatTime(block.session.start) }}–{{ formatTime(block.session.end) }}</span>
               </div>

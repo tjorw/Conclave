@@ -71,6 +71,15 @@
   margin-top: 16px;
 }
 
+.overview-controls-card {
+  margin-top: 16px;
+
+  .toolbar-row {
+    margin-bottom: 0;
+    justify-content: space-between;
+  }
+}
+
 .toolbar-row {
   display: flex;
   align-items: center;

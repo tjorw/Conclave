@@ -95,6 +95,9 @@
 
     <mat-card-actions align="end" class="panel-actions">
       @if (editingSessionId()) {
+        <button mat-stroked-button color="warn" (click)="deactivateEditingSession()" [disabled]="saving()">
+          {{ ACTION.delete }}
+        </button>
         <button mat-button (click)="resetForm()">{{ ACTION.cancel }}</button>
       }
       <button
@@ -111,11 +114,7 @@
     </mat-card-actions>
   </mat-card>
 
-  <mat-card class="timeline-card">
-    <mat-card-header>
-      <mat-card-title>{{ PAGE.timelineTitle }}</mat-card-title>
-    </mat-card-header>
-
+  <mat-card class="overview-controls-card">
     <mat-card-content>
       <div class="toolbar-row">
         <mat-button-toggle-group [value]="day()" (change)="setDay($event.value)">
@@ -123,8 +122,22 @@
             <mat-button-toggle [value]="option">{{ formatDayLabel(option) }}</mat-button-toggle>
           }
         </mat-button-toggle-group>
-      </div>
 
+        <mat-button-toggle-group [value]="viewMode()" (change)="setViewMode($event.value)">
+          <mat-button-toggle value="timeline">{{ PAGE.timelineView }}</mat-button-toggle>
+          <mat-button-toggle value="table">{{ PAGE.tableView }}</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  @if (viewMode() === 'timeline') {
+  <mat-card class="timeline-card">
+    <mat-card-header>
+      <mat-card-title>{{ PAGE.timelineTitle }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
       <app-session-timeline
         [sessions]="filteredSessions()"
         [currentEventId]="form.getRawValue().eventId || null"
@@ -133,10 +146,13 @@
         [draft]="timelineDraft()"
         [editionStart]="day()"
         [editionEnd]="day()"
-        [showAllVenues]="true" />
+        [showAllVenues]="true"
+        (sessionSelected)="onTimelineSessionSelected($event)" />
     </mat-card-content>
   </mat-card>
+  }
 
+  @if (viewMode() === 'table') {
   <mat-card class="scheduled-card">
     <mat-card-header>
       <mat-card-title>{{ PAGE.scheduledTitle }}</mat-card-title>
@@ -170,9 +186,6 @@
                 <button mat-icon-button [matTooltip]="TOOLTIP.edit" (click)="startEdit(session)">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button [matTooltip]="TOOLTIP.inactivate" (click)="deactivateSession(session)">
-                  <mat-icon>block</mat-icon>
-                </button>
               </td>
             </tr>
           } @empty {
@@ -184,4 +197,5 @@
       </table>
     </mat-card-content>
   </mat-card>
+  }
 }

@@ -3,10 +3,11 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Observable, forkJoin, of, switchMap } from 'rxjs';
+import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -26,6 +27,7 @@ import { ERROR } from '../../labels/errors.labels';
 import { SESSIONS_OVERVIEW } from '../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../labels/ui.labels';
 import { EditionContextService } from '../../services/edition-context.service';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog/confirm-dialog.component';
 import { DraftBlock, SessionTimelineComponent } from '../../shared/session-timeline/session-timeline.component';
 
 @Component({
@@ -53,6 +55,7 @@ export class SessionsOverviewComponent {
   private readonly eventSvc = inject(EventService);
   private readonly conventionSvc = inject(ConventionService);
   private readonly fb = inject(FormBuilder);
+  private readonly dialog = inject(MatDialog);
 
   readonly editionContext = inject(EditionContextService);
 
@@ -70,6 +73,7 @@ export class SessionsOverviewComponent {
   readonly editingSessionId = signal<string | null>(null);
 
   readonly day = signal<string | null>(null);
+  readonly viewMode = signal<'timeline' | 'table'>('timeline');
 
   readonly form = this.fb.group({
     eventId: ['', Validators.required],
@@ -165,8 +169,26 @@ export class SessionsOverviewComponent {
     });
   }
 
+  private openConfirm(data: ConfirmDialogData) {
+    return this.dialog
+      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, { data, width: '400px' })
+      .afterClosed()
+      .pipe(map(result => result === true));
+  }
+
   setDay(value: string): void {
     this.day.set(value);
+  }
+
+  setViewMode(value: 'timeline' | 'table'): void {
+    this.viewMode.set(value);
+  }
+
+  onTimelineSessionSelected(sessionId: string): void {
+    const session = this.filteredSessions().find(s => s.sessionId === sessionId)
+      ?? this.sessions().find(s => s.sessionId === sessionId);
+    if (!session) return;
+    this.startEdit(session);
   }
 
   startEdit(session: EditionSessionDto): void {
@@ -236,21 +258,31 @@ export class SessionsOverviewComponent {
     });
   }
 
-  deactivateSession(session: EditionSessionDto): void {
-    if (this.saving()) return;
+  deactivateEditingSession(): void {
+    const sessionId = this.editingSessionId();
+    const eventId = this.form.getRawValue().eventId;
+    if (!sessionId || !eventId || this.saving()) return;
 
-    this.saving.set(true);
-    this.eventSvc.deactivateSession(session.eventId, session.sessionId).subscribe({
-      next: () => {
-        this.saving.set(false);
-        const editionId = this.editionContext.activeEdition()?.id;
-        if (editionId) this.refreshSessions(editionId);
-      },
-      error: (err: unknown) => {
-        this.saving.set(false);
-        const detail = (err as { error?: { detail?: string } })?.error?.detail;
-        this.error.set(detail ?? ERROR.deactivateSession);
-      },
+    this.openConfirm({
+      title: this.PAGE.deleteSessionTitle,
+      message: this.PAGE.deleteSessionMessage,
+      confirmLabel: ACTION.delete,
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+      this.saving.set(true);
+      this.eventSvc.deactivateSession(eventId, sessionId).subscribe({
+        next: () => {
+          this.saving.set(false);
+          const editionId = this.editionContext.activeEdition()?.id;
+          if (editionId) this.refreshSessions(editionId);
+          this.resetForm();
+        },
+        error: (err: unknown) => {
+          this.saving.set(false);
+          const detail = (err as { error?: { detail?: string } })?.error?.detail;
+          this.error.set(detail ?? ERROR.deactivateSession);
+        },
+      });
     });
   }
 
