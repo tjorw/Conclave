@@ -3,7 +3,7 @@
 }
 
 .panel-card {
-  margin-bottom: 16px;
+  margin: 0;
 }
 
 .schedule-form {
@@ -68,7 +68,7 @@
 
 .timeline-card,
 .scheduled-card {
-  margin-top: 16px;
+  margin-top: 0;
 }
 
 .overview-controls-card {
@@ -80,6 +80,26 @@
   }
 }
 
+.workspace-layout {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.workspace-layout.details-open {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+}
+
+.workspace-main {
+  min-width: 0;
+}
+
+.workspace-details {
+  min-width: 0;
+}
+
 .toolbar-row {
   display: flex;
   align-items: center;
@@ -89,6 +109,11 @@
 }
 
 @media (max-width: 768px) {
+  .workspace-layout,
+  .workspace-layout.details-open {
+    grid-template-columns: 1fr;
+  }
+
   .time-grid {
     grid-template-columns: 1fr;
   }

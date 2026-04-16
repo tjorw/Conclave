@@ -88,7 +88,6 @@ export const SESSION_TIMELINE = {
 
 export const SESSIONS_OVERVIEW = {
   title:            'Schemaläggning',
-  subtitle:         'Global vy för att placera, flytta och verifiera alla sessioner i upplagan.',
   formTitle:        'Schemalägg session',
   requestsForEventTitle: 'Sessionönskemål för valt evenemang',
   noRequestsForEvent: 'Det finns inga registrerade sessionönskemål för evenemanget.',
