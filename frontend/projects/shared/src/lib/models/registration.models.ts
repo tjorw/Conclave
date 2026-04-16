@@ -96,3 +96,14 @@ export interface MyStaffApplicationDto {
   id: string;
   status: string;
 }
+
+export interface MyScheduleItemDto {
+  sessionId: string | null;
+  shiftId: string | null;
+  title: string;
+  start: string;
+  end: string;
+  locationName: string | null;
+  type: 'Booked' | 'Watching' | 'Organiser' | 'Shift';
+  isPrimary: boolean;
+}

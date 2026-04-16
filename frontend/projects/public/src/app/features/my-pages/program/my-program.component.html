@@ -16,79 +16,125 @@
       <p class="error-banner">{{ error() }}</p>
     }
 
-    @if (bookedSessions().length === 0 && watchedSessions().length === 0) {
-      <div class="empty-state">
-        <p>Du har inga bokade eller bevakade sessioner ännu.</p>
-        <a mat-flat-button class="browse-btn" routerLink="/program">Bläddra i programmet</a>
-      </div>
-    } @else {
-      <section class="program-section">
-        <h2 class="section-title">Bokade</h2>
+    <mat-tab-group animationDuration="0">
 
-        @if (bookedSessions().length === 0) {
-          <p class="section-empty">Du har inga bokade sessioner.</p>
+      <!-- Flik 1: Anmälningar (bokade + bevakade) -->
+      <mat-tab label="Anmälningar">
+        @if (bookedSessions().length === 0 && watchedSessions().length === 0) {
+          <div class="empty-state tab-empty">
+            <p>Du har inga bokade eller bevakade sessioner ännu.</p>
+            <a mat-flat-button class="browse-btn" routerLink="/program">Bläddra i programmet</a>
+          </div>
         } @else {
-          <div class="session-list">
-            @for (session of bookedSessions(); track session.id) {
-              <article class="session-card">
-                <div class="session-main">
-                  <h3 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h3>
-                  <p class="session-time">
-                    {{ session.start | date:'EEEE d MMMM, HH:mm':'':'sv-SE' }}
-                    <span>– {{ session.end | date:'HH:mm' }}</span>
-                  </p>
-                  <p class="session-meta">
-                    Lokal: {{ session.venueName || 'Ej angiven' }}
-                  </p>
-                  <span class="status-chip">{{ sessionStatusLabel(session.status) }}</span>
-                </div>
+          <div class="tab-content">
+            <section class="program-section">
+              <h2 class="section-title">Bokade</h2>
 
-                <button
-                  mat-stroked-button
-                  color="warn"
-                  type="button"
-                  [disabled]="cancellingId() === session.id"
-                  (click)="cancelSession(session.id)">
-                  {{ cancellingId() === session.id ? 'Avbokar...' : 'Avboka' }}
-                </button>
-              </article>
+              @if (bookedSessions().length === 0) {
+                <p class="section-empty">Du har inga bokade sessioner.</p>
+              } @else {
+                <div class="session-list">
+                  @for (session of bookedSessions(); track session.id) {
+                    <article class="session-card">
+                      <div class="session-main">
+                        <h3 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h3>
+                        <p class="session-time">
+                          {{ session.start | date:'EEEE d MMMM, HH:mm':'':'sv-SE' }}
+                          <span>– {{ session.end | date:'HH:mm' }}</span>
+                        </p>
+                        <p class="session-meta">Lokal: {{ session.venueName || 'Ej angiven' }}</p>
+                        <span class="status-chip">{{ sessionStatusLabel(session.status) }}</span>
+                      </div>
+
+                      <button
+                        mat-stroked-button
+                        color="warn"
+                        type="button"
+                        [disabled]="cancellingId() === session.id"
+                        (click)="cancelSession(session.id)">
+                        {{ cancellingId() === session.id ? 'Avbokar...' : 'Avboka' }}
+                      </button>
+                    </article>
+                  }
+                </div>
+              }
+            </section>
+
+            <section class="program-section">
+              <h2 class="section-title">Vill se</h2>
+
+              @if (watchedSessions().length === 0) {
+                <p class="section-empty">Du bevakar inga sessioner ännu.</p>
+              } @else {
+                <div class="session-list">
+                  @for (session of watchedSessions(); track session.sessionId) {
+                    <article class="session-card watched">
+                      <div class="session-main">
+                        <h3 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h3>
+                        <p class="session-time">
+                          {{ session.start | date:'EEEE d MMMM, HH:mm':'':'sv-SE' }}
+                          <span>– {{ session.end | date:'HH:mm' }}</span>
+                        </p>
+                        <p class="session-meta">Lokal: {{ session.venueName || 'Ej angiven' }}</p>
+                      </div>
+
+                      <button
+                        mat-stroked-button
+                        type="button"
+                        [disabled]="unwatchingSessionId() === session.sessionId"
+                        (click)="removeWatch(session.sessionId)">
+                        {{ unwatchingSessionId() === session.sessionId ? 'Tar bort...' : 'Ta bort' }}
+                      </button>
+                    </article>
+                  }
+                </div>
+              }
+            </section>
+          </div>
+        }
+      </mat-tab>
+
+      <!-- Flik 2: Tidslinje -->
+      <mat-tab label="Tidslinje">
+        @if (scheduleItems().length === 0) {
+          <div class="empty-state tab-empty">
+            <p>Inga engagemang att visa ännu.</p>
+          </div>
+        } @else {
+          <div class="tab-content">
+            @for (group of scheduleByDay(); track group.day) {
+              <section class="day-section">
+                <h2 class="day-heading">{{ group.day }}</h2>
+                <div class="timeline-list">
+                  @for (item of group.items; track (item.sessionId ?? item.shiftId)) {
+                    <article
+                      class="timeline-card"
+                      [class.primary]="item.isPrimary"
+                      [class.conflict]="hasConflict(item)">
+                      <div class="timeline-header">
+                        <h3 class="timeline-title">{{ item.title || '(Namnlös)' }}</h3>
+                        <span class="type-chip type-{{ item.type.toLowerCase() }}">
+                          {{ scheduleTypeLabel(item.type) }}
+                        </span>
+                        @if (hasConflict(item)) {
+                          <mat-icon class="conflict-icon" title="Krockar med annat primärt pass">warning</mat-icon>
+                        }
+                      </div>
+                      <p class="timeline-time">
+                        {{ item.start | date:'HH:mm' }} – {{ item.end | date:'HH:mm' }}
+                      </p>
+                      @if (item.locationName) {
+                        <p class="timeline-meta">{{ item.locationName }}</p>
+                      }
+                    </article>
+                  }
+                </div>
+              </section>
             }
           </div>
         }
-      </section>
+      </mat-tab>
 
-      <section class="program-section">
-        <h2 class="section-title">Vill se</h2>
-
-        @if (watchedSessions().length === 0) {
-          <p class="section-empty">Du bevakar inga sessioner ännu.</p>
-        } @else {
-          <div class="session-list">
-            @for (session of watchedSessions(); track session.sessionId) {
-              <article class="session-card watched">
-                <div class="session-main">
-                  <h3 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h3>
-                  <p class="session-time">
-                    {{ session.start | date:'EEEE d MMMM, HH:mm':'':'sv-SE' }}
-                    <span>– {{ session.end | date:'HH:mm' }}</span>
-                  </p>
-                  <p class="session-meta">
-                    Lokal: {{ session.venueName || 'Ej angiven' }}
-                  </p>
-                </div>
-
-                <button
-                  mat-stroked-button
-                  type="button"
-                  [disabled]="unwatchingSessionId() === session.sessionId"
-                  (click)="removeWatch(session.sessionId)">
-                  {{ unwatchingSessionId() === session.sessionId ? 'Tar bort...' : 'Ta bort' }}
-                </button>
-              </article>
-            }
-          </div>
-        }
-      </section>
-    }
+    </mat-tab-group>
   }
 </div>

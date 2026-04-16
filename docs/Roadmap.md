@@ -8,7 +8,7 @@ Spårar vad som återstår inför produktionsstart.
 
 Prioriterad lista – ej startade överst, klara underst.
 
-- [ ] `R14` Fas 3.2.11 Personligt tidsschema – samlad vy i Mitt program
+- [x] `R14` Fas 3.2.11 Personligt tidsschema – samlad vy i Mitt program
 - [ ] `R08` Fas 3.2.8 Min bemanning
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
 - [x] `R13` Fas 3.2.10 Bevakningslista – sessioner utan platsbiljett
@@ -117,6 +117,12 @@ Kolliderande primära händelser markeras med varningsindikator. Bevakning och a
 | `CreatePersonCommand` vs UC002 | Två vägar att skapa en person. Kan leda till inkonsekvens om e-post-uniqueness-kontrollen blockerar auth-skapande. | Medel – UC002-vägen får aldrig kollidera |
 | Idempotens i login-flödet | Race condition: två parallella första-inloggningar kan försöka skapa person simultaneously. Unikt index är sista skyddet. | Låg |
 | `ICurrentUser` i bakgrundsjobb | `ICurrentUser` läser från `HttpContext` och fungerar inte utanför HTTP-request-scopet. Bakgrundsjobb och seeders måste anropa domänmodellen direkt. | Medel – dokumentera mönstret |
+| **PersonId från klient i self-service registration** | Registration-endpoints tar `PersonId` i request-body (`SubmitVisitorRegistrationRequest`, `RegisterForSessionRequest`) och skickar vidare till handlers. Detta kopplar transportmodell till säkerhetsmodell och avviker från mönstret med server-side `ICurrentUser`. **Buggrisk:** användare kan försöka agera för annan person via manipulerad payload. | **Hög – byt till `ICurrentUser` i API/Application för self-service-flöden** |
+| **Fel exception-typ i Registration Application** | Registration-handlers kastar brett `InvalidOperationException` i stället för semantiska typer enligt `Backend.md` (`ResourceNotFoundException`, `ForbiddenException`, `DomainRuleViolationException`). Detta försvagar API-kontrakt, error mapping och observability. | **Hög – standardisera exceptions enligt riktlinje** |
+| **`Shift` saknar `EditionId`** | `Shift` har ingen direkt koppling till `EditionId`. `MyScheduleRepository` löser detta via `Edition.Stations`-navigeringen (shadow FK). Om Shift-kontexten växer bör ett direkt `EditionId` övervägas på `Shift` för att slippa join-beroendet mot Convention. | Låg – fungerar korrekt, men fragil vid schemamigration |
+| **Deduplikering i tidsschema** | Om samma session förekommer i flera kategorier (t.ex. bokad OCH arrangör) prioriteras Booked > Organiser > Watching i `MyScheduleRepository`. Prioriteringslogiken är inte testad på domännivå. Om affärsreglerna ändras (t.ex. "visa alltid arrangörsrollen oavsett bokning") behöver deduplikeringen ses över. | Låg – nuvarande beteende är rimligt |
+| **Inga `DbSet<Station>` i `ConventionDbContext`** | `Station` och `Venue` nås via `db.Set<T>()` i stället för namngivna `DbSet<T>`-properties. Inkonsekvens mot övriga entiteter. Lägg till `DbSet<Station>` och `DbSet<Venue>` i `ConventionDbContext` om fler queries börjar hämta dem direkt. | Låg |
+| Hårdkodade strängar i repository | Det finns hårdkodade texter i repot för att göra urval på. t.ex. "booked". Stor risk för buggar om det fortsätter att vara magic strings. | Medel | 
 
 ---
 

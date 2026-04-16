@@ -6,6 +6,7 @@ import {
   MySessionRegistrationSummaryDto,
   MyWatchedSessionSummaryDto,
   MyStaffApplicationDto,
+  MyScheduleItemDto,
   TicketTypeAdminDto,
   VisitorTicketTypeDto,
   VisitorRegistrationAdminDto,
@@ -76,6 +77,12 @@ export class RegistrationService {
   getMyStaffApplication(editionId: string) {
     return this.http.get<MyStaffApplicationDto | null>(
       `${this.env.apiBaseUrl}/editions/${editionId}/my-staff-application`
+    );
+  }
+
+  getMySchedule(editionId: string) {
+    return this.http.get<MyScheduleItemDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/my-schedule`
     );
   }
 

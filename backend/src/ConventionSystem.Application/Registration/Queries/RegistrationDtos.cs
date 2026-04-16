@@ -54,3 +54,13 @@ public record MyWatchedSessionSummaryDto(
 public record MyStaffApplicationDto(
     Guid Id,
     string Status);
+
+public record MyScheduleItemDto(
+    Guid? SessionId,
+    Guid? ShiftId,
+    string Title,
+    DateTime Start,
+    DateTime End,
+    string? LocationName,
+    string Type,        // "Booked" | "Watching" | "Organiser" | "Shift"
+    bool IsPrimary);
