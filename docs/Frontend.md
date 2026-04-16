@@ -6,6 +6,22 @@ kan skilja sig åt.
 
 ---
 
+## Teknikval och beslut
+
+| Beslut | Val | Motivering |
+|--------|-----|------------|
+| Workspace | Angular monorepo (en workspace, två appar + ett bibliotek) | Delar API-typer, interceptors och auth-tjänst |
+| UI-komponenter | Angular Material | Vältestat, tillgänglighetsanpassat, snabb development |
+| Styling | Angular Material theming + SCSS | Material för admin, konventionsthema via CSS-variabler för publik vy |
+| State | Angular Signals + services | Tillräckligt för MVP, undviker NgRx-overhead |
+| Forms | Reactive Forms | Bättre kontroll och validering |
+| HTTP | Angular HttpClient med interceptors | Centraliserad header-hantering |
+| Routing | Standalone components, lazy-loaded feature-moduler | Modern Angular-stil, snabbare initial laddning |
+
+**Konventions-ID per deploy** – `conventionId` konfigureras i `environment.ts` och används för att konstruera API-URL:er. Varje konvention är en separat deploy utan delad infrastruktur. Interceptorn i shared-biblioteket sätter ID:t automatiskt på alla API-anrop.
+
+---
+
 ## Admin-appen (`projects/admin`)
 
 ### Syfte och målgrupp
