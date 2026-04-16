@@ -5,6 +5,9 @@ namespace ConventionSystem.Application.Registration.Abstractions;
 
 public interface IMyScheduleRepository
 {
-    Task<IReadOnlyList<MyScheduleItemDto>> GetMyScheduleAsync(
+    Task<IReadOnlyList<MyOrganiserSessionSummaryDto>> ListMyOrganiserSessionsAsync(
+        PersonId personId, EditionId editionId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<MyAssignedShiftSummaryDto>> ListMyAssignedShiftsAsync(
         PersonId personId, EditionId editionId, CancellationToken ct = default);
 }

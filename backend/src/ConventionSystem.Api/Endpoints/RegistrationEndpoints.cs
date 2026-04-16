@@ -22,7 +22,8 @@ using ConventionSystem.Application.Registration.Commands.WatchSession;
 using ConventionSystem.Application.Registration.Queries.GetMySessionRegistrations;
 using ConventionSystem.Application.Registration.Queries.GetMyStaffApplication;
 using ConventionSystem.Application.Registration.Queries.GetMyVisitorRegistration;
-using ConventionSystem.Application.Registration.Queries.GetMySchedule;
+using ConventionSystem.Application.Registration.Queries.GetMyAssignedShifts;
+using ConventionSystem.Application.Registration.Queries.GetMyOrganiserSessions;
 using ConventionSystem.Application.Registration.Queries.GetMyWatchedSessions;
 using ConventionSystem.Application.Registration.Queries.ListAvailableTicketTypes;
 using ConventionSystem.Application.Registration.Queries.ListTicketTypes;
@@ -210,13 +211,16 @@ public static class RegistrationEndpoints
                 Results.Ok(await sender.Send(new GetMySessionRegistrationsQuery(editionId), ct)))
             .RequireAuthorization();
 
-        // 3.2.11 – Personligt tidsschema
-        app.MapGet("/editions/{editionId:guid}/my-schedule",
+        // 3.2.11 – Mina arrangörssessioner
+        app.MapGet("/editions/{editionId:guid}/my-organiser-sessions",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
-            {
-                var items = await sender.Send(new GetMyScheduleQuery(editionId), ct);
-                return Results.Ok(items?.ToList() ?? []);
-            })
+                Results.Ok(await sender.Send(new GetMyOrganiserSessionsQuery(editionId), ct)))
+            .RequireAuthorization();
+
+        // 3.2.11 – Mina bemanningspass
+        app.MapGet("/editions/{editionId:guid}/my-assigned-shifts",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetMyAssignedShiftsQuery(editionId), ct)))
             .RequireAuthorization();
 
         // 3.2.10 – Mina bevakade sessioner

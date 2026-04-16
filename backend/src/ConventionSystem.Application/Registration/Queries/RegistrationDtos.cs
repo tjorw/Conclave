@@ -51,16 +51,19 @@ public record MyWatchedSessionSummaryDto(
     string VenueName,
     DateTimeOffset CreatedAt);
 
+public record MyOrganiserSessionSummaryDto(
+    Guid SessionId,
+    string EventTitle,
+    DateTime Start,
+    DateTime End,
+    string VenueName);
+
+public record MyAssignedShiftSummaryDto(
+    Guid ShiftId,
+    string StationName,
+    DateTime Start,
+    DateTime End);
+
 public record MyStaffApplicationDto(
     Guid Id,
     string Status);
-
-public record MyScheduleItemDto(
-    Guid? SessionId,
-    Guid? ShiftId,
-    string Title,
-    DateTime Start,
-    DateTime End,
-    string? LocationName,
-    string Type,        // "Booked" | "Watching" | "Organiser" | "Shift"
-    bool IsPrimary);

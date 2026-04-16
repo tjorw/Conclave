@@ -39,8 +39,8 @@
                       <div class="session-main">
                         <h3 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h3>
                         <p class="session-time">
-                          {{ session.start | date:'EEEE d MMMM, HH:mm':'':'sv-SE' }}
-                          <span>– {{ session.end | date:'HH:mm' }}</span>
+                          {{ displayDate(session.start) }}
+                          <span>– {{ displayTime(session.end) }}</span>
                         </p>
                         <p class="session-meta">Lokal: {{ session.venueName || 'Ej angiven' }}</p>
                         <span class="status-chip">{{ sessionStatusLabel(session.status) }}</span>
@@ -72,8 +72,8 @@
                       <div class="session-main">
                         <h3 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h3>
                         <p class="session-time">
-                          {{ session.start | date:'EEEE d MMMM, HH:mm':'':'sv-SE' }}
-                          <span>– {{ session.end | date:'HH:mm' }}</span>
+                          {{ displayDate(session.start) }}
+                          <span>– {{ displayTime(session.end) }}</span>
                         </p>
                         <p class="session-meta">Lokal: {{ session.venueName || 'Ej angiven' }}</p>
                       </div>
@@ -121,7 +121,7 @@
                         }
                       </div>
                       <p class="timeline-time">
-                        {{ item.start | date:'HH:mm' }} – {{ item.end | date:'HH:mm' }}
+                        {{ displayTime(item.start) }} – {{ displayTime(item.end) }}
                       </p>
                       @if (item.locationName) {
                         <p class="timeline-meta">{{ item.locationName }}</p>

@@ -5,8 +5,9 @@ import {
   MyVisitorRegistrationDto,
   MySessionRegistrationSummaryDto,
   MyWatchedSessionSummaryDto,
+  MyOrganiserSessionSummaryDto,
+  MyAssignedShiftSummaryDto,
   MyStaffApplicationDto,
-  MyScheduleItemDto,
   TicketTypeAdminDto,
   VisitorTicketTypeDto,
   VisitorRegistrationAdminDto,
@@ -74,15 +75,21 @@ export class RegistrationService {
     );
   }
 
-  getMyStaffApplication(editionId: string) {
-    return this.http.get<MyStaffApplicationDto | null>(
-      `${this.env.apiBaseUrl}/editions/${editionId}/my-staff-application`
+  getMyOrganiserSessions(editionId: string) {
+    return this.http.get<MyOrganiserSessionSummaryDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/my-organiser-sessions`
     );
   }
 
-  getMySchedule(editionId: string) {
-    return this.http.get<MyScheduleItemDto[]>(
-      `${this.env.apiBaseUrl}/editions/${editionId}/my-schedule`
+  getMyAssignedShifts(editionId: string) {
+    return this.http.get<MyAssignedShiftSummaryDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/my-assigned-shifts`
+    );
+  }
+
+  getMyStaffApplication(editionId: string) {
+    return this.http.get<MyStaffApplicationDto | null>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/my-staff-application`
     );
   }
 

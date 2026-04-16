@@ -92,6 +92,21 @@ export interface MyWatchedSessionSummaryDto {
   createdAt: string;
 }
 
+export interface MyOrganiserSessionSummaryDto {
+  sessionId: string;
+  eventTitle: string;
+  start: string;
+  end: string;
+  venueName: string;
+}
+
+export interface MyAssignedShiftSummaryDto {
+  shiftId: string;
+  stationName: string;
+  start: string;
+  end: string;
+}
+
 export interface MyStaffApplicationDto {
   id: string;
   status: string;
