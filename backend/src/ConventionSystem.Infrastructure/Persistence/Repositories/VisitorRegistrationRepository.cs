@@ -56,7 +56,11 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
             ticketTypeName = ticketType?.Name;
         }
 
-        return new MyVisitorRegistrationDto(registration.Id.Value, registration.Status.ToString(), ticketTypeName);
+        return new MyVisitorRegistrationDto(
+            registration.Id.Value,
+            registration.Status.ToString(),
+            ticketTypeName,
+            registration.TicketId.Value);
     }
 
     public async Task<IReadOnlyList<VisitorRegistrationAdminDto>> ListByEditionAsync(

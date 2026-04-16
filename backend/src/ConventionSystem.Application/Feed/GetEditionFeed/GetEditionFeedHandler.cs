@@ -1,6 +1,7 @@
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
+using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Ids;
 
@@ -8,7 +9,8 @@ namespace ConventionSystem.Application.Feed.GetEditionFeed;
 
 public sealed class GetEditionFeedHandler(
     IEditionRepository editionRepository,
-    IEventRepository eventRepository)
+    IEventRepository eventRepository,
+    ISessionRegistrationRepository sessionRegistrationRepository)
     : IQueryHandler<GetEditionFeedQuery, EditionFeedDto?>
 {
     public async Task<EditionFeedDto?> Handle(GetEditionFeedQuery query, CancellationToken ct)
@@ -17,6 +19,16 @@ public sealed class GetEditionFeedHandler(
         if (edition is null) return null;
 
         var allEvents = await eventRepository.ListByEditionIdAsync(new EditionId(query.EditionId), ct);
+
+        var activeSessionIds = allEvents
+            .SelectMany(e => e.Sessions)
+            .Where(s => s.Status == "Active")
+            .Select(s => new SessionId(s.Id))
+            .Distinct()
+            .ToList();
+
+        var bookedSeatsBySession = await sessionRegistrationRepository
+            .CountConfirmedBySessionIdsAsync(activeSessionIds, ct);
 
         var venueIndex = edition.Venues.ToDictionary(v => v.Id, v => v.Name);
 
@@ -38,6 +50,7 @@ public sealed class GetEditionFeedHandler(
                         s.Start,
                         s.End,
                         s.MaxSeats,
+                        bookedSeatsBySession.GetValueOrDefault(new SessionId(s.Id), 0),
                         s.StartType))
                     .OrderBy(s => s.Start)
                     .ToList()))

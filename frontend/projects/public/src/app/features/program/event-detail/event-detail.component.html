@@ -48,6 +48,10 @@
 
         <h2 class="section-heading">Sessioner</h2>
 
+        @if (actionError()) {
+          <div class="error-banner">{{ actionError() }}</div>
+        }
+
         @if (ev.sessions.length === 0) {
           <p class="empty-state">Inga sessioner schemalagda ännu.</p>
         } @else {
@@ -62,7 +66,13 @@
                   </div>
                   <div class="session-seats">
                     <mat-icon>people</mat-icon>
-                    {{ s.maxSeats }} platser
+                    <span>{{ s.bookedSeats }}/{{ s.maxSeats }} platser</span>
+                    <span class="capacity-chip"
+                          [class.capacity-green]="capacityLevel(s) === 'green'"
+                          [class.capacity-orange]="capacityLevel(s) === 'orange'"
+                          [class.capacity-red]="capacityLevel(s) === 'red'">
+                      {{ capacityLabel(s) }}
+                    </span>
                   </div>
                   <mat-icon class="expand-btn">
                     {{ expandedSessions().has(s.id) ? 'expand_less' : 'expand_more' }}
@@ -71,6 +81,24 @@
                 @if (expandedSessions().has(s.id)) {
                   <div class="session-detail">
                     <span>Starttyp: {{ s.startType === 'FixedTime' ? 'Fast tid' : s.startType }}</span>
+                    <div class="session-actions" (click)="$event.stopPropagation()">
+                      @if (!authSvc.isLoggedIn()) {
+                        <a mat-stroked-button routerLink="/login">Logga in för att anmäla</a>
+                      } @else if (!myTicketId()) {
+                        <a mat-stroked-button routerLink="/my-pages/ticket">Skaffa biljett</a>
+                      } @else {
+                        <button mat-flat-button
+                                color="primary"
+                                type="button"
+                                [disabled]="registrationLoading() || submittingSessionId() === s.id"
+                                (click)="onSessionAction(s)">
+                          {{ isRegistered(s.id) ? 'Avboka session' : 'Anmäl till session' }}
+                        </button>
+                        @if (isRegistered(s.id)) {
+                          <a mat-button routerLink="/my-pages/program">Visa i Mitt program</a>
+                        }
+                      }
+                    </div>
                   </div>
                 }
               </div>

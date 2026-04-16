@@ -1,8 +1,18 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { FeedService, EventFeedDto, SessionFeedDto, REGISTRATION_KIND_LABEL } from 'shared';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import {
+  AuthService,
+  FeedService,
+  EventFeedDto,
+  MySessionRegistrationSummaryDto,
+  RegistrationService,
+  REGISTRATION_KIND_LABEL,
+  SessionFeedDto,
+} from 'shared';
 
 @Component({
   selector: 'app-event-detail',
@@ -14,10 +24,18 @@ import { FeedService, EventFeedDto, SessionFeedDto, REGISTRATION_KIND_LABEL } fr
 export class EventDetailComponent implements OnInit {
   private readonly route   = inject(ActivatedRoute);
   private readonly feedSvc = inject(FeedService);
+  private readonly router = inject(Router);
+  readonly authSvc = inject(AuthService);
+  private readonly regSvc = inject(RegistrationService);
 
   readonly loading  = signal(true);
   readonly error    = signal<string | null>(null);
   readonly event    = signal<EventFeedDto | null>(null);
+  readonly actionError = signal<string | null>(null);
+  readonly registrationLoading = signal(false);
+  readonly submittingSessionId = signal<string | null>(null);
+  readonly myTicketId = signal<string | null>(null);
+  readonly mySessionRegistrations = signal<Record<string, string>>({});
 
   // Expanderade sessioner
   readonly expandedSessions = signal<Set<string>>(new Set());
@@ -25,7 +43,11 @@ export class EventDetailComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.feedSvc.getEvent(id).subscribe({
-      next: ev  => { this.event.set(ev); this.loading.set(false); },
+      next: ev  => {
+        this.event.set(ev);
+        this.loading.set(false);
+        this.loadRegistrationContext(ev.editionId);
+      },
       error: () => { this.error.set('Evenemanget hittades inte.'); this.loading.set(false); },
     });
   }
@@ -48,5 +70,156 @@ export class EventDetailComponent implements OnInit {
 
   registrationLabel(type: string): string {
     return REGISTRATION_KIND_LABEL[type] ?? type;
+  }
+
+  capacityLevel(s: SessionFeedDto): 'green' | 'orange' | 'red' {
+    if (s.maxSeats <= 0) {
+      return 'red';
+    }
+
+    var ratio = s.bookedSeats / s.maxSeats;
+    if (ratio >= 0.9) {
+      return 'red';
+    }
+
+    if (ratio >= 0.6) {
+      return 'orange';
+    }
+
+    return 'green';
+  }
+
+  capacityLabel(s: SessionFeedDto): string {
+    const level = this.capacityLevel(s);
+    if (level === 'red') {
+      return 'Hög beläggning';
+    }
+
+    if (level === 'orange') {
+      return 'Börjar bli fullt';
+    }
+
+    return 'Gott om plats';
+  }
+
+  isRegistered(sessionId: string): boolean {
+    return !!this.mySessionRegistrations()[sessionId];
+  }
+
+  onSessionAction(session: SessionFeedDto): void {
+    if (!this.authSvc.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (this.registrationLoading() || this.submittingSessionId()) {
+      return;
+    }
+
+    const existingRegistrationId = this.mySessionRegistrations()[session.id];
+    if (existingRegistrationId) {
+      this.cancelRegistration(session.id, existingRegistrationId);
+      return;
+    }
+
+    this.registerForSession(session.id);
+  }
+
+  private loadRegistrationContext(editionId: string): void {
+    if (!this.authSvc.isLoggedIn()) {
+      return;
+    }
+
+    this.registrationLoading.set(true);
+
+    forkJoin({
+      ticket: this.regSvc.getMyVisitorRegistration(editionId).pipe(catchError(() => of(null))),
+      sessions: this.regSvc.getMySessionRegistrations(editionId).pipe(catchError(() => of([] as MySessionRegistrationSummaryDto[]))),
+    }).subscribe({
+      next: result => {
+        this.myTicketId.set(result.ticket?.ticketId ?? null);
+        this.mySessionRegistrations.set(result.sessions.reduce<Record<string, string>>((map, item) => {
+          map[item.sessionId] = item.id;
+          return map;
+        }, {}));
+        this.registrationLoading.set(false);
+      },
+      error: () => {
+        this.registrationLoading.set(false);
+      },
+    });
+  }
+
+  private registerForSession(sessionId: string): void {
+    const personId = this.authSvc.personId();
+    const ticketId = this.myTicketId();
+
+    if (!personId) {
+      this.actionError.set('Du behöver vara inloggad för att anmäla dig.');
+      return;
+    }
+
+    if (!ticketId) {
+      this.actionError.set('Du behöver en betald biljett innan du kan anmäla dig till en session.');
+      return;
+    }
+
+    this.submittingSessionId.set(sessionId);
+    this.actionError.set(null);
+
+    this.regSvc.registerForSession(sessionId, personId, ticketId).subscribe({
+      next: result => {
+        this.mySessionRegistrations.update(current => ({ ...current, [sessionId]: result.id }));
+        this.updateBookedSeats(sessionId, 1);
+        this.submittingSessionId.set(null);
+      },
+      error: () => {
+        this.actionError.set('Kunde inte anmäla dig till sessionen just nu.');
+        this.submittingSessionId.set(null);
+      },
+    });
+  }
+
+  private cancelRegistration(sessionId: string, registrationId: string): void {
+    this.submittingSessionId.set(sessionId);
+    this.actionError.set(null);
+
+    this.regSvc.cancelSessionRegistration(registrationId).subscribe({
+      next: () => {
+        this.mySessionRegistrations.update(current => {
+          const next = { ...current };
+          delete next[sessionId];
+          return next;
+        });
+        this.updateBookedSeats(sessionId, -1);
+        this.submittingSessionId.set(null);
+      },
+      error: () => {
+        this.actionError.set('Kunde inte avboka sessionen just nu.');
+        this.submittingSessionId.set(null);
+      },
+    });
+  }
+
+  private updateBookedSeats(sessionId: string, delta: number): void {
+    this.event.update(current => {
+      if (!current) {
+        return current;
+      }
+
+      return {
+        ...current,
+        sessions: current.sessions.map(s => {
+          if (s.id !== sessionId) {
+            return s;
+          }
+
+          return {
+            ...s,
+            bookedSeats: Math.max(0, s.bookedSeats + delta),
+          };
+        }),
+      };
+    });
   }
 }

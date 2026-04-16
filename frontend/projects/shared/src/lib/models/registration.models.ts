@@ -64,6 +64,7 @@ export interface MyVisitorRegistrationDto {
   id: string;
   status: string;
   ticketTypeName: string | null;
+  ticketId: string;
 }
 
 export interface MySessionRegistrationSummaryDto {

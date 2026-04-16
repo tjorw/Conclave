@@ -11,8 +11,6 @@ Prioriterad lista – ej startade överst, klara underst.
 - [ ] `R15` Fas 3.1.12 Globalt schemaläggningsverktyg (admin)
 - [ ] `R16` Fas 3.1.13 Sessionsredigerare i evenemangsdetalj (admin)
 - [ ] `R05` Fas 3.2.5 Min biljett
-- [ ] `R06` Fas 3.2.6 Mitt program
-- [ ] `R09` Fas 3.2.9 Sessionsregistrering
 - [ ] `R13` Fas 3.2.10 Bevakningslista – sessioner utan platsbiljett
 - [ ] `R14` Fas 3.2.11 Personligt tidsschema – samlad vy i Mitt program
 - [ ] `R08` Fas 3.2.8 Min bemanning
@@ -22,7 +20,9 @@ Prioriterad lista – ej startade överst, klara underst.
 - [x] `R02` Fas 3.1.8 Registreringsöversikt i admin
 - [x] `R03` Fas 3.1.6b Evenemangsflöde – genomgång och förfining
 - [x] `R04` Fas 3.2.4 Mina sidor – hub och navigationsstruktur
+- [x] `R06` Fas 3.2.6 Mitt program
 - [x] `R07` Fas 3.2.7 Mina arrangemang
+- [x] `R09` Fas 3.2.9 Sessionsregistrering
 - [x] `R10` Fas 3.1.7b Bemanningsvy – genomgång och förfining
 - [x] `R12` Fas 3.1.11 Öppna och stänga ansökan – arrangemang och funktionärer
 

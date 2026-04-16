@@ -21,6 +21,25 @@ public sealed class SessionRegistrationRepository(ConventionDbContext db) : ISes
                      && r.Status == Domain.Registration.Enums.SessionRegistrationStatus.Confirmed)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyDictionary<SessionId, int>> CountConfirmedBySessionIdsAsync(
+        IReadOnlyCollection<SessionId> sessionIds,
+        CancellationToken ct = default)
+    {
+        if (sessionIds.Count == 0)
+        {
+            return new Dictionary<SessionId, int>();
+        }
+
+        var counts = await db.SessionRegistrations
+            .Where(r => sessionIds.Contains(r.SessionId)
+                     && r.Status == SessionRegistrationStatus.Confirmed)
+            .GroupBy(r => r.SessionId)
+            .Select(g => new { SessionId = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+
+        return counts.ToDictionary(x => x.SessionId, x => x.Count);
+    }
+
     public Task<bool> HasRegistrationAsync(PersonId personId, SessionId sessionId, CancellationToken ct = default)
         => db.SessionRegistrations.AnyAsync(
             r => r.PersonId == personId && r.SessionId == sessionId

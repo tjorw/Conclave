@@ -32,6 +32,7 @@ public record SessionSummaryFeedDto(
     DateTime Start,
     DateTime End,
     int MaxSeats,
+    int BookedSeats,
     string StartType);
 
 public record EventFeedDto(
@@ -52,4 +53,5 @@ public record SessionFeedDto(
     DateTime Start,
     DateTime End,
     int MaxSeats,
+    int BookedSeats,
     string StartType);

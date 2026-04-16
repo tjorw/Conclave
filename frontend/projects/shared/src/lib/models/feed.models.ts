@@ -41,6 +41,7 @@ export interface SessionSummaryFeedDto {
   start: string;
   end: string;
   maxSeats: number;
+  bookedSeats: number;
   startType: string;
 }
 
@@ -63,5 +64,6 @@ export interface SessionFeedDto {
   start: string;
   end: string;
   maxSeats: number;
+  bookedSeats: number;
   startType: string;
 }

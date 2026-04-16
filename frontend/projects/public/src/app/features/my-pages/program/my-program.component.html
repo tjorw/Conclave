@@ -1,0 +1,53 @@
+<div class="program-page page-container">
+  <div class="back-link">
+    <a routerLink="/my-pages">← Mina sidor</a>
+  </div>
+
+  <header class="page-header">
+    <h1 class="page-title">Mitt program</h1>
+  </header>
+
+  @if (loading()) {
+    <div class="loading">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else {
+    @if (error()) {
+      <p class="error-banner">{{ error() }}</p>
+    }
+
+    @if (sessions().length === 0) {
+      <div class="empty-state">
+        <p>Du har inga sessionsbokningar ännu.</p>
+        <a mat-flat-button class="browse-btn" routerLink="/program">Bläddra i programmet</a>
+      </div>
+    } @else {
+      <div class="session-list">
+        @for (session of sessions(); track session.id) {
+          <article class="session-card">
+            <div class="session-main">
+              <h2 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h2>
+              <p class="session-time">
+                {{ session.start | date:'EEEE d MMMM, HH:mm':'':'sv-SE' }}
+                <span>– {{ session.end | date:'HH:mm' }}</span>
+              </p>
+              <p class="session-meta">
+                Lokal: {{ session.venueName || 'Ej angiven' }}
+              </p>
+              <span class="status-chip">{{ sessionStatusLabel(session.status) }}</span>
+            </div>
+
+            <button
+              mat-stroked-button
+              color="warn"
+              type="button"
+              [disabled]="cancellingId() === session.id"
+              (click)="cancelSession(session.id)">
+              {{ cancellingId() === session.id ? 'Avbokar...' : 'Avboka' }}
+            </button>
+          </article>
+        }
+      </div>
+    }
+  }
+</div>

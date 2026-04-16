@@ -1,6 +1,7 @@
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
+using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Ids;
 
@@ -8,7 +9,8 @@ namespace ConventionSystem.Application.Feed.GetEventFeed;
 
 public sealed class GetEventFeedHandler(
     IEventRepository eventRepository,
-    IEditionRepository editionRepository)
+    IEditionRepository editionRepository,
+    ISessionRegistrationRepository sessionRegistrationRepository)
     : IQueryHandler<GetEventFeedQuery, EventFeedDto?>
 {
     public async Task<EventFeedDto?> Handle(GetEventFeedQuery query, CancellationToken ct)
@@ -22,8 +24,18 @@ public sealed class GetEventFeedHandler(
                          ?? new Dictionary<Guid, string>();
         var categoryName = edition?.Categories.FirstOrDefault(c => c.Id == ev.CategoryId)?.Name;
 
-        var sessions = ev.Sessions
+        var activeSessions = ev.Sessions
             .Where(s => s.Status == "Active")
+            .ToList();
+
+        var sessionIds = activeSessions
+            .Select(s => new SessionId(s.Id))
+            .ToList();
+
+        var bookedSeatsBySession = await sessionRegistrationRepository
+            .CountConfirmedBySessionIdsAsync(sessionIds, ct);
+
+        var sessions = activeSessions
             .Select(s => new SessionFeedDto(
                 s.Id,
                 s.VenueId,
@@ -31,6 +43,7 @@ public sealed class GetEventFeedHandler(
                 s.Start,
                 s.End,
                 s.MaxSeats,
+                bookedSeatsBySession.GetValueOrDefault(new SessionId(s.Id), 0),
                 s.StartType))
             .ToList();
 

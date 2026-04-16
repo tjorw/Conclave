@@ -26,6 +26,19 @@ export class RegistrationService {
     );
   }
 
+  registerForSession(sessionId: string, personId: string, ticketId: string) {
+    return this.http.post<{ id: string }>(
+      `${this.env.apiBaseUrl}/sessions/${sessionId}/registrations`,
+      { personId, ticketId }
+    );
+  }
+
+  cancelSessionRegistration(registrationId: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/session-registrations/${registrationId}`
+    );
+  }
+
   getMyStaffApplication(editionId: string) {
     return this.http.get<MyStaffApplicationDto | null>(
       `${this.env.apiBaseUrl}/editions/${editionId}/my-staff-application`
