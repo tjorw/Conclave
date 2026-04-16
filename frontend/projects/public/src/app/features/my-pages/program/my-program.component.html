@@ -96,41 +96,49 @@
 
       <!-- Flik 2: Tidslinje -->
       <mat-tab label="Tidslinje">
-        @if (scheduleItems().length === 0) {
+        @if (timelineItems().length === 0) {
           <div class="empty-state tab-empty">
             <p>Inga engagemang att visa ännu.</p>
           </div>
         } @else {
           <div class="tab-content">
-            @for (group of scheduleByDay(); track group.day) {
-              <section class="day-section">
-                <h2 class="day-heading">{{ group.day }}</h2>
-                <div class="timeline-list">
-                  @for (item of group.items; track timelineTrackId(item)) {
-                    <article
-                      class="timeline-card"
-                      [class.primary]="item.isPrimary"
-                      [class.conflict]="hasConflict(item)">
-                      <div class="timeline-header">
-                        <h3 class="timeline-title">{{ item.title || '(Namnlös)' }}</h3>
-                        <span class="type-chip type-{{ item.type.toLowerCase() }}">
-                          {{ scheduleTypeLabel(item.type) }}
-                        </span>
-                        @if (hasConflict(item)) {
-                          <mat-icon class="conflict-icon" title="Krockar med annat primärt pass">warning</mat-icon>
-                        }
-                      </div>
-                      <p class="timeline-time">
-                        {{ displayTime(item.start) }} – {{ displayTime(item.end) }}
-                      </p>
-                      @if (item.locationName) {
-                        <p class="timeline-meta">{{ item.locationName }}</p>
-                      }
-                    </article>
+            <div class="timeline-toolbar">
+              <label class="watched-filter">
+                <input
+                  type="checkbox"
+                  [checked]="showWatchedInTimeline()"
+                  (change)="toggleWatchedInTimeline()" />
+                Visa bevakade sessioner
+              </label>
+            </div>
+
+            <div class="timeline-list">
+              @for (item of timelineItems(); track timelineTrackId(item)) {
+                <article
+                  class="timeline-card"
+                  [class.primary]="item.isPrimary"
+                  [class.conflict]="hasConflict(item)">
+                  <div class="timeline-header">
+                    <h3 class="timeline-title">{{ item.title || '(Namnlös)' }}</h3>
+                    <span class="type-chip type-{{ item.type.toLowerCase() }}">
+                      {{ scheduleTypeLabel(item.type) }}
+                    </span>
+                    @if (hasConflict(item)) {
+                      <mat-icon class="conflict-icon" title="Krockar med annat engagemang">warning</mat-icon>
+                    }
+                  </div>
+
+                  <p class="timeline-time">
+                    {{ displayDate(item.start) }}
+                    <span>– {{ displayTime(item.end) }}</span>
+                  </p>
+
+                  @if (item.locationName) {
+                    <p class="timeline-meta">{{ item.locationName }}</p>
                   }
-                </div>
-              </section>
-            }
+                </article>
+              }
+            </div>
           </div>
         }
       </mat-tab>

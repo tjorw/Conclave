@@ -17,8 +17,6 @@ import {
   SESSION_REGISTRATION_STATUS_LABEL,
 } from 'shared';
 
-type DayGroup = { day: string; items: MyScheduleItemDto[] };
-
 const SCHEDULE_TYPE_LABEL: Record<string, string> = {
   Booked: 'Bokat',
   Watching: 'Vill se',
@@ -45,6 +43,7 @@ export class MyProgramComponent implements OnInit {
   readonly assignedShifts = signal<MyAssignedShiftSummaryDto[]>([]);
   readonly cancellingId = signal<string | null>(null);
   readonly unwatchingSessionId = signal<string | null>(null);
+  readonly showWatchedInTimeline = signal(false);
 
   readonly scheduleItems = computed<MyScheduleItemDto[]>(() => {
     const booked = this.bookedSessions().map<MyScheduleItemDto>(session => ({
@@ -86,14 +85,10 @@ export class MyProgramComponent implements OnInit {
         isPrimary: false,
       }));
 
-    // One timeline card per session: keep highest priority engagement type.
-    // Priority order is the concatenation order below: Booked > Organiser > Watching.
+    // Keep a single engagement type per session id in priority order.
     const sessionItemsBySessionId = new Map<string, MyScheduleItemDto>();
     for (const item of [...booked, ...organiser, ...watched]) {
-      if (!item.sessionId) {
-        continue;
-      }
-
+      if (!item.sessionId) continue;
       if (!sessionItemsBySessionId.has(item.sessionId)) {
         sessionItemsBySessionId.set(item.sessionId, item);
       }
@@ -111,39 +106,43 @@ export class MyProgramComponent implements OnInit {
     }));
 
     return [...sessionItemsBySessionId.values(), ...shifts]
-      .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+      .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
   });
 
-  readonly scheduleByDay = computed<DayGroup[]>(() => {
-    const grouped = new Map<string, MyScheduleItemDto[]>();
-    for (const item of this.scheduleItems()) {
-      const raw = new Date(item.start).toLocaleDateString('sv-SE', {
-        weekday: 'long', day: 'numeric', month: 'long',
-      });
-      const label = raw.charAt(0).toUpperCase() + raw.slice(1);
-      grouped.set(label, [...(grouped.get(label) ?? []), item]);
-    }
-    return Array.from(grouped.entries()).map(([day, items]) => ({ day, items }));
+  readonly timelineItems = computed<MyScheduleItemDto[]>(() => {
+    const visibleTypes = this.showWatchedInTimeline()
+      ? new Set<MyScheduleItemDto['type']>(['Booked', 'Organiser', 'Shift', 'Watching'])
+      : new Set<MyScheduleItemDto['type']>(['Booked', 'Organiser', 'Shift']);
+
+    return this.scheduleItems()
+      .filter(item => visibleTypes.has(item.type))
+      .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
   });
 
   readonly conflictIds = computed<Set<string>>(() => {
-    const primaries = this.scheduleItems().filter(i => i.isPrimary);
+    const items = this.timelineItems();
     const ids = new Set<string>();
-    for (let i = 0; i < primaries.length; i++) {
-      for (let j = i + 1; j < primaries.length; j++) {
-        const a = primaries[i];
-        const b = primaries[j];
+
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length; j++) {
+        const a = items[i];
+        const b = items[j];
         if (new Date(a.start) < new Date(b.end) && new Date(b.start) < new Date(a.end)) {
-          ids.add(this.itemId(a));
-          ids.add(this.itemId(b));
+          ids.add(this.timelineTrackId(a));
+          ids.add(this.timelineTrackId(b));
         }
       }
     }
+
     return ids;
   });
 
   ngOnInit(): void {
     this.loadAll();
+  }
+
+  toggleWatchedInTimeline(): void {
+    this.showWatchedInTimeline.update(value => !value);
   }
 
   cancelSession(registrationId: string): void {
@@ -187,11 +186,7 @@ export class MyProgramComponent implements OnInit {
   }
 
   hasConflict(item: MyScheduleItemDto): boolean {
-    return this.conflictIds().has(this.itemId(item));
-  }
-
-  private itemId(item: MyScheduleItemDto): string {
-    return item.sessionId ?? item.shiftId ?? '';
+    return this.conflictIds().has(this.timelineTrackId(item));
   }
 
   timelineTrackId(item: MyScheduleItemDto): string {
@@ -333,6 +328,7 @@ export class MyProgramComponent implements OnInit {
           this.watchedSessions.set(watched);
           this.organiserSessions.set(organiser);
           this.assignedShifts.set(shifts);
+          this.showWatchedInTimeline.set(false);
         } catch {
           this.error.set('Kunde inte tolka programdata just nu. Försök igen.');
         } finally {
