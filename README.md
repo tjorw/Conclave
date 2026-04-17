@@ -119,6 +119,50 @@ Seeder: demo-konvention skapad (id=<GUID>). Logga in med admin@demo.se / Admin12
 
 Demo-konventionen innehåller en publicerad upplaga med lokaler, funktionsområden, stationer och kategorier ifyllda.
 
+#### Testa e-post lokalt med smtp4dev
+
+För lokal utveckling kan du fånga upp alla utskick utan att skicka riktiga mail.
+
+1. Installera smtp4dev (valfritt sätt):
+
+```powershell
+winget install rnwood.smtp4dev
+```
+
+eller:
+
+```bash
+docker run --rm -it -p 3000:80 -p 2525:25 rnwood/smtp4dev
+```
+
+2. Starta smtp4dev.
+3. Lägg till eller uppdatera `Email` i `backend/src/ConventionSystem.Api/appsettings.Development.json`:
+
+```json
+{
+  "Email": {
+    "Provider": "Smtp",
+    "FromName": "Konvent Dev",
+    "FromEmail": "noreply@local.dev",
+    "Smtp": {
+      "Host": "localhost",
+      "Port": 2525,
+      "UseSsl": false,
+      "UseStartTls": false,
+      "Username": "",
+      "Password": ""
+    }
+  }
+}
+```
+
+4. Starta API:t och trigga ett flöde som skickar mail.
+5. Öppna smtp4dev på `http://localhost:3000` och verifiera att meddelandet finns i inkorgen.
+
+Tips:
+- Om du kör smtp4dev som desktop-app kan SMTP-porten vara `25` i stället för `2525`.
+- Behåll `Email.Provider = Smtp` i development, men använd `Logging` eller riktig leverantör i andra miljöer.
+
 #### Steg 3 – Konfigurera frontend-miljön
 
 `environment.ts` är gitignorerad (innehåller lokalt `conventionId`). Kopiera exempelfilerna och fyll i GUID:t från konsolen:

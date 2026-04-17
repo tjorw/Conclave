@@ -14,6 +14,7 @@ using ConventionSystem.Infrastructure.Registration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace ConventionSystem.Infrastructure;
 
@@ -38,7 +39,26 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IMyScheduleRepository, MyScheduleRepository>();
         services.AddScoped<IRegistrationRuleService, StubRegistrationRuleService>();
 
-        services.AddScoped<IEmailService, LoggingEmailService>();
+        services.AddOptions<EmailOptions>()
+            .Bind(configuration.GetSection(EmailOptions.SectionName));
+
+        services.AddScoped<LoggingEmailService>();
+        services.AddScoped<SmtpEmailService>();
+        services.AddScoped<SendGridEmailService>();
+
+        services.AddScoped<IEmailService>(provider =>
+        {
+            var options = provider.GetRequiredService<IOptions<EmailOptions>>().Value;
+
+            return options.Provider.ToLowerInvariant() switch
+            {
+                "smtp" => provider.GetRequiredService<SmtpEmailService>(),
+                "sendgrid" => provider.GetRequiredService<SendGridEmailService>(),
+                "logging" => provider.GetRequiredService<LoggingEmailService>(),
+                _ => throw new InvalidOperationException(
+                    $"Ogiltig e-postprovider '{options.Provider}'. Tillatna varden ar 'Logging', 'Smtp' och 'SendGrid'.")
+            };
+        });
 
         services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
         services.AddScoped<EventDispatchInterceptor>();
