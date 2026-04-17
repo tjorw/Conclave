@@ -1,0 +1,58 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-api",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/backend/src/ConventionSystem.Api/ConventionSystem.Api.csproj"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "serve-frontend-admin",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": [
+        "run",
+        "ng",
+        "--",
+        "serve",
+        "admin"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "serve-frontend-public",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": [
+        "run",
+        "ng",
+        "--",
+        "serve",
+        "public"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "serve-frontends",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "serve-frontend-admin",
+        "serve-frontend-public"
+      ]
+    }
+  ]
+}

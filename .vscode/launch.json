@@ -1,0 +1,37 @@
+{
+  "version": "0.2.0",
+  "compounds": [
+    {
+      "name": "Debug API + Serve Frontends",
+      "configurations": [
+        "Debug ConventionSystem.Api",
+        "Serve Frontend Admin",
+        "Serve Frontend Public"
+      ],
+      "stopAll": true
+    }
+  ],
+  "configurations": [
+    {
+      "name": "Debug ConventionSystem.Api",
+      "type": "dotnet",
+      "request": "launch",
+      "preLaunchTask": "build-api",
+      "projectPath": "${workspaceFolder}/backend/src/ConventionSystem.Api/ConventionSystem.Api.csproj"
+    },
+    {
+      "name": "Serve Frontend Admin",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm.cmd run ng -- serve admin",
+      "cwd": "${workspaceFolder}/frontend"
+    },
+    {
+      "name": "Serve Frontend Public",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm.cmd run ng -- serve public",
+      "cwd": "${workspaceFolder}/frontend"
+    }
+  ]
+}
