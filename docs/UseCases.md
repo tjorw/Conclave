@@ -695,94 +695,98 @@ Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
 # UC-TK001 – Skapa biljetttyp
 
 ## Sammanfattning
-En administratör skapar en biljetttyp för en upplaga (t.ex. "Helgbiljett", "Dagsbiljett", "Arrangörsbricka").
+En administratör skapar en `TicketType` för en `Edition`, med pris, förmåner, tidsbegränsning och kategoribegränsning.
 
 ## Aktör
 Konventionsadministratör
 
 ## Förutsättningar
-- Upplagan finns
+- `Edition` finns
+- Utförande användare är administratör för konventet
 
 ## Flöde
-1. Administratören anger namn, pris (i öre), kategori (Besökare/Arrangör/Staff), `isSellable` och `isPubliclyVisible`
-2. Systemet skapar biljetttypen kopplad till upplagan
-3. Systemet returnerar det nya TicketTypeId
+1. Administratören anger namn, pris, typ (`Visitor | Organiser | Volunteer`), samt valfritt `validDays` och `allowedCategories`
+2. Systemet skapar `TicketType` kopplad till `Edition`
+3. Systemet returnerar nytt `TicketTypeId`
 
 ## Affärsregler
 - Namn får inte vara tomt
-- Pris måste vara >= 0
-- Kategorin avgör vilket registreringsflöde som får använda biljetttypen
-- `isSellable` – om true kan besökare köpa biljetten i det publika registreringsformuläret
-- `isPubliclyVisible` – om true visas biljetttypen i den publika prislistan/informationen
+- Pris måste vara noll eller högre
+- `validDays: null` innebär att biljetten gäller hela upplagan
+- `allowedCategories: null` innebär att biljetten ger tillgång till alla kategorier
+- Angivna dagar i `validDays` måste ligga inom `Edition`s datumintervall
 
 ## Domänhändelser
 - Inga
 
 ## Acceptanskriterier
-- [x] Biljetttypen sparas och kopplas till korrekt EditionId
-- [x] Kommandohanteraren har ett tillhörande enhetstest
+- [ ] `TicketType` persisteras och kopplas till korrekt `EditionId`
+- [ ] `validDays` utanför `Edition`s datumintervall ger valideringsfel
+- [ ] `TicketType` med `null` på både `validDays` och `allowedCategories` behandlas som obegränsad
+- [ ] Kommandohanterare har tillhörande enhetstest
 
 ---
 
-# UC-TK005 – Uppdatera biljetttyp
+# UC-TK002 – Lägg till förmån på biljetttyp
 
 ## Sammanfattning
-En administratör uppdaterar namn, pris och synlighetsinställningar för en befintlig biljetttyp.
+En administratör lägger till en förmånsbeskrivning på en `TicketType`, t.ex. "T-shirt" eller "Matkupong dag 1".
 
 ## Aktör
 Konventionsadministratör
 
 ## Förutsättningar
-- Biljetttypen finns
+- `TicketType` finns och tillhör konventet
 
 ## Flöde
-1. Administratören anger TicketTypeId, nytt namn, nytt pris, `isSellable` och `isPubliclyVisible`
-2. Systemet anropar `TicketType.Update(name, price, isSellable, isPubliclyVisible)`
-3. Systemet sparar ändringen
+1. Administratören anger `TicketTypeId` och beskrivning av förmån
+2. Systemet lägger till förmånen på `TicketType`
 
 ## Affärsregler
-- Namn får inte vara tomt
-- Pris måste vara >= 0
-- Kategori (Besökare/Arrangör/Staff) kan inte ändras efter att biljetttypen skapats
+- Beskrivning får inte vara tom
+- En `TicketType` kan ha noll eller flera förmåner
 
 ## Domänhändelser
 - Inga
 
 ## Acceptanskriterier
-- [x] Namn, pris, `isSellable` och `isPubliclyVisible` uppdateras korrekt
-- [x] Ogiltigt namn returnerar valideringsfel
-- [x] Negativt pris returnerar valideringsfel
-- [x] Kommandohanteraren har ett tillhörande enhetstest
+- [ ] `TicketPerk` persisteras och kopplas till korrekt `TicketTypeId`
+- [ ] Kommandohanterare har tillhörande enhetstest
 
 ---
 
-# UC-TK006 – Ta bort biljetttyp
+# UC-TK003 – Tilldela biljett till person
 
 ## Sammanfattning
-En administratör tar bort en biljetttyp. Är inte möjligt om biljetter av typen redan utfärdats.
+En administratör eller ansvarig tilldelar en `Ticket` till en person. Används för arrangörs- och funktionärsbiljetter samt administrativa korrigeringar.
 
 ## Aktör
-Konventionsadministratör
+Konventionsadministratör, `EventCoordinator` (arrangörsbiljetter), `VolunteerCoordinator` (funktionärsbiljetter)
 
 ## Förutsättningar
-- Biljetttypen finns
-- Inga biljetter av typen har utfärdats
+- `Edition` finns och är publicerad
+- `TicketType` finns och tillhör `Edition`
+- `Person` finns och tillhör konventet
 
 ## Flöde
-1. Administratören anger TicketTypeId
-2. Systemet kontrollerar att inga biljetter av typen existerar
-3. Systemet tar bort biljetttypen
+1. Aktören anger `PersonId` och `TicketTypeId`
+2. Systemet skapar en `Ticket` med status `Reserved`
+3. Systemet registrerar vem som tilldelade biljetten (`assignedById`)
+4. Systemet returnerar nytt `TicketId`
 
 ## Affärsregler
-- Biljetttypen kan inte tas bort om det finns biljetter kopplade till den
+- En person kan ha flera biljetter för samma `Edition`
+- Tilldelade biljetter startar med status `Reserved` – betalning registreras separat
+- Utförande aktör måste ha rätt roll (administratör, `EventCoordinator` eller `VolunteerCoordinator`)
 
 ## Domänhändelser
 - Inga
 
 ## Acceptanskriterier
-- [x] Biljetttypen tas bort om inga biljetter finns
-- [x] Försök att ta bort en biljetttyp med utfärdade biljetter returnerar valideringsfel
-- [x] Kommandohanteraren har ett tillhörande enhetstest
+- [ ] `Ticket` persisteras med status `Reserved` och korrekt `assignedById`
+- [ ] Person som inte tillhör konventet ger valideringsfel
+- [ ] `TicketType` som inte tillhör `Edition` ger valideringsfel
+- [ ] Kommandohanterare har tillhörande enhetstest
 
 ---
 
@@ -810,7 +814,7 @@ Besökare (autentiserad person)
 ## Affärsregler
 - Upplagan måste ha besöksregistrering öppen
 - En person kan inte ha mer än en aktiv (icke-avbokad) registrering per upplaga
-- Biljetttypen måste tillhöra samma upplaga och ha kategorin Besökare
+- Biljetttypen måste tillhöra samma upplaga och ha typen `Visitor`
 
 ## Domänhändelser
 - Inga (betalningsbekräftelsen utlöser den meningsfulla händelsen)
@@ -824,36 +828,35 @@ Besökare (autentiserad person)
 
 ---
 
-# UC-VR002 – Bekräfta besöksregistrerings betalning
+# UC-VR002 – Bekräfta besöksregistrering efter betalning
 
 ## Sammanfattning
-Efter en lyckad betalning bekräftar systemet besöksregistreringen och markerar biljetten som betald.
+Besöksregistreringen bekräftas när biljetten betalats. Betalningsbekräftelsen hanteras via UC-TK004 (manuell) eller UC-TK005 (webhook). VisitorRegistration-statusen uppdateras som en kaskadeffekt av `TicketPaid`.
 
 ## Aktör
-System (betalningsgateways webhook) eller konventionsadministratör
+System (via `TicketPaid`-händelsehanterare)
 
 ## Förutsättningar
 - VisitorRegistration finns med status VäntarPåBetalning
-- Ticket finns med status Reserverad
+- `TicketPaid`-händelse har publicerats för biljettkopplad till registreringen
 
 ## Flöde
-1. Systemet anger VisitorRegistrationId och extern betalningsreferens
-2. Systemet anropar VisitorRegistration.ConfirmPayment(externalReferenceId)
-3. Systemet anropar Ticket.ConfirmPayment()
-4. Båda sparas
+1. `TicketPaid` tas emot av händelsehanterare
+2. Systemet identifierar kopplad VisitorRegistration
+3. Systemet anropar `VisitorRegistration.Confirm()`
+4. Systemet sparar uppdateringen
 
 ## Affärsregler
 - Bara en VäntarPåBetalning-registrering kan bekräftas
-- Bara en Reserverad biljett kan bekräftas
+- Bekräftelsen drivs av `TicketPaid`, inte av ett direktkommando
 
 ## Domänhändelser
 - `VisitorRegistrationConfirmed { registrationId, personId, editionId, occurredAt }`
 
 ## Acceptanskriterier
-- [x] VisitorRegistrations status övergår till Bekräftad
-- [x] Tickets status övergår till Betald
-- [x] Bekräftelse av en redan bekräftad registrering returnerar ett valideringsfel
-- [x] Kommandohanteraren har ett tillhörande enhetstest
+- [ ] VisitorRegistrations status övergår till Bekräftad när `TicketPaid` tas emot
+- [ ] Dubbel händelse (idempotens) hanteras utan fel
+- [ ] Händelsehanterare har tillhörande enhetstest
 
 ---
 
@@ -889,97 +892,219 @@ Besökare (egen registrering) eller konventionsadministratör
 
 ---
 
-# UC-TK002 – Utfärda biljett manuellt
+# UC-TK004 – Registrera manuell betalning
 
 ## Sammanfattning
-En administratör utfärdar manuellt en biljett till en person, exempelvis en fri biljett till en arrangör eller staffmedlem.
+En administratör eller receptionspersonal registrerar manuellt att en `Ticket` har betalats, för fall där betalning sker utanför det integrerade betalsystemet (t.ex. kontant eller faktura).
 
 ## Aktör
-Konventionsadministratör
+Konventionsadministratör, receptionspersonal
 
 ## Förutsättningar
-- Upplagan finns
-- Biljetttypen finns och tillhör upplagan
-- Personen finns och tillhör konventionen
+- `Ticket` finns med status `Reserved`
+- Utförande användare har rätt roll
 
 ## Flöde
-1. Administratören anger PersonId, EditionId, TicketTypeId och sin egen PersonId som assignedById
-2. Systemet skapar en Ticket med status Reserverad, kopplad till assignedById
-3. Systemet returnerar det nya TicketId
+1. Aktören anger `TicketId` och valfri betalningsreferens
+2. Systemet ändrar biljettstatus från `Reserved` till `Paid`
+3. Systemet registrerar betalningsreferens om angiven
 
 ## Affärsregler
-- Biljetttypen måste tillhöra samma upplaga
-- Personen måste tillhöra konventionen
-- Manuellt utfärdade biljetter följer samma livscykel (Reserverad → Betald → Uthämtad)
+- Endast en `Reserved` biljett kan markeras som betald via detta flöde
+- En betald biljett kan inte avbokas av innehavaren
 
 ## Domänhändelser
-- Inga
+- `TicketPaid { ticketId, personId, performedById, occurredAt }`
 
 ## Acceptanskriterier
-- [x] Biljett sparas med status Reserverad och korrekt assignedById
-- [x] Kommandohanteraren har ett tillhörande enhetstest
+- [ ] Biljettstatus ändras till `Paid`
+- [ ] `TicketPaid` domänhändelse publiceras
+- [ ] Registrering av betalning på redan betald biljett ger valideringsfel
+- [ ] Kommandohanterare har tillhörande enhetstest
 
 ---
 
-# UC-TK003 – Hämta ut biljett
+# UC-TK005 – Bekräfta betalning via betalningsintegration
 
 ## Sammanfattning
-Personal vid entrén hämtar ut (validerar) en besökares biljett vid ankomst.
+Systemet tar emot en betalningsbekräftelse från extern betalningsleverantör och markerar motsvarande `Ticket` som betald.
 
 ## Aktör
-Konventionsstaff (ingång)
+Externt betalsystem (webhook)
 
 ## Förutsättningar
-- Biljett finns med status Betald
+- `Ticket` finns med status `Reserved`
+- Betalningsreferens matchar en känd väntande betalning
 
 ## Flöde
-1. Personal anger TicketId och sin egen PersonId som performedById
-2. Systemet anropar Ticket.Collect(performedById)
-3. Systemet sparar den uppdaterade biljetten
+1. Betalningsleverantören skickar webhook med betalningsreferens och status
+2. Systemet identifierar motsvarande `Ticket`
+3. Systemet ändrar biljettstatus till `Paid`
+4. Systemet publicerar `TicketPaid`
 
 ## Affärsregler
-- Bara en Betald biljett kan hämtas ut
-- CollectedById och CollectedAt registreras
+- Endast en `Reserved` biljett kan övergå till `Paid` via detta flöde
+- Duplicerade webhook-anrop för samma betalningsreferens hanteras idempotent
+- Misslyckad eller avbruten betalning ändrar inte biljettstatus
 
 ## Domänhändelser
-- `TicketCollected { ticketId, personId, performedById, occurredAt }`
+- `TicketPaid { ticketId, personId, performedById, occurredAt }`
 
 ## Acceptanskriterier
-- [x] Biljettstatus övergår till Uthämtad
-- [x] CollectedById och CollectedAt registreras
-- [x] Uthämtning av en icke-Betald biljett returnerar ett valideringsfel
-- [x] TicketCollected-händelse skickas
-- [x] Kommandohanteraren har ett tillhörande enhetstest
+- [ ] Biljettstatus ändras till `Paid` vid bekräftad betalning
+- [ ] `TicketPaid` domänhändelse publiceras
+- [ ] Duplicerad webhook hanteras idempotent (inget fel, ingen dubblerad statusändring)
+- [ ] Misslyckad betalning ändrar inte biljettstatus
+- [ ] Integrationshanterare har tillhörande enhetstest
 
 ---
 
-# UC-TK004 – Makulera biljett
+# UC-TK006 – Avboka biljett (innehavare)
 
 ## Sammanfattning
-En administratör makulerar en biljett, exempelvis vid återbetalning eller avstängning.
+En biljettinnehavare avbokar sin egen `Ticket` innan betalning har registrerats.
 
 ## Aktör
-Konventionsadministratör
+Biljettinnehavare (autentiserad person)
 
 ## Förutsättningar
-- Biljett finns och är inte redan makulerad
+- `Ticket` finns med status `Reserved`
+- Utförande användare är biljettinnehavaren
 
 ## Flöde
-1. Administratören anger TicketId och sin egen PersonId som performedById
-2. Systemet anropar Ticket.Revoke(performedById)
-3. Systemet sparar den uppdaterade biljetten
+1. Personen begär avbokning av sin biljett
+2. Systemet validerar att biljetten har status `Reserved`
+3. Systemet ändrar biljettstatus till `Revoked`
 
 ## Affärsregler
-- En redan makulerad biljett kan inte makuleras igen
+- En innehavare kan endast avboka sin egen biljett
+- Endast en `Reserved` biljett kan avbokas av innehavaren
+- En `Paid` biljett kan inte avbokas av innehavaren – endast av administratör
 
 ## Domänhändelser
 - `TicketRevoked { ticketId, personId, performedById, occurredAt }`
 
 ## Acceptanskriterier
-- [x] Biljettstatus övergår till Makulerad
-- [x] TicketRevoked-händelse skickas
-- [x] Makulering av en redan makulerad biljett returnerar ett valideringsfel
-- [x] Kommandohanteraren har ett tillhörande enhetstest
+- [ ] Biljettstatus ändras till `Revoked`
+- [ ] `TicketRevoked` domänhändelse publiceras
+- [ ] Avbokning av betald biljett som innehavare ger valideringsfel
+- [ ] Avbokning av annans biljett ger auktoriseringsfel
+- [ ] Kommandohanterare har tillhörande enhetstest
+
+---
+
+# UC-TK007 – Makulera biljett (administratör)
+
+## Sammanfattning
+En administratör makulerar en `Ticket` oavsett status, för att hantera exceptionella situationer. Alla `SessionRegistrations` kopplade till biljetten avbokas automatiskt som en kaskadeffekt.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- `Ticket` finns
+- Utförande användare är administratör för konventet
+
+## Flöde
+1. Administratören anger `TicketId` och valfri anledning
+2. Systemet ändrar biljettstatus till `Revoked`
+3. Systemet publicerar `TicketRevoked`
+4. Händelsehanterare lyssnar på `TicketRevoked` och avbokar alla `SessionRegistrations` kopplade till biljetten
+
+## Affärsregler
+- Administratör kan makulera vilken biljett som helst oavsett status (`Reserved`, `Paid` eller `Collected`)
+- Makulering är oåterkallelig
+- Kaskadeffekten hanteras via händelsehanterare, inte direkt i kommandot
+
+## Domänhändelser
+- `TicketRevoked { ticketId, personId, performedById, occurredAt }`
+
+## Kaskadeffekter (via händelsehanterare)
+- Alla `SessionRegistrations` där `ticketId` matchar avbokas
+- `SessionRegistrationCancelled` publiceras för varje berörd registrering
+
+## Acceptanskriterier
+- [ ] Biljettstatus ändras till `Revoked` oavsett nuvarande status
+- [ ] `TicketRevoked` domänhändelse publiceras
+- [ ] Alla kopplade `SessionRegistrations` avbokas
+- [ ] `SessionRegistrationCancelled` publiceras för varje avbokad registrering
+- [ ] Kommandohanterare och händelsehanterare har tillhörande enhetstester
+
+---
+
+# UC-TK008 – Hämta ut biljett i receptionen
+
+## Sammanfattning
+Receptionspersonal registrerar att en person har hämtat ut sin `Ticket` fysiskt vid ankomst till konventet. Förmånerna visas så att rätt utrustning kan delas ut.
+
+## Aktör
+Receptionspersonal (konventionsadministratör eller tilldelad roll)
+
+## Förutsättningar
+- `Ticket` finns med status `Paid`
+- Person är fysiskt närvarande på konventet
+
+## Flöde
+1. Receptionspersonal identifierar biljetten (via `PersonId`, e-post eller biljettreferens)
+2. Personal bekräftar uthämtning
+3. Systemet ändrar biljettstatus från `Paid` till `Collected`
+4. Systemet registrerar vem som utförde uthämtningen och när
+5. Systemet visar biljetttypens förmåner så att rätt saker kan delas ut (t-shirt, matkuponger etc.)
+
+## Affärsregler
+- Endast en `Paid` biljett kan hämtas ut
+- Uthämtning är en engångshändelse – en `Collected` biljett kan inte hämtas ut igen
+- Förmånslistan visas vid uthämtning för att guida receptionspersonalen
+
+## Domänhändelser
+- `TicketCollected { ticketId, personId, performedById, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Biljettstatus ändras till `Collected`
+- [ ] `collectedById` och `collectedAt` registreras
+- [ ] `TicketCollected` domänhändelse publiceras
+- [ ] Uthämtning av obetald biljett ger valideringsfel
+- [ ] Uthämtning av redan uthämtad biljett ger valideringsfel
+- [ ] Förmåner returneras i kommandosvaret för visning i receptionen
+- [ ] Kommandohanterare har tillhörande enhetstest
+
+---
+
+# UC-TK009 – Validera biljett inför sessionsregistrering
+
+## Sammanfattning
+Innan en `SessionRegistration` skapas validerar systemet att personens `Ticket` ger tillgång till sessionen. Detta är en domäntjänst som anropas som en del av UC-SR001, inte ett fristående use case.
+
+## Aktör
+Systemet (anropas som del av UC-SR001 – Registrera sig på session)
+
+## Förutsättningar
+- Person har minst en `Ticket` för `Edition`
+- `Session` finns och är aktiv
+
+## Valideringsregler
+1. Person måste ha minst en biljett med status `Paid` eller `Collected`
+2. Biljetten måste gälla på sessionens datum:
+   - `validDays == null` → alltid giltig
+   - `validDays != null` → sessionens datum måste finnas i `validDays`
+3. Biljetten måste ge tillgång till sessionens kategori:
+   - `allowedCategories == null` → tillgång till alla kategorier
+   - `allowedCategories != null` → sessionens `CategoryId` måste finnas i `allowedCategories`
+
+## Affärsregler
+- Om en person har flera biljetter räcker det att en är giltig
+- Valideringen utförs av `RegistrationRuleService.ValidateTicket(personId, sessionId)`
+
+## Domänhändelser
+- Inga (endast validering)
+
+## Acceptanskriterier
+- [ ] Giltig biljett returnerar lyckat resultat
+- [ ] Ingen betald biljett ger valideringsfel
+- [ ] Biljett vars `validDays` exkluderar sessionens datum ger valideringsfel
+- [ ] Biljett vars `allowedCategories` exkluderar sessionens kategori ger valideringsfel
+- [ ] Person med flera biljetter godkänns om minst en är giltig
+- [ ] Domäntjänst har tillhörande enhetstester
 
 ---
 
@@ -1213,7 +1338,7 @@ Besökare (autentiserad person med biljett)
 ## Flöde
 1. Personen anger SessionId, PersonId och TicketId
 2. Systemet validerar platstillgänglighet via RegistrationRuleService
-3. Systemet validerar att biljetten är giltig för sessionens upplaga
+3. Systemet validerar att biljetten ger tillgång till sessionen via `RegistrationRuleService.ValidateTicket(personId, sessionId)` (se UC-TK009)
 4. Systemet skapar SessionRegistration med status Bekräftad
 5. Systemet returnerar det nya SessionRegistrationId
 
