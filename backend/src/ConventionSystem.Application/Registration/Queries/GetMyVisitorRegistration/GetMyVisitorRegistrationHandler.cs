@@ -8,9 +8,9 @@ namespace ConventionSystem.Application.Registration.Queries.GetMyVisitorRegistra
 public sealed class GetMyVisitorRegistrationHandler(
     IVisitorRegistrationRepository visitorRegistrationRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<GetMyVisitorRegistrationQuery, MyVisitorRegistrationDto?>
+    : IRequestHandler<GetMyVisitorRegistrationQuery, IReadOnlyList<MyVisitorRegistrationDto>>
 {
-    public Task<MyVisitorRegistrationDto?> Handle(GetMyVisitorRegistrationQuery query, CancellationToken ct)
-        => visitorRegistrationRepository.GetByPersonAndEditionAsync(
+    public Task<IReadOnlyList<MyVisitorRegistrationDto>> Handle(GetMyVisitorRegistrationQuery query, CancellationToken ct)
+        => visitorRegistrationRepository.ListByPersonAndEditionAsync(
             currentUser.PersonId, new EditionId(query.EditionId), ct);
 }

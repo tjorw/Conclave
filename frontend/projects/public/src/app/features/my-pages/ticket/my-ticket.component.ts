@@ -1,6 +1,5 @@
-import { CurrencyPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,11 +9,24 @@ import { AuthService, MyVisitorRegistrationDto, RegistrationService, TICKET_PAYM
 import { catchError, of } from 'rxjs';
 import { EditionService } from '../../../services/edition.service';
 
+type TicketTypeApiShape = VisitorTicketTypeDto & {
+  Id?: string;
+  Name?: string;
+  Price?: number;
+};
+
+type VisitorRegistrationApiShape = MyVisitorRegistrationDto & {
+  Id?: string;
+  Status?: string;
+  TicketTypeName?: string | null;
+  TicketId?: string;
+  TicketPrice?: number | null;
+};
+
 @Component({
   selector: 'app-my-ticket',
   standalone: true,
   imports: [
-    CurrencyPipe,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
@@ -29,12 +41,13 @@ export class MyTicketComponent implements OnInit {
   private readonly authSvc = inject(AuthService);
   private readonly regSvc = inject(RegistrationService);
   private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly loadingRegistration = signal(true);
   readonly loadingTicketTypes = signal(true);
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
-  readonly registration = signal<MyVisitorRegistrationDto | null>(null);
+  readonly registrations = signal<MyVisitorRegistrationDto[]>([]);
   readonly ticketTypes = signal<VisitorTicketTypeDto[]>([]);
   readonly visitorRegistrationOpen = computed(
     () => this.editionSvc.edition()?.visitorRegistrationOpen ?? false
@@ -97,6 +110,39 @@ export class MyTicketComponent implements OnInit {
     return id.split('-')[0].toUpperCase();
   }
 
+  ticketTypeLabel(ticketType: VisitorTicketTypeDto): string {
+    const label = (ticketType.name ?? '').trim();
+    return label.length > 0 ? label : 'Biljett';
+  }
+
+  ticketTypePriceLabel(ticketType: VisitorTicketTypeDto): string {
+    const price = Number(ticketType.price);
+
+    if (!Number.isFinite(price) || price < 0) {
+      return 'Pris saknas';
+    }
+
+    return new Intl.NumberFormat('sv-SE', {
+      style: 'currency',
+      currency: 'SEK',
+      maximumFractionDigits: 0,
+    }).format(price / 100);
+  }
+
+  registrationPriceLabel(registration: MyVisitorRegistrationDto): string {
+    const price = Number(registration.ticketPrice);
+
+    if (!Number.isFinite(price) || price < 0) {
+      return 'Pris saknas';
+    }
+
+    return new Intl.NumberFormat('sv-SE', {
+      style: 'currency',
+      currency: 'SEK',
+      maximumFractionDigits: 0,
+    }).format(price / 100);
+  }
+
   private loadState(): void {
     const editionId = this.editionSvc.editionId();
     if (!editionId) {
@@ -111,37 +157,64 @@ export class MyTicketComponent implements OnInit {
     this.error.set(null);
 
     this.regSvc.getMyVisitorRegistration(editionId)
-      .pipe(catchError(() => of(null)))
+      .pipe(catchError(() => of([] as MyVisitorRegistrationDto[])))
       .subscribe({
-        next: registration => {
-          this.registration.set(registration);
+        next: registrations => {
+          const normalizedRegistrations = registrations.map(registration => {
+            const typed = registration as VisitorRegistrationApiShape;
+            return {
+              id: typed.id ?? typed.Id ?? '',
+              status: typed.status ?? typed.Status ?? 'PendingPayment',
+              ticketTypeName: typed.ticketTypeName ?? typed.TicketTypeName ?? null,
+              ticketId: typed.ticketId ?? typed.TicketId ?? '',
+              ticketPrice: typed.ticketPrice ?? typed.TicketPrice ?? null,
+            } satisfies MyVisitorRegistrationDto;
+          });
+
+          this.registrations.set(normalizedRegistrations);
           this.loadingRegistration.set(false);
+          this.cdr.detectChanges();
         },
         error: () => {
           this.error.set('Kunde inte läsa biljettinformation just nu.');
           this.loadingRegistration.set(false);
+          this.cdr.detectChanges();
         },
       });
 
     this.regSvc.getAvailableTicketTypes(editionId)
-      .pipe(catchError(() => of([])))
+      .pipe(catchError(() => of([] as VisitorTicketTypeDto[])))
       .subscribe({
         next: ticketTypes => {
           if (!this.visitorRegistrationOpen()) {
             this.ticketTypes.set([]);
             this.loadingTicketTypes.set(false);
+            this.cdr.detectChanges();
             return;
           }
 
-          this.ticketTypes.set(ticketTypes);
-          if (!this.registration() && ticketTypes.length > 0) {
-            this.registrationForm.patchValue({ ticketTypeId: ticketTypes[0].id });
+          const normalizedTicketTypes = ticketTypes.map((ticketType, index) => {
+            const typed = ticketType as TicketTypeApiShape;
+            const resolvedName = (typed.name ?? typed.Name ?? '').trim();
+            const resolvedId = typed.id ?? typed.Id ?? `ticket-option-${index}`;
+            return {
+              id: resolvedId,
+              name: resolvedName.length > 0 ? resolvedName : 'Biljett',
+              price: typed.price ?? typed.Price ?? 0,
+            } satisfies VisitorTicketTypeDto;
+          });
+
+          this.ticketTypes.set(normalizedTicketTypes);
+          if (this.registrations().length === 0 && normalizedTicketTypes.length > 0) {
+            this.registrationForm.patchValue({ ticketTypeId: normalizedTicketTypes[0].id });
           }
           this.loadingTicketTypes.set(false);
+          this.cdr.detectChanges();
         },
         error: () => {
           this.error.set('Kunde inte läsa biljettinformation just nu.');
           this.loadingTicketTypes.set(false);
+          this.cdr.detectChanges();
         },
       });
   }

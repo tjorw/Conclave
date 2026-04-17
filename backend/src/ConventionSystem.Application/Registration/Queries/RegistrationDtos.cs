@@ -32,7 +32,8 @@ public record MyVisitorRegistrationDto(
     Guid Id,
     string Status,
     string? TicketTypeName,
-    Guid TicketId);
+    Guid TicketId,
+    int? TicketPrice);
 
 public record MySessionRegistrationSummaryDto(
     Guid Id,

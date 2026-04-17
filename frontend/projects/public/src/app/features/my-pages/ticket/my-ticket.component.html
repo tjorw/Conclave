@@ -4,42 +4,46 @@
   </div>
 
   <header class="page-header">
-    <h1 class="page-title">Min biljett</h1>
+    <h1 class="page-title">Mina biljetter</h1>
   </header>
 
   @if (error()) {
     <p class="error-banner">{{ error() }}</p>
   }
 
-  @if (registration() && !loadingRegistration()) {
-    @if (registration(); as ticket) {
-      <section class="card status-card">
-        <h2>Din registrering</h2>
-        <dl class="status-list">
-          <div>
-            <dt>Biljetttyp</dt>
-            <dd>{{ ticket.ticketTypeName ?? 'Ej angiven' }}</dd>
-          </div>
-          <div>
-            <dt>Referensnummer</dt>
-            <dd>{{ referenceNumber(ticket.id) }}</dd>
-          </div>
-          <div>
-            <dt>Betalningsstatus</dt>
-            <dd>
+  @if (registrations().length > 0 && !loadingRegistration()) {
+    <section class="card status-card">
+      <h2>Dina registreringar</h2>
+      <div class="ticket-card-grid">
+        @for (ticket of registrations(); track ticket.id; let i = $index) {
+          <article class="ticket-card">
+            <header class="ticket-card-header">
+              <div class="ticket-card-title-block">
+                <h3>{{ ticket.ticketTypeName ?? ('Biljett ' + (i + 1)) }}</h3>
+                <p class="ticket-price-inline">{{ registrationPriceLabel(ticket) }}</p>
+              </div>
               <span [class]="ticket.status === 'Confirmed' ? 'status-chip green' : 'status-chip orange'">
                 {{ paymentStatusLabel(ticket.status) }}
               </span>
-            </dd>
-          </div>
-        </dl>
+            </header>
 
-        <p class="payment-info">
-          Betalning hanteras separat. När vi har registrerat din betalning uppdateras statusen automatiskt.
-        </p>
-      </section>
-    }
-  } @else {
+            <dl class="ticket-card-fields">
+              <div>
+                <dt>Referensnummer</dt>
+                <dd>{{ referenceNumber(ticket.id) }}</dd>
+              </div>
+            </dl>
+          </article>
+        }
+      </div>
+
+      <p class="payment-info">
+        Betalning hanteras separat. När vi har registrerat din betalning uppdateras statusen automatiskt.
+      </p>
+    </section>
+  }
+
+  @if (!loadingRegistration()) {
     <section class="card form-card">
       @if (!visitorRegistrationOpen()) {
         <h2>Biljettbokning stängd</h2>
@@ -54,17 +58,21 @@
               @if (loadingTicketTypes()) {
                 <p class="ticket-loading">Laddar biljetter...</p>
               } @else {
-                @for (ticketType of ticketTypes(); track ticketType.id) {
+                @for (ticketType of ticketTypes(); track $index) {
                   <label
                     class="ticket-option"
                     [class.selected]="registrationForm.controls.ticketTypeId.value === ticketType.id">
+                    <span class="ticket-option-check" aria-hidden="true"></span>
                     <input
                       class="ticket-option-input"
                       type="radio"
                       formControlName="ticketTypeId"
                       [value]="ticketType.id" />
-                    <span class="ticket-option-name">{{ ticketType.name }}</span>
-                    <span class="ticket-option-price">{{ ticketType.price / 100 | currency:'SEK':'symbol':'1.0-0':'sv-SE' }}</span>
+                    <span class="ticket-option-content">
+                      <span class="ticket-option-name">{{ ticketTypeLabel(ticketType) }}</span>
+                      <span class="ticket-option-meta">Besökarbiljett</span>
+                    </span>
+                    <span class="ticket-option-price">{{ ticketTypePriceLabel(ticketType) }}</span>
                   </label>
                 }
               }

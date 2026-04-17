@@ -47,7 +47,7 @@ public class SubmitVisitorRegistrationHandlerTests
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _personRepo.GetByIdAsync(person.Id, Arg.Any<CancellationToken>()).Returns(person);
         _ticketTypeRepo.GetByIdAsync(ticketType.Id, Arg.Any<CancellationToken>()).Returns(ticketType);
-        _registrationRepo.HasActiveRegistrationAsync(person.Id, edition.Id, Arg.Any<CancellationToken>()).Returns(false);
+        _registrationRepo.HasActiveRegistrationForTicketTypeAsync(person.Id, edition.Id, ticketType.Id, Arg.Any<CancellationToken>()).Returns(false);
 
         return (convention, person, edition, ticketType);
     }
@@ -83,13 +83,30 @@ public class SubmitVisitorRegistrationHandlerTests
     }
 
     [Fact]
-    public async Task Handle_DuplicateRegistration_Throws()
+    public async Task Handle_DuplicateTicketType_Throws()
     {
         var (_, person, edition, ticketType) = Setup();
-        _registrationRepo.HasActiveRegistrationAsync(person.Id, edition.Id, Arg.Any<CancellationToken>()).Returns(true);
+        _registrationRepo.HasActiveRegistrationForTicketTypeAsync(person.Id, edition.Id, ticketType.Id, Arg.Any<CancellationToken>()).Returns(true);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, person.Id.Value, ticketType.Id.Value), default));
+            () => _handler.Handle(
+                new SubmitVisitorRegistrationCommand(edition.Id.Value, person.Id.Value, ticketType.Id.Value),
+                default));
+    }
+
+    [Fact]
+    public async Task Handle_AdditionalDifferentTicketType_AllowsRegistration()
+    {
+        var (_, person, edition, ticketType) = Setup();
+        var otherTicketType = new TicketType(TicketTypeId.New(), edition.Id, "Dagbiljett", 8000, TicketTypeCategory.Visitor, true, true);
+        _ticketTypeRepo.GetByIdAsync(otherTicketType.Id, Arg.Any<CancellationToken>()).Returns(otherTicketType);
+        _registrationRepo.HasActiveRegistrationForTicketTypeAsync(person.Id, edition.Id, otherTicketType.Id, Arg.Any<CancellationToken>()).Returns(false);
+
+        var id = await _handler.Handle(
+            new SubmitVisitorRegistrationCommand(edition.Id.Value, person.Id.Value, otherTicketType.Id.Value),
+            default);
+
+        Assert.NotEqual(Guid.Empty, id);
     }
 
     [Fact]

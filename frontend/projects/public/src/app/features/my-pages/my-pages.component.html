@@ -18,17 +18,21 @@
       <a routerLink="/my-pages/ticket" class="status-card">
         <div class="card-icon">🎟</div>
         <div class="card-body">
-          <h2 class="card-title">Min biljett</h2>
-          @if (myTicket()) {
+          <h2 class="card-title">Mina biljetter</h2>
+          @if (myTickets().length > 0) {
             <p class="card-summary">
-              {{ myTicket()!.ticketTypeName ?? 'Biljett' }} ·
-              <span [class]="myTicket()!.status === 'Confirmed' ? 'tag-green' : 'tag-orange'">
-                {{ myTicket()!.status === 'Confirmed' ? 'Bekräftad' : 'Inväntar betalning' }}
+              {{ myTickets().length }} biljett{{ myTickets().length > 1 ? 'er' : '' }} ·
+              <span [class]="myTickets()[0]!.status === 'Confirmed' ? 'tag-green' : 'tag-orange'">
+                {{ myTickets()[0]!.status === 'Confirmed' ? 'Senaste bekräftad' : 'Senaste inväntar betalning' }}
               </span>
             </p>
+            <p class="card-next">Senaste pris: {{ latestTicketPriceLabel() }}</p>
+            @if (myTickets().length > 1) {
+              <p class="card-next">Totalt: {{ totalTicketPriceLabel() }}</p>
+            }
           } @else {
-            <p class="card-empty">Ingen biljett ännu</p>
-            <span class="card-cta">Skaffa biljett →</span>
+            <p class="card-empty">Inga biljetter ännu</p>
+            <span class="card-cta">Skaffa biljetter →</span>
           }
         </div>
       </a>

@@ -19,6 +19,22 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
         => db.VisitorRegistrations.AnyAsync(
             r => r.PersonId == personId && r.EditionId == editionId && r.Status != VisitorRegistrationStatus.Cancelled, ct);
 
+    public Task<bool> HasActiveRegistrationForTicketTypeAsync(
+        PersonId personId,
+        EditionId editionId,
+        TicketTypeId ticketTypeId,
+        CancellationToken ct = default)
+        => db.VisitorRegistrations
+            .Where(r => r.PersonId == personId
+                        && r.EditionId == editionId
+                        && r.Status != VisitorRegistrationStatus.Cancelled)
+            .Join(
+                db.Tickets,
+                registration => registration.TicketId,
+                ticket => ticket.Id,
+                (registration, ticket) => ticket)
+            .AnyAsync(ticket => ticket.TicketTypeId == ticketTypeId, ct);
+
     public async Task<IReadOnlyList<EditionVisitorDto>> ListConfirmedByEditionIdAsync(EditionId editionId, CancellationToken ct = default)
     {
         var registrations = await db.VisitorRegistrations
@@ -39,28 +55,48 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
         }).ToList();
     }
 
-    public async Task<MyVisitorRegistrationDto?> GetByPersonAndEditionAsync(
+    public async Task<IReadOnlyList<MyVisitorRegistrationDto>> ListByPersonAndEditionAsync(
         PersonId personId, EditionId editionId, CancellationToken ct = default)
     {
-        var registration = await db.VisitorRegistrations
-            .FirstOrDefaultAsync(r => r.PersonId == personId && r.EditionId == editionId
-                                      && r.Status != VisitorRegistrationStatus.Cancelled, ct);
+        var registrations = await db.VisitorRegistrations
+            .Where(r => r.PersonId == personId
+                        && r.EditionId == editionId)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync(ct);
 
-        if (registration is null) return null;
+        if (registrations.Count == 0)
+            return [];
 
-        var ticket = await db.Tickets.FirstOrDefaultAsync(t => t.Id == registration.TicketId, ct);
-        string? ticketTypeName = null;
-        if (ticket is not null)
+        var ticketIds = registrations.Select(r => r.TicketId).Distinct().ToHashSet();
+        var ticketMap = await db.Tickets
+            .Where(t => ticketIds.Contains(t.Id))
+            .Select(t => new { t.Id, t.TicketTypeId })
+            .ToDictionaryAsync(t => t.Id, ct);
+
+        var ticketTypeIds = ticketMap.Values.Select(t => t.TicketTypeId).Distinct().ToHashSet();
+        var ticketTypeMap = await db.TicketTypes
+            .Where(tt => ticketTypeIds.Contains(tt.Id))
+            .Select(tt => new { tt.Id, tt.Name, tt.Price })
+            .ToDictionaryAsync(tt => tt.Id, ct);
+
+        return registrations.Select(registration =>
         {
-            var ticketType = await db.TicketTypes.FirstOrDefaultAsync(tt => tt.Id == ticket.TicketTypeId, ct);
-            ticketTypeName = ticketType?.Name;
-        }
+            string? ticketTypeName = null;
+            int? ticketPrice = null;
+            if (ticketMap.TryGetValue(registration.TicketId, out var ticket)
+                && ticketTypeMap.TryGetValue(ticket.TicketTypeId, out var ticketType))
+            {
+                ticketTypeName = ticketType.Name;
+                ticketPrice = ticketType.Price;
+            }
 
-        return new MyVisitorRegistrationDto(
-            registration.Id.Value,
-            registration.Status.ToString(),
-            ticketTypeName,
-            registration.TicketId.Value);
+            return new MyVisitorRegistrationDto(
+                registration.Id.Value,
+                registration.Status.ToString(),
+                ticketTypeName,
+                registration.TicketId.Value,
+                ticketPrice);
+        }).ToList();
     }
 
     public async Task<IReadOnlyList<VisitorRegistrationAdminDto>> ListByEditionAsync(

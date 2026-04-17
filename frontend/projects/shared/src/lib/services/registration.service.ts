@@ -19,7 +19,7 @@ export class RegistrationService {
   private readonly env = inject(ENVIRONMENT);
 
   getMyVisitorRegistration(editionId: string) {
-    return this.http.get<MyVisitorRegistrationDto | null>(
+    return this.http.get<MyVisitorRegistrationDto[]>(
       `${this.env.apiBaseUrl}/editions/${editionId}/my-visitor-registration`
     );
   }

@@ -8,6 +8,7 @@ import {
   AuthService,
   FeedService,
   EventFeedDto,
+  MyVisitorRegistrationDto,
   MySessionRegistrationSummaryDto,
   MyWatchedSessionSummaryDto,
   RegistrationService,
@@ -160,12 +161,12 @@ export class EventDetailComponent implements OnInit {
     this.registrationLoading.set(true);
 
     forkJoin({
-      ticket: this.regSvc.getMyVisitorRegistration(editionId).pipe(catchError(() => of(null))),
+      tickets: this.regSvc.getMyVisitorRegistration(editionId).pipe(catchError(() => of([] as MyVisitorRegistrationDto[]))),
       sessions: this.regSvc.getMySessionRegistrations(editionId).pipe(catchError(() => of([] as MySessionRegistrationSummaryDto[]))),
       watched: this.regSvc.getMyWatchedSessions(editionId).pipe(catchError(() => of([] as MyWatchedSessionSummaryDto[]))),
     }).subscribe({
       next: result => {
-        this.myTicketId.set(result.ticket?.ticketId ?? null);
+        this.myTicketId.set(result.tickets[0]?.ticketId ?? null);
         this.mySessionRegistrations.set(result.sessions.reduce<Record<string, string>>((map, item) => {
           map[item.sessionId] = item.id;
           return map;

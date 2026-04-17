@@ -41,9 +41,8 @@ public sealed class SubmitVisitorRegistrationHandler(
             throw new InvalidOperationException("Biljetttypen tillhör inte denna upplaga.");
         if (ticketType.Type != TicketTypeCategory.Visitor)
             throw new InvalidOperationException("Biljetttypen är inte avsedd för besökare.");
-
-        if (await visitorRegistrationRepository.HasActiveRegistrationAsync(personId, editionId, ct))
-            throw new InvalidOperationException("Personen har redan en aktiv besöksregistrering för denna upplaga.");
+        if (await visitorRegistrationRepository.HasActiveRegistrationForTicketTypeAsync(personId, editionId, ticketTypeId, ct))
+            throw new InvalidOperationException("Personen har redan en aktiv registrering för denna biljettyp i upplagan.");
 
         var ticketId = TicketId.New();
         var ticket = new Ticket(ticketId, ticketTypeId, personId, editionId);
