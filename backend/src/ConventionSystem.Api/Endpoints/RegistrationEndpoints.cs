@@ -99,7 +99,7 @@ public static class RegistrationEndpoints
         app.MapPost("/editions/{editionId:guid}/staff-applications",
             async (Guid editionId, SubmitStaffApplicationRequest request, ISender sender, CancellationToken ct) =>
             {
-                var id = await sender.Send(new SubmitStaffApplicationCommand(editionId, request.PersonId, request.InterestDescription), ct);
+                var id = await sender.Send(new SubmitStaffApplicationCommand(editionId, request.InterestDescription), ct);
                 return Results.Created($"/staff-applications/{id}", new { id });
             }).RequireAuthorization();
 
@@ -279,7 +279,7 @@ public record UpdateTicketTypeRequest(string Name, int Price, bool IsSellable, b
 public record SubmitVisitorRegistrationRequest(Guid PersonId, Guid TicketTypeId);
 public record ConfirmPaymentRequest(string ExternalReference);
 public record IssueTicketRequest(Guid PersonId, Guid TicketTypeId);
-public record SubmitStaffApplicationRequest(Guid PersonId, string InterestDescription);
+public record SubmitStaffApplicationRequest(string InterestDescription);
 public record AddAvailabilityRequest(DateTime From, DateTime To);
 public record StationPreferenceRequest(Guid StationId);
 public record RegisterForSessionRequest(Guid PersonId, Guid TicketId);

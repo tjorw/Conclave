@@ -93,6 +93,39 @@ export class RegistrationService {
     );
   }
 
+  submitStaffApplication(editionId: string, interestDescription: string) {
+    return this.http.post<{ id: string }>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/staff-applications`,
+      { interestDescription }
+    );
+  }
+
+  addStaffAvailability(applicationId: string, from: string, to: string) {
+    return this.http.post<{ id: string }>(
+      `${this.env.apiBaseUrl}/staff-applications/${applicationId}/availabilities`,
+      { from, to }
+    );
+  }
+
+  removeStaffAvailability(applicationId: string, availabilityId: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/staff-applications/${applicationId}/availabilities/${availabilityId}`
+    );
+  }
+
+  addStaffStationPreference(applicationId: string, stationId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/staff-applications/${applicationId}/station-preferences`,
+      { stationId }
+    );
+  }
+
+  removeStaffStationPreference(applicationId: string, stationId: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/staff-applications/${applicationId}/station-preferences/${stationId}`
+    );
+  }
+
   // Admin
 
   listTicketTypes(editionId: string) {

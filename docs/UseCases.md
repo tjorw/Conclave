@@ -997,15 +997,17 @@ Valfri person som tillhör konventionen
 - Personen har inte redan en aktiv staffansökan för denna upplaga
 
 ## Flöde
-1. Personen anger EditionId, PersonId och en intressebeskrivning
-2. Systemet validerar förutsättningarna
-3. Systemet skapar en StaffApplication med status Mottagen
-4. Systemet returnerar det nya StaffApplicationId
+1. Personen anger EditionId och en intressebeskrivning
+2. Systemet hämtar PersonId från inloggad användare (`ICurrentUser`)
+3. Systemet validerar förutsättningarna
+4. Systemet skapar en StaffApplication med status Mottagen
+5. Systemet returnerar det nya StaffApplicationId
 
 ## Affärsregler
 - Upplagan måste ha staffregistrering öppen
 - En person kan inte ha mer än en aktiv ansökan per upplaga
 - Intressebeskrivning får inte vara tom
+- Personidentitet i self-service-flödet hämtas server-side från inloggning, inte från klientpayload
 
 ## Domänhändelser
 - `StaffApplicationReceived { applicationId, personId, editionId, occurredAt }`

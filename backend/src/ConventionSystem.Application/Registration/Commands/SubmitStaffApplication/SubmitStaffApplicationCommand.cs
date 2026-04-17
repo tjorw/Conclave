@@ -4,5 +4,4 @@ namespace ConventionSystem.Application.Registration.Commands.SubmitStaffApplicat
 
 public sealed record SubmitStaffApplicationCommand(
     Guid EditionId,
-    Guid PersonId,
     string InterestDescription) : IRequest<Guid>;

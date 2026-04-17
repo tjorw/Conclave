@@ -75,8 +75,8 @@
           @if (myApplication()) {
             <p class="card-summary">
               Ansökan inskickad ·
-              <span [class]="myApplication()!.status === 'Approved' ? 'tag-green' : 'tag-orange'">
-                {{ myApplication()!.status === 'Approved' ? 'Godkänd' :
+              <span [class]="myApplication()!.status === 'Confirmed' || myApplication()!.status === 'Assigned' ? 'tag-green' : 'tag-orange'">
+                {{ myApplication()!.status === 'Confirmed' ? 'Godkänd' :
                    myApplication()!.status === 'Assigned' ? 'Tilldelad' : 'Under behandling' }}
               </span>
             </p>

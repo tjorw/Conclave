@@ -1,8 +1,10 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.SubmitStaffApplication;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using NSubstitute;
 
@@ -41,6 +43,7 @@ public class SubmitStaffApplicationHandlerTests
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _personRepo.GetByIdAsync(person.Id, Arg.Any<CancellationToken>()).Returns(person);
         _applicationRepo.HasActiveApplicationAsync(person.Id, edition.Id, Arg.Any<CancellationToken>()).Returns(false);
+        _currentUser.PersonId.Returns(person.Id);
 
         return (convention, person, edition);
     }
@@ -48,10 +51,10 @@ public class SubmitStaffApplicationHandlerTests
     [Fact]
     public async Task Handle_ValidCommand_ReturnsApplicationId()
     {
-        var (_, person, edition) = Setup();
+        var (_, _, edition) = Setup();
         _currentUser.IsAdmin.Returns(false);
 
-        var id = await _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, person.Id.Value, "Jag vill jobba i receptionen"), default);
+        var id = await _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, "Jag vill jobba i receptionen"), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -59,10 +62,10 @@ public class SubmitStaffApplicationHandlerTests
     [Fact]
     public async Task Handle_ValidCommand_CallsAddAndSave()
     {
-        var (_, person, edition) = Setup();
+        var (_, _, edition) = Setup();
         _currentUser.IsAdmin.Returns(false);
 
-        await _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, person.Id.Value, "Intresserad"), default);
+        await _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, "Intresserad"), default);
 
         await _applicationRepo.Received(1).AddAndSaveAsync(Arg.Any<Domain.Registration.Aggregates.StaffApplication>(), Arg.Any<CancellationToken>());
     }
@@ -70,20 +73,20 @@ public class SubmitStaffApplicationHandlerTests
     [Fact]
     public async Task Handle_StaffRegistrationNotOpen_NonAdmin_Throws()
     {
-        var (_, person, edition) = Setup(staffRegOpen: false);
+        var (_, _, edition) = Setup(staffRegOpen: false);
         _currentUser.IsAdmin.Returns(false);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, person.Id.Value, "Intresserad"), default));
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
+            () => _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, "Intresserad"), default));
     }
 
     [Fact]
     public async Task Handle_StaffRegistrationNotOpen_Admin_Succeeds()
     {
-        var (_, person, edition) = Setup(staffRegOpen: false);
+        var (_, _, edition) = Setup(staffRegOpen: false);
         _currentUser.IsAdmin.Returns(true);
 
-        var id = await _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, person.Id.Value, "Intresserad"), default);
+        var id = await _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, "Intresserad"), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -95,8 +98,8 @@ public class SubmitStaffApplicationHandlerTests
         _currentUser.IsAdmin.Returns(false);
         _applicationRepo.HasActiveApplicationAsync(person.Id, edition.Id, Arg.Any<CancellationToken>()).Returns(true);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, person.Id.Value, "Intresserad"), default));
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
+            () => _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, "Intresserad"), default));
     }
 
     [Fact]
@@ -106,7 +109,23 @@ public class SubmitStaffApplicationHandlerTests
         _currentUser.IsAdmin.Returns(false);
         convention.DeactivatePerson(person);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, person.Id.Value, "Intresserad"), default));
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
+            () => _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, "Intresserad"), default));
+
+    }
+
+    [Fact]
+    public async Task Handle_PersonFromAnotherConvention_ThrowsForbidden()
+    {
+        var (_, _, edition) = Setup();
+        _currentUser.IsAdmin.Returns(false);
+
+        var otherConvention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Andra Con", "andra-con");
+        var otherPerson = otherConvention.CreatePerson("Utomstående", "outsider@example.com");
+        _currentUser.PersonId.Returns(otherPerson.Id);
+        _personRepo.GetByIdAsync(otherPerson.Id, Arg.Any<CancellationToken>()).Returns(otherPerson);
+
+        await Assert.ThrowsAsync<ForbiddenException>(
+            () => _handler.Handle(new SubmitStaffApplicationCommand(edition.Id.Value, "Intresserad"), default));
     }
 }
