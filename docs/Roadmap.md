@@ -8,16 +8,12 @@ Spårar vad som återstår inför produktionsstart.
 
 Prioriterad lista – ej startade överst, klara underst.
 
-- [x] `R15` Biljettmodell reviderad – `validDays`, `allowedCategories`, `TicketPerk` (UC-TK001/TK002)
 - [ ] `R16` Biljettlivscykel reviderad – manuell betalning, webhook, innehavaravbokning (UC-TK003–TK006)
 - [ ] `R17` Makuleringskaskad + uthämtning med förmåner (UC-TK007/TK008)
 - [ ] `R18` `RegistrationRuleService.ValidateTicket` med dag- och kategorivalidering (UC-TK009)
-- [x] `R19` Byt literal `"IsAdmin"` till `AuthConstants.Policies.IsAdmin` i Registration-endpoints
-- [x] `R24` Standardisera exceptions i Registration Application till semantiska typer
 - [ ] `R20` Centralisera admin-claimvärde (`"true"`) i auth-konstanter
 - [ ] `R21` Centralisera fallback för frontend-URL i auth-flöden
 - [ ] `R22` Centralisera JWT-konfigurationsnycklar (`Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience`)
-- [x] `R23` Self-service registration använder server-side `ICurrentUser` (tar bort klientstyrt `PersonId`)
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
 
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
