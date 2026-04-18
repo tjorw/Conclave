@@ -21,22 +21,52 @@ public class TicketTests
     }
 
     [Fact]
-    public void ConfirmPayment_TransitionsToPaid()
+    public void ConfirmPayment_TransitionsToPaid_RaisesTicketPaid()
     {
         var ticket = CreateTicket();
 
         ticket.ConfirmPayment();
 
         Assert.Equal(TicketStatus.Paid, ticket.Status);
+        Assert.Single(ticket.DomainEvents.OfType<TicketPaid>());
+    }
+
+    [Fact]
+    public void ConfirmPayment_AlreadyPaid_Throws()
+    {
+        var ticket = CreateTicket();
+        ticket.ConfirmPayment();
+
+        Assert.Throws<TicketAlreadyPaidException>(() => ticket.ConfirmPayment());
     }
 
     [Fact]
     public void ConfirmPayment_NotReserved_Throws()
     {
         var ticket = CreateTicket();
-        ticket.ConfirmPayment();
+        ticket.Revoke(PersonId.New());
 
         Assert.Throws<TicketNotReservedForPaymentException>(() => ticket.ConfirmPayment());
+    }
+
+    [Fact]
+    public void CancelOwn_Reserved_TransitionsToRevoked_RaisesTicketRevoked()
+    {
+        var ticket = CreateTicket();
+
+        ticket.CancelOwn();
+
+        Assert.Equal(TicketStatus.Revoked, ticket.Status);
+        Assert.Single(ticket.DomainEvents.OfType<TicketRevoked>());
+    }
+
+    [Fact]
+    public void CancelOwn_NotReserved_Throws()
+    {
+        var ticket = CreateTicket();
+        ticket.ConfirmPayment();
+
+        Assert.Throws<TicketNotReservedForCancellationException>(() => ticket.CancelOwn());
     }
 
     [Fact]

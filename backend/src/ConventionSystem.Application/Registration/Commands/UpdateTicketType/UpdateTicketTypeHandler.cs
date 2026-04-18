@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Registration.Exceptions;
@@ -22,15 +23,22 @@ public sealed class UpdateTicketTypeHandler(
             ?? throw new TicketTypeNotFoundException();
 
         var edition = await editionRepository.GetByIdAsync(ticketType.EditionId, ct)
-            ?? throw new InvalidOperationException("Upplagan hittades inte.");
+            ?? throw new ResourceNotFoundException("Upplagan", ticketType.EditionId.Value.ToString());
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+            ?? throw new ResourceNotFoundException("Konventionen", edition.ConventionId.Value.ToString());
 
         if (!convention.IsAdministrator(performedById))
-            throw new UnauthorizedAccessException("Utföraren har inte behörighet att redigera biljetttyper.");
+            throw new ForbiddenException("Utföraren har inte behörighet att redigera biljetttyper.");
 
-        ticketType.Update(command.Name, command.Price, command.IsSellable, command.IsPubliclyVisible);
+        if (command.ValidDays != null)
+        {
+            var period = edition.Period;
+            if (command.ValidDays.Any(d => d < period.StartDate || d > period.EndDate))
+                throw new TicketValidDaysOutsideEditionPeriodException();
+        }
+
+        ticketType.Update(command.Name, command.Price, command.ValidDays, command.AllowedCategories);
         await ticketTypeRepository.SaveAsync(ct);
     }
 }

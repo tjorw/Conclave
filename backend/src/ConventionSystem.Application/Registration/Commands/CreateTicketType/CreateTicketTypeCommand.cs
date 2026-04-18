@@ -8,5 +8,5 @@ public sealed record CreateTicketTypeCommand(
     string Name,
     int Price,
     TicketTypeCategory Category,
-    bool IsSellable,
-    bool IsPubliclyVisible) : IRequest<Guid>;
+    IReadOnlyList<DateOnly>? ValidDays = null,
+    Guid[]? AllowedCategories = null) : IRequest<Guid>;

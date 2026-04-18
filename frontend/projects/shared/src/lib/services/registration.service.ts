@@ -136,7 +136,7 @@ export class RegistrationService {
 
   createTicketType(editionId: string, body: {
     name: string; price: number; category: string;
-    isSellable: boolean; isPubliclyVisible: boolean;
+    validDays?: string[] | null; allowedCategories?: string[] | null;
   }) {
     return this.http.post<{ id: string }>(
       `${this.env.apiBaseUrl}/editions/${editionId}/ticket-types`, body
@@ -145,7 +145,7 @@ export class RegistrationService {
 
   updateTicketType(editionId: string, ticketTypeId: string, body: {
     name: string; price: number;
-    isSellable: boolean; isPubliclyVisible: boolean;
+    validDays?: string[] | null; allowedCategories?: string[] | null;
   }) {
     return this.http.put<void>(
       `${this.env.apiBaseUrl}/editions/${editionId}/ticket-types/${ticketTypeId}`, body

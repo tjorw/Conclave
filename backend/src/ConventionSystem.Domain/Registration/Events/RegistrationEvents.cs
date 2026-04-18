@@ -37,6 +37,12 @@ public record StaffApplicationRejected(
     PersonId PerformedById,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
+public record TicketPaid(
+    TicketId TicketId,
+    PersonId PersonId,
+    EditionId EditionId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public record TicketCollected(
     TicketId TicketId,
     PersonId PersonId,

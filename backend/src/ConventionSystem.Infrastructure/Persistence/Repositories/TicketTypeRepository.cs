@@ -23,8 +23,8 @@ public sealed class TicketTypeRepository(ConventionDbContext db) : ITicketTypeRe
                 t.Name,
                 t.Price,
                 t.Type.ToString(),
-                t.IsSellable,
-                t.IsPubliclyVisible))
+                t.ValidDays,
+                t.AllowedCategories))
             .ToListAsync(ct);
     }
 

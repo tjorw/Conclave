@@ -6,5 +6,5 @@ public sealed record UpdateTicketTypeCommand(
     Guid TicketTypeId,
     string Name,
     int Price,
-    bool IsSellable,
-    bool IsPubliclyVisible) : IRequest;
+    IReadOnlyList<DateOnly>? ValidDays = null,
+    Guid[]? AllowedCategories = null) : IRequest;

@@ -22,17 +22,15 @@ public class ListAvailableTicketTypesHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ReturnsOnlyPublicSellableVisitorTicketTypes()
+    public async Task Handle_ReturnsOnlyVisitorTicketTypes()
     {
         var editionId = Guid.NewGuid();
         var helgId = Guid.NewGuid();
         _repo.ListByEditionIdAsync(new EditionId(editionId), Arg.Any<CancellationToken>())
             .Returns(new List<TicketTypeAdminDto>
             {
-                new(helgId, "Helg", 1200, "Visitor", true, true),
-                new(Guid.NewGuid(), "Staff", 0, "Staff", false, false),
-                new(Guid.NewGuid(), "Ej publik", 900, "Visitor", true, false),
-                new(Guid.NewGuid(), "Ej säljbar", 700, "Visitor", false, true),
+                new(helgId, "Helg", 1200, "Visitor", null, null),
+                new(Guid.NewGuid(), "Staff", 0, "Staff", null, null),
             });
         _registrationRepo
             .HasActiveRegistrationForTicketTypeAsync(
@@ -59,8 +57,8 @@ public class ListAvailableTicketTypesHandlerTests
         _repo.ListByEditionIdAsync(new EditionId(editionId), Arg.Any<CancellationToken>())
             .Returns(new List<TicketTypeAdminDto>
             {
-                new(fridayId, "Dag Fredag", 5000, "Visitor", true, true),
-                new(saturdayId, "Dag Lördag", 5000, "Visitor", true, true),
+                new(fridayId, "Dag Fredag", 5000, "Visitor", null, null),
+                new(saturdayId, "Dag Lördag", 5000, "Visitor", null, null),
             });
 
         _registrationRepo
@@ -87,13 +85,13 @@ public class ListAvailableTicketTypesHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ReturnsEmptyList_WhenNoVisibleVisitorTicketTypesExist()
+    public async Task Handle_ReturnsEmptyList_WhenNoVisitorTicketTypesExist()
     {
         var editionId = Guid.NewGuid();
         _repo.ListByEditionIdAsync(new EditionId(editionId), Arg.Any<CancellationToken>())
             .Returns(new List<TicketTypeAdminDto>
             {
-                new(Guid.NewGuid(), "Staff", 0, "Staff", false, false),
+                new(Guid.NewGuid(), "Staff", 0, "Staff", null, null),
             });
         _registrationRepo
             .HasActiveRegistrationForTicketTypeAsync(

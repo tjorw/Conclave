@@ -1,8 +1,10 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Entities;
+using ConventionSystem.Domain.Registration.Exceptions;
 using ConventionSystem.Domain.Registration.Ids;
 using MediatR;
 
@@ -21,16 +23,23 @@ public sealed class CreateTicketTypeHandler(
         var performedById = currentUser.PersonId;
 
         var edition = await editionRepository.GetByIdAsync(editionId, ct)
-            ?? throw new InvalidOperationException($"Upplagan '{command.EditionId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Upplagan", command.EditionId.ToString());
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+            ?? throw new ResourceNotFoundException("Konventionen", edition.ConventionId.Value.ToString());
 
         if (!convention.IsAdministrator(performedById))
-            throw new InvalidOperationException("Utföraren har inte behörighet att skapa biljetttyper.");
+            throw new ForbiddenException("Utföraren har inte behörighet att skapa biljetttyper.");
+
+        if (command.ValidDays != null)
+        {
+            var period = edition.Period;
+            if (command.ValidDays.Any(d => d < period.StartDate || d > period.EndDate))
+                throw new TicketValidDaysOutsideEditionPeriodException();
+        }
 
         var ticketType = new TicketType(TicketTypeId.New(), editionId, command.Name, command.Price, command.Category,
-            command.IsSellable, command.IsPubliclyVisible);
+            command.ValidDays, command.AllowedCategories);
         await ticketTypeRepository.AddAndSaveAsync(ticketType, ct);
         return ticketType.Id.Value;
     }

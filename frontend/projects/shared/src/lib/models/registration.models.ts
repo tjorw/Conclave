@@ -16,8 +16,8 @@ export interface TicketTypeAdminDto {
   name: string;
   price: number;
   category: string;
-  isSellable: boolean;
-  isPubliclyVisible: boolean;
+  validDays: string[] | null;
+  allowedCategories: string[] | null;
 }
 
 export interface VisitorRegistrationAdminDto {

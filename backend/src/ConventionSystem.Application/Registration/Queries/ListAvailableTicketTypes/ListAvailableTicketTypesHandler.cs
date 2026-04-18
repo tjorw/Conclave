@@ -18,7 +18,7 @@ public sealed class ListAvailableTicketTypesHandler(
         var all = await ticketTypeRepository.ListByEditionIdAsync(editionId, ct);
 
         var visibleAndSellableVisitorTypes = all
-            .Where(t => t.Category == "Visitor" && t.IsSellable && t.IsPubliclyVisible)
+            .Where(t => t.Category == "Visitor")
             .ToList();
 
         if (visibleAndSellableVisitorTypes.Count == 0)

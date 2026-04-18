@@ -15,15 +15,15 @@ public sealed class TicketType : AggregateRoot
     public string Name { get; private set; } = string.Empty;
     public int Price { get; private set; }
     public TicketTypeCategory Type { get; private set; }
-    public bool IsSellable { get; private set; }
-    public bool IsPubliclyVisible { get; private set; }
+    public IReadOnlyList<DateOnly>? ValidDays { get; private set; }
+    public Guid[]? AllowedCategories { get; private set; }
 
     public IReadOnlyList<TicketPerk> Perks => _perks.AsReadOnly();
 
     private TicketType() { }
 
     public TicketType(TicketTypeId id, EditionId editionId, string name, int price, TicketTypeCategory type,
-        bool isSellable, bool isPubliclyVisible)
+        IReadOnlyList<DateOnly>? validDays = null, Guid[]? allowedCategories = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
@@ -35,11 +35,11 @@ public sealed class TicketType : AggregateRoot
         Name = name;
         Price = price;
         Type = type;
-        IsSellable = isSellable;
-        IsPubliclyVisible = isPubliclyVisible;
+        ValidDays = validDays;
+        AllowedCategories = allowedCategories;
     }
 
-    public void Update(string name, int price, bool isSellable, bool isPubliclyVisible)
+    public void Update(string name, int price, IReadOnlyList<DateOnly>? validDays, Guid[]? allowedCategories)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
@@ -48,8 +48,8 @@ public sealed class TicketType : AggregateRoot
 
         Name = name;
         Price = price;
-        IsSellable = isSellable;
-        IsPubliclyVisible = isPubliclyVisible;
+        ValidDays = validDays;
+        AllowedCategories = allowedCategories;
     }
 
     public TicketPerk AddPerk(string description)

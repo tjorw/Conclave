@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.IssueTicket;
@@ -40,7 +41,7 @@ public class IssueTicketHandlerTests
         var edition = convention.CreateEdition("Konvent 2027", period, staffCoord.Id, evt.Id);
 
         var ticketTypeId = TicketTypeId.New();
-        var ticketType = new TicketType(ticketTypeId, edition.Id, "Standardbiljett", 50000, TicketTypeCategory.Visitor, true, true);
+        var ticketType = new TicketType(ticketTypeId, edition.Id, "Standardbiljett", 50000, TicketTypeCategory.Visitor);
 
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
@@ -71,28 +72,30 @@ public class IssueTicketHandlerTests
         await _handler.Handle(
             new IssueTicketCommand(admin.Id.Value, edition.Id.Value, ticketType.Id.Value), default);
 
-        await _ticketRepo.Received(1).AddAndSaveAsync(Arg.Any<Domain.Registration.Aggregates.Ticket>(), Arg.Any<CancellationToken>());
+        await _ticketRepo.Received(1).AddAndSaveAsync(
+            Arg.Any<Domain.Registration.Aggregates.Ticket>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task Handle_NonAdmin_Throws()
+    public async Task Handle_NonAdmin_ThrowsForbiddenException()
     {
         var (convention, _, edition, ticketType) = Setup();
         var nonAdmin = convention.CreatePerson("Annan", "annan@example.com");
         _personRepo.GetByIdAsync(nonAdmin.Id, Arg.Any<CancellationToken>()).Returns(nonAdmin);
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(
                 new IssueTicketCommand(nonAdmin.Id.Value, edition.Id.Value, ticketType.Id.Value), default));
     }
 
     [Fact]
-    public async Task Handle_EditionNotFound_Throws()
+    public async Task Handle_EditionNotFound_ThrowsResourceNotFoundException()
     {
-        _editionRepo.GetByIdAsync(Arg.Any<EditionId>(), Arg.Any<CancellationToken>()).Returns((Domain.Convention.Aggregates.Edition?)null);
+        _editionRepo.GetByIdAsync(Arg.Any<EditionId>(), Arg.Any<CancellationToken>())
+            .Returns((Domain.Convention.Aggregates.Edition?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(
                 new IssueTicketCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()), default));
     }

@@ -23,7 +23,6 @@ import {
   TicketTypeAdminDto,
   VenueDto,
 } from 'shared';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ERROR } from '../../../labels/errors.labels';
 import { EDITION_DETAIL } from '../../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
@@ -43,7 +42,6 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confi
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
-    MatCheckboxModule,
     MatTabsModule,
     MatTooltipModule,
   ],
@@ -161,18 +159,14 @@ export class EditionDetailComponent implements OnInit {
   }
 
   readonly addTicketTypeForm = this.fb.group({
-    name:              ['', Validators.required],
-    price:             [0, [Validators.required, Validators.min(0)]],
-    category:          ['Visitor', Validators.required],
-    isSellable:        [false],
-    isPubliclyVisible: [false],
+    name:     ['', Validators.required],
+    price:    [0, [Validators.required, Validators.min(0)]],
+    category: ['Visitor', Validators.required],
   });
 
   readonly editTicketTypeForm = this.fb.group({
-    name:              ['', Validators.required],
-    price:             [0, [Validators.required, Validators.min(0)]],
-    isSellable:        [false],
-    isPubliclyVisible: [false],
+    name:  ['', Validators.required],
+    price: [0, [Validators.required, Validators.min(0)]],
   });
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
@@ -446,8 +440,6 @@ export class EditionDetailComponent implements OnInit {
       name: v.name!,
       price: Math.round((v.price ?? 0) * 100),
       category: v.category!,
-      isSellable: v.isSellable ?? false,
-      isPubliclyVisible: v.isPubliclyVisible ?? false,
     }).subscribe({
       next: () => { this.reload(); this.addTicketTypeForm.reset({ category: 'Visitor', price: 0 }); this.saving.set(false); },
       error: (err) => this.handleError(ERROR.createTicketType, err),
@@ -458,8 +450,6 @@ export class EditionDetailComponent implements OnInit {
     this.editTicketTypeForm.setValue({
       name: tt.name,
       price: tt.price / 100,
-      isSellable: tt.isSellable,
-      isPubliclyVisible: tt.isPubliclyVisible,
     });
     this.editingTicketType.set(tt);
   }
@@ -473,8 +463,6 @@ export class EditionDetailComponent implements OnInit {
     this.regSvc.updateTicketType(editionId, target.id, {
       name: v.name!,
       price: Math.round((v.price ?? 0) * 100),
-      isSellable: v.isSellable ?? false,
-      isPubliclyVisible: v.isPubliclyVisible ?? false,
     }).subscribe({
       next: () => { this.reload(); this.editingTicketType.set(null); this.saving.set(false); },
       error: (err) => this.handleError(ERROR.updateTicketType, err),

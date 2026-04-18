@@ -43,7 +43,7 @@ public static class RegistrationEndpoints
             async (Guid editionId, CreateTicketTypeRequest request, ISender sender, CancellationToken ct) =>
             {
                 var id = await sender.Send(new CreateTicketTypeCommand(editionId, request.Name, request.Price, request.Category,
-                    request.IsSellable, request.IsPubliclyVisible), ct);
+                    request.ValidDays, request.AllowedCategories), ct);
                 return Results.Created($"/ticket-types/{id}", new { id });
             }).RequireAuthorization();
 
@@ -246,7 +246,7 @@ public static class RegistrationEndpoints
             async (Guid ticketTypeId, UpdateTicketTypeRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new UpdateTicketTypeCommand(ticketTypeId, request.Name, request.Price,
-                    request.IsSellable, request.IsPubliclyVisible), ct);
+                    request.ValidDays, request.AllowedCategories), ct);
                 return Results.NoContent();
             }).RequireAuthorization("IsAdmin");
 
@@ -274,8 +274,8 @@ public static class RegistrationEndpoints
     }
 }
 
-public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, bool IsSellable, bool IsPubliclyVisible);
-public record UpdateTicketTypeRequest(string Name, int Price, bool IsSellable, bool IsPubliclyVisible);
+public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
+public record UpdateTicketTypeRequest(string Name, int Price, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
 public record SubmitVisitorRegistrationRequest(Guid PersonId, Guid TicketTypeId);
 public record ConfirmPaymentRequest(string ExternalReference);
 public record IssueTicketRequest(Guid PersonId, Guid TicketTypeId);

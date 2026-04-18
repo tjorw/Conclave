@@ -71,3 +71,18 @@ public sealed class TicketTypeHasIssuedTicketsException()
     : DomainRuleViolationException(
         "Biljetttypen kan inte tas bort eftersom biljetter av typen redan utfärdats.",
         "ticket_type_has_issued_tickets");
+
+public sealed class TicketValidDaysOutsideEditionPeriodException()
+    : DomainRuleViolationException(
+        "Alla giltiga dagar måste ligga inom upplagan.",
+        "ticket_valid_days_outside_edition_period");
+
+public sealed class TicketNotReservedForCancellationException()
+    : DomainRuleViolationException(
+        "Biljetten kan bara avbokas i reserverat läge.",
+        "ticket_not_reserved_for_cancellation");
+
+public sealed class TicketAlreadyPaidException()
+    : DomainRuleViolationException(
+        "Biljetten är redan betald.",
+        "ticket_already_paid");

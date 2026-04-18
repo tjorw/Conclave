@@ -38,7 +38,7 @@ public class DeleteTicketTypeHandlerTests
         var period = new DatePeriod(new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3));
         var edition = convention.CreateEdition("Konvent 2027", period, staff.Id, evt.Id);
 
-        var ticketType = new TicketType(TicketTypeId.New(), edition.Id, "Helgbiljett", 15000, TicketTypeCategory.Visitor, true, true);
+        var ticketType = new TicketType(TicketTypeId.New(), edition.Id, "Helgbiljett", 15000, TicketTypeCategory.Visitor);
 
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);

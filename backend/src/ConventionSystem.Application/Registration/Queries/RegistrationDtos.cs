@@ -11,8 +11,8 @@ public record TicketTypeAdminDto(
     string Name,
     int Price,
     string Category,
-    bool IsSellable,
-    bool IsPubliclyVisible);
+    IReadOnlyList<DateOnly>? ValidDays,
+    Guid[]? AllowedCategories);
 
 public record VisitorTicketTypeDto(
     Guid Id,

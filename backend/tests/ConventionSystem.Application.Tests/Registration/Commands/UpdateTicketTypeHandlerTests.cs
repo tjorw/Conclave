@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.UpdateTicketType;
@@ -37,7 +38,7 @@ public class UpdateTicketTypeHandlerTests
         var period = new DatePeriod(new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3));
         var edition = convention.CreateEdition("Konvent 2027", period, staff.Id, evt.Id);
 
-        var ticketType = new TicketType(TicketTypeId.New(), edition.Id, "Helgbiljett", 15000, TicketTypeCategory.Visitor, true, true);
+        var ticketType = new TicketType(TicketTypeId.New(), edition.Id, "Helgbiljett", 15000, TicketTypeCategory.Visitor);
 
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
@@ -52,13 +53,35 @@ public class UpdateTicketTypeHandlerTests
         var (_, admin, ticketType) = Setup();
         _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Nytt namn", 20000, false, false), default);
+        await _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Nytt namn", 20000), default);
 
         Assert.Equal("Nytt namn", ticketType.Name);
         Assert.Equal(20000, ticketType.Price);
-        Assert.False(ticketType.IsSellable);
-        Assert.False(ticketType.IsPubliclyVisible);
+        Assert.Null(ticketType.ValidDays);
         await _ticketTypeRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_ValidDaysInPeriod_UpdatesValidDays()
+    {
+        var (_, admin, ticketType) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
+        var days = new[] { new DateOnly(2027, 3, 1) };
+
+        await _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Biljett", 0, days), default);
+
+        Assert.Equal(days, ticketType.ValidDays);
+    }
+
+    [Fact]
+    public async Task Handle_ValidDayOutsidePeriod_ThrowsTicketValidDaysOutsideEditionPeriodException()
+    {
+        var (_, admin, ticketType) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
+        var days = new[] { new DateOnly(2027, 3, 5) };
+
+        await Assert.ThrowsAsync<TicketValidDaysOutsideEditionPeriodException>(
+            () => _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Biljett", 0, days), default));
     }
 
     [Fact]
@@ -68,17 +91,17 @@ public class UpdateTicketTypeHandlerTests
             .Returns((TicketType?)null);
 
         await Assert.ThrowsAsync<TicketTypeNotFoundException>(
-            () => _handler.Handle(new UpdateTicketTypeCommand(Guid.NewGuid(), "Namn", 0, false, false), default));
+            () => _handler.Handle(new UpdateTicketTypeCommand(Guid.NewGuid(), "Namn", 0), default));
     }
 
     [Fact]
-    public async Task Handle_PerformerNotAdmin_Throws()
+    public async Task Handle_PerformerNotAdmin_ThrowsForbiddenException()
     {
         var (convention, _, ticketType) = Setup();
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(
-            () => _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Namn", 0, false, false), default));
+        await Assert.ThrowsAsync<ForbiddenException>(
+            () => _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Namn", 0), default));
     }
 }

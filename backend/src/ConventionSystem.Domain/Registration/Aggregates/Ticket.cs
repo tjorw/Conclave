@@ -34,10 +34,22 @@ public sealed class Ticket : AggregateRoot
 
     public void ConfirmPayment()
     {
+        if (Status == TicketStatus.Paid)
+            throw new TicketAlreadyPaidException();
         if (Status != TicketStatus.Reserved)
             throw new TicketNotReservedForPaymentException();
 
         Status = TicketStatus.Paid;
+        RaiseDomainEvent(new TicketPaid(Id, PersonId, EditionId, DateTimeOffset.UtcNow));
+    }
+
+    public void CancelOwn()
+    {
+        if (Status != TicketStatus.Reserved)
+            throw new TicketNotReservedForCancellationException();
+
+        Status = TicketStatus.Revoked;
+        RaiseDomainEvent(new TicketRevoked(Id, PersonId, PersonId, DateTimeOffset.UtcNow));
     }
 
     public void Collect(PersonId performedById)

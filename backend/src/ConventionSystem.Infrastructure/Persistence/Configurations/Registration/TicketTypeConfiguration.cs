@@ -1,9 +1,11 @@
+using System.Text.Json;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Entities;
 using ConventionSystem.Domain.Registration.Enums;
 using ConventionSystem.Domain.Registration.Ids;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ConventionSystem.Infrastructure.Persistence.Configurations.Registration;
 
@@ -29,13 +31,17 @@ public sealed class TicketTypeConfiguration : IEntityTypeConfiguration<TicketTyp
             .HasConversion<string>()
             .HasMaxLength(50);
 
-        builder.Property(t => t.IsSellable)
-            .HasColumnName("is_sellable")
-            .HasDefaultValue(false);
+        builder.Property(t => t.ValidDays)
+            .HasColumnName("valid_days")
+            .HasConversion(new ValueConverter<IReadOnlyList<DateOnly>?, string?>(
+                v => v == null ? null : JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => v == null ? null : JsonSerializer.Deserialize<DateOnly[]>(v, (JsonSerializerOptions?)null)));
 
-        builder.Property(t => t.IsPubliclyVisible)
-            .HasColumnName("is_publicly_visible")
-            .HasDefaultValue(false);
+        builder.Property(t => t.AllowedCategories)
+            .HasColumnName("allowed_categories")
+            .HasConversion(new ValueConverter<Guid[]?, string?>(
+                v => v == null ? null : JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => v == null ? null : JsonSerializer.Deserialize<Guid[]>(v, (JsonSerializerOptions?)null)));
 
         builder.HasMany(t => t.Perks)
             .WithOne()
