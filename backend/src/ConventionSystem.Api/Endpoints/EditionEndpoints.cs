@@ -178,6 +178,15 @@ public static class EditionEndpoints
                 return Results.NoContent();
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
+        app.MapPost("/editions/{editionId:guid}/registrations/{type}/close",
+            async (Guid editionId, string type, ISender sender, CancellationToken ct) =>
+            {
+                if (!Enum.TryParse<RegistrationType>(type, ignoreCase: true, out var registrationType))
+                    return Results.BadRequest($"Okänd registreringstyp: {type}.");
+                await sender.Send(new CloseRegistrationCommand(editionId, registrationType), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
         app.MapPost("/editions/{editionId:guid}/event-submissions/open",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
             {

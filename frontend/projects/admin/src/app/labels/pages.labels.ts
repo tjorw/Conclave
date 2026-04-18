@@ -37,6 +37,7 @@ export const EDITION_DETAIL = {
   publishAction:     'Publicera upplaga',
   setActiveAction:   'Sätt som aktiv',
   visitorRegLabel:   'Besökarregistrering',
+  visitorSubLabel:   'Besökarregistrering:',
   alreadyOpen:       'Redan öppen',
   requiresPublished: 'Kräver publicerad upplaga',
   organiserSubLabel: 'Arrangemangsansökan:',

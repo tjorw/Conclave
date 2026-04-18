@@ -19,8 +19,7 @@ export const ERROR = {
   setActiveEdition:     'Kunde inte sätta aktiv upplaga',
   updateEdition:        'Kunde inte uppdatera upplagan',
   openRegistration:     'Kunde inte öppna registrering',
-  toggleEventSub:       'Kunde inte ändra arrangemangsansökan',
-  toggleStaffApps:      'Kunde inte ändra funktionärsansökan',
+  toggleRegistration:   'Kunde inte ändra registreringsstatus',
 
   // Lokaler
   createVenue:          'Kunde inte skapa lokal',

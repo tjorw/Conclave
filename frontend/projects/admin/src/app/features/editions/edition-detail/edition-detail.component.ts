@@ -124,6 +124,12 @@ export class EditionDetailComponent implements OnInit {
     { type: 'visitor', label: 'Besökarregistrering' },
   ];
 
+  readonly registrationTypeLabels: Record<'organiser' | 'staff' | 'visitor', string> = {
+    organiser: this.PAGE.organiserSubLabel,
+    staff: this.PAGE.staffSubLabel,
+    visitor: this.PAGE.visitorSubLabel,
+  };
+
   // ── Skapa-formulär ───────────────────────────────────────────────────────
 
   readonly venueForm = this.fb.group({
@@ -259,41 +265,26 @@ export class EditionDetailComponent implements OnInit {
     });
   }
 
-  openRegistration(type: 'organiser' | 'staff' | 'visitor'): void {
-    this.saving.set(true);
-    this.svc.openRegistration(this.edition()!.id, type).subscribe({
-      next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => this.handleError(ERROR.openRegistration, err),
-    });
-  }
-
   registrationOpen(type: 'organiser' | 'staff' | 'visitor'): boolean {
     const e = this.edition();
     if (!e) return false;
     return { organiser: e.organiserRegistrationOpen, staff: e.staffRegistrationOpen, visitor: e.visitorRegistrationOpen }[type];
   }
 
-  toggleEventSubmissions(): void {
-    this.saving.set(true);
-    const open = this.edition()!.organiserRegistrationOpen;
-    const call = open
-      ? this.svc.closeEventSubmissions(this.edition()!.id)
-      : this.svc.openEventSubmissions(this.edition()!.id);
-    call.subscribe({
-      next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => this.handleError(ERROR.toggleEventSub, err),
-    });
-  }
+  toggleRegistration(type: 'organiser' | 'staff' | 'visitor'): void {
+    if (!this.isPublished()) {
+      return;
+    }
 
-  toggleStaffApplications(): void {
     this.saving.set(true);
-    const open = this.edition()!.staffRegistrationOpen;
+    const open = this.registrationOpen(type);
     const call = open
-      ? this.svc.closeStaffApplications(this.edition()!.id)
-      : this.svc.openStaffApplications(this.edition()!.id);
+      ? this.svc.closeRegistration(this.edition()!.id, type)
+      : this.svc.openRegistration(this.edition()!.id, type);
+
     call.subscribe({
       next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => this.handleError(ERROR.toggleStaffApps, err),
+      error: (err) => this.handleError(ERROR.toggleRegistration, err),
     });
   }
 

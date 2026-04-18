@@ -91,47 +91,28 @@
       <button mat-stroked-button color="primary" (click)="setActive()" [disabled]="saving()">
         <mat-icon>public</mat-icon> {{ PAGE.setActiveAction }}
       </button>
-      <button
-        mat-stroked-button
-        [disabled]="saving() || !isPublished() || registrationOpen('visitor')"
-        [matTooltip]="registrationOpen('visitor') ? PAGE.alreadyOpen : (!isPublished() ? PAGE.requiresPublished : '')"
-        (click)="openRegistration('visitor')">
-        {{ PAGE.visitorRegLabel }}
-        @if (registrationOpen('visitor')) { <mat-icon>check</mat-icon> }
-      </button>
     </mat-card-content>
   </mat-card>
 
-  <!-- ── Ansökningsstatus ── -->
+  <!-- ── Registreringsstatus ── -->
   @if (isPublished()) {
     <mat-card class="actions-card">
       <mat-card-content class="actions-row">
-        <div class="submission-status">
-          <span class="status-label">{{ PAGE.organiserSubLabel }}</span>
-          <mat-chip [color]="edition()!.organiserRegistrationOpen ? 'primary' : 'default'" highlighted>
-            {{ edition()!.organiserRegistrationOpen ? PAGE.statusOpen : PAGE.statusClosed }}
-          </mat-chip>
-          <button
-            mat-stroked-button
-            [color]="edition()!.organiserRegistrationOpen ? 'warn' : 'primary'"
-            [disabled]="saving()"
-            (click)="toggleEventSubmissions()">
-            {{ edition()!.organiserRegistrationOpen ? ACTION.close : ACTION.open }}
-          </button>
-        </div>
-        <div class="submission-status">
-          <span class="status-label">{{ PAGE.staffSubLabel }}</span>
-          <mat-chip [color]="edition()!.staffRegistrationOpen ? 'primary' : 'default'" highlighted>
-            {{ edition()!.staffRegistrationOpen ? PAGE.statusOpen : PAGE.statusClosed }}
-          </mat-chip>
-          <button
-            mat-stroked-button
-            [color]="edition()!.staffRegistrationOpen ? 'warn' : 'primary'"
-            [disabled]="saving()"
-            (click)="toggleStaffApplications()">
-            {{ edition()!.staffRegistrationOpen ? ACTION.close : ACTION.open }}
-          </button>
-        </div>
+        @for (type of registrationTypes; track type.type) {
+          <div class="submission-status">
+            <span class="status-label">{{ registrationTypeLabels[type.type] }}</span>
+            <mat-chip [color]="registrationOpen(type.type) ? 'primary' : 'default'" highlighted>
+              {{ registrationOpen(type.type) ? PAGE.statusOpen : PAGE.statusClosed }}
+            </mat-chip>
+            <button
+              mat-stroked-button
+              [color]="registrationOpen(type.type) ? 'warn' : 'primary'"
+              [disabled]="saving()"
+              (click)="toggleRegistration(type.type)">
+              {{ registrationOpen(type.type) ? ACTION.close : ACTION.open }}
+            </button>
+          </div>
+        }
       </mat-card-content>
     </mat-card>
   }

@@ -143,6 +143,13 @@ export class ConventionService {
     );
   }
 
+  closeRegistration(editionId: string, type: 'organiser' | 'staff' | 'visitor') {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/registrations/${type}/close`,
+      {}
+    );
+  }
+
   openEventSubmissions(editionId: string) {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/editions/${editionId}/event-submissions/open`,
