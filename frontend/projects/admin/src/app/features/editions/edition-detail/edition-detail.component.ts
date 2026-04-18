@@ -70,7 +70,6 @@ export class EditionDetailComponent implements OnInit {
   readonly saving = signal(false);
 
   // Edit targets
-  readonly editingEdition = signal(false);
   readonly editingVenue = signal<VenueDto | null>(null);
   readonly editingStaffArea = signal<StaffAreaDto | null>(null);
   readonly editingCategory   = signal<CategoryDto | null>(null);
@@ -215,7 +214,11 @@ export class EditionDetailComponent implements OnInit {
   private loadData(editionId: string): void {
     this.loading.set(true);
     this.svc.getEdition(editionId).subscribe({
-      next: e => { this.edition.set(e); this.loading.set(false); },
+      next: e => {
+        this.edition.set(e);
+        this.syncEditEditionForm(e);
+        this.loading.set(false);
+      },
       error: () => { this.error.set(ERROR.fetchEdition); this.loading.set(false); },
     });
     this.svc.listPersons().subscribe({
@@ -228,8 +231,23 @@ export class EditionDetailComponent implements OnInit {
 
   private reload(): void {
     const id = this.edition()!.id;
-    this.svc.getEdition(id).subscribe({ next: e => this.edition.set(e) });
+    this.svc.getEdition(id).subscribe({
+      next: e => {
+        this.edition.set(e);
+        this.syncEditEditionForm(e);
+      },
+    });
     this.regSvc.listTicketTypes(id).subscribe({ next: tt => this.ticketTypes.set(tt) });
+  }
+
+  private syncEditEditionForm(edition: EditionDto): void {
+    this.editEditionForm.setValue({
+      name: edition.name,
+      startDate: edition.start.substring(0, 10),
+      endDate: edition.end.substring(0, 10),
+      staffCoordinatorId: edition.staffCoordinatorId ?? '',
+      eventCoordinatorId: edition.eventCoordinatorId ?? '',
+    });
   }
 
   personName(id: string): string {
@@ -290,18 +308,6 @@ export class EditionDetailComponent implements OnInit {
 
   // ── Redigera upplaga ─────────────────────────────────────────────────────
 
-  startEditEdition(): void {
-    const e = this.edition()!;
-    this.editEditionForm.setValue({
-      name: e.name,
-      startDate: e.start.substring(0, 10),
-      endDate: e.end.substring(0, 10),
-      staffCoordinatorId: e.staffCoordinatorId ?? '',
-      eventCoordinatorId: e.eventCoordinatorId ?? '',
-    });
-    this.editingEdition.set(true);
-  }
-
   saveEdition(): void {
     if (this.editEditionForm.invalid) return;
     const v = this.editEditionForm.value;
@@ -313,7 +319,7 @@ export class EditionDetailComponent implements OnInit {
       staffCoordinatorId: v.staffCoordinatorId!,
       eventCoordinatorId: v.eventCoordinatorId!,
     }).subscribe({
-      next: () => { this.reload(); this.editingEdition.set(false); this.saving.set(false); },
+      next: () => { this.reload(); this.saving.set(false); },
       error: (err) => this.handleError(ERROR.updateEdition, err),
     });
   }
