@@ -14,6 +14,7 @@ import {
   MySessionRegistrationSummaryDto,
   MyWatchedSessionSummaryDto,
   RegistrationService,
+  SessionRegistrationStatus,
   SESSION_REGISTRATION_STATUS_LABEL,
 } from 'shared';
 
@@ -23,6 +24,8 @@ const SCHEDULE_TYPE_LABEL: Record<string, string> = {
   Organiser: 'Arrangör',
   Shift: 'Pass',
 };
+
+const SESSION_REGISTRATION_STATUSES: readonly SessionRegistrationStatus[] = ['Confirmed', 'Cancelled'];
 
 @Component({
   selector: 'app-my-program',
@@ -253,9 +256,19 @@ export class MyProgramComponent implements OnInit {
         start: typeof item['start'] === 'string' ? item['start'] : '',
         end: typeof item['end'] === 'string' ? item['end'] : '',
         venueName: typeof item['venueName'] === 'string' ? item['venueName'] : '',
-        status: typeof item['status'] === 'string' ? item['status'] : '',
+        status: this.toSessionRegistrationStatus(item['status']),
       }))
-      .filter(item => !!item.id && !!item.sessionId && this.hasValidRange(item));
+      .filter((item): item is MySessionRegistrationSummaryDto =>
+        !!item.id &&
+        !!item.sessionId &&
+        !!item.status &&
+        this.hasValidRange(item));
+  }
+
+  private toSessionRegistrationStatus(value: unknown): SessionRegistrationStatus | null {
+    return typeof value === 'string' && SESSION_REGISTRATION_STATUSES.includes(value as SessionRegistrationStatus)
+      ? (value as SessionRegistrationStatus)
+      : null;
   }
 
   private normalizeWatched(value: unknown): MyWatchedSessionSummaryDto[] {
