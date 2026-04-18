@@ -53,10 +53,11 @@ public class UpdateTicketTypeHandlerTests
         var (_, admin, ticketType) = Setup();
         _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Nytt namn", 20000), default);
+        await _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Nytt namn", 20000, TicketTypeCategory.Staff), default);
 
         Assert.Equal("Nytt namn", ticketType.Name);
         Assert.Equal(20000, ticketType.Price);
+        Assert.Equal(TicketTypeCategory.Staff, ticketType.Type);
         Assert.Null(ticketType.ValidDays);
         await _ticketTypeRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -68,7 +69,7 @@ public class UpdateTicketTypeHandlerTests
         _currentUser.PersonId.Returns(admin.Id);
         var days = new[] { new DateOnly(2027, 3, 1) };
 
-        await _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Biljett", 0, days), default);
+        await _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Biljett", 0, TicketTypeCategory.Visitor, days), default);
 
         Assert.Equal(days, ticketType.ValidDays);
     }
@@ -81,7 +82,7 @@ public class UpdateTicketTypeHandlerTests
         var days = new[] { new DateOnly(2027, 3, 5) };
 
         await Assert.ThrowsAsync<TicketValidDaysOutsideEditionPeriodException>(
-            () => _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Biljett", 0, days), default));
+            () => _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Biljett", 0, TicketTypeCategory.Visitor, days), default));
     }
 
     [Fact]
@@ -91,7 +92,7 @@ public class UpdateTicketTypeHandlerTests
             .Returns((TicketType?)null);
 
         await Assert.ThrowsAsync<TicketTypeNotFoundException>(
-            () => _handler.Handle(new UpdateTicketTypeCommand(Guid.NewGuid(), "Namn", 0), default));
+            () => _handler.Handle(new UpdateTicketTypeCommand(Guid.NewGuid(), "Namn", 0, TicketTypeCategory.Visitor), default));
     }
 
     [Fact]
@@ -102,6 +103,6 @@ public class UpdateTicketTypeHandlerTests
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<ForbiddenException>(
-            () => _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Namn", 0), default));
+            () => _handler.Handle(new UpdateTicketTypeCommand(ticketType.Id.Value, "Namn", 0, TicketTypeCategory.Visitor), default));
     }
 }

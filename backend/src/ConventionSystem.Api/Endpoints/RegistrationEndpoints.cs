@@ -247,7 +247,7 @@ public static class RegistrationEndpoints
             async (Guid ticketTypeId, UpdateTicketTypeRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new UpdateTicketTypeCommand(ticketTypeId, request.Name, request.Price,
-                    request.ValidDays, request.AllowedCategories), ct);
+                    request.Category, request.ValidDays, request.AllowedCategories), ct);
                 return Results.NoContent();
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
@@ -276,7 +276,7 @@ public static class RegistrationEndpoints
 }
 
 public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
-public record UpdateTicketTypeRequest(string Name, int Price, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
+public record UpdateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
 public record SubmitVisitorRegistrationRequest(Guid PersonId, Guid TicketTypeId);
 public record ConfirmPaymentRequest(string ExternalReference);
 public record IssueTicketRequest(Guid PersonId, Guid TicketTypeId);

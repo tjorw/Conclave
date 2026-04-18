@@ -194,6 +194,7 @@ export class EditionDetailComponent implements OnInit {
   readonly editTicketTypeForm = this.fb.group({
     name:  ['', Validators.required],
     price: [0, [Validators.required, Validators.min(0)]],
+    category: ['Visitor', Validators.required],
     validDays: this.fb.control<string[]>([], { nonNullable: true }),
     allowedCategories: this.fb.control<string[]>([], { nonNullable: true }),
   });
@@ -492,6 +493,7 @@ export class EditionDetailComponent implements OnInit {
     this.editTicketTypeForm.setValue({
       name: tt.name,
       price: tt.price / 100,
+      category: tt.category,
       validDays: tt.validDays ?? [],
       allowedCategories: tt.allowedCategories ?? [],
     });
@@ -508,6 +510,7 @@ export class EditionDetailComponent implements OnInit {
     this.regSvc.updateTicketType(editionId, target.id, {
       name: v.name!,
       price: Math.round((v.price ?? 0) * 100),
+      category: v.category!,
       validDays: this.normalizeSelectedDays(v.validDays),
       allowedCategories: this.normalizeAllowedCategories(v.allowedCategories),
     }).subscribe({

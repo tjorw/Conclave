@@ -57,16 +57,17 @@ public class TicketTypeTests
     }
 
     [Fact]
-    public void Update_ChangesNamePriceAndDays()
+    public void Update_ChangesNamePriceTypeAndDays()
     {
         var tt = CreateTicketType();
         var newDays = new[] { new DateOnly(2027, 3, 3) };
         var newCats = new[] { Guid.NewGuid() };
 
-        tt.Update("Ny biljett", 20000, newDays, newCats);
+        tt.Update("Ny biljett", 20000, TicketTypeCategory.Staff, newDays, newCats);
 
         Assert.Equal("Ny biljett", tt.Name);
         Assert.Equal(20000, tt.Price);
+        Assert.Equal(TicketTypeCategory.Staff, tt.Type);
         Assert.Equal(newDays, tt.ValidDays);
         Assert.Equal(newCats, tt.AllowedCategories);
     }
@@ -76,7 +77,7 @@ public class TicketTypeTests
     {
         var tt = CreateTicketType(validDays: [new DateOnly(2027, 3, 1)]);
 
-        tt.Update("Biljett", 0, null, null);
+        tt.Update("Biljett", 0, TicketTypeCategory.Visitor, null, null);
 
         Assert.Null(tt.ValidDays);
     }

@@ -144,7 +144,7 @@ export class RegistrationService {
   }
 
   updateTicketType(editionId: string, ticketTypeId: string, body: {
-    name: string; price: number;
+    name: string; price: number; category: string;
     validDays?: string[] | null; allowedCategories?: string[] | null;
   }) {
     return this.http.put<void>(

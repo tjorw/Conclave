@@ -8,8 +8,7 @@ Spårar vad som återstår inför produktionsstart.
 
 Prioriterad lista – ej startade överst, klara underst.
 
-- [ ] `R19` Ersätt literal `"IsAdmin"` med `AuthConstants.Policies.IsAdmin` i registration-endpoints
-- [ ] `R15` Biljettmodell reviderad – `validDays`, `allowedCategories`, `TicketPerk` (UC-TK001/TK002)
+- [x] `R15` Biljettmodell reviderad – `validDays`, `allowedCategories`, `TicketPerk` (UC-TK001/TK002)
 - [ ] `R16` Biljettlivscykel reviderad – manuell betalning, webhook, innehavaravbokning (UC-TK003–TK006)
 - [ ] `R17` Makuleringskaskad + uthämtning med förmåner (UC-TK007/TK008)
 - [ ] `R18` `RegistrationRuleService.ValidateTicket` med dag- och kategorivalidering (UC-TK009)
@@ -42,7 +41,7 @@ Prioriterad lista – ej startade överst, klara underst.
 | **R20: Centralisera admin-claimvärde (`"true"`)** | Samma claimvärde hårdkodas vid både token-utgivning och policykontroll. Inför en gemensam konstant (t.ex. i `AuthConstants`) så att claim-kontraktet inte divergerar. | Medel |
 | **R21: Centralisera fallback för frontend-URL i auth-flöden** | Default-värdet `http://localhost:4201` upprepas i flera auth-endpoints. Flytta till en gemensam konstant eller options-klass för att undvika inkonsekvent miljökonfiguration. | Medel |
 | **R22: Centralisera JWT-konfigurationsnycklar** | Nycklarna `Jwt:Key`, `Jwt:Issuer` och `Jwt:Audience` används duplicerat i startup och auth. Samla i konstanter/options för att minska typo-risk och förenkla ändringar. | Medel |
-| **Gamla TK-implementationer behöver revideras** | UC-TK001–TK004 (gamla) är implementerade men matchar inte längre UC-specen: `TicketType` saknar `validDays`/`allowedCategories`/`TicketPerk`; betalningsflödet är inbyggt i VR-flödet i stället för separat; makulering saknar kaskad mot `SessionRegistrations`. Dessa måste reskrivas som en del av R15–R18. | **Hög – blockar korrekt sessionsvalidering** |
+| **Gamla TK-implementationer behöver revideras** | R15 är genomförd (TicketType med `validDays`/`allowedCategories`/`TicketPerk`). Kvar att slutföra: betalningsflödet (R16), makuleringskaskad och uthämtning med förmåner (R17), samt full dag-/kategorivalidering i `RegistrationRuleService.ValidateTicket` (R18). | **Hög – blockar korrekt sessionsvalidering tills R16–R18 är klara** |
 
 ---
 

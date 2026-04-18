@@ -38,7 +38,7 @@ public sealed class UpdateTicketTypeHandler(
                 throw new TicketValidDaysOutsideEditionPeriodException();
         }
 
-        ticketType.Update(command.Name, command.Price, command.ValidDays, command.AllowedCategories);
+        ticketType.Update(command.Name, command.Price, command.Category, command.ValidDays, command.AllowedCategories);
         await ticketTypeRepository.SaveAsync(ct);
     }
 }

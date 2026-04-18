@@ -39,7 +39,12 @@ public sealed class TicketType : AggregateRoot
         AllowedCategories = allowedCategories;
     }
 
-    public void Update(string name, int price, IReadOnlyList<DateOnly>? validDays, Guid[]? allowedCategories)
+    public void Update(
+        string name,
+        int price,
+        TicketTypeCategory type,
+        IReadOnlyList<DateOnly>? validDays,
+        Guid[]? allowedCategories)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
@@ -48,6 +53,7 @@ public sealed class TicketType : AggregateRoot
 
         Name = name;
         Price = price;
+        Type = type;
         ValidDays = validDays;
         AllowedCategories = allowedCategories;
     }
