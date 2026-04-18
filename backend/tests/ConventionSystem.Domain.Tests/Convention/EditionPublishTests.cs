@@ -48,4 +48,55 @@ public class EditionPublishTests
 
         Assert.Throws<EditionAlreadyPublishedException>(() => edition.Publish(PersonId.New()));
     }
+
+    [Fact]
+    public void Unpublish_PublishedEdition_TransitionsToDraft()
+    {
+        var edition = CreateEdition();
+        edition.Publish(PersonId.New());
+
+        edition.Unpublish(PersonId.New());
+
+        Assert.Equal(EditionStatus.Draft, edition.Status);
+    }
+
+    [Fact]
+    public void Unpublish_ClosesOpenRegistrations()
+    {
+        var edition = CreateEdition();
+        var performedById = PersonId.New();
+        edition.Publish(performedById);
+        edition.OpenOrganiserRegistration(performedById);
+        edition.OpenStaffRegistration(performedById);
+        edition.OpenVisitorRegistration(performedById);
+
+        edition.Unpublish(performedById);
+
+        Assert.False(edition.OrganiserRegistrationOpen);
+        Assert.False(edition.StaffRegistrationOpen);
+        Assert.False(edition.VisitorRegistrationOpen);
+    }
+
+    [Fact]
+    public void Unpublish_RaisesEditionUnpublishedEvent()
+    {
+        var edition = CreateEdition();
+        var performedById = PersonId.New();
+        edition.Publish(performedById);
+        edition.ClearDomainEvents();
+
+        edition.Unpublish(performedById);
+
+        var evt = edition.DomainEvents.OfType<EditionUnpublished>().Single();
+        Assert.Equal(edition.Id, evt.EditionId);
+        Assert.Equal(performedById, evt.PerformedById);
+    }
+
+    [Fact]
+    public void Unpublish_AlreadyDraft_Throws()
+    {
+        var edition = CreateEdition();
+
+        Assert.Throws<EditionAlreadyDraftException>(() => edition.Unpublish(PersonId.New()));
+    }
 }

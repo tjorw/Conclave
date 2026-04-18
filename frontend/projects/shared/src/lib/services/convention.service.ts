@@ -136,6 +136,10 @@ export class ConventionService {
     return this.http.post<void>(`${this.env.apiBaseUrl}/editions/${editionId}/publish`, {});
   }
 
+  unpublishEdition(editionId: string) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/editions/${editionId}/unpublish`, {});
+  }
+
   openRegistration(editionId: string, type: 'organiser' | 'staff' | 'visitor') {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/editions/${editionId}/registrations/${type}/open`,

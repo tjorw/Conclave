@@ -61,6 +61,18 @@ public sealed class Edition : AggregateRoot
         RaiseDomainEvent(new EditionPublished(Id, performedById, DateTimeOffset.UtcNow));
     }
 
+    public void Unpublish(PersonId performedById)
+    {
+        if (Status == EditionStatus.Draft)
+            throw new EditionAlreadyDraftException();
+
+        Status = EditionStatus.Draft;
+        OrganiserRegistrationOpen = false;
+        StaffRegistrationOpen = false;
+        VisitorRegistrationOpen = false;
+        RaiseDomainEvent(new EditionUnpublished(Id, performedById, DateTimeOffset.UtcNow));
+    }
+
     public void OpenOrganiserRegistration(PersonId performedById)
     {
         EnsurePublished();

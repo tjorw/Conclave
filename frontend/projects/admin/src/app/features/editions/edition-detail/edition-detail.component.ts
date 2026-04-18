@@ -27,6 +27,7 @@ import { ERROR } from '../../../labels/errors.labels';
 import { EDITION_DETAIL } from '../../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
+import { EditionContextService } from '../../../services/edition-context.service';
 
 @Component({
   selector: 'app-edition-detail',
@@ -55,6 +56,7 @@ export class EditionDetailComponent implements OnInit {
   private readonly svc    = inject(ConventionService);
   private readonly regSvc = inject(RegistrationService);
   private readonly dialog = inject(MatDialog);
+  private readonly editionContext = inject(EditionContextService);
 
   private openConfirm(data: ConfirmDialogData) {
     return this.dialog
@@ -91,6 +93,12 @@ export class EditionDetailComponent implements OnInit {
 
   readonly isDraft = computed(() => this.edition()?.status === 'Draft');
   readonly isPublished = computed(() => this.edition()?.status === 'Published');
+  readonly activeEdition = this.editionContext.activeEdition;
+  readonly isActiveEdition = computed(() => {
+    const currentEditionId = this.edition()?.id;
+    const activeEditionId = this.activeEdition()?.id;
+    return !!currentEditionId && currentEditionId === activeEditionId;
+  });
   readonly editionDayOptions = computed(() => {
     const edition = this.edition();
     if (!edition) {
@@ -127,6 +135,12 @@ export class EditionDetailComponent implements OnInit {
     organiser: this.PAGE.organiserSubLabel,
     staff: this.PAGE.staffSubLabel,
     visitor: this.PAGE.visitorSubLabel,
+  };
+
+  readonly registrationPillLabels: Record<'organiser' | 'staff' | 'visitor', string> = {
+    organiser: 'Arrangör',
+    staff: 'Funktionär',
+    visitor: 'Besökare',
   };
 
   // ── Skapa-formulär ───────────────────────────────────────────────────────
@@ -208,6 +222,7 @@ export class EditionDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
+    this.editionContext.load();
     this.loadData(id);
   }
 
@@ -262,8 +277,12 @@ export class EditionDetailComponent implements OnInit {
 
   setActive(): void {
     this.saving.set(true);
-    this.svc.setActiveEdition(this.edition()!.id).subscribe({
-      next: () => { this.saving.set(false); },
+    const editionId = this.edition()!.id;
+    this.svc.setActiveEdition(editionId).subscribe({
+      next: () => {
+        this.editionContext.setActive(editionId);
+        this.saving.set(false);
+      },
       error: (err) => this.handleError(ERROR.setActiveEdition, err),
     });
   }
@@ -279,6 +298,21 @@ export class EditionDetailComponent implements OnInit {
       this.svc.publishEdition(this.edition()!.id).subscribe({
         next: () => { this.reload(); this.saving.set(false); },
         error: (err) => this.handleError(ERROR.publishEdition, err),
+      });
+    });
+  }
+
+  unpublish(): void {
+    this.openConfirm({
+      title:        this.PAGE.unpublishConfirmTitle,
+      message:      this.PAGE.unpublishConfirmMessage,
+      confirmLabel: this.PAGE.unpublishAction,
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+      this.saving.set(true);
+      this.svc.unpublishEdition(this.edition()!.id).subscribe({
+        next: () => { this.reload(); this.saving.set(false); },
+        error: (err) => this.handleError(ERROR.unpublishEdition, err),
       });
     });
   }

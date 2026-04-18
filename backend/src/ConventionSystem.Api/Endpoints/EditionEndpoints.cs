@@ -15,6 +15,7 @@ using ConventionSystem.Application.Convention.Commands.CreateVenue;
 using ConventionSystem.Application.Convention.Commands.CloseRegistration;
 using ConventionSystem.Application.Convention.Commands.OpenRegistration;
 using ConventionSystem.Application.Convention.Commands.PublishEdition;
+using ConventionSystem.Application.Convention.Commands.UnpublishEdition;
 using ConventionSystem.Application.Convention.Commands.RemoveCategory;
 using ConventionSystem.Application.Convention.Commands.RemoveStaffArea;
 using ConventionSystem.Application.Convention.Commands.RemoveStation;
@@ -98,6 +99,13 @@ public static class EditionEndpoints
             async (Guid editionId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new PublishEditionCommand(editionId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        app.MapPost("/editions/{editionId:guid}/unpublish",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UnpublishEditionCommand(editionId), ct);
                 return Results.NoContent();
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 

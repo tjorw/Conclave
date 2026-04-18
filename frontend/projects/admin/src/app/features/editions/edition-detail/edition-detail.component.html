@@ -13,11 +13,19 @@
     </a>
     <div class="title-row">
       <h1 class="page-title">{{ e.name }}</h1>
-      <mat-chip-set>
-        <mat-chip [color]="isPublished() ? 'primary' : 'default'" highlighted>
+      <div class="header-status-pills">
+        <mat-chip class="small-pill" [color]="isPublished() ? 'primary' : 'default'" highlighted>
           {{ isPublished() ? PAGE.statusPublished : PAGE.statusDraft }}
         </mat-chip>
-      </mat-chip-set>
+        <mat-chip class="small-pill" [color]="isActiveEdition() ? 'primary' : 'default'" highlighted>
+          {{ isActiveEdition() ? PAGE.statusActive : PAGE.statusNotActive }}
+        </mat-chip>
+        @for (type of registrationTypes; track type.type) {
+          <mat-chip class="small-pill" [color]="registrationOpen(type.type) ? 'primary' : 'default'" highlighted>
+            {{ registrationPillLabels[type.type] }} {{ registrationOpen(type.type) ? PAGE.statusOpen : PAGE.statusClosed }}
+          </mat-chip>
+        }
+      </div>
     </div>
     <div class="page-meta">
       <span class="meta-item"><mat-icon>calendar_today</mat-icon>{{ formatDate(e.start) }} – {{ formatDate(e.end) }}</span>
@@ -30,45 +38,93 @@
     </div>
   </div>
 
-  <!-- ── Åtgärdskort ── -->
-  <mat-card class="actions-card">
-    <mat-card-content class="actions-row">
-      @if (isDraft()) {
-        <button mat-flat-button color="primary" [disabled]="saving()" (click)="publish()">
-          <mat-icon>publish</mat-icon> {{ PAGE.publishAction }}
-        </button>
-      }
-      <button mat-stroked-button color="primary" (click)="setActive()" [disabled]="saving()">
-        <mat-icon>public</mat-icon> {{ PAGE.setActiveAction }}
-      </button>
-    </mat-card-content>
-  </mat-card>
-
-  <!-- ── Registreringsstatus ── -->
-  @if (isPublished()) {
-    <mat-card class="actions-card">
-      <mat-card-content class="actions-row">
-        @for (type of registrationTypes; track type.type) {
-          <div class="submission-status">
-            <span class="status-label">{{ registrationTypeLabels[type.type] }}</span>
-            <mat-chip [color]="registrationOpen(type.type) ? 'primary' : 'default'" highlighted>
-              {{ registrationOpen(type.type) ? PAGE.statusOpen : PAGE.statusClosed }}
-            </mat-chip>
-            <button
-              mat-stroked-button
-              [color]="registrationOpen(type.type) ? 'warn' : 'primary'"
-              [disabled]="saving()"
-              (click)="toggleRegistration(type.type)">
-              {{ registrationOpen(type.type) ? ACTION.close : ACTION.open }}
-            </button>
-          </div>
-        }
-      </mat-card-content>
-    </mat-card>
-  }
-
   <!-- ── Tabbar ── -->
   <mat-tab-group animationDuration="150ms">
+
+    <!-- Läge -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        {{ PAGE.lifecycleTab }}
+      </ng-template>
+
+      <div class="tab-content">
+        <mat-card class="state-card">
+          <mat-card-header>
+            <mat-card-title>{{ PAGE.stateCardTitle }}</mat-card-title>
+            <mat-card-subtitle>{{ PAGE.stateCardHint }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content class="state-content">
+            <section class="state-section">
+              <div class="state-section-header">
+                <h3>{{ PAGE.publishTitle }}</h3>
+                <p>{{ PAGE.publishHint }}</p>
+              </div>
+              <div class="state-row">
+                <mat-chip [color]="isPublished() ? 'primary' : 'default'" highlighted>
+                  {{ isPublished() ? PAGE.statusPublished : PAGE.statusDraft }}
+                </mat-chip>
+                @if (isDraft()) {
+                  <button mat-flat-button color="primary" [disabled]="saving()" (click)="publish()">
+                    <mat-icon>publish</mat-icon> {{ PAGE.publishAction }}
+                  </button>
+                } @else {
+                  <button mat-stroked-button color="warn" [disabled]="saving()" (click)="unpublish()">
+                    <mat-icon>undo</mat-icon> {{ PAGE.unpublishAction }}
+                  </button>
+                }
+              </div>
+            </section>
+
+            <section class="state-section">
+              <div class="state-section-header">
+                <h3>{{ PAGE.activeEditionTitle }}</h3>
+                <p>{{ PAGE.activeEditionHint }}</p>
+              </div>
+              <div class="state-row">
+                <mat-chip [color]="isActiveEdition() ? 'primary' : 'default'" highlighted>
+                  {{ isActiveEdition() ? PAGE.statusActive : PAGE.statusNotActive }}
+                </mat-chip>
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  [disabled]="saving() || isActiveEdition()"
+                  (click)="setActive()">
+                  <mat-icon>public</mat-icon> {{ PAGE.setActiveAction }}
+                </button>
+              </div>
+            </section>
+
+            <section class="state-section">
+              <div class="state-section-header">
+                <h3>{{ PAGE.registrationsTitle }}</h3>
+                <p>{{ PAGE.registrationsHint }}</p>
+              </div>
+              @if (isPublished()) {
+                <div class="registration-list">
+                  @for (type of registrationTypes; track type.type) {
+                    <div class="registration-row">
+                      <span class="status-label">{{ registrationTypeLabels[type.type] }}</span>
+                      <mat-chip [color]="registrationOpen(type.type) ? 'primary' : 'default'" highlighted>
+                        {{ registrationOpen(type.type) ? PAGE.statusOpen : PAGE.statusClosed }}
+                      </mat-chip>
+                      <button
+                        mat-stroked-button
+                        [color]="registrationOpen(type.type) ? 'warn' : 'primary'"
+                        [disabled]="saving()"
+                        (click)="toggleRegistration(type.type)">
+                        {{ registrationOpen(type.type) ? ACTION.close : ACTION.open }}
+                      </button>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="state-help">{{ PAGE.requiresPublished }}</p>
+              }
+            </section>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
 
     <!-- Grunduppgifter -->
     <mat-tab>

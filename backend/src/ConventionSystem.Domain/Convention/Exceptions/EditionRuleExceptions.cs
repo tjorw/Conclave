@@ -7,6 +7,11 @@ public sealed class EditionAlreadyPublishedException()
         "Upplagan är redan publicerad.",
         "edition_already_published");
 
+public sealed class EditionAlreadyDraftException()
+    : DomainRuleViolationException(
+        "Upplagan är redan i utkastläge.",
+        "edition_already_draft");
+
 public sealed class EditionStaffCoordinatorRequiredException()
     : DomainRuleViolationException(
         "Upplagan måste ha en bemanningskoordinator innan den kan publiceras.",

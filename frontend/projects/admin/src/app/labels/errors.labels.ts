@@ -16,6 +16,7 @@ export const ERROR = {
   // Upplaga
   createEdition:        'Kunde inte skapa upplaga',
   publishEdition:       'Publicering misslyckades',
+  unpublishEdition:     'Avpublicering misslyckades',
   setActiveEdition:     'Kunde inte sätta aktiv upplaga',
   updateEdition:        'Kunde inte uppdatera upplagan',
   openRegistration:     'Kunde inte öppna registrering',

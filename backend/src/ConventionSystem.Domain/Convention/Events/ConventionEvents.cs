@@ -52,6 +52,11 @@ public record EditionPublished(
     PersonId PerformedById,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
+public record EditionUnpublished(
+    EditionId EditionId,
+    PersonId PerformedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public record RegistrationOpened(
     EditionId EditionId,
     RegistrationType Type,
