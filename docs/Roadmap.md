@@ -8,10 +8,14 @@ Spårar vad som återstår inför produktionsstart.
 
 Prioriterad lista – ej startade överst, klara underst.
 
+- [ ] `R19` Ersätt literal `"IsAdmin"` med `AuthConstants.Policies.IsAdmin` i registration-endpoints
 - [ ] `R15` Biljettmodell reviderad – `validDays`, `allowedCategories`, `TicketPerk` (UC-TK001/TK002)
 - [ ] `R16` Biljettlivscykel reviderad – manuell betalning, webhook, innehavaravbokning (UC-TK003–TK006)
 - [ ] `R17` Makuleringskaskad + uthämtning med förmåner (UC-TK007/TK008)
 - [ ] `R18` `RegistrationRuleService.ValidateTicket` med dag- och kategorivalidering (UC-TK009)
+- [ ] `R20` Centralisera admin-claimvärde (`"true"`) i auth-konstanter
+- [ ] `R21` Centralisera fallback för frontend-URL i auth-flöden
+- [ ] `R22` Centralisera JWT-konfigurationsnycklar (`Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience`)
 - [x] `R14` Fas 3.2.11 Personligt tidsschema – samlad vy i Mitt program
 - [x] `R08` Fas 3.2.8 Min bemanning
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
@@ -126,7 +130,10 @@ Kolliderande primära händelser markeras med varningsindikator. Bevakning och a
 | **`Shift` saknar `EditionId`** | `Shift` har ingen direkt koppling till `EditionId`. `MyScheduleRepository` löser detta via `Edition.Stations`-navigeringen (shadow FK). Om Shift-kontexten växer bör ett direkt `EditionId` övervägas på `Shift` för att slippa join-beroendet mot Convention. | Låg – fungerar korrekt, men fragil vid schemamigration |
 | **Deduplikering i tidsschema** | Om samma session förekommer i flera kategorier (t.ex. bokad OCH arrangör) prioriteras Booked > Organiser > Watching i `MyScheduleRepository`. Prioriteringslogiken är inte testad på domännivå. Om affärsreglerna ändras (t.ex. "visa alltid arrangörsrollen oavsett bokning") behöver deduplikeringen ses över. | Låg – nuvarande beteende är rimligt |
 | **Inga `DbSet<Station>` i `ConventionDbContext`** | `Station` och `Venue` nås via `db.Set<T>()` i stället för namngivna `DbSet<T>`-properties. Inkonsekvens mot övriga entiteter. Lägg till `DbSet<Station>` och `DbSet<Venue>` i `ConventionDbContext` om fler queries börjar hämta dem direkt. | Låg |
-| Hårdkodade strängar i repository | Det finns hårdkodade texter i repot för att göra urval på. t.ex. "booked". Stor risk för buggar om det fortsätter att vara magic strings. | Medel |
+| **R19: Byt literal `"IsAdmin"` till `AuthConstants.Policies.IsAdmin` i Registration-endpoints** | `RegistrationEndpoints` använder policy-namnet som hårdkodad sträng på flera ställen medan övriga endpoints använder konstant. Standardisera till konstant för compile-time-säkerhet och enklare refaktorering. | **Hög – liten ändring med hög riskreduktion** |
+| **R20: Centralisera admin-claimvärde (`"true"`)** | Samma claimvärde hårdkodas vid både token-utgivning och policykontroll. Inför en gemensam konstant (t.ex. i `AuthConstants`) så att claim-kontraktet inte divergerar. | Medel |
+| **R21: Centralisera fallback för frontend-URL i auth-flöden** | Default-värdet `http://localhost:4201` upprepas i flera auth-endpoints. Flytta till en gemensam konstant eller options-klass för att undvika inkonsekvent miljökonfiguration. | Medel |
+| **R22: Centralisera JWT-konfigurationsnycklar** | Nycklarna `Jwt:Key`, `Jwt:Issuer` och `Jwt:Audience` används duplicerat i startup och auth. Samla i konstanter/options för att minska typo-risk och förenkla ändringar. | Medel |
 | **Gamla TK-implementationer behöver revideras** | UC-TK001–TK004 (gamla) är implementerade men matchar inte längre UC-specen: `TicketType` saknar `validDays`/`allowedCategories`/`TicketPerk`; betalningsflödet är inbyggt i VR-flödet i stället för separat; makulering saknar kaskad mot `SessionRegistrations`. Dessa måste reskrivas som en del av R15–R18. | **Hög – blockar korrekt sessionsvalidering** |
 
 ---
