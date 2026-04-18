@@ -1,6 +1,9 @@
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.SubmitVisitorRegistration;
+using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Registration.Entities;
@@ -17,11 +20,12 @@ public class SubmitVisitorRegistrationHandlerTests
     private readonly ITicketTypeRepository _ticketTypeRepo = Substitute.For<ITicketTypeRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IPersonRepository _personRepo = Substitute.For<IPersonRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly SubmitVisitorRegistrationHandler _handler;
 
     public SubmitVisitorRegistrationHandlerTests()
     {
-        _handler = new SubmitVisitorRegistrationHandler(_registrationRepo, _ticketRepo, _ticketTypeRepo, _editionRepo, _personRepo);
+        _handler = new SubmitVisitorRegistrationHandler(_registrationRepo, _ticketRepo, _ticketTypeRepo, _editionRepo, _personRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -48,6 +52,7 @@ public class SubmitVisitorRegistrationHandlerTests
         _personRepo.GetByIdAsync(person.Id, Arg.Any<CancellationToken>()).Returns(person);
         _ticketTypeRepo.GetByIdAsync(ticketType.Id, Arg.Any<CancellationToken>()).Returns(ticketType);
         _registrationRepo.HasActiveRegistrationForTicketTypeAsync(person.Id, edition.Id, ticketType.Id, Arg.Any<CancellationToken>()).Returns(false);
+        _currentUser.PersonId.Returns(person.Id);
 
         return (convention, person, edition, ticketType);
     }
@@ -57,7 +62,7 @@ public class SubmitVisitorRegistrationHandlerTests
     {
         var (_, person, edition, ticketType) = Setup();
 
-        var id = await _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, person.Id.Value, ticketType.Id.Value), default);
+        var id = await _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, ticketType.Id.Value), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -67,7 +72,7 @@ public class SubmitVisitorRegistrationHandlerTests
     {
         var (_, person, edition, ticketType) = Setup();
 
-        await _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, person.Id.Value, ticketType.Id.Value), default);
+        await _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, ticketType.Id.Value), default);
 
         await _ticketRepo.Received(1).AddAsync(Arg.Any<Domain.Registration.Aggregates.Ticket>(), Arg.Any<CancellationToken>());
         await _registrationRepo.Received(1).AddAndSaveAsync(Arg.Any<Domain.Registration.Aggregates.VisitorRegistration>(), Arg.Any<CancellationToken>());
@@ -78,8 +83,8 @@ public class SubmitVisitorRegistrationHandlerTests
     {
         var (_, person, edition, ticketType) = Setup(visitorRegOpen: false);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, person.Id.Value, ticketType.Id.Value), default));
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
+            () => _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, ticketType.Id.Value), default));
     }
 
     [Fact]
@@ -88,9 +93,9 @@ public class SubmitVisitorRegistrationHandlerTests
         var (_, person, edition, ticketType) = Setup();
         _registrationRepo.HasActiveRegistrationForTicketTypeAsync(person.Id, edition.Id, ticketType.Id, Arg.Any<CancellationToken>()).Returns(true);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
             () => _handler.Handle(
-                new SubmitVisitorRegistrationCommand(edition.Id.Value, person.Id.Value, ticketType.Id.Value),
+                new SubmitVisitorRegistrationCommand(edition.Id.Value, ticketType.Id.Value),
                 default));
     }
 
@@ -103,7 +108,7 @@ public class SubmitVisitorRegistrationHandlerTests
         _registrationRepo.HasActiveRegistrationForTicketTypeAsync(person.Id, edition.Id, otherTicketType.Id, Arg.Any<CancellationToken>()).Returns(false);
 
         var id = await _handler.Handle(
-            new SubmitVisitorRegistrationCommand(edition.Id.Value, person.Id.Value, otherTicketType.Id.Value),
+            new SubmitVisitorRegistrationCommand(edition.Id.Value, otherTicketType.Id.Value),
             default);
 
         Assert.NotEqual(Guid.Empty, id);
@@ -116,8 +121,8 @@ public class SubmitVisitorRegistrationHandlerTests
         var staffTicketType = new TicketType(TicketTypeId.New(), edition.Id, "Staff-biljett", 0, TicketTypeCategory.Staff);
         _ticketTypeRepo.GetByIdAsync(staffTicketType.Id, Arg.Any<CancellationToken>()).Returns(staffTicketType);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, person.Id.Value, staffTicketType.Id.Value), default));
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
+            () => _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, staffTicketType.Id.Value), default));
     }
 
     [Fact]
@@ -126,7 +131,7 @@ public class SubmitVisitorRegistrationHandlerTests
         var (convention, person, edition, ticketType) = Setup();
         convention.DeactivatePerson(person);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, person.Id.Value, ticketType.Id.Value), default));
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
+            () => _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, ticketType.Id.Value), default));
     }
 }

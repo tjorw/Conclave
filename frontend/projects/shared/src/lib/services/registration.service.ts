@@ -30,10 +30,10 @@ export class RegistrationService {
     );
   }
 
-  submitVisitorRegistration(editionId: string, personId: string, ticketTypeId: string) {
+  submitVisitorRegistration(editionId: string, ticketTypeId: string) {
     return this.http.post<{ id: string }>(
       `${this.env.apiBaseUrl}/editions/${editionId}/visitor-registrations`,
-      { personId, ticketTypeId }
+      { ticketTypeId }
     );
   }
 
@@ -43,10 +43,10 @@ export class RegistrationService {
     );
   }
 
-  registerForSession(sessionId: string, personId: string, ticketId: string) {
+  registerForSession(sessionId: string, ticketId: string) {
     return this.http.post<{ id: string }>(
       `${this.env.apiBaseUrl}/sessions/${sessionId}/registrations`,
-      { personId, ticketId }
+      { ticketId }
     );
   }
 

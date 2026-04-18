@@ -4,5 +4,4 @@ namespace ConventionSystem.Application.Registration.Commands.SubmitVisitorRegist
 
 public sealed record SubmitVisitorRegistrationCommand(
     Guid EditionId,
-    Guid PersonId,
     Guid TicketTypeId) : IRequest<Guid>;

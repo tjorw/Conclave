@@ -52,7 +52,7 @@ public static class RegistrationEndpoints
         app.MapPost("/editions/{editionId:guid}/visitor-registrations",
             async (Guid editionId, SubmitVisitorRegistrationRequest request, ISender sender, CancellationToken ct) =>
             {
-                var id = await sender.Send(new SubmitVisitorRegistrationCommand(editionId, request.PersonId, request.TicketTypeId), ct);
+                var id = await sender.Send(new SubmitVisitorRegistrationCommand(editionId, request.TicketTypeId), ct);
                 return Results.Created($"/visitor-registrations/{id}", new { id });
             }).RequireAuthorization();
 
@@ -156,7 +156,7 @@ public static class RegistrationEndpoints
         app.MapPost("/sessions/{sessionId:guid}/registrations",
             async (Guid sessionId, RegisterForSessionRequest request, ISender sender, CancellationToken ct) =>
             {
-                var id = await sender.Send(new RegisterForSessionCommand(sessionId, request.PersonId, request.TicketId), ct);
+                var id = await sender.Send(new RegisterForSessionCommand(sessionId, request.TicketId), ct);
                 return Results.Created($"/session-registrations/{id}", new { id });
             }).RequireAuthorization();
 
@@ -277,11 +277,11 @@ public static class RegistrationEndpoints
 
 public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
 public record UpdateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
-public record SubmitVisitorRegistrationRequest(Guid PersonId, Guid TicketTypeId);
+public record SubmitVisitorRegistrationRequest(Guid TicketTypeId);
 public record ConfirmPaymentRequest(string ExternalReference);
 public record IssueTicketRequest(Guid PersonId, Guid TicketTypeId);
 public record SubmitStaffApplicationRequest(string InterestDescription);
 public record AddAvailabilityRequest(DateTime From, DateTime To);
 public record StationPreferenceRequest(Guid StationId);
-public record RegisterForSessionRequest(Guid PersonId, Guid TicketId);
+public record RegisterForSessionRequest(Guid TicketId);
 public record AddStaffMemberRequest(string Name, string Email, string? Phone, string? Note);

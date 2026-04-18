@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { AuthService, MyVisitorRegistrationDto, RegistrationService, TICKET_PAYMENT_STATUS_LABEL, VisitorTicketTypeDto } from 'shared';
+import { MyVisitorRegistrationDto, RegistrationService, TICKET_PAYMENT_STATUS_LABEL, VisitorTicketTypeDto } from 'shared';
 import { catchError, of } from 'rxjs';
 import { EditionService } from '../../../services/edition.service';
 
@@ -38,7 +38,6 @@ type VisitorRegistrationApiShape = MyVisitorRegistrationDto & {
 })
 export class MyTicketComponent implements OnInit {
   private readonly editionSvc = inject(EditionService);
-  private readonly authSvc = inject(AuthService);
   private readonly regSvc = inject(RegistrationService);
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -74,17 +73,16 @@ export class MyTicketComponent implements OnInit {
     }
 
     const editionId = this.editionSvc.editionId();
-    const personId = this.authSvc.personId();
 
-    if (!editionId || !personId) {
-      this.error.set('Kunde inte identifiera upplaga eller användare. Logga in igen och försök på nytt.');
+    if (!editionId) {
+      this.error.set('Kunde inte identifiera upplaga. Ladda om sidan och försök igen.');
       return;
     }
 
     this.submitting.set(true);
     this.error.set(null);
 
-    this.regSvc.submitVisitorRegistration(editionId, personId, this.registrationForm.controls.ticketTypeId.value)
+    this.regSvc.submitVisitorRegistration(editionId, this.registrationForm.controls.ticketTypeId.value)
       .subscribe({
         next: () => {
           this.submitting.set(false);

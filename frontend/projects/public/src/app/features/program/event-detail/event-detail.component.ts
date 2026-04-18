@@ -184,13 +184,7 @@ export class EventDetailComponent implements OnInit {
   }
 
   private registerForSession(sessionId: string): void {
-    const personId = this.authSvc.personId();
     const ticketId = this.myTicketId();
-
-    if (!personId) {
-      this.actionError.set('Du behöver vara inloggad för att anmäla dig.');
-      return;
-    }
 
     if (!ticketId) {
       this.actionError.set('Du behöver en betald biljett innan du kan anmäla dig till en session.');
@@ -200,7 +194,7 @@ export class EventDetailComponent implements OnInit {
     this.submittingSessionId.set(sessionId);
     this.actionError.set(null);
 
-    this.regSvc.registerForSession(sessionId, personId, ticketId).subscribe({
+    this.regSvc.registerForSession(sessionId, ticketId).subscribe({
       next: result => {
         this.mySessionRegistrations.update(current => ({ ...current, [sessionId]: result.id }));
         this.updateBookedSeats(sessionId, 1);

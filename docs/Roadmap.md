@@ -15,6 +15,7 @@ Prioriterad lista – ej startade överst, klara underst.
 - [ ] `R20` Centralisera admin-claimvärde (`"true"`) i auth-konstanter
 - [ ] `R21` Centralisera fallback för frontend-URL i auth-flöden
 - [ ] `R22` Centralisera JWT-konfigurationsnycklar (`Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience`)
+- [x] `R23` Self-service registration använder server-side `ICurrentUser` (tar bort klientstyrt `PersonId`)
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
 
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
@@ -32,7 +33,6 @@ Prioriterad lista – ej startade överst, klara underst.
 | `CreatePersonCommand` vs UC002 | Två vägar att skapa en person. Kan leda till inkonsekvens om e-post-uniqueness-kontrollen blockerar auth-skapande. | Medel – UC002-vägen får aldrig kollidera |
 | Idempotens i login-flödet | Race condition: två parallella första-inloggningar kan försöka skapa person simultaneously. Unikt index är sista skyddet. | Låg |
 | `ICurrentUser` i bakgrundsjobb | `ICurrentUser` läser från `HttpContext` och fungerar inte utanför HTTP-request-scopet. Bakgrundsjobb och seeders måste anropa domänmodellen direkt. | Medel – dokumentera mönstret |
-| **PersonId från klient i self-service registration** | Registration-endpoints tar `PersonId` i request-body (`SubmitVisitorRegistrationRequest`, `RegisterForSessionRequest`) och skickar vidare till handlers. Detta kopplar transportmodell till säkerhetsmodell och avviker från mönstret med server-side `ICurrentUser`. **Buggrisk:** användare kan försöka agera för annan person via manipulerad payload. | **Hög – byt till `ICurrentUser` i API/Application för self-service-flöden** |
 | **Fel exception-typ i Registration Application** | Registration-handlers kastar brett `InvalidOperationException` i stället för semantiska typer enligt `Backend.md` (`ResourceNotFoundException`, `ForbiddenException`, `DomainRuleViolationException`). Detta försvagar API-kontrakt, error mapping och observability. | **Hög – standardisera exceptions enligt riktlinje** |
 | **`Shift` saknar `EditionId`** | `Shift` har ingen direkt koppling till `EditionId`. `MyScheduleRepository` löser detta via `Edition.Stations`-navigeringen (shadow FK). Om Shift-kontexten växer bör ett direkt `EditionId` övervägas på `Shift` för att slippa join-beroendet mot Convention. | Låg – fungerar korrekt, men fragil vid schemamigration |
 | **Deduplikering i tidsschema** | Om samma session förekommer i flera kategorier (t.ex. bokad OCH arrangör) prioriteras Booked > Organiser > Watching i `MyScheduleRepository`. Prioriteringslogiken är inte testad på domännivå. Om affärsreglerna ändras (t.ex. "visa alltid arrangörsrollen oavsett bokning") behöver deduplikeringen ses över. | Låg – nuvarande beteende är rimligt |

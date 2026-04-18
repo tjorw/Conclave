@@ -1,6 +1,9 @@
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.RegisterForSession;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Ids;
@@ -14,11 +17,12 @@ public class RegisterForSessionHandlerTests
     private readonly ISessionRegistrationRepository _sessionRegRepo = Substitute.For<ISessionRegistrationRepository>();
     private readonly ITicketRepository _ticketRepo = Substitute.For<ITicketRepository>();
     private readonly IRegistrationRuleService _ruleService = Substitute.For<IRegistrationRuleService>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly RegisterForSessionHandler _handler;
 
     public RegisterForSessionHandlerTests()
     {
-        _handler = new RegisterForSessionHandler(_sessionRegRepo, _ticketRepo, _ruleService);
+        _handler = new RegisterForSessionHandler(_sessionRegRepo, _ticketRepo, _ruleService, _currentUser);
     }
 
     private Ticket SetupPaidTicket()
@@ -28,6 +32,7 @@ public class RegisterForSessionHandlerTests
         _ticketRepo.GetByIdAsync(ticket.Id, Arg.Any<CancellationToken>()).Returns(ticket);
         _ruleService.ValidateSeatAvailability(Arg.Any<SessionId>()).Returns(true);
         _ruleService.ValidateTicket(Arg.Any<TicketId>(), Arg.Any<SessionId>()).Returns(true);
+        _currentUser.PersonId.Returns(ticket.PersonId);
         return ticket;
     }
 
@@ -37,7 +42,7 @@ public class RegisterForSessionHandlerTests
         var ticket = SetupPaidTicket();
 
         var id = await _handler.Handle(
-            new RegisterForSessionCommand(Guid.NewGuid(), ticket.PersonId.Value, ticket.Id.Value), default);
+            new RegisterForSessionCommand(Guid.NewGuid(), ticket.Id.Value), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -48,7 +53,7 @@ public class RegisterForSessionHandlerTests
         var ticket = SetupPaidTicket();
 
         await _handler.Handle(
-            new RegisterForSessionCommand(Guid.NewGuid(), ticket.PersonId.Value, ticket.Id.Value), default);
+            new RegisterForSessionCommand(Guid.NewGuid(), ticket.Id.Value), default);
 
         await _sessionRegRepo.Received(1).AddAndSaveAsync(Arg.Any<SessionRegistration>(), Arg.Any<CancellationToken>());
     }
@@ -59,19 +64,20 @@ public class RegisterForSessionHandlerTests
         var ticket = new Ticket(TicketId.New(), TicketTypeId.New(), PersonId.New(), EditionId.New());
         _ticketRepo.GetByIdAsync(ticket.Id, Arg.Any<CancellationToken>()).Returns(ticket);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
             () => _handler.Handle(
-                new RegisterForSessionCommand(Guid.NewGuid(), ticket.PersonId.Value, ticket.Id.Value), default));
+                new RegisterForSessionCommand(Guid.NewGuid(), ticket.Id.Value), default));
     }
 
     [Fact]
     public async Task Handle_TicketBelongsToDifferentPerson_Throws()
     {
         var ticket = SetupPaidTicket();
+        _currentUser.PersonId.Returns(PersonId.New());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(
-                new RegisterForSessionCommand(Guid.NewGuid(), Guid.NewGuid(), ticket.Id.Value), default));
+            new RegisterForSessionCommand(Guid.NewGuid(), ticket.Id.Value), default));
     }
 
     [Fact]
@@ -80,19 +86,20 @@ public class RegisterForSessionHandlerTests
         var ticket = SetupPaidTicket();
         _ruleService.ValidateSeatAvailability(Arg.Any<SessionId>()).Returns(false);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
             () => _handler.Handle(
-                new RegisterForSessionCommand(Guid.NewGuid(), ticket.PersonId.Value, ticket.Id.Value), default));
+                new RegisterForSessionCommand(Guid.NewGuid(), ticket.Id.Value), default));
     }
 
     [Fact]
     public async Task Handle_TicketNotFound_Throws()
     {
         _ticketRepo.GetByIdAsync(Arg.Any<TicketId>(), Arg.Any<CancellationToken>()).Returns((Ticket?)null);
+        _currentUser.PersonId.Returns(PersonId.New());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(
-                new RegisterForSessionCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()), default));
+            new RegisterForSessionCommand(Guid.NewGuid(), Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -102,8 +109,8 @@ public class RegisterForSessionHandlerTests
         var sessionId = Guid.NewGuid();
         _sessionRegRepo.HasRegistrationAsync(Arg.Any<PersonId>(), Arg.Any<SessionId>(), Arg.Any<CancellationToken>()).Returns(true);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
             () => _handler.Handle(
-                new RegisterForSessionCommand(sessionId, ticket.PersonId.Value, ticket.Id.Value), default));
+                new RegisterForSessionCommand(sessionId, ticket.Id.Value), default));
     }
 }
