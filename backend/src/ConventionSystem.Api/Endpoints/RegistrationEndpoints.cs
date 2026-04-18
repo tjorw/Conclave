@@ -1,3 +1,4 @@
+using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
 using ConventionSystem.Application.Registration.Commands.AddAvailability;
 using ConventionSystem.Application.Registration.Commands.AddStaffMember;
@@ -191,7 +192,7 @@ public static class RegistrationEndpoints
                     new AddStaffMemberCommand(editionId, request.Name, request.Email, request.Phone, request.Note), ct);
                 return Results.Created($"/staff-applications/{id}", new { id });
             })
-            .RequireAuthorization("IsAdmin");
+            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         // 3.2.4 – Min besökarregistrering
         app.MapGet("/editions/{editionId:guid}/my-visitor-registration",
@@ -239,7 +240,7 @@ public static class RegistrationEndpoints
         app.MapGet("/editions/{editionId:guid}/ticket-types",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListTicketTypesQuery(editionId), ct)))
-            .RequireAuthorization("IsAdmin");
+            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         // 3.1.8 – Uppdatera biljetttyp (UC-TK005)
         app.MapPut("/editions/{editionId:guid}/ticket-types/{ticketTypeId:guid}",
@@ -248,7 +249,7 @@ public static class RegistrationEndpoints
                 await sender.Send(new UpdateTicketTypeCommand(ticketTypeId, request.Name, request.Price,
                     request.ValidDays, request.AllowedCategories), ct);
                 return Results.NoContent();
-            }).RequireAuthorization("IsAdmin");
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         // 3.1.8 – Ta bort biljetttyp (UC-TK006)
         app.MapDelete("/editions/{editionId:guid}/ticket-types/{ticketTypeId:guid}",
@@ -256,19 +257,19 @@ public static class RegistrationEndpoints
             {
                 await sender.Send(new DeleteTicketTypeCommand(ticketTypeId), ct);
                 return Results.NoContent();
-            }).RequireAuthorization("IsAdmin");
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         // 3.1.8 – Lista besökarregistreringar
         app.MapGet("/editions/{editionId:guid}/visitor-registrations",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListVisitorRegistrationsQuery(editionId), ct)))
-            .RequireAuthorization("IsAdmin");
+            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         // UC-SA007: Lista staffansökningar per upplaga
         app.MapGet("/editions/{editionId:guid}/staff-applications",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListStaffApplicationsQuery(editionId), ct)))
-            .RequireAuthorization("IsAdmin");
+            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         return app;
     }
