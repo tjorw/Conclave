@@ -104,6 +104,14 @@ public sealed class Edition : AggregateRoot
         RaiseDomainEvent(new RegistrationClosed(Id, RegistrationType.Staff, performedById, DateTimeOffset.UtcNow));
     }
 
+    public void CloseVisitorRegistration(PersonId performedById)
+    {
+        if (!VisitorRegistrationOpen)
+            throw new VisitorRegistrationNotOpenException();
+        VisitorRegistrationOpen = false;
+        RaiseDomainEvent(new RegistrationClosed(Id, RegistrationType.Visitor, performedById, DateTimeOffset.UtcNow));
+    }
+
     public Venue CreateVenue(string name, string building, string? description = null)
     {
         var venue = new Venue(VenueId.New(), name, building, description);

@@ -23,7 +23,10 @@ public class CloseRegistrationHandlerTests
 
     private (Domain.Convention.Aggregates.Convention convention,
              Domain.Convention.Entities.Person admin,
-             Domain.Convention.Aggregates.Edition edition) Setup(bool organiserOpen = true, bool staffOpen = true)
+                 Domain.Convention.Aggregates.Edition edition) Setup(
+                     bool organiserOpen = true,
+                     bool staffOpen = true,
+                     bool visitorOpen = true)
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
         var admin = convention.RegisterPerson("Admin", "admin@example.com");
@@ -37,6 +40,7 @@ public class CloseRegistrationHandlerTests
 
         if (organiserOpen) edition.OpenOrganiserRegistration(admin.Id);
         if (staffOpen) edition.OpenStaffRegistration(admin.Id);
+        if (visitorOpen) edition.OpenVisitorRegistration(admin.Id);
 
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
@@ -64,6 +68,17 @@ public class CloseRegistrationHandlerTests
         await _handler.Handle(new CloseRegistrationCommand(edition.Id.Value, RegistrationType.Staff), default);
 
         Assert.False(edition.StaffRegistrationOpen);
+    }
+
+    [Fact]
+    public async Task Handle_CloseVisitor_ClearsFlag()
+    {
+        var (_, admin, edition) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
+
+        await _handler.Handle(new CloseRegistrationCommand(edition.Id.Value, RegistrationType.Visitor), default);
+
+        Assert.False(edition.VisitorRegistrationOpen);
     }
 
     [Fact]
@@ -116,5 +131,15 @@ public class CloseRegistrationHandlerTests
 
         await Assert.ThrowsAsync<StaffRegistrationNotOpenException>(
             () => _handler.Handle(new CloseRegistrationCommand(edition.Id.Value, RegistrationType.Staff), default));
+    }
+
+    [Fact]
+    public async Task Handle_VisitorNotOpen_Throws()
+    {
+        var (_, admin, edition) = Setup(visitorOpen: false);
+        _currentUser.PersonId.Returns(admin.Id);
+
+        await Assert.ThrowsAsync<VisitorRegistrationNotOpenException>(
+            () => _handler.Handle(new CloseRegistrationCommand(edition.Id.Value, RegistrationType.Visitor), default));
     }
 }

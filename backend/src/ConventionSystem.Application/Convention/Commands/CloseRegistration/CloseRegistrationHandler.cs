@@ -34,6 +34,9 @@ public sealed class CloseRegistrationHandler(
             case RegistrationType.Staff:
                 edition.CloseStaffRegistration(performedById);
                 break;
+            case RegistrationType.Visitor:
+                edition.CloseVisitorRegistration(performedById);
+                break;
             default:
                 throw new InvalidOperationException($"Stängning stöds inte för registreringstypen: {command.RegistrationType}.");
         }

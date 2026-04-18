@@ -47,6 +47,11 @@ public sealed class StaffRegistrationNotOpenException()
         "Staffregistrering är inte öppen.",
         "staff_registration_not_open");
 
+public sealed class VisitorRegistrationNotOpenException()
+    : DomainRuleViolationException(
+        "Besökarregistrering är inte öppen.",
+        "visitor_registration_not_open");
+
 public sealed class EditionMustBeDraftToCopyStructureException()
     : DomainRuleViolationException(
         "Kan bara kopiera struktur till en upplaga med status Utkast.",

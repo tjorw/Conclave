@@ -31,6 +31,17 @@ public class EditionOpenRegistrationTests
     }
 
     [Fact]
+    public void CloseVisitorRegistration_ClearsFlag()
+    {
+        var edition = CreatePublishedEdition();
+        edition.OpenVisitorRegistration(PersonId.New());
+
+        edition.CloseVisitorRegistration(PersonId.New());
+
+        Assert.False(edition.VisitorRegistrationOpen);
+    }
+
+    [Fact]
     public void CloseOrganiserRegistration_RaisesRegistrationClosedEvent()
     {
         var edition = CreatePublishedEdition();
@@ -61,6 +72,21 @@ public class EditionOpenRegistrationTests
     }
 
     [Fact]
+    public void CloseVisitorRegistration_RaisesRegistrationClosedEvent()
+    {
+        var edition = CreatePublishedEdition();
+        var performedById = PersonId.New();
+        edition.OpenVisitorRegistration(performedById);
+        edition.ClearDomainEvents();
+
+        edition.CloseVisitorRegistration(performedById);
+
+        var domainEvent = edition.DomainEvents.OfType<RegistrationClosed>().Single();
+        Assert.Equal(edition.Id, domainEvent.EditionId);
+        Assert.Equal(RegistrationType.Visitor, domainEvent.Type);
+    }
+
+    [Fact]
     public void CloseOrganiserRegistration_NotOpen_Throws()
     {
         var edition = CreatePublishedEdition();
@@ -74,6 +100,14 @@ public class EditionOpenRegistrationTests
         var edition = CreatePublishedEdition();
 
         Assert.Throws<StaffRegistrationNotOpenException>(() => edition.CloseStaffRegistration(PersonId.New()));
+    }
+
+    [Fact]
+    public void CloseVisitorRegistration_NotOpen_Throws()
+    {
+        var edition = CreatePublishedEdition();
+
+        Assert.Throws<VisitorRegistrationNotOpenException>(() => edition.CloseVisitorRegistration(PersonId.New()));
     }
 
 
