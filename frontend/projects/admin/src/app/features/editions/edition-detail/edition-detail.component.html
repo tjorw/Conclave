@@ -359,6 +359,8 @@
               <tr>
                 <th>Namn</th>
                 <th>Kategori</th>
+                <th>Giltiga dagar</th>
+                <th>Tillåtna kategorier</th>
                 <th class="align-right">Pris</th>
                 <th class="actions-col"></th>
               </tr>
@@ -368,6 +370,8 @@
                 <tr>
                   <td>{{ tt.name }}</td>
                   <td>{{ ticketTypeCategoryLabel(tt.category) }}</td>
+                  <td class="muted">{{ validDaysLabel(tt.validDays) }}</td>
+                  <td class="muted">{{ allowedCategoriesLabel(tt.allowedCategories) }}</td>
                   <td class="align-right">{{ formatPrice(tt.price) }}</td>
                   <td class="row-actions">
                     <button mat-icon-button (click)="startEditTicketType(tt)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
@@ -391,6 +395,22 @@
             <div class="form-row">
               <mat-form-field><mat-label>{{ FIELD.name }}</mat-label><input matInput formControlName="name" /></mat-form-field>
               <mat-form-field><mat-label>{{ PAGE.fieldPrice }}</mat-label><input matInput type="number" formControlName="price" min="0" /></mat-form-field>
+              <mat-form-field>
+                <mat-label>Giltiga dagar</mat-label>
+                <mat-select formControlName="validDays" multiple>
+                  @for (day of editionDayOptions(); track day.value) {
+                    <mat-option [value]="day.value">{{ day.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Tillåtna kategorier</mat-label>
+                <mat-select formControlName="allowedCategories" multiple>
+                  @for (c of e.categories; track c.id) {
+                    <mat-option [value]="c.id">{{ c.name }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
               <button mat-button type="button" (click)="editingTicketType.set(null)">{{ ACTION.cancel }}</button>
               <button mat-flat-button color="primary" type="submit" [disabled]="editTicketTypeForm.invalid || saving()">{{ ACTION.save }}</button>
             </div>
@@ -407,6 +427,22 @@
               <mat-select formControlName="category">
                 @for (cat of ticketTypeCategories; track cat.value) {
                   <mat-option [value]="cat.value">{{ cat.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Giltiga dagar</mat-label>
+              <mat-select formControlName="validDays" multiple>
+                @for (day of editionDayOptions(); track day.value) {
+                  <mat-option [value]="day.value">{{ day.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Tillåtna kategorier</mat-label>
+              <mat-select formControlName="allowedCategories" multiple>
+                @for (c of e.categories; track c.id) {
+                  <mat-option [value]="c.id">{{ c.name }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>

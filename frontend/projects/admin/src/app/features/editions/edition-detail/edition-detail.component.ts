@@ -92,6 +92,31 @@ export class EditionDetailComponent implements OnInit {
 
   readonly isDraft = computed(() => this.edition()?.status === 'Draft');
   readonly isPublished = computed(() => this.edition()?.status === 'Published');
+  readonly editionDayOptions = computed(() => {
+    const edition = this.edition();
+    if (!edition) {
+      return [] as { value: string; label: string }[];
+    }
+
+    const start = new Date(`${edition.start.substring(0, 10)}T00:00:00`);
+    const end = new Date(`${edition.end.substring(0, 10)}T00:00:00`);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start > end) {
+      return [] as { value: string; label: string }[];
+    }
+
+    const options: { value: string; label: string }[] = [];
+    for (const current = new Date(start); current <= end; current.setDate(current.getDate() + 1)) {
+      const value = `${current.getFullYear()}-${(current.getMonth() + 1).toString().padStart(2, '0')}-${current.getDate().toString().padStart(2, '0')}`;
+      const label = new Intl.DateTimeFormat('sv-SE', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }).format(current);
+      options.push({ value, label });
+    }
+
+    return options;
+  });
 
   readonly registrationTypes: { type: 'organiser' | 'staff' | 'visitor'; label: string }[] = [
     { type: 'organiser', label: 'Arrangörsregistrering' },
@@ -162,11 +187,15 @@ export class EditionDetailComponent implements OnInit {
     name:     ['', Validators.required],
     price:    [0, [Validators.required, Validators.min(0)]],
     category: ['Visitor', Validators.required],
+    validDays: this.fb.control<string[]>([], { nonNullable: true }),
+    allowedCategories: this.fb.control<string[]>([], { nonNullable: true }),
   });
 
   readonly editTicketTypeForm = this.fb.group({
     name:  ['', Validators.required],
     price: [0, [Validators.required, Validators.min(0)]],
+    validDays: this.fb.control<string[]>([], { nonNullable: true }),
+    allowedCategories: this.fb.control<string[]>([], { nonNullable: true }),
   });
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
@@ -435,13 +464,26 @@ export class EditionDetailComponent implements OnInit {
     if (this.addTicketTypeForm.invalid) return;
     const v = this.addTicketTypeForm.value;
     const editionId = this.edition()!.id;
+
     this.saving.set(true);
     this.regSvc.createTicketType(editionId, {
       name: v.name!,
       price: Math.round((v.price ?? 0) * 100),
       category: v.category!,
+      validDays: this.normalizeSelectedDays(v.validDays),
+      allowedCategories: this.normalizeAllowedCategories(v.allowedCategories),
     }).subscribe({
-      next: () => { this.reload(); this.addTicketTypeForm.reset({ category: 'Visitor', price: 0 }); this.saving.set(false); },
+      next: () => {
+        this.reload();
+        this.addTicketTypeForm.reset({
+          name: '',
+          price: 0,
+          category: 'Visitor',
+          validDays: [],
+          allowedCategories: [],
+        });
+        this.saving.set(false);
+      },
       error: (err) => this.handleError(ERROR.createTicketType, err),
     });
   }
@@ -450,6 +492,8 @@ export class EditionDetailComponent implements OnInit {
     this.editTicketTypeForm.setValue({
       name: tt.name,
       price: tt.price / 100,
+      validDays: tt.validDays ?? [],
+      allowedCategories: tt.allowedCategories ?? [],
     });
     this.editingTicketType.set(tt);
   }
@@ -459,10 +503,13 @@ export class EditionDetailComponent implements OnInit {
     if (!target || this.editTicketTypeForm.invalid) return;
     const v = this.editTicketTypeForm.value;
     const editionId = this.edition()!.id;
+
     this.saving.set(true);
     this.regSvc.updateTicketType(editionId, target.id, {
       name: v.name!,
       price: Math.round((v.price ?? 0) * 100),
+      validDays: this.normalizeSelectedDays(v.validDays),
+      allowedCategories: this.normalizeAllowedCategories(v.allowedCategories),
     }).subscribe({
       next: () => { this.reload(); this.editingTicketType.set(null); this.saving.set(false); },
       error: (err) => this.handleError(ERROR.updateTicketType, err),
@@ -486,6 +533,24 @@ export class EditionDetailComponent implements OnInit {
     return (priceInOre / 100).toLocaleString('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 });
   }
 
+  validDaysLabel(validDays: string[] | null): string {
+    if (!validDays || validDays.length === 0) {
+      return 'Alla dagar';
+    }
+
+    const labelMap = new Map(this.editionDayOptions().map(option => [option.value, option.label]));
+    return validDays.map(day => labelMap.get(day) ?? day).join(', ');
+  }
+
+  allowedCategoriesLabel(allowedCategories: string[] | null): string {
+    if (!allowedCategories || allowedCategories.length === 0) {
+      return 'Alla kategorier';
+    }
+
+    const categoryMap = new Map((this.edition()?.categories ?? []).map(c => [c.id, c.name]));
+    return allowedCategories.map(categoryId => categoryMap.get(categoryId) ?? categoryId).join(', ');
+  }
+
   // ── Hjälpmetoder ─────────────────────────────────────────────────────────
 
   formatDate(date: string): string {
@@ -494,5 +559,21 @@ export class EditionDetailComponent implements OnInit {
 
   toDateInput(isoDate: string): string {
     return isoDate.substring(0, 10);
+  }
+
+  private normalizeAllowedCategories(value: string[] | null | undefined): string[] | null {
+    if (!value || value.length === 0) {
+      return null;
+    }
+
+    return [...new Set(value)];
+  }
+
+  private normalizeSelectedDays(value: string[] | null | undefined): string[] | null {
+    if (!value || value.length === 0) {
+      return null;
+    }
+
+    return [...new Set(value)];
   }
 }
