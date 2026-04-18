@@ -4,51 +4,51 @@ internal static class EmailTemplates
 {
     public static (string Subject, string Body) VisitorRegistrationConfirmed()
         => (
-            "Din besoksregistrering ar bekraftad",
-            "Hej!\n\nDin besoksregistrering ar nu bekraftad.\n\nVanliga halsningar,\nKonventteamet");
+            "Din besöksregistrering är bekräftad",
+            "Hej!\n\nDin besöksregistrering är nu bekräftad.\n\nVänliga hälsningar,\nKonventteamet");
 
     public static (string Subject, string Body) StaffApplicationReceived()
         => (
-            "Vi har tagit emot din staffansokan",
-            "Hej!\n\nTack for din ansokan till staff. Vi aterkommer sa snart vi kan.\n\nVanliga halsningar,\nKonventteamet");
+            "Vi har tagit emot din funktionärsansökan",
+            "Hej!\n\nTack för din ansökan som funktionär. Vi återkommer så snart vi kan.\n\nVänliga hälsningar,\nKonventteamet");
 
     public static (string Subject, string Body) StaffApplicationAccepted()
         => (
-            "Din staffansokan ar godkand",
-            "Hej!\n\nDin staffansokan har godkants. Varmt valkommen!\n\nVanliga halsningar,\nKonventteamet");
+            "Din funktionärsansökan är godkänd",
+            "Hej!\n\nDin funktionärsansökan har godkänts. Varmt välkommen!\n\nVänliga hälsningar,\nKonventteamet");
 
     public static (string Subject, string Body) StaffApplicationRejected()
         => (
-            "Din staffansokan ar inte godkand",
-            "Hej!\n\nTack for din ansokan. Tyvarr kan vi inte ga vidare med den just nu.\n\nVanliga halsningar,\nKonventteamet");
+            "Din funktionärsansökan är inte godkänd",
+            "Hej!\n\nTack för din ansökan. Tyvärr kan vi inte gå vidare med den just nu.\n\nVänliga hälsningar,\nKonventteamet");
 
     public static (string Subject, string Body) EventApproved(string eventTitle)
         => (
-            "Ditt evenemang ar godkant",
-            $"Hej!\n\nDitt evenemang '{eventTitle}' ar godkant.\n\nVanliga halsningar,\nKonventteamet");
+            "Ditt evenemang är godkänt",
+            $"Hej!\n\nDitt evenemang '{eventTitle}' är godkänt.\n\nVänliga hälsningar,\nKonventteamet");
 
     public static (string Subject, string Body) EventRejected(string eventTitle, string comment)
         => (
-            "Ditt evenemang behovde justeras",
-            $"Hej!\n\nDitt evenemang '{eventTitle}' kunde inte godkannas i nuvarande form.\nKommentar: {comment}\n\nVanliga halsningar,\nKonventteamet");
+            "Ditt evenemang behövde justeras",
+            $"Hej!\n\nDitt evenemang '{eventTitle}' kunde inte godkännas i nuvarande form.\nKommentar: {comment}\n\nVänliga hälsningar,\nKonventteamet");
 
     public static (string Subject, string Body) PasswordReset(string resetLink)
         => (
-            "Aterstall ditt losenord",
-            $"Hej!\n\nDu kan aterstalla ditt losenord via den har lank: {resetLink}\n\nOm du inte begarde detta kan du ignorera mailet.");
+            "Återställ ditt lösenord",
+            $"Hej!\n\nDu kan återställa ditt lösenord via den här länken: {resetLink}\n\nOm du inte begärde detta kan du ignorera mejlet.");
 
     public static (string Subject, string Body) EmailConfirmation(string confirmLink)
         => (
-            "Bekrafta din e-postadress",
-            $"Hej!\n\nBekrafta din e-postadress via den har lanken: {confirmLink}\n\nVanliga halsningar,\nKonventteamet");
+            "Bekräfta din e-postadress",
+            $"Hej!\n\nBekräfta din e-postadress via den här länken: {confirmLink}\n\nVänliga hälsningar,\nKonventteamet");
 
     public static (string Subject, string Body) ResendConfirmation(string confirmLink)
         => (
-            "Ny lank for e-postbekraftelse",
-            $"Hej!\n\nHar ar en ny lank for att bekrafta din e-postadress: {confirmLink}\n\nVanliga halsningar,\nKonventteamet");
+            "Ny länk för e-postbekräftelse",
+            $"Hej!\n\nHär är en ny länk för att bekräfta din e-postadress: {confirmLink}\n\nVänliga hälsningar,\nKonventteamet");
 
     public static (string Subject, string Body) PasswordChanged()
         => (
-            "Ditt losenord har andrats",
-            "Hej!\n\nDitt losenord har andrats. Om det inte var du, kontakta support omgaende.");
+            "Ditt lösenord har ändrats",
+            "Hej!\n\nDitt lösenord har ändrats. Om det inte var du, kontakta support omgående.");
 }

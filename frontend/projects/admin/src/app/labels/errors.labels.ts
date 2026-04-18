@@ -9,8 +9,8 @@ export const ERROR = {
   fetchStaff:           'Kunde inte hämta funktionärer.',
   fetchVisitors:        'Kunde inte hämta besökare.',
   fetchResponsibles:    'Kunde inte hämta ansvariga.',
-  fetchStaffAreas:      'Kunde inte hämta bemanningsdata.',
-  fetchDashboard:       'Kunde inte hämta konventionsdata.',
+  fetchStaffAreas:      'Kunde inte hämta funktioneringsdata.',
+  fetchDashboard:       'Kunde inte hämta konventdata.',
   fetchEvents:          'Kunde inte hämta evenemangslistan.',
 
   // Upplaga
@@ -27,10 +27,10 @@ export const ERROR = {
   updateVenue:          'Kunde inte uppdatera lokal',
   deleteVenue:          'Kunde inte ta bort lokal',
 
-  // Funktionsområden
-  createStaffArea:      'Kunde inte skapa funktionsområde',
-  updateStaffArea:      'Kunde inte uppdatera funktionsområde',
-  deleteStaffArea:      'Kunde inte ta bort funktionsområde',
+  // Funktioneringsområden
+  createStaffArea:      'Kunde inte skapa funktioneringsområde',
+  updateStaffArea:      'Kunde inte uppdatera funktioneringsområde',
+  deleteStaffArea:      'Kunde inte ta bort funktioneringsområde',
 
   // Kategorier
   createCategory:       'Kunde inte skapa kategori',
@@ -64,8 +64,8 @@ export const ERROR = {
   updateStation:          'Kunde inte uppdatera stationen',
   removeStation:          'Kunde inte ta bort stationen',
 
-  // Bemanning
-  fetchStaffApplications: 'Kunde inte hämta staffansökningar',
+  // Funktionering
+  fetchStaffApplications: 'Kunde inte hämta funktionärsansökningar',
   acceptApplication:      'Kunde inte acceptera ansökan',
   rejectApplication:      'Kunde inte avslå ansökan',
   createShift:            'Kunde inte skapa pass',

@@ -65,7 +65,7 @@ export const FIELD = {
   comment:          'Kommentar',
   category:         'Kategori',
   venue:            'Lokal',
-  staffCoord:       'Staffkoordinator',
+  staffCoord:       'Funktioneringskoordinator',
   eventCoord:       'Evenemangskoordinator',
   leadOrganiser:    'Huvudarrangör',
   registrationType: 'Registreringstyp',

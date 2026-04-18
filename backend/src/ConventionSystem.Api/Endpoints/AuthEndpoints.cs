@@ -37,7 +37,7 @@ public static class AuthEndpoints
 
             var convention = await conventionRepo.GetSingleAsync(ct);
             if (convention is null)
-                return Results.Problem("Konventionen är inte konfigurerad.");
+                return Results.Problem("Konventet är inte konfigurerat.");
 
             var conventionId = convention.Id;
 

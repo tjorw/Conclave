@@ -27,7 +27,7 @@ import { EditionService } from '../../../services/edition.service';
       </div>
 
       <header class="page-header">
-        <h1 class="page-title">Min bemanning</h1>
+        <h1 class="page-title">Min funktionering</h1>
       </header>
 
       @if (loading()) {
@@ -70,7 +70,7 @@ import { EditionService } from '../../../services/edition.service';
 
             @if (!staffRegistrationOpen()) {
               <p class="registration-closed">
-                Staffregistrering är inte öppen för denna upplaga just nu.
+                Funktionärsregistrering är inte öppen för denna upplaga just nu.
               </p>
             }
 
@@ -439,7 +439,7 @@ export class MyStaffComponent implements OnInit {
     }
 
     if (!this.staffRegistrationOpen()) {
-      this.error.set('Staffregistrering är inte öppen för denna upplaga.');
+      this.error.set('Funktionärsregistrering är inte öppen för denna upplaga.');
       return;
     }
 

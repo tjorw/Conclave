@@ -15,19 +15,19 @@ public sealed class LoggingEmailService(ILogger<LoggingEmailService> logger) : I
 
     public Task SendStaffApplicationReceivedAsync(string toEmail, string toName, CancellationToken ct = default)
     {
-        logger.LogInformation("[E-POST] Staffansökan mottagen → {Name} <{Email}>", toName, toEmail);
+        logger.LogInformation("[E-POST] Funktionärsansökan mottagen → {Name} <{Email}>", toName, toEmail);
         return Task.CompletedTask;
     }
 
     public Task SendStaffApplicationAcceptedAsync(string toEmail, string toName, CancellationToken ct = default)
     {
-        logger.LogInformation("[E-POST] Staffansökan accepterad → {Name} <{Email}>", toName, toEmail);
+        logger.LogInformation("[E-POST] Funktionärsansökan accepterad → {Name} <{Email}>", toName, toEmail);
         return Task.CompletedTask;
     }
 
     public Task SendStaffApplicationRejectedAsync(string toEmail, string toName, CancellationToken ct = default)
     {
-        logger.LogInformation("[E-POST] Staffansökan avslagen → {Name} <{Email}>", toName, toEmail);
+        logger.LogInformation("[E-POST] Funktionärsansökan avslagen → {Name} <{Email}>", toName, toEmail);
         return Task.CompletedTask;
     }
 
