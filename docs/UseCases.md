@@ -917,10 +917,10 @@ Konventionsadministratör, receptionspersonal
 - `TicketPaid { ticketId, personId, performedById, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Biljettstatus ändras till `Paid`
-- [ ] `TicketPaid` domänhändelse publiceras
-- [ ] Registrering av betalning på redan betald biljett ger valideringsfel
-- [ ] Kommandohanterare har tillhörande enhetstest
+- [x] Biljettstatus ändras till `Paid`
+- [x] `TicketPaid` domänhändelse publiceras
+- [x] Registrering av betalning på redan betald biljett ger valideringsfel
+- [x] Kommandohanterare har tillhörande enhetstest
 
 ---
 
@@ -951,11 +951,11 @@ Externt betalsystem (webhook)
 - `TicketPaid { ticketId, personId, performedById, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Biljettstatus ändras till `Paid` vid bekräftad betalning
-- [ ] `TicketPaid` domänhändelse publiceras
-- [ ] Duplicerad webhook hanteras idempotent (inget fel, ingen dubblerad statusändring)
-- [ ] Misslyckad betalning ändrar inte biljettstatus
-- [ ] Integrationshanterare har tillhörande enhetstest
+- [x] Biljettstatus ändras till `Paid` vid bekräftad betalning
+- [x] `TicketPaid` domänhändelse publiceras
+- [x] Duplicerad webhook hanteras idempotent (inget fel, ingen dubblerad statusändring)
+- [x] Misslyckad betalning ändrar inte biljettstatus
+- [x] Integrationshanterare har tillhörande enhetstest
 
 ---
 
@@ -985,11 +985,11 @@ Biljettinnehavare (autentiserad person)
 - `TicketRevoked { ticketId, personId, performedById, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Biljettstatus ändras till `Revoked`
-- [ ] `TicketRevoked` domänhändelse publiceras
-- [ ] Avbokning av betald biljett som innehavare ger valideringsfel
-- [ ] Avbokning av annans biljett ger auktoriseringsfel
-- [ ] Kommandohanterare har tillhörande enhetstest
+- [x] Biljettstatus ändras till `Revoked`
+- [x] `TicketRevoked` domänhändelse publiceras
+- [x] Avbokning av betald biljett som innehavare ger valideringsfel
+- [x] Avbokning av annans biljett ger auktoriseringsfel
+- [x] Kommandohanterare har tillhörande enhetstest
 
 ---
 

@@ -4,13 +4,16 @@ using ConventionSystem.Application.Registration.Commands.AddAvailability;
 using ConventionSystem.Application.Registration.Commands.AddStaffMember;
 using ConventionSystem.Application.Registration.Commands.AddStationPreference;
 using ConventionSystem.Application.Registration.Commands.CancelSessionRegistration;
+using ConventionSystem.Application.Registration.Commands.CancelOwnTicket;
 using ConventionSystem.Application.Registration.Commands.CancelVisitorRegistration;
 using ConventionSystem.Application.Registration.Commands.CollectTicket;
+using ConventionSystem.Application.Registration.Commands.ConfirmTicketPaymentWebhook;
 using ConventionSystem.Application.Registration.Commands.ConfirmVisitorRegistrationPayment;
 using ConventionSystem.Application.Registration.Commands.CreateTicketType;
 using ConventionSystem.Application.Registration.Commands.DeleteTicketType;
 using ConventionSystem.Application.Registration.Commands.IssueTicket;
 using ConventionSystem.Application.Registration.Commands.RegisterForSession;
+using ConventionSystem.Application.Registration.Commands.RegisterManualTicketPayment;
 using ConventionSystem.Application.Registration.Commands.RejectStaffApplication;
 using ConventionSystem.Application.Registration.Commands.RemoveAvailability;
 using ConventionSystem.Application.Registration.Commands.RemoveStationPreference;
@@ -61,6 +64,33 @@ public static class RegistrationEndpoints
             async (Guid registrationId, ConfirmPaymentRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new ConfirmVisitorRegistrationPaymentCommand(registrationId, request.ExternalReference), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        // UC-TK004: Registrera manuell betalning
+        app.MapPost("/tickets/{ticketId:guid}/manual-payment",
+            async (Guid ticketId, ManualTicketPaymentRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RegisterManualTicketPaymentCommand(ticketId, request.ExternalReference), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        // UC-TK005: Bekräfta betalning via webhook
+        app.MapPost("/payments/webhook/tickets",
+            async (TicketPaymentWebhookRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new ConfirmTicketPaymentWebhookCommand(
+                    request.VisitorRegistrationId,
+                    request.ExternalReference,
+                    request.PaymentStatus), ct);
+                return Results.NoContent();
+            }).AllowAnonymous();
+
+        // UC-TK006: Avboka biljett (innehavare)
+        app.MapDelete("/my/tickets/{ticketId:guid}",
+            async (Guid ticketId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new CancelOwnTicketCommand(ticketId), ct);
                 return Results.NoContent();
             }).RequireAuthorization();
 
@@ -279,6 +309,8 @@ public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory
 public record UpdateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
 public record SubmitVisitorRegistrationRequest(Guid TicketTypeId);
 public record ConfirmPaymentRequest(string ExternalReference);
+public record ManualTicketPaymentRequest(string? ExternalReference);
+public record TicketPaymentWebhookRequest(Guid VisitorRegistrationId, string ExternalReference, string PaymentStatus);
 public record IssueTicketRequest(Guid PersonId, Guid TicketTypeId);
 public record SubmitStaffApplicationRequest(string InterestDescription);
 public record AddAvailabilityRequest(DateTime From, DateTime To);

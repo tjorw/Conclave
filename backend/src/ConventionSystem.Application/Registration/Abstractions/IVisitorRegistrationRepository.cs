@@ -8,6 +8,7 @@ namespace ConventionSystem.Application.Registration.Abstractions;
 public interface IVisitorRegistrationRepository
 {
     Task<VisitorRegistration?> GetByIdAsync(VisitorRegistrationId id, CancellationToken ct = default);
+    Task<VisitorRegistration?> GetByTicketIdAsync(TicketId ticketId, CancellationToken ct = default);
     Task<bool> HasActiveRegistrationAsync(PersonId personId, EditionId editionId, CancellationToken ct = default);
     Task<bool> HasActiveRegistrationForTicketTypeAsync(PersonId personId, EditionId editionId, TicketTypeId ticketTypeId, CancellationToken ct = default);
     Task<IReadOnlyList<MyVisitorRegistrationDto>> ListByPersonAndEditionAsync(PersonId personId, EditionId editionId, CancellationToken ct = default);

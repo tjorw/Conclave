@@ -15,6 +15,9 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
     public Task<VisitorRegistration?> GetByIdAsync(VisitorRegistrationId id, CancellationToken ct = default)
         => db.VisitorRegistrations.FirstOrDefaultAsync(r => r.Id == id, ct);
 
+    public Task<VisitorRegistration?> GetByTicketIdAsync(TicketId ticketId, CancellationToken ct = default)
+        => db.VisitorRegistrations.FirstOrDefaultAsync(r => r.TicketId == ticketId, ct);
+
     public Task<bool> HasActiveRegistrationAsync(PersonId personId, EditionId editionId, CancellationToken ct = default)
         => db.VisitorRegistrations.AnyAsync(
             r => r.PersonId == personId && r.EditionId == editionId && r.Status != VisitorRegistrationStatus.Cancelled, ct);
