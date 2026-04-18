@@ -1,7 +1,9 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.AddStaffMember;
+using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Registration.Enums;
@@ -100,7 +102,7 @@ public class AddStaffMemberHandlerTests
             .Returns(existing);
         _applicationRepo.HasActiveApplicationAsync(existing.Id, edition.Id, Arg.Any<CancellationToken>()).Returns(true);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
             () => _handler.Handle(
                 new AddStaffMemberCommand(edition.Id.Value, "", "person@example.com", null, null), default));
     }
@@ -112,7 +114,7 @@ public class AddStaffMemberHandlerTests
         var outsider = convention.CreatePerson("Annan", "annan@example.com");
         _currentUser.PersonId.Returns(outsider.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(
                 new AddStaffMemberCommand(edition.Id.Value, "X", "x@example.com", null, null), default));
     }

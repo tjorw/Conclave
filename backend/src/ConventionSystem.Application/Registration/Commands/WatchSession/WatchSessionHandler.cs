@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
@@ -18,7 +19,7 @@ public sealed class WatchSessionHandler(
         var personId = currentUser.PersonId;
 
         var editionId = await sessionWatchRepository.FindEditionIdBySessionIdAsync(sessionId, ct)
-            ?? throw new InvalidOperationException("Sessionen hittades inte.");
+            ?? throw new ResourceNotFoundException("Session", command.SessionId.ToString());
 
         if (await sessionWatchRepository.ExistsAsync(personId, sessionId, ct))
         {

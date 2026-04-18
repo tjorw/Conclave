@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.ConfirmVisitorRegistrationPayment;
 using ConventionSystem.Domain.Convention.Ids;
@@ -57,7 +58,7 @@ public class ConfirmVisitorRegistrationPaymentHandlerTests
         _registrationRepo.GetByIdAsync(Arg.Any<VisitorRegistrationId>(), Arg.Any<CancellationToken>())
             .Returns((VisitorRegistration?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new ConfirmVisitorRegistrationPaymentCommand(Guid.NewGuid(), "EXT"), default));
     }
 }

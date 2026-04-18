@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.CancelVisitorRegistration;
 using ConventionSystem.Domain.Convention.Ids;
@@ -61,7 +62,7 @@ public class CancelVisitorRegistrationHandlerTests
         _registrationRepo.GetByIdAsync(Arg.Any<VisitorRegistrationId>(), Arg.Any<CancellationToken>())
             .Returns((VisitorRegistration?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new CancelVisitorRegistrationCommand(Guid.NewGuid()), default));
     }
 
@@ -72,7 +73,7 @@ public class CancelVisitorRegistrationHandlerTests
         _currentUser.PersonId.Returns(PersonId.New());
         _currentUser.IsAdmin.Returns(false);
 
-        await Assert.ThrowsAsync<UnauthorizedAccessException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new CancelVisitorRegistrationCommand(registration.Id.Value), default));
     }
 

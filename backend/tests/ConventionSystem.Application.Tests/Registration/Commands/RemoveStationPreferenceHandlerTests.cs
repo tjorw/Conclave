@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.RemoveStationPreference;
 using ConventionSystem.Domain.Convention.Ids;
@@ -56,7 +57,7 @@ public class RemoveStationPreferenceHandlerTests
         _applicationRepo.GetByIdWithDetailsAsync(Arg.Any<StaffApplicationId>(), Arg.Any<CancellationToken>())
             .Returns((StaffApplication?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new RemoveStationPreferenceCommand(Guid.NewGuid(), Guid.NewGuid()), default));
     }
 }

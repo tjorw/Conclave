@@ -1,6 +1,8 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.AddStationPreference;
+using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Registration.Aggregates;
@@ -59,7 +61,7 @@ public class AddStationPreferenceHandlerTests
         var (application, _, _) = Setup();
         var unknownStationId = StationId.New();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
             () => _handler.Handle(new AddStationPreferenceCommand(application.Id.Value, unknownStationId.Value), default));
     }
 
@@ -69,7 +71,7 @@ public class AddStationPreferenceHandlerTests
         _applicationRepo.GetByIdWithDetailsAsync(Arg.Any<StaffApplicationId>(), Arg.Any<CancellationToken>())
             .Returns((StaffApplication?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new AddStationPreferenceCommand(Guid.NewGuid(), Guid.NewGuid()), default));
     }
 }

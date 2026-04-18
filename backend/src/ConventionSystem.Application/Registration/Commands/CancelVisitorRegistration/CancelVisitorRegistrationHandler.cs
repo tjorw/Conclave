@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Ids;
@@ -18,13 +19,13 @@ public sealed class CancelVisitorRegistrationHandler(
         var performedById = currentUser.PersonId;
 
         var registration = await visitorRegistrationRepository.GetByIdAsync(registrationId, ct)
-            ?? throw new InvalidOperationException($"Besöksregistreringen '{command.VisitorRegistrationId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Besöksregistrering", command.VisitorRegistrationId.ToString());
 
         if (currentUser.PersonId != registration.PersonId && !currentUser.IsAdmin)
-            throw new UnauthorizedAccessException("Du har inte behörighet att avboka denna besöksregistrering.");
+            throw new ForbiddenException("Du har inte behörighet att avboka denna besöksregistrering.");
 
         var ticket = await ticketRepository.GetByIdAsync(registration.TicketId, ct)
-            ?? throw new InvalidOperationException("Biljetten för registreringen hittades inte.");
+            ?? throw new ResourceNotFoundException("Biljett", registration.TicketId.Value.ToString());
 
         registration.Cancel();
         ticket.Revoke(performedById);

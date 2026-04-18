@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
@@ -77,7 +78,7 @@ public class AcceptStaffApplicationHandlerTests
         var nonAdmin = convention.CreatePerson("Annan", "annan@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new AcceptStaffApplicationCommand(application.Id.Value), default));
     }
 
@@ -87,7 +88,7 @@ public class AcceptStaffApplicationHandlerTests
         _applicationRepo.GetByIdAsync(Arg.Any<StaffApplicationId>(), Arg.Any<CancellationToken>())
             .Returns((StaffApplication?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new AcceptStaffApplicationCommand(Guid.NewGuid()), default));
     }
 }

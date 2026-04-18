@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.RejectStaffApplication;
@@ -78,7 +79,7 @@ public class RejectStaffApplicationHandlerTests
         var nonAdmin = convention.CreatePerson("Annan", "annan@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new RejectStaffApplicationCommand(application.Id.Value), default));
     }
 }

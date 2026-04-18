@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Registration.Exceptions;
@@ -23,13 +24,13 @@ public sealed class DeleteTicketTypeHandler(
             ?? throw new TicketTypeNotFoundException();
 
         var edition = await editionRepository.GetByIdAsync(ticketType.EditionId, ct)
-            ?? throw new InvalidOperationException("Upplagan hittades inte.");
+            ?? throw new ResourceNotFoundException("Upplaga", ticketType.EditionId.Value.ToString());
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+            ?? throw new ResourceNotFoundException("Konvention", edition.ConventionId.Value.ToString());
 
         if (!convention.IsAdministrator(performedById))
-            throw new UnauthorizedAccessException("Utföraren har inte behörighet att ta bort biljetttyper.");
+            throw new ForbiddenException("Utföraren har inte behörighet att ta bort biljetttyper.");
 
         if (await ticketRepository.ExistsByTypeAsync(ticketType.Id, ct))
             throw new TicketTypeHasIssuedTicketsException();

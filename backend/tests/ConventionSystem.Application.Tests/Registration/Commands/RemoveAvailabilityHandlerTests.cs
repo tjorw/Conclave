@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.RemoveAvailability;
 using ConventionSystem.Domain.Convention.Ids;
@@ -38,7 +39,7 @@ public class RemoveAvailabilityHandlerTests
         _applicationRepo.GetByIdWithDetailsAsync(Arg.Any<StaffApplicationId>(), Arg.Any<CancellationToken>())
             .Returns((StaffApplication?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new RemoveAvailabilityCommand(Guid.NewGuid(), Guid.NewGuid()), default));
     }
 }

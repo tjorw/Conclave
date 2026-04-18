@@ -1,6 +1,8 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
+using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Ids;
@@ -22,13 +24,13 @@ public sealed class AddStaffMemberHandler(
         var performedById  = currentUser.PersonId;
 
         var edition = await editionRepository.GetByIdAsync(editionId, ct)
-            ?? throw new InvalidOperationException($"Upplagan '{command.EditionId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Upplaga", command.EditionId.ToString());
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+            ?? throw new ResourceNotFoundException("Konvention", edition.ConventionId.Value.ToString());
 
         if (!convention.IsAdministrator(performedById) && !edition.IsStaffCoordinator(performedById))
-            throw new InvalidOperationException("Utföraren har inte behörighet att lägga till funktionärer.");
+            throw new ForbiddenException("Utföraren har inte behörighet att lägga till funktionärer.");
 
         // Find or create person
         var person = await personRepository.FindByEmailInConventionAsync(edition.ConventionId, command.Email, ct);
@@ -42,7 +44,7 @@ public sealed class AddStaffMemberHandler(
         }
 
         if (await staffApplicationRepository.HasActiveApplicationAsync(person.Id, editionId, ct))
-            throw new InvalidOperationException("Personen har redan en aktiv staffansökan för denna upplaga.");
+            throw new DomainRuleViolationException("Personen har redan en aktiv staffansökan för denna upplaga.");
 
         var description = string.IsNullOrWhiteSpace(command.Note) ? "Tillagd av administratör" : command.Note;
         var application  = new StaffApplication(StaffApplicationId.New(), person.Id, editionId, description);

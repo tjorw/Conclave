@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
@@ -20,16 +21,16 @@ public sealed class AcceptStaffApplicationHandler(
         var performedById = currentUser.PersonId;
 
         var application = await staffApplicationRepository.GetByIdAsync(applicationId, ct)
-            ?? throw new InvalidOperationException($"Staffansökan '{command.StaffApplicationId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Staffansökan", command.StaffApplicationId.ToString());
 
         var edition = await editionRepository.GetByIdAsync(application.EditionId, ct)
-            ?? throw new InvalidOperationException("Upplagan hittades inte.");
+            ?? throw new ResourceNotFoundException("Upplaga", application.EditionId.Value.ToString());
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+            ?? throw new ResourceNotFoundException("Konvention", edition.ConventionId.Value.ToString());
 
         if (!convention.IsAdministrator(performedById) && !edition.IsStaffCoordinator(performedById))
-            throw new InvalidOperationException("Utföraren har inte behörighet att acceptera staffansökningar.");
+            throw new ForbiddenException("Utföraren har inte behörighet att acceptera staffansökningar.");
 
         application.Accept(performedById);
         await staffApplicationRepository.SaveAsync(ct);

@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Registration.Ids;
 using MediatR;
@@ -14,7 +15,7 @@ public sealed class RemoveAvailabilityHandler(
         var availabilityId = new AvailabilityId(command.AvailabilityId);
 
         var application = await staffApplicationRepository.GetByIdWithDetailsAsync(applicationId, ct)
-            ?? throw new InvalidOperationException($"Staffansökan '{command.StaffApplicationId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Staffansökan", command.StaffApplicationId.ToString());
 
         application.RemoveAvailability(availabilityId);
         await staffApplicationRepository.SaveAsync(ct);

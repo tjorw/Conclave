@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Registration.Ids;
 using MediatR;
@@ -14,10 +15,10 @@ public sealed class ConfirmVisitorRegistrationPaymentHandler(
         var registrationId = new VisitorRegistrationId(command.VisitorRegistrationId);
 
         var registration = await visitorRegistrationRepository.GetByIdAsync(registrationId, ct)
-            ?? throw new InvalidOperationException($"Besöksregistreringen '{command.VisitorRegistrationId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Besöksregistrering", command.VisitorRegistrationId.ToString());
 
         var ticket = await ticketRepository.GetByIdAsync(registration.TicketId, ct)
-            ?? throw new InvalidOperationException("Biljetten för registreringen hittades inte.");
+            ?? throw new ResourceNotFoundException("Biljett", registration.TicketId.Value.ToString());
 
         registration.ConfirmPayment(command.ExternalReference);
         ticket.ConfirmPayment();

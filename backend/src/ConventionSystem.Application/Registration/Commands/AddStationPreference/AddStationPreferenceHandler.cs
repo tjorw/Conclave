@@ -1,5 +1,7 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
+using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Ids;
 using MediatR;
@@ -17,13 +19,13 @@ public sealed class AddStationPreferenceHandler(
         var stationId = new StationId(command.StationId);
 
         var application = await staffApplicationRepository.GetByIdWithDetailsAsync(applicationId, ct)
-            ?? throw new InvalidOperationException($"Staffansökan '{command.StaffApplicationId}' hittades inte.");
+            ?? throw new ResourceNotFoundException("Staffansökan", command.StaffApplicationId.ToString());
 
         var edition = await editionRepository.GetByIdWithStructureAsync(application.EditionId, ct)
-            ?? throw new InvalidOperationException("Upplagan hittades inte.");
+            ?? throw new ResourceNotFoundException("Upplaga", application.EditionId.Value.ToString());
 
         if (!edition.Stations.Any(s => s.Id == stationId))
-            throw new InvalidOperationException("Stationen hittades inte på denna upplaga.");
+            throw new DomainRuleViolationException("Stationen hittades inte på denna upplaga.");
 
         application.AddStationPreference(stationId);
         await staffApplicationRepository.SaveAsync(ct);

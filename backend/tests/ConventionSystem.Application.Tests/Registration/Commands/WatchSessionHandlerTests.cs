@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.WatchSession;
 using ConventionSystem.Domain.Convention.Ids;
@@ -47,7 +48,7 @@ public class WatchSessionHandlerTests
         _watchRepo.FindEditionIdBySessionIdAsync(sessionId, Arg.Any<CancellationToken>())
             .Returns((EditionId?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new WatchSessionCommand(sessionId.Value), default));
     }
 

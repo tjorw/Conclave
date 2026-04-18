@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.AddAvailability;
 using ConventionSystem.Domain.Convention.Ids;
@@ -52,7 +53,7 @@ public class AddAvailabilityHandlerTests
         _applicationRepo.GetByIdWithDetailsAsync(Arg.Any<StaffApplicationId>(), Arg.Any<CancellationToken>())
             .Returns((StaffApplication?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(
                 new AddAvailabilityCommand(Guid.NewGuid(), DateTime.UtcNow, DateTime.UtcNow.AddHours(8)), default));
     }
