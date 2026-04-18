@@ -1,3 +1,8 @@
+import { StaffApplicationStatus } from './registration.models';
+export type { StaffApplicationStatus };
+
+export type EditionStatus = 'Draft' | 'Published';
+
 export interface ConventionDto {
   id: string;
   name: string;
@@ -9,7 +14,7 @@ export interface EditionSummaryDto {
   name: string;
   start: string;
   end: string;
-  status: string;
+  status: EditionStatus;
 }
 
 export interface EditionDto {
@@ -18,7 +23,7 @@ export interface EditionDto {
   name: string;
   start: string;
   end: string;
-  status: string;
+  status: EditionStatus;
   organiserRegistrationOpen: boolean;
   staffRegistrationOpen: boolean;
   visitorRegistrationOpen: boolean;
@@ -91,7 +96,7 @@ export interface EditionStaffMemberDto {
   personName: string;
   email: string;
   phone: string | null;
-  applicationStatus: string;
+  applicationStatus: StaffApplicationStatus;
 }
 
 export interface EditionResponsibleDto {

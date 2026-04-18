@@ -1,8 +1,16 @@
-export interface TicketTypeDto {
+export type VisitorRegistrationStatus = 'PendingPayment' | 'Confirmed' | 'Cancelled';
+export type SessionRegistrationStatus = 'Confirmed' | 'Cancelled';
+export type StaffApplicationStatus = 'Received' | 'UnderReview' | 'Assigned' | 'Confirmed' | 'Rejected';
+export type TicketStatus = 'Reserved' | 'Paid' | 'Collected' | 'Revoked';
+export type TicketTypeCategory = 'Visitor' | 'Organiser' | 'Staff';
+
+export interface TicketTypeAdminDto {
   id: string;
   name: string;
   price: number;
-  capacity: number | null;
+  category: TicketTypeCategory;
+  validDays: string[] | null;
+  allowedCategories: string[] | null;
 }
 
 export interface VisitorTicketTypeDto {
@@ -11,21 +19,12 @@ export interface VisitorTicketTypeDto {
   price: number;
 }
 
-export interface TicketTypeAdminDto {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  validDays: string[] | null;
-  allowedCategories: string[] | null;
-}
-
 export interface VisitorRegistrationAdminDto {
   id: string;
   personId: string;
   personName: string;
   ticketTypeName: string | null;
-  status: string;
+  status: VisitorRegistrationStatus;
   registeredAt: string;
   paymentReference: string | null;
 }
@@ -34,7 +33,7 @@ export interface VisitorRegistrationDto {
   id: string;
   personId: string;
   editionId: string;
-  status: string;
+  status: VisitorRegistrationStatus;
   registeredAt: string;
 }
 
@@ -42,7 +41,7 @@ export interface StaffApplicationDto {
   id: string;
   personId: string;
   editionId: string;
-  status: string;
+  status: StaffApplicationStatus;
   appliedAt: string;
   availabilities: AvailabilityDto[];
   stationPreferences: StationPreferenceDto[];
@@ -68,7 +67,7 @@ export interface SessionRegistrationDto {
 
 export interface MyVisitorRegistrationDto {
   id: string;
-  status: string;
+  status: VisitorRegistrationStatus;
   ticketTypeName: string | null;
   ticketId: string;
   ticketPrice: number | null;
@@ -81,7 +80,7 @@ export interface MySessionRegistrationSummaryDto {
   start: string;
   end: string;
   venueName: string;
-  status: string;
+  status: SessionRegistrationStatus;
 }
 
 export interface MyWatchedSessionSummaryDto {
@@ -110,7 +109,7 @@ export interface MyAssignedShiftSummaryDto {
 
 export interface MyStaffApplicationDto {
   id: string;
-  status: string;
+  status: StaffApplicationStatus;
 }
 
 export interface MyScheduleItemDto {

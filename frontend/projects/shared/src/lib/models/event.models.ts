@@ -1,3 +1,9 @@
+export type EventStatus = 'Draft' | 'UnderReview' | 'Published' | 'Cancelled';
+export type EventCommentStatus = 'New' | 'InProgress' | 'Responded' | 'Acknowledged';
+export type SessionStatus = 'Active' | 'Inactive';
+export type StartType = 'FixedTime' | 'Rolling' | 'Tournament';
+export type RegistrationType = 'DropIn' | 'PreRegistration' | 'Combined';
+
 export interface EventSummaryDto {
   id: string;
   editionId: string;
@@ -5,7 +11,7 @@ export interface EventSummaryDto {
   categoryName: string | null;
   leadOrganiserId: string;
   leadOrganiserName: string | null;
-  status: string;
+  status: EventStatus;
   title: string | null;
   sessionCount: number;
   pendingCommentCount: number;
@@ -20,10 +26,10 @@ export interface EventDto {
   categoryResponsibleName: string | null;
   leadOrganiserId: string;
   leadOrganiserName: string | null;
-  status: string;
+  status: EventStatus;
   title: string;
   description: string;
-  registrationType: string;
+  registrationType: RegistrationType;
   dropInRules: string | null;
   coOrganiserIds: string[];
   sessionRequests: SessionRequestDto[];
@@ -36,7 +42,7 @@ export interface SessionRequestDto {
   description: string;
   durationMinutes: number;
   seats: number;
-  startType: string;
+  startType: StartType;
 }
 
 export interface SessionDto {
@@ -45,8 +51,8 @@ export interface SessionDto {
   start: string;
   end: string;
   maxSeats: number;
-  startType: string;
-  status: string;
+  startType: StartType;
+  status: SessionStatus;
 }
 
 export interface EditionSessionDto {
@@ -57,8 +63,8 @@ export interface EditionSessionDto {
   start: string;
   end: string;
   maxSeats: number;
-  startType: string;
-  status: string;
+  startType: StartType;
+  status: SessionStatus;
 }
 
 export interface EventCommentDto {
@@ -66,7 +72,7 @@ export interface EventCommentDto {
   authorId: string;
   authorName: string | null;
   text: string;
-  status: string;
+  status: EventCommentStatus;
   requiresHandling: boolean;
   handlingComment: string | null;
   handledById: string | null;

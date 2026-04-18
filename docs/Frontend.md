@@ -271,10 +271,51 @@ komponenter):
 ### Typer och modeller
 
 Alla DTO-typer definieras i `shared`-biblioteket under
-`projects/shared/src/lib/models/convention.models.ts`.
+`projects/shared/src/lib/models/`. Komponenter importerar typer från `'shared'`
+– aldrig inline-typer för API-data.
 
-Komponenter importerar typer från `'shared'` – aldrig inline-typer för
-API-data.
+#### String literal union types för enum-värden
+
+Alla statusfält och andra enum-liknande strängar från API:t typas som
+TypeScript string literal union types, **inte som `string`**. Det ger
+kompileringsfel vid stavfel eller föråldrade värden och gör det omöjligt att
+jämföra ett statusfält mot ett värde som inte längre finns.
+
+```typescript
+// ✓ Korrekt – kompilerar inte om 'Pending' inte finns i unionen
+export type StaffAssignmentStatus = 'Assigned' | 'Confirmed' | 'Rejected' | 'Cancelled';
+
+// ✗ Undvik – inga felkontroller, glider lätt isär från backend
+status: string;
+```
+
+Regler:
+- Varje union type definieras i **en** modell-fil och importeras i övriga om
+  samma typ behövs på flera ställen. `StaffApplicationStatus` ägs av
+  `registration.models.ts` och re-exporteras därifrån.
+- Filer i `models/` exporteras via `public-api.ts`. Inga dubbla definitioner
+  av samma typ-namn – det ger tvetydighetsfel vid re-export.
+- När ett nytt enum-värde läggs till på backend **måste** unionen i frontend
+  uppdateras i samma PR. TypeScript-bygget fungerar som vakthund: saknade
+  värden ger inga fel, men borttagna eller felstavade värden fångas direkt.
+
+Aktuella union types (speglar backend-enums):
+
+| Typ | Fil | Värden |
+|-----|-----|--------|
+| `EditionStatus` | `convention.models.ts` | `Draft \| Published` |
+| `EventStatus` | `event.models.ts` | `Draft \| UnderReview \| Published \| Cancelled` |
+| `EventCommentStatus` | `event.models.ts` | `New \| InProgress \| Responded \| Acknowledged` |
+| `SessionStatus` | `event.models.ts` | `Active \| Inactive` |
+| `StartType` | `event.models.ts` | `FixedTime \| Rolling \| Tournament` |
+| `RegistrationType` | `event.models.ts` | `DropIn \| PreRegistration \| Combined` |
+| `VisitorRegistrationStatus` | `registration.models.ts` | `PendingPayment \| Confirmed \| Cancelled` |
+| `SessionRegistrationStatus` | `registration.models.ts` | `Confirmed \| Cancelled` |
+| `StaffApplicationStatus` | `registration.models.ts` | `Received \| UnderReview \| Assigned \| Confirmed \| Rejected` |
+| `TicketStatus` | `registration.models.ts` | `Reserved \| Paid \| Collected \| Revoked` |
+| `TicketTypeCategory` | `registration.models.ts` | `Visitor \| Organiser \| Staff` |
+| `ShiftStatus` | `staff.models.ts` | `Planned \| InProgress \| Cancelled \| Completed` |
+| `StaffAssignmentStatus` | `staff.models.ts` | `Assigned \| Confirmed \| Rejected \| Cancelled` |
 
 ---
 

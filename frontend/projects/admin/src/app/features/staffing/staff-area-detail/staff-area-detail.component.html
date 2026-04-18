@@ -137,7 +137,7 @@
                                 <td><span class="chip chip-grey">{{ assignmentStatusLabel(a.status) }}</span></td>
                                 <td>{{ a.assignedAt | date:'yyyy-MM-dd HH:mm' }}</td>
                                 <td class="row-actions">
-                                  @if (a.status === 'Pending') {
+                                  @if (a.status === 'Assigned') {
                                     <button mat-icon-button color="primary" (click)="confirmAssignment(a.id)"
                                       matTooltip="Bekräfta" [disabled]="saving()">
                                       <mat-icon>check</mat-icon>
