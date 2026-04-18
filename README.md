@@ -308,28 +308,7 @@ Testnivåer och minimikrav för frontend-PR:er beskrivs i
     └── Roadmap.md      # Implementationsstatus och faser
 ```
 
-Beroendet pekar alltid inåt: Infrastructure → Application → Domain.
-
-## Arkitektur
-
-### Systemnivå
-
-Tre infrastrukturskikt:
-
-- **Klienter:** Admin-app (Angular, rollbaserad), publik vy (Angular, konventionsstyld), externt CMS (REST-feed, läsbart)
-- **API-lager (.NET):** Auth (JWT + OAuth), publik REST (feed + webhooks)
-- **Datanivå:** En databas per deploy – domändata i `dbo`-schema, ASP.NET Identity i `identity`-schema
-
-### Clean Architecture-lager
-
-```
-① Presentation  – Minimal API-endpoints, feed-endpoints
-② Application   – Use cases, commands, queries (CQRS med MediatR), validering
-③ Domain        – Convention | Event | Registration | Staff
-④ Infrastructure – EF Core, repositories, identity, e-post
-```
-
-Beroendet pekar alltid inåt. Infrastructure implementerar interface definierade i Application. Domain har inga externa beroenden.
+Se `docs/Backend.md` för arkitekturprinciper, kodmönster och EF Core-regler.
 
 ## Domänmodell
 
@@ -385,36 +364,3 @@ Hanterar bemanningen av konventionen. Bemanningskoordinatorn skapar pass (`Shift
 | Entiteter | `StaffAssignment` |
 | Value objects | `StaffingRequirement`, `TimeSlot` |
 | Domain service | `AssignmentService` (kontrollerar överlapp – varning, blockerar inte) |
-
-## Bounded context-kommunikation
-
-Contexts läser id-referenser från varandra men anropar aldrig varandras aggregat direkt:
-
-- **Event** läser: `ConventionId`, `EditionId`, `CategoryId`, `VenueId` från Convention
-- **Registration** läser: `ConventionId`, `EditionId`, `PersonId` från Convention
-- **Staff** läser: `StationId` från Convention; `PersonId` från Registration
-
-**Viktiga domain event-flöden:**
-
-| Event | Utlöser |
-|---|---|
-| `EditionPublished` | Startsignal för Event och Registration |
-| `SessionDeactivated` / `EventCancelled` | Avbokning av sessionsregistreringar |
-| `StaffApplicationReceived` | Notifiering till bemanningskoordinator |
-| `ShiftCancelled` | Automatisk avbokning av tilldelningar |
-
-## Domain events
-
-Domain events dispatchar via [MediatR](https://github.com/jbogard/MediatR) efter lyckad `SaveChanges` och loggas alltid till `domain_event_log`-tabellen i samma transaktion. Skapa en handler genom att implementera `IDomainEventHandler<T>`:
-
-```csharp
-public class EditionPublishedHandler : IDomainEventHandler<EditionPublished>
-{
-    public async Task Handle(EditionPublished notification, CancellationToken ct)
-    {
-        // ...
-    }
-}
-```
-
-Handlers i `ConventionSystem.Application` registreras automatiskt.

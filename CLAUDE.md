@@ -16,6 +16,8 @@ Den här filen styr hur Claude Code arbetar i det här projektet.
 - **Auth:** ASP.NET Identity med JWT (stöd för OAuth planerat)
 - **API:** REST, minimal API-endpoints
 
+Se `README.md` för lösningsstruktur och domänmodell. Se `docs/Backend.md` för arkitekturprinciper, kodmönster per lager och EF Core-regler.
+
 ## Byggkommandon
 
 ### Backend
@@ -39,80 +41,6 @@ ng serve public      # publik app på http://localhost:4201
 ng build             # bygg alla appar för produktion
 ng test              # kör Vitest-tester
 ```
-
-## Lösningsstruktur
-
-```
-/
-├── backend/
-│   ├── ConventionSystem.sln
-│   ├── src/
-│   │   ├── ConventionSystem.Domain/          # Domänlager – inga beroenden utåt
-│   │   │   ├── Convention/
-│   │   │   ├── Event/
-│   │   │   ├── Registration/
-│   │   │   └── Staff/
-│   │   ├── ConventionSystem.Application/     # Use cases, commands, queries (CQRS)
-│   │   │   ├── Convention/
-│   │   │   ├── Event/
-│   │   │   ├── Registration/
-│   │   │   └── Staff/
-│   │   ├── ConventionSystem.Infrastructure/  # EF Core, repositories, identity, e-post
-│   │   └── ConventionSystem.Api/             # Minimal API-endpoints, feed-endpoints
-│   └── tests/
-│       ├── ConventionSystem.Domain.Tests/
-│       ├── ConventionSystem.Application.Tests/
-│       └── ConventionSystem.Integration.Tests/
-├── frontend/
-│   └── projects/
-│       ├── admin/     # Admin-app – rollbaserad, port 4200 (Angular Material)
-│       ├── public/    # Publik vy – konventionsbrandad, port 4201 (Angular Material)
-│       └── shared/    # Delat bibliotek: API-typer, auth, interceptors
-└── docs/
-    ├── Backend.md      # Kodkonventioner per lager, EF Core-regler, testmönster
-    ├── Frontend.md     # Angular-konventioner och komponentmönster
-    ├── UseCases.md     # Alla use cases med acceptanskriterier
-    └── Roadmap.md      # Implementationsstatus och faser
-```
-
-## Arkitektur
-
-### Systemnivå
-
-Tre infrastrukturskikt:
-
-- **Klienter:** Admin-app (Angular, rollbaserad), publik vy (Angular, konventionsstyld), externt CMS (REST-feed, läsbart)
-- **API-lager (.NET):** Auth (JWT + OAuth), publik REST (feed + webhooks)
-- **Datanivå:** En databas per deploy (domändata i `dbo`-schema, ASP.NET Identity i `identity`-schema)
-
-### Clean Architecture-lager
-
-```
-① Presentation  – Controllers, minimal API, feed-endpoints
-② Application   – Use cases, commands, queries (CQRS), validering
-③ Domain        – Convention | Event | Registration | Staff
-④ Infrastructure – EF Core, repositories, identity, extern auth, e-post
-```
-
-Beroendet pekar alltid inåt. Infrastructure beror på Domain, aldrig tvärtom.
-
-### Bounded Contexts och kommunikation
-
-De fyra contexts kommunicerar via domain events och id-referenser – ingen direkt koppling mellan aggregat:
-
-- **Event** läser: `ConventionId`, `EditionId`, `CategoryId`, `VenueId` från Convention
-- **Registration** läser: `ConventionId`, `EditionId`, `PersonId` från Convention
-- **Staff** läser: `StationId` från Convention; `PersonId` från Registration
-
-**Viktiga domain event-flöden:**
-- `EditionPublished` – startsignal för Event och Registration
-- `SessionDeactivated` / `EventCancelled` → avbokning av sessionsregistreringar
-- `StaffApplicationReceived` → notifiering till bemanningskoordinator
-- `ShiftCancelled` → automatisk avbokning av tilldelningar
-
-## Domänmodell
-
-Se `README.md` för en komplett översikt av aggregate roots, entiteter och value objects per bounded context. Se `docs/Backend.md` för domänspecifika implementationsdetaljer och EF Core-konfigurationsregler.
 
 # Kodkonventioner
 

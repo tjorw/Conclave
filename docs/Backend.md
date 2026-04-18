@@ -2,14 +2,7 @@
 
 Dokumentet beskriver arkitekturprinciper, kodmönster och beslut för
 backend-implementationen. Operationella instruktioner (byggkommandon,
-commit-strategi) finns i `CLAUDE.md`.
-
-## Miljökrav
-
-- Repo:t använder `global.json` och kräver .NET SDK 9.x i repo-roten
-- Om `dotnet` visar "A compatible .NET SDK was not found" saknas rätt SDK lokalt
-- Installera med `winget install Microsoft.DotNet.SDK.9`
-- Verifiera med `dotnet --list-sdks` och `dotnet --version`
+commit-strategi) finns i `CLAUDE.md`. Miljökrav och kom-igång-guide finns i `README.md`.
 
 ---
 
