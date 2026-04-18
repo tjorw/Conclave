@@ -50,9 +50,15 @@ public sealed class SubmitVisitorRegistrationHandler(
 
         var ticketId = TicketId.New();
         var ticket = new Ticket(ticketId, ticketTypeId, personId, editionId);
-        await ticketRepository.AddAsync(ticket, ct);
-
         var registration = new VisitorRegistration(VisitorRegistrationId.New(), personId, editionId, ticketId);
+
+        if (ticketType.Price == 0)
+        {
+            ticket.ConfirmPayment();
+            registration.ConfirmPayment("AUTO-FREE");
+        }
+
+        await ticketRepository.AddAsync(ticket, ct);
         await visitorRegistrationRepository.AddAndSaveAsync(registration, ct);
 
         return registration.Id.Value;

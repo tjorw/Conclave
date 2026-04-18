@@ -33,6 +33,22 @@
                 <dd>{{ referenceNumber(ticket.id) }}</dd>
               </div>
             </dl>
+
+            @if (canCancelRegistration(ticket)) {
+              <div>
+                <button
+                  mat-stroked-button
+                  type="button"
+                  (click)="cancelRegistration(ticket)"
+                  [disabled]="cancellingRegistrationId() !== null || submitting()">
+                  @if (cancellingRegistrationId() === ticket.id) {
+                    Avbokar...
+                  } @else {
+                    Avboka biljett
+                  }
+                </button>
+              </div>
+            }
           </article>
         }
       </div>
@@ -40,6 +56,10 @@
       <p class="payment-info">
         Betalning hanteras separat. När vi har registrerat din betalning uppdateras statusen automatiskt.
       </p>
+
+      @if (hasPaidRegistrations()) {
+        <p class="registration-closed">Betalda biljetter med pris över 0 kr kan inte avbokas. Kontakta arrangören om du behöver hjälp.</p>
+      }
     </section>
   }
 

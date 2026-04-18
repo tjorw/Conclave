@@ -37,6 +37,12 @@ export class RegistrationService {
     );
   }
 
+  cancelVisitorRegistration(registrationId: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/visitor-registrations/${registrationId}`
+    );
+  }
+
   getMySessionRegistrations(editionId: string) {
     return this.http.get<MySessionRegistrationSummaryDto[]>(
       `${this.env.apiBaseUrl}/editions/${editionId}/my-session-registrations`

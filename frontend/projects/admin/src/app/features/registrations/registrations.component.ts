@@ -72,6 +72,18 @@ export class RegistrationsComponent {
     });
   }
 
+  cancelRegistration(reg: VisitorRegistrationAdminDto): void {
+    this.saving.set(true);
+    this.svc.cancelVisitorRegistration(reg.id).subscribe({
+      next: () => { this.reload(); this.saving.set(false); },
+      error: (err) => this.handleError(ERROR.cancelRegistration, err),
+    });
+  }
+
+  canCancelRegistration(reg: VisitorRegistrationAdminDto): boolean {
+    return reg.status !== 'Cancelled';
+  }
+
   statusLabel(status: string): string {
     return VISITOR_REGISTRATION_STATUS_LABEL[status] ?? status;
   }

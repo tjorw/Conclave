@@ -38,6 +38,11 @@
                   Bekräfta betalning
                 </button>
               }
+              @if (canCancelRegistration(reg)) {
+                <button mat-stroked-button color="warn" [disabled]="saving()" (click)="cancelRegistration(reg)">
+                  Makulera registrering
+                </button>
+              }
             </td>
           </tr>
         } @empty {

@@ -134,4 +134,29 @@ public class SubmitVisitorRegistrationHandlerTests
         await Assert.ThrowsAsync<DomainRuleViolationException>(
             () => _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, ticketType.Id.Value), default));
     }
+
+    [Fact]
+    public async Task Handle_FreeTicketType_AutoConfirmsTicketAndRegistration()
+    {
+        var (_, person, edition, _) = Setup();
+        var freeTicketType = new TicketType(TicketTypeId.New(), edition.Id, "Gratisbiljett", 0, TicketTypeCategory.Visitor);
+        _ticketTypeRepo.GetByIdAsync(freeTicketType.Id, Arg.Any<CancellationToken>()).Returns(freeTicketType);
+        _registrationRepo.HasActiveRegistrationForTicketTypeAsync(person.Id, edition.Id, freeTicketType.Id, Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        Domain.Registration.Aggregates.Ticket? createdTicket = null;
+        _ticketRepo
+            .When(repo => repo.AddAsync(Arg.Any<Domain.Registration.Aggregates.Ticket>(), Arg.Any<CancellationToken>()))
+            .Do(call => createdTicket = call.ArgAt<Domain.Registration.Aggregates.Ticket>(0));
+
+        await _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, freeTicketType.Id.Value), default);
+
+        Assert.NotNull(createdTicket);
+        Assert.Equal(TicketStatus.Paid, createdTicket!.Status);
+        await _registrationRepo.Received(1).AddAndSaveAsync(
+            Arg.Is<Domain.Registration.Aggregates.VisitorRegistration>(registration =>
+                registration.Status == VisitorRegistrationStatus.Confirmed
+                && registration.PaymentReference == "AUTO-FREE"),
+            Arg.Any<CancellationToken>());
+    }
 }

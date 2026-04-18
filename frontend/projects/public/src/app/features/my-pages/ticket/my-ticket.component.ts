@@ -45,9 +45,13 @@ export class MyTicketComponent implements OnInit {
   readonly loadingRegistration = signal(true);
   readonly loadingTicketTypes = signal(true);
   readonly submitting = signal(false);
+  readonly cancellingRegistrationId = signal<string | null>(null);
   readonly error = signal<string | null>(null);
   readonly registrations = signal<MyVisitorRegistrationDto[]>([]);
   readonly ticketTypes = signal<VisitorTicketTypeDto[]>([]);
+  readonly hasPaidRegistrations = computed(
+    () => this.registrations().some(registration => registration.status === 'Confirmed')
+  );
   readonly visitorRegistrationOpen = computed(
     () => this.editionSvc.edition()?.visitorRegistrationOpen ?? false
   );
@@ -98,6 +102,44 @@ export class MyTicketComponent implements OnInit {
           this.submitting.set(false);
         },
       });
+  }
+
+  cancelRegistration(registration: MyVisitorRegistrationDto): void {
+    if (!registration.id) {
+      this.error.set('Kunde inte identifiera registreringen som ska avbokas.');
+      return;
+    }
+
+    if (this.cancellingRegistrationId()) {
+      return;
+    }
+
+    this.error.set(null);
+    this.cancellingRegistrationId.set(registration.id);
+
+    this.regSvc.cancelVisitorRegistration(registration.id)
+      .subscribe({
+        next: () => {
+          this.cancellingRegistrationId.set(null);
+          this.loadState();
+        },
+        error: (err: HttpErrorResponse) => {
+          const detail =
+            err.error?.detail ??
+            err.error?.title ??
+            err.error?.message ??
+            'Kunde inte avboka biljetten just nu. Försök igen.';
+          this.error.set(detail);
+          this.cancellingRegistrationId.set(null);
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  canCancelRegistration(registration: MyVisitorRegistrationDto): boolean {
+    const ticketPrice = Number(registration.ticketPrice);
+    const isFreeConfirmed = registration.status === 'Confirmed' && Number.isFinite(ticketPrice) && ticketPrice === 0;
+    return registration.status === 'PendingPayment' || isFreeConfirmed;
   }
 
   paymentStatusLabel(status: string): string {
@@ -167,7 +209,7 @@ export class MyTicketComponent implements OnInit {
               ticketId: typed.ticketId ?? typed.TicketId ?? '',
               ticketPrice: typed.ticketPrice ?? typed.TicketPrice ?? null,
             } satisfies MyVisitorRegistrationDto;
-          });
+          }).filter(registration => registration.status !== 'Cancelled');
 
           this.registrations.set(normalizedRegistrations);
           this.loadingRegistration.set(false);
