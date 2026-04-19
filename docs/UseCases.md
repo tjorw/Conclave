@@ -1968,3 +1968,120 @@ Konventionsadministratör
 
 ## Acceptanskriterier
 - [x] Historiklistan visar korrekt `discountApplied` per inlösning
+
+---
+
+# Hjälpsystem (HL-kontexten – admin-klienten)
+
+---
+
+# UC-HL001 – Visa inline hjälptooltip
+
+## Sammanfattning
+Användaren hovrar eller fokuserar en ⓘ-ikon och en kort förklaringstext visas.
+
+## Aktör
+Admin (alla roller)
+
+## Förutsättningar
+- ⓘ-ikonen (`HelpTooltip`) finns bredvid ett UI-element
+
+## Flöde
+1. Användaren hovrar (desktop) eller trycker (touch) på ⓘ-ikonen
+2. En tooltip visas med en kort förklaringstext (max ~120 tecken)
+3. Tooltip stängs när användaren lämnar elementet eller trycker utanför
+
+## Affärsregler
+- Tooltip-texten hämtas från `help.labels.ts` via `HelpTooltipKey` – inga hårdkodade texter
+- Tillgänglig: `role="tooltip"`, `aria-describedby` på värd-elementet
+- Touch-interaktion fungerar (tryck öppnar, tryck utanför stänger)
+
+## Acceptanskriterier
+- [ ] Tooltip visas med rätt text för varje `HelpTooltipKey`
+- [ ] Tillgänglighetsattribut sätts korrekt
+- [ ] Touch-interaktion fungerar på mobil
+
+---
+
+# UC-HL002 – Visa expanderbar förklaringspanel
+
+## Sammanfattning
+En kollapsad `HelpPanel` under sidans page-header förklarar ett domänkoncept och kan länka vidare till hjälpdrawern.
+
+## Aktör
+Admin (alla roller)
+
+## Förutsättningar
+- Sidan har en `HelpPanel`-komponent
+
+## Flöde
+1. En kollapsad panel med rubriken "Vad är [term]?" visas under sidans page-header
+2. Användaren klickar/trycker för att expandera
+3. Panelen visar 2–4 meningar om konceptet samt en "Läs mer"-länk
+4. "Läs mer" öppnar hjälpdrawern på rätt topic via `HelpService.open(topic)`
+5. Expansionstillståndet sparas i `localStorage` per nyckel
+
+## Affärsregler
+- Erfarna användare ser inte panelen öppen varje gång – tillståndet persisteras via `localStorage`
+- Texten hämtas från `help.labels.ts`
+
+## Acceptanskriterier
+- [ ] Expansionstillståndet sparas och återläses från `localStorage`
+- [ ] "Läs mer" öppnar drawern på rätt topic
+
+---
+
+# UC-HL003 – Öppna hjälpdrawer via global knapp
+
+## Sammanfattning
+Användaren klickar hjälp-ikonen (?) i topbar/sidenav och drawern öppnas med kontextuellt innehåll för aktuell route.
+
+## Aktör
+Admin (alla roller)
+
+## Förutsättningar
+- Global hjälp-ikon finns i appens topbar eller sidenav
+
+## Flöde
+1. Användaren klickar hjälp-ikonen
+2. `HelpService` slår upp aktuell route och väljer relevant `HelpTopic` via `HELP_ROUTE_MAP`
+3. Drawern öppnas från höger med titeln för aktuellt topic och renderad Markdown
+4. Om ingen mappning finns för aktuell route visas standardinnehåll ("Välkommen till Conclave")
+5. Användaren stänger drawern med ✕-knappen, Escape-tangenten eller genom att klicka utanför
+
+## Affärsregler
+- Route-till-topic-mappningen är typkontrollerad: `HelpTopic` är en string literal union
+- Drawern är tillgänglig: `role="dialog"`, `aria-label`, fokus-trap
+
+## Acceptanskriterier
+- [ ] Rätt topic väljs baserat på aktuell route
+- [ ] Routes utan mappning faller tillbaka på standardinnehåll
+- [ ] Drawern stängs med Escape-tangenten
+- [ ] Fokus-trap aktiveras när drawern är öppen
+
+---
+
+# UC-HL004 – Navigera mellan topics i drawern
+
+## Sammanfattning
+Användaren navigerar mellan hjälptopics via interna länkar i Markdown-innehållet eller topic-väljaren.
+
+## Aktör
+Admin (alla roller)
+
+## Förutsättningar
+- Hjälpdrawern är öppen
+
+## Flöde
+1. Användaren klickar på en intern länk eller väljer ett topic i navigationen
+2. Innehållet ersätts utan att drawern stängs; scroll-position återställs till toppen
+3. En bakåt-knapp visas om användaren navigerat från ett annat topic
+
+## Affärsregler
+- Navigationshistorik hanteras internt av `HelpService`
+- Djuplänkar fungerar: `HelpService.open('edition-lifecycle')` öppnar rätt topic direkt
+
+## Acceptanskriterier
+- [ ] Innehållet byts utan att drawern stängs
+- [ ] Bakåt-knapp visas och fungerar efter navigering
+- [ ] `HelpService.open(topic)` öppnar korrekt topic direkt

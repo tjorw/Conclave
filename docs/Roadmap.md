@@ -18,6 +18,11 @@ Prioriterad lista – ej startade överst, klara underst.
 - [ ] `R21` Centralisera fallback för frontend-URL i auth-flöden
 - [ ] `R22` Centralisera JWT-konfigurationsnycklar (`Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience`)
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
+- [ ] `R-HL01` Hjälpsystem – `HelpTooltip`-komponent och initiala texter för Convention/Edition (UC-HL001)
+- [ ] `R-HL02` Hjälpsystem – `HelpDrawer` + `HelpService` med route-mappning (UC-HL003, UC-HL004)
+- [ ] `R-HL03` Hjälpsystem – första omgången Markdown-innehåll (6 filer: convention, event, registration, staff)
+- [ ] `R-HL04` Hjälpsystem – `HelpPanel`-komponent på listsidor (UC-HL002)
+- [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
 
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
 

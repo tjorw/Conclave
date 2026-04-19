@@ -219,6 +219,51 @@ Felmeddelanden är på svenska och anger kontext ("Kunde inte skapa lokal: …")
 
 ---
 
+### Hjälpsystem
+
+Admin-klienten har ett inbyggt hjälpsystem i två nivåer.
+
+**Nivå 1 – Inline hints**
+`HelpTooltip`-komponenten renderar en ⓘ-ikon med en kort förklaringstext.
+Alla texter definieras i `help/labels/help.labels.ts` via `HelpTooltipKey`-typen.
+Inga hjälptexter hårdkodas i HTML eller TS.
+
+`HelpPanel`-komponenten är en expanderbar förklaringspanel för listsidor.
+Expansionstillståndet persisteras i `localStorage` med nyckeln `help-panel:{panelKey}`.
+
+**Nivå 2 – Hjälpdrawer**
+`HelpDrawer`-komponenten öppnas via `HelpService.open(topic?)`.
+Utan argument väljer servicen topic baserat på aktuell route via `HELP_ROUTE_MAP`.
+Innehållet är Markdown-filer under `src/help/content/`, bundlade som assets under `assets/help/`.
+
+**Konventioner**
+- Ny domänterm i ett formulär → lägg till nyckel i `HelpTooltipKey` och text i `HELP_TOOLTIP_LABELS` i samma commit.
+- Ny route → lägg till mappning i `HELP_ROUTE_MAP` och vid behov en ny `HelpTopic` med tillhörande Markdown-fil.
+- Markdown-filer skrivs på svenska. Rubriknivå i filerna börjar på `##`.
+
+**Struktur**
+```
+projects/admin/src/
+  help/
+    components/
+      help-tooltip/
+      help-drawer/
+      help-panel/
+    services/
+      help.service.ts
+    labels/
+      help.labels.ts        # HelpTooltipKey + HELP_TOOLTIP_LABELS
+    routing/
+      help-routing.ts       # HelpTopic union + HELP_ROUTE_MAP
+    content/                # Markdown-filer, bundlas som assets
+      convention/
+      event/
+      registration/
+      staff/
+```
+
+---
+
 ### Tjänstelager
 
 **`ConventionService`** i `shared`-biblioteket hanterar all HTTP mot API:t.
