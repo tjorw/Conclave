@@ -14,6 +14,7 @@ import {
   PromotionCodeAdminDto,
   PromotionCodeRedemptionHistoryDto,
   PromotionDiscountType,
+  RedeemPromotionCodeResultDto,
 } from '../models/registration.models';
 
 @Injectable({ providedIn: 'root' })
@@ -56,6 +57,13 @@ export class RegistrationService {
     return this.http.post<{ id: string }>(
       `${this.env.apiBaseUrl}/sessions/${sessionId}/registrations`,
       { ticketId }
+    );
+  }
+
+  redeemPromotionCode(ticketId: string, code: string) {
+    return this.http.post<RedeemPromotionCodeResultDto>(
+      `${this.env.apiBaseUrl}/tickets/${ticketId}/redeem-promotion-code`,
+      { code }
     );
   }
 

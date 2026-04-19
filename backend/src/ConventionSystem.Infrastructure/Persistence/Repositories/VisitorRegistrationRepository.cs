@@ -73,7 +73,7 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
         var ticketIds = registrations.Select(r => r.TicketId).Distinct().ToHashSet();
         var ticketMap = await db.Tickets
             .Where(t => ticketIds.Contains(t.Id))
-            .Select(t => new { t.Id, t.TicketTypeId })
+            .Select(t => new { t.Id, t.TicketTypeId, t.FinalPrice })
             .ToDictionaryAsync(t => t.Id, ct);
 
         var ticketTypeIds = ticketMap.Values.Select(t => t.TicketTypeId).Distinct().ToHashSet();
@@ -90,7 +90,7 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
                 && ticketTypeMap.TryGetValue(ticket.TicketTypeId, out var ticketType))
             {
                 ticketTypeName = ticketType.Name;
-                ticketPrice = ticketType.Price;
+                ticketPrice = ticket.FinalPrice ?? ticketType.Price;
             }
 
             return new MyVisitorRegistrationDto(

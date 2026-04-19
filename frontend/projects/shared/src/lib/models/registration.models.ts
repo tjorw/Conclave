@@ -43,6 +43,14 @@ export interface PromotionCodeRedemptionHistoryDto {
   finalPrice: number;
 }
 
+export interface RedeemPromotionCodeResultDto {
+  ticketId: string;
+  promotionCodeId: string;
+  discountApplied: number;
+  finalPrice: number;
+  ticketStatus: TicketStatus;
+}
+
 export interface VisitorRegistrationAdminDto {
   id: string;
   personId: string;

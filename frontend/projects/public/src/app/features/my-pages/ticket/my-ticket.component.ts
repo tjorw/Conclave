@@ -46,6 +46,9 @@ export class MyTicketComponent implements OnInit {
   readonly loadingTicketTypes = signal(true);
   readonly submitting = signal(false);
   readonly cancellingRegistrationId = signal<string | null>(null);
+  readonly redeemingTicketId = signal<string | null>(null);
+  readonly promotionCodeValues = signal<Record<string, string>>({});
+  readonly redeemResultMessage = signal<string | null>(null);
   readonly error = signal<string | null>(null);
   readonly registrations = signal<MyVisitorRegistrationDto[]>([]);
   readonly ticketTypes = signal<VisitorTicketTypeDto[]>([]);
@@ -136,6 +139,70 @@ export class MyTicketComponent implements OnInit {
       });
   }
 
+  canRedeemPromotionCode(registration: MyVisitorRegistrationDto): boolean {
+    return registration.status === 'PendingPayment' && !!registration.ticketId;
+  }
+
+  promotionCodeValue(ticketId: string): string {
+    return this.promotionCodeValues()[ticketId] ?? '';
+  }
+
+  updatePromotionCodeValue(ticketId: string, value: string): void {
+    this.promotionCodeValues.update(current => ({
+      ...current,
+      [ticketId]: value,
+    }));
+  }
+
+  redeemPromotionCode(registration: MyVisitorRegistrationDto): void {
+    if (!registration.ticketId) {
+      this.error.set('Kunde inte identifiera biljetten för kampanjkodsinlösen.');
+      return;
+    }
+
+    const code = this.promotionCodeValue(registration.ticketId).trim();
+    if (!code) {
+      this.error.set('Ange en kampanjkod innan du försöker lösa in.');
+      return;
+    }
+
+    this.error.set(null);
+    this.redeemResultMessage.set(null);
+    this.redeemingTicketId.set(registration.ticketId);
+
+    this.regSvc.redeemPromotionCode(registration.ticketId, code)
+      .subscribe({
+        next: result => {
+          const discount = new Intl.NumberFormat('sv-SE', {
+            style: 'currency',
+            currency: 'SEK',
+            maximumFractionDigits: 0,
+          }).format(result.discountApplied / 100);
+
+          const finalPrice = new Intl.NumberFormat('sv-SE', {
+            style: 'currency',
+            currency: 'SEK',
+            maximumFractionDigits: 0,
+          }).format(result.finalPrice / 100);
+
+          this.redeemResultMessage.set(`Kampanjkod tillämpad. Rabatt: ${discount}. Nytt pris: ${finalPrice}.`);
+          this.updatePromotionCodeValue(registration.ticketId, '');
+          this.redeemingTicketId.set(null);
+          this.loadState();
+        },
+        error: (err: HttpErrorResponse) => {
+          const detail =
+            err.error?.detail ??
+            err.error?.title ??
+            err.error?.message ??
+            'Kunde inte lösa in kampanjkoden just nu. Försök igen.';
+          this.error.set(detail);
+          this.redeemingTicketId.set(null);
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
   canCancelRegistration(registration: MyVisitorRegistrationDto): boolean {
     const ticketPrice = Number(registration.ticketPrice);
     const isFreeConfirmed = registration.status === 'Confirmed' && Number.isFinite(ticketPrice) && ticketPrice === 0;
@@ -195,6 +262,7 @@ export class MyTicketComponent implements OnInit {
     this.loadingRegistration.set(true);
     this.loadingTicketTypes.set(true);
     this.error.set(null);
+    this.redeemResultMessage.set(null);
 
     this.regSvc.getMyVisitorRegistration(editionId)
       .pipe(catchError(() => of([] as MyVisitorRegistrationDto[])))

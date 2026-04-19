@@ -11,6 +11,10 @@
     <p class="error-banner">{{ error() }}</p>
   }
 
+  @if (redeemResultMessage()) {
+    <p class="success-banner">{{ redeemResultMessage() }}</p>
+  }
+
   @if (registrations().length > 0 && !loadingRegistration()) {
     <section class="card status-card">
       <h2>Dina registreringar</h2>
@@ -47,6 +51,35 @@
                     Avboka biljett
                   }
                 </button>
+              </div>
+            }
+
+            @if (canRedeemPromotionCode(ticket)) {
+              <div class="promo-redeem">
+                <label class="promo-label" [for]="'promo-code-' + ticket.ticketId">Kampanjkod</label>
+                <div class="promo-controls">
+                  <input
+                    class="promo-input"
+                    [id]="'promo-code-' + ticket.ticketId"
+                    type="text"
+                    placeholder="Ange kod"
+                    [value]="promotionCodeValue(ticket.ticketId)"
+                    (input)="updatePromotionCodeValue(ticket.ticketId, $any($event.target).value)"
+                    [disabled]="redeemingTicketId() === ticket.ticketId" />
+
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    color="primary"
+                    (click)="redeemPromotionCode(ticket)"
+                    [disabled]="redeemingTicketId() === ticket.ticketId || cancellingRegistrationId() !== null || submitting()">
+                    @if (redeemingTicketId() === ticket.ticketId) {
+                      Löser in...
+                    } @else {
+                      Lös in kod
+                    }
+                  </button>
+                </div>
               </div>
             }
           </article>
