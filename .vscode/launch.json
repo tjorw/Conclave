@@ -6,7 +6,8 @@
       "configurations": [
         "Debug ConventionSystem.Api",
         "Serve Frontend Admin",
-        "Serve Frontend Public"
+        "Serve Frontend Public",
+        "Serve Frontend Portal"
       ],
       "stopAll": true
     }
@@ -31,6 +32,13 @@
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run ng -- serve public",
+      "cwd": "${workspaceFolder}/frontend"
+    },
+    {
+      "name": "Serve Frontend Portal",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm.cmd run ng -- serve portal",
       "cwd": "${workspaceFolder}/frontend"
     }
   ]

@@ -1,0 +1,33 @@
+<mat-sidenav-container class="shell-container">
+  <mat-sidenav #sidenav mode="side" opened class="shell-sidenav">
+    <div class="sidenav-header">
+      <span class="sidenav-logo">Conclave</span>
+      <span class="sidenav-subtitle">Systemportal</span>
+    </div>
+
+    <mat-nav-list>
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Översikt</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar color="primary" class="shell-toolbar">
+      <button mat-icon-button (click)="sidenav.toggle()" aria-label="Meny">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span class="toolbar-title">Conclave Portal</span>
+      <span class="toolbar-spacer"></span>
+      <button mat-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Logga ut
+      </button>
+    </mat-toolbar>
+
+    <main class="shell-main">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

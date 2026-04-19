@@ -25,11 +25,18 @@ export class AuthService {
 
   readonly isLoggedIn = computed(() => this._token() !== null);
   readonly isAdmin = computed(() => this.getClaims()?.is_admin === 'true');
+  readonly isSystemAdmin = computed(() => this.getClaims()?.is_system_admin === 'true');
   readonly personId = computed(() => this.getClaims()?.person_id ?? null);
 
   login(request: LoginRequest) {
     return this.http
       .post<LoginResponse>(`${this.env.apiBaseUrl}/auth/login`, request)
+      .pipe(tap(res => this.storeToken(res.token)));
+  }
+
+  loginSystem(request: LoginRequest) {
+    return this.http
+      .post<LoginResponse>(`${this.env.apiBaseUrl}/system/auth/login`, request)
       .pipe(tap(res => this.storeToken(res.token)));
   }
 

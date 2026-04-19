@@ -10,6 +10,9 @@ export interface LoginResponse {
 export interface JwtClaims {
   person_id: string;
   is_admin?: string;
+  is_system_admin?: string;
+  tenant_id?: string;
+  user_type?: string;
   exp: number;
   iss?: string;
   aud?: string;

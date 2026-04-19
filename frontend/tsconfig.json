@@ -43,6 +43,9 @@
     },
     {
       "path": "./projects/shared/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/portal/tsconfig.app.json"
     }
   ]
 }
