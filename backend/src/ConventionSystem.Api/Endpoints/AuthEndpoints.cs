@@ -98,7 +98,7 @@ public static class AuthEndpoints
             }
 
             var emailToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            var frontendUrl = configuration["App:FrontendUrl"] ?? "http://localhost:4201";
+            var frontendUrl = ResolveFrontendUrl(configuration);
             var confirmLink = $"{frontendUrl}/confirm-email" +
                               $"?email={Uri.EscapeDataString(request.Email)}" +
                               $"&token={Uri.EscapeDataString(emailToken)}";
@@ -136,7 +136,7 @@ public static class AuthEndpoints
             if (user is not null && !user.EmailConfirmed)
             {
                 var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                var frontendUrl = configuration["App:FrontendUrl"] ?? "http://localhost:4201";
+                var frontendUrl = ResolveFrontendUrl(configuration);
                 var confirmLink = $"{frontendUrl}/confirm-email" +
                                   $"?email={Uri.EscapeDataString(request.Email)}" +
                                   $"&token={Uri.EscapeDataString(token)}";
@@ -163,7 +163,7 @@ public static class AuthEndpoints
             if (user is not null && user.EmailConfirmed)
             {
                 var token = await userManager.GeneratePasswordResetTokenAsync(user);
-                var frontendUrl = configuration["App:FrontendUrl"] ?? "http://localhost:4201";
+                var frontendUrl = ResolveFrontendUrl(configuration);
                 var resetLink = $"{frontendUrl}/reset-password" +
                                 $"?email={Uri.EscapeDataString(request.Email)}" +
                                 $"&token={Uri.EscapeDataString(token)}";
@@ -243,6 +243,9 @@ public static class AuthEndpoints
         var handler = new JwtSecurityTokenHandler();
         return handler.WriteToken(handler.CreateToken(descriptor));
     }
+
+    private static string ResolveFrontendUrl(IConfiguration configuration)
+        => configuration["App:FrontendUrl"] ?? AuthConstants.Frontend.DefaultUrl;
 }
 
 public record LoginRequest(string Email, string Password);

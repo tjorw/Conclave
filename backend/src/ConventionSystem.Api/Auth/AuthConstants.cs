@@ -2,6 +2,11 @@ namespace ConventionSystem.Api.Auth;
 
 public static class AuthConstants
 {
+    public static class Frontend
+    {
+        public const string DefaultUrl = "http://localhost:4201";
+    }
+
     public static class Policies
     {
         public const string IsAdmin = "IsAdmin";
