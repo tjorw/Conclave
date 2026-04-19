@@ -33,7 +33,8 @@
       "Bash(find:*)",
       "Bash(dotnet tool:*)",
       "Bash(ng test:*)",
-      "Bash(xargs -I {} basename {})"
+      "Bash(xargs -I {} basename {})",
+      "Bash(dotnet clean *)"
     ]
   }
 }
