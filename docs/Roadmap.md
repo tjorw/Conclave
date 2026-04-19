@@ -9,7 +9,7 @@ Spårar vad som återstår inför produktionsstart.
 Prioriterad lista – ej startade överst, klara underst.
 
 - [x] `R16` Biljettlivscykel reviderad – manuell betalning, webhook, innehavaravbokning (UC-TK003–TK006)
-- [ ] `R17` Makuleringskaskad + uthämtning med förmåner (UC-TK007/TK008)
+- [x] `R17` Makuleringskaskad + uthämtning med förmåner (UC-TK007/TK008)
 - [ ] `R18` `RegistrationRuleService.ValidateTicket` med dag- och kategorivalidering (UC-TK009)
 - [ ] `R19` Promotionkoder – skapa, lista, lösa in och deaktivera (UC-PC001–PC005)
 - [ ] `R20` Centralisera admin-claimvärde (`"true"`) i auth-konstanter
@@ -26,6 +26,7 @@ Prioriterad lista – ej startade överst, klara underst.
 | Post | Beskrivning | Prioritet |
 |------|-------------|-----------|
 | `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |
+| **NU1902: MailKit sårbarhet** | `ConventionSystem.Infrastructure` använder `MailKit` `4.7.1` som flaggas med NU1902 (moderate) i `dotnet restore/build`. Uppgradera till en icke-sårbar version och verifiera att audit-varningen försvinner i CI. | Medel-hög |
 | Social inloggning (OAuth) | ASP.NET Identity stöder det men inte implementerat | Låg |
 | **Feed-cachning och API-nyckel** | Feed-endpointsen är öppna och läser från databasen vid varje anrop. Vid hög trafik bör svaren cachas (HTTP-headers `Cache-Control`/`ETag`, CDN-lager eller Redis). Vid behov av skyddade feeds kan en API-nyckel läggas till utan att ändra URL-strukturen. | Medel – utvärdera inför produktion |
 | **E2E-test för journeys** | Journey-flöden saknar UI-verifiering över hela kedjan. Lägg till browserbaserade E2E-scenarier för kritiska flöden när funktionerna stabiliserats. | Medel – planera efter implementation av 3.x-flöden |
@@ -38,7 +39,7 @@ Prioriterad lista – ej startade överst, klara underst.
 | **R20: Centralisera admin-claimvärde (`"true"`)** | Samma claimvärde hårdkodas vid både token-utgivning och policykontroll. Inför en gemensam konstant (t.ex. i `AuthConstants`) så att claim-kontraktet inte divergerar. | Medel |
 | **R21: Centralisera fallback för frontend-URL i auth-flöden** | Default-värdet `http://localhost:4201` upprepas i flera auth-endpoints. Flytta till en gemensam konstant eller options-klass för att undvika inkonsekvent miljökonfiguration. | Medel |
 | **R22: Centralisera JWT-konfigurationsnycklar** | Nycklarna `Jwt:Key`, `Jwt:Issuer` och `Jwt:Audience` används duplicerat i startup och auth. Samla i konstanter/options för att minska typo-risk och förenkla ändringar. | Medel |
-| **Gamla TK-implementationer behöver revideras** | R15 och R16 är genomförda. Kvar att slutföra: makuleringskaskad och uthämtning med förmåner (R17), samt full dag-/kategorivalidering i `RegistrationRuleService.ValidateTicket` (R18). | **Hög – blockar korrekt sessionsvalidering tills R17–R18 är klara** |
+| **Gamla TK-implementationer behöver revideras** | R15, R16 och R17 är genomförda. Kvar att slutföra: full dag-/kategorivalidering i `RegistrationRuleService.ValidateTicket` (R18). | **Hög – blockar korrekt sessionsvalidering tills R18 är klar** |
 
 ---
 

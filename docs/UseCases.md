@@ -1024,11 +1024,11 @@ Konventionsadministratör
 - `SessionRegistrationCancelled` publiceras för varje berörd registrering
 
 ## Acceptanskriterier
-- [ ] Biljettstatus ändras till `Revoked` oavsett nuvarande status
-- [ ] `TicketRevoked` domänhändelse publiceras
-- [ ] Alla kopplade `SessionRegistrations` avbokas
-- [ ] `SessionRegistrationCancelled` publiceras för varje avbokad registrering
-- [ ] Kommandohanterare och händelsehanterare har tillhörande enhetstester
+- [x] Biljettstatus ändras till `Revoked` oavsett nuvarande status
+- [x] `TicketRevoked` domänhändelse publiceras
+- [x] Alla kopplade `SessionRegistrations` avbokas
+- [x] `SessionRegistrationCancelled` publiceras för varje avbokad registrering
+- [x] Kommandohanterare och händelsehanterare har tillhörande enhetstester
 
 ---
 
@@ -1060,13 +1060,13 @@ Receptionspersonal (konventionsadministratör eller tilldelad roll)
 - `TicketCollected { ticketId, personId, performedById, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Biljettstatus ändras till `Collected`
-- [ ] `collectedById` och `collectedAt` registreras
-- [ ] `TicketCollected` domänhändelse publiceras
-- [ ] Uthämtning av obetald biljett ger valideringsfel
-- [ ] Uthämtning av redan uthämtad biljett ger valideringsfel
-- [ ] Förmåner returneras i kommandosvaret för visning i receptionen
-- [ ] Kommandohanterare har tillhörande enhetstest
+- [x] Biljettstatus ändras till `Collected`
+- [x] `collectedById` och `collectedAt` registreras
+- [x] `TicketCollected` domänhändelse publiceras
+- [x] Uthämtning av obetald biljett ger valideringsfel
+- [x] Uthämtning av redan uthämtad biljett ger valideringsfel
+- [x] Förmåner returneras i kommandosvaret för visning i receptionen
+- [x] Kommandohanterare har tillhörande enhetstest
 
 ---
 

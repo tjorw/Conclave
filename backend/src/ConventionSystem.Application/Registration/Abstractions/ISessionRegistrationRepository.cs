@@ -10,6 +10,7 @@ public interface ISessionRegistrationRepository
 {
     Task<SessionRegistration?> GetByIdAsync(SessionRegistrationId id, CancellationToken ct = default);
     Task<IReadOnlyList<SessionRegistration>> GetAllConfirmedBySessionIdAsync(SessionId sessionId, CancellationToken ct = default);
+    Task<IReadOnlyList<SessionRegistration>> GetAllConfirmedByTicketIdAsync(TicketId ticketId, CancellationToken ct = default);
     Task<IReadOnlyDictionary<SessionId, int>> CountConfirmedBySessionIdsAsync(IReadOnlyCollection<SessionId> sessionIds, CancellationToken ct = default);
     Task<bool> HasRegistrationAsync(PersonId personId, SessionId sessionId, CancellationToken ct = default);
     Task<IReadOnlyList<MySessionRegistrationSummaryDto>> ListByPersonAndEditionAsync(PersonId personId, EditionId editionId, CancellationToken ct = default);

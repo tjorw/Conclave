@@ -110,15 +110,15 @@ public static class RegistrationEndpoints
                 return Results.Created($"/tickets/{id}", new { id });
             }).RequireAuthorization();
 
-        // UC-TK003: Hämta ut biljett
+        // UC-TK008: Hämta ut biljett
         app.MapPost("/tickets/{ticketId:guid}/collect",
             async (Guid ticketId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new CollectTicketCommand(ticketId), ct);
-                return Results.NoContent();
+                var result = await sender.Send(new CollectTicketCommand(ticketId), ct);
+                return Results.Ok(result);
             }).RequireAuthorization();
 
-        // UC-TK004: Makulera biljett
+        // UC-TK007: Makulera biljett
         app.MapDelete("/tickets/{ticketId:guid}",
             async (Guid ticketId, ISender sender, CancellationToken ct) =>
             {

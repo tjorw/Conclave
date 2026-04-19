@@ -21,6 +21,12 @@ public sealed class SessionRegistrationRepository(ConventionDbContext db) : ISes
                      && r.Status == Domain.Registration.Enums.SessionRegistrationStatus.Confirmed)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<SessionRegistration>> GetAllConfirmedByTicketIdAsync(TicketId ticketId, CancellationToken ct = default)
+        => await db.SessionRegistrations
+            .Where(r => r.TicketId == ticketId
+                     && r.Status == Domain.Registration.Enums.SessionRegistrationStatus.Confirmed)
+            .ToListAsync(ct);
+
     public async Task<IReadOnlyDictionary<SessionId, int>> CountConfirmedBySessionIdsAsync(
         IReadOnlyCollection<SessionId> sessionIds,
         CancellationToken ct = default)

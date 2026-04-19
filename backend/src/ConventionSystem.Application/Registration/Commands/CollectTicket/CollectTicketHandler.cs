@@ -9,10 +9,11 @@ namespace ConventionSystem.Application.Registration.Commands.CollectTicket;
 
 public sealed class CollectTicketHandler(
     ITicketRepository ticketRepository,
+    ITicketTypeRepository ticketTypeRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CollectTicketCommand>
+    : IRequestHandler<CollectTicketCommand, CollectTicketResult>
 {
-    public async Task Handle(CollectTicketCommand command, CancellationToken ct)
+    public async Task<CollectTicketResult> Handle(CollectTicketCommand command, CancellationToken ct)
     {
         var ticketId = new TicketId(command.TicketId);
         var performedById = currentUser.PersonId;
@@ -20,7 +21,16 @@ public sealed class CollectTicketHandler(
         var ticket = await ticketRepository.GetByIdAsync(ticketId, ct)
             ?? throw new ResourceNotFoundException("Biljett", command.TicketId.ToString());
 
+        var ticketType = await ticketTypeRepository.GetByIdAsync(ticket.TicketTypeId, ct)
+            ?? throw new ResourceNotFoundException("Biljetttyp", ticket.TicketTypeId.Value.ToString());
+
         ticket.Collect(performedById);
         await ticketRepository.SaveAsync(ct);
+
+        var perks = ticketType.Perks
+            .Select(perk => perk.Description)
+            .ToList();
+
+        return new CollectTicketResult(ticket.Id.Value, perks);
     }
 }
