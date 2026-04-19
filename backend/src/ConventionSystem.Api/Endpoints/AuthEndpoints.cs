@@ -35,6 +35,11 @@ public static class AuthEndpoints
                     detail: "Kontrollera din inkorg och klicka på bekräftelselänken.",
                     statusCode: 403);
 
+            var identityClaims = await userManager.GetClaimsAsync(user);
+            var isSystemAdmin = identityClaims.Any(c =>
+                c.Type == AuthConstants.Claims.IsSystemAdmin &&
+                c.Value == AuthConstants.Claims.IsSystemAdminTrue);
+
             var convention = await conventionRepo.GetSingleAsync(ct);
             if (convention is null)
                 return Results.Problem("Konventet är inte konfigurerat.");
@@ -70,7 +75,7 @@ public static class AuthEndpoints
             }
 
             var isAdmin = convention.IsAdministrator(new PersonId(personId));
-            var token = IssueJwt(personId, isAdmin, configuration);
+            var token = IssueJwt(personId, isAdmin, isSystemAdmin, configuration);
             return Results.Ok(new { token });
         });
 
@@ -222,7 +227,7 @@ public static class AuthEndpoints
         return app;
     }
 
-    private static string IssueJwt(Guid personId, bool isAdmin, IConfiguration configuration)
+    private static string IssueJwt(Guid personId, bool isAdmin, bool isSystemAdmin, IConfiguration configuration)
     {
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
@@ -230,6 +235,8 @@ public static class AuthEndpoints
         List<Claim> claims = [new Claim(AuthConstants.Claims.PersonId, personId.ToString())];
         if (isAdmin)
             claims.Add(new Claim(AuthConstants.Claims.IsAdmin, AuthConstants.Claims.IsAdminTrue));
+        if (isSystemAdmin)
+            claims.Add(new Claim(AuthConstants.Claims.IsSystemAdmin, AuthConstants.Claims.IsSystemAdminTrue));
 
         var descriptor = new SecurityTokenDescriptor
         {

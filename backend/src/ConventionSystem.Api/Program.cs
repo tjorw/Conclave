@@ -51,6 +51,9 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(AuthConstants.Policies.IsAdmin, policy =>
     policy.RequireClaim(AuthConstants.Claims.IsAdmin, AuthConstants.Claims.IsAdminTrue));
+
+    options.AddPolicy(AuthConstants.Policies.IsSystemAdmin, policy =>
+        policy.RequireClaim(AuthConstants.Claims.IsSystemAdmin, AuthConstants.Claims.IsSystemAdminTrue));
 });
 
 builder.Services.AddCors(options =>
@@ -101,6 +104,7 @@ app.MapEditionEndpoints();
 app.MapShiftEndpoints();
 app.MapRegistrationEndpoints();
 app.MapEventEndpoints();
+app.MapSystemTenantEndpoints();
 
 app.Run();
 
