@@ -4,7 +4,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { routes } from './app.routes';
-import { ENVIRONMENT, conventionInterceptor, authInterceptor } from 'shared';
+import { ENVIRONMENT, conventionInterceptor, authInterceptor, authSessionInterceptor } from 'shared';
 import { environment } from '../environments/environment';
 import { EditionService } from './services/edition.service';
 
@@ -17,7 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideAnimationsAsync(),
-    provideHttpClient(withInterceptors([conventionInterceptor, authInterceptor])),
+    provideHttpClient(withInterceptors([conventionInterceptor, authInterceptor, authSessionInterceptor])),
     { provide: ENVIRONMENT, useValue: environment },
     {
       provide: APP_INITIALIZER,

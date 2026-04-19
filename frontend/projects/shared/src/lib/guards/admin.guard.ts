@@ -1,8 +1,9 @@
+import { CanActivateFn } from '@angular/router';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-export const adminGuard = () => {
+export const adminGuard: CanActivateFn = (_route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
   if (auth.isAdmin()) return true;
@@ -14,5 +15,7 @@ export const adminGuard = () => {
     });
   }
 
-  return router.parseUrl('/login');
+  return router.createUrlTree(['/login'], {
+    queryParams: { returnUrl: state.url },
+  });
 };

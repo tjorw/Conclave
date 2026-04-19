@@ -17,6 +17,7 @@ export * from './lib/models/feed.models';
 // Interceptors
 export * from './lib/interceptors/convention.interceptor';
 export * from './lib/interceptors/auth.interceptor';
+export * from './lib/interceptors/auth-session.interceptor';
 
 // Services
 export * from './lib/services/auth.service';

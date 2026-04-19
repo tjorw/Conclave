@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -25,6 +26,7 @@ import { AuthService } from 'shared';
 export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
 
   readonly form = this.fb.group({
@@ -34,6 +36,13 @@ export class LoginComponent {
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+
+  constructor() {
+    const reason = this.route.snapshot.queryParamMap.get('reason');
+    if (reason === 'session-expired') {
+      this.error.set('Sessionen har gått ut. Logga in igen för att fortsätta.');
+    }
+  }
 
   submit(): void {
     if (this.form.invalid || this.loading()) return;
@@ -46,7 +55,11 @@ export class LoginComponent {
         password: this.form.value.password!,
       })
       .subscribe({
-        next: () => this.router.navigateByUrl('/'),
+        next: () => {
+          const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+          const target = returnUrl && returnUrl.startsWith('/') ? returnUrl : '/';
+          void this.router.navigateByUrl(target);
+        },
         error: () => {
           this.error.set('Felaktig e-postadress eller lösenord.');
           this.loading.set(false);
