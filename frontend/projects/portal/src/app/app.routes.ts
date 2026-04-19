@@ -30,7 +30,12 @@ export const routes: Routes = [
 				loadComponent: () =>
 					import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
 			},
-			{ path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+			{
+				path: 'tenants',
+				loadComponent: () =>
+					import('./features/tenants/tenants.component').then(m => m.TenantsComponent),
+			},
+			{ path: '', redirectTo: 'tenants', pathMatch: 'full' },
 		],
 	},
 	{

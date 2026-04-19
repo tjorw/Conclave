@@ -1,4 +1,5 @@
 using ConventionSystem.Api.Auth;
+using ConventionSystem.Api.Bootstrap;
 using ConventionSystem.Api.Middleware;
 using ConventionSystem.Application;
 using ConventionSystem.Application.Common;
@@ -75,6 +76,8 @@ using (var scope = app.Services.CreateScope())
     await scope.ServiceProvider.GetRequiredService<ConventionDbContext>().Database.MigrateAsync();
     await scope.ServiceProvider.GetRequiredService<ApplicationIdentityDbContext>().Database.MigrateAsync();
 }
+
+await SystemAdminBootstrapper.SeedAsync(app.Services, app.Configuration);
 
 if (app.Environment.IsDevelopment())
 {

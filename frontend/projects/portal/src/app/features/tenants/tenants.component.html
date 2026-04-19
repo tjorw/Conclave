@@ -1,0 +1,99 @@
+<section class="page-header">
+  <h1>Tenants</h1>
+  <p>Hantera SaaS-tenants: lista, skapa, suspendera och återaktivera.</p>
+</section>
+
+@if (loading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (error()) {
+  <p class="error-banner">{{ error() }}</p>
+}
+
+<mat-card class="action-card">
+  <mat-card-header>
+    <mat-card-title>Skapa tenant</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form class="create-form" [formGroup]="createForm" (ngSubmit)="createTenant()">
+      <mat-form-field appearance="outline">
+        <mat-label>Subdomän</mat-label>
+        <input matInput formControlName="subdomain" placeholder="exempel: gammacon" />
+        @if (createForm.get('subdomain')?.hasError('required') && createForm.get('subdomain')?.touched) {
+          <mat-error>Subdomän krävs.</mat-error>
+        }
+        @if (createForm.get('subdomain')?.hasError('pattern') && createForm.get('subdomain')?.touched) {
+          <mat-error>Subdomän får bara innehålla gemener, siffror och bindestreck.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Visningsnamn</mat-label>
+        <input matInput formControlName="displayName" placeholder="Exempelkonvent" />
+        @if (createForm.get('displayName')?.hasError('required') && createForm.get('displayName')?.touched) {
+          <mat-error>Visningsnamn krävs.</mat-error>
+        }
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+        Skapa tenant
+      </button>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Tenantlista</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Sök</mat-label>
+      <input matInput [value]="searchQuery()" (input)="onSearchChange($any($event.target).value)" />
+    </mat-form-field>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Visningsnamn</th>
+            <th>Subdomän</th>
+            <th>Status</th>
+            <th>Skapad</th>
+            <th class="actions-col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tenant of filteredTenants(); track tenant.id) {
+            <tr>
+              <td>{{ tenant.displayName }}</td>
+              <td>{{ tenant.subdomain }}</td>
+              <td>
+                <span class="status-chip" [class.suspended]="tenant.status === 'Suspended'">
+                  {{ tenant.status }}
+                </span>
+              </td>
+              <td>{{ tenant.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+              <td class="row-actions">
+                @if (tenant.status === 'Active') {
+                  <button mat-stroked-button color="warn" (click)="suspendTenant(tenant.id)" [disabled]="saving()">
+                    Suspendera
+                  </button>
+                } @else {
+                  <button mat-stroked-button color="primary" (click)="restoreTenant(tenant.id)" [disabled]="saving()">
+                    Återaktivera
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty-cell">Inga tenants hittades.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </mat-card-content>
+</mat-card>

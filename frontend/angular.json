@@ -231,6 +231,12 @@
             }
           },
           "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/portal/tsconfig.spec.json"
+          }
         }
       }
     }

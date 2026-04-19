@@ -111,6 +111,28 @@ dotnet run --project backend/src/ConventionSystem.Api
 
 API:t lyssnar på `http://localhost:5127`. Databasen `ConventionSystem` skapas och migreras automatiskt vid uppstart (`dbo`-schema via ConventionDbContext, `identity`-schema via ApplicationIdentityDbContext).
 
+#### Bootstrap: första systemadmin
+
+Systemadmin-konto skapas inte automatiskt i en tom databas om du inte aktiverar bootstrap.
+
+Lägg till följande i `backend/src/ConventionSystem.Api/appsettings.Development.json`:
+
+```json
+{
+  "SystemAdminBootstrap": {
+    "Enabled": true,
+    "Email": "systemadmin@local.dev",
+    "Password": "Admin123!"
+  }
+}
+```
+
+Starta API:t en gång. Vid uppstart skapas kontot idempotent (ingen dubblett om det redan finns) och får systemadmin-claim.
+
+När kontot är skapat: sätt `Enabled` tillbaka till `false`.
+
+Logga sedan in via system-login-endpointen `/system/auth/login` (används av portal-appen).
+
 I `Development`-miljön körs seedern automatiskt och skapar en komplett demo-konvention om den inte redan finns. I konsolen loggas konventions-ID:t:
 
 ```
