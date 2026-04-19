@@ -15,27 +15,19 @@ public sealed class TenantDataIsolationTests(ConventionSystemFactory factory) : 
     [Fact]
     public async Task ConventionDbContext_QueryFilter_IsolatesDataBetweenTenants()
     {
-        var tenantAId = Guid.CreateVersion7();
+        // Den seedade konventionen skapades utan multitenansflag → tenant_id = Guid.Empty.
+        // Vi använder Guid.Empty som "tenant A" för att undvika att sätta in extra testdata
+        // i den delade databasen (vilket stör andra tests GetSingleAsync-anrop).
+        var tenantAId = Guid.Empty;
         var tenantBId = Guid.CreateVersion7();
-        var conventionId = Guid.CreateVersion7();
 
-        // Setup: infoga en konvention direkt för tenant A via SQL för att kringgå interceptorn
-        await using (var scope = Factory.Services.CreateAsyncScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
-            var name = "Tenant A Convention";
-            var slug = "tenant-a-iso-test";
-            await db.Database.ExecuteSqlAsync(
-                $"INSERT INTO [conventions] ([Id], [Name], [Slug], [tenant_id]) VALUES ({conventionId}, {name}, {slug}, {tenantAId})");
-        }
-
-        // Tenant A ska se sin konvention
+        // Tenant A ska se den seedade konventionen
         await using var factoryA = CreateTenantFactory(tenantAId);
         await using (var scope = factoryA.Services.CreateAsyncScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
             var conventions = await db.Conventions.ToListAsync();
-            Assert.Contains(conventions, c => c.Id.Value == conventionId);
+            Assert.NotEmpty(conventions);
         }
 
         // Tenant B ska inte se tenant As konvention
@@ -44,7 +36,7 @@ public sealed class TenantDataIsolationTests(ConventionSystemFactory factory) : 
         {
             var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
             var conventions = await db.Conventions.ToListAsync();
-            Assert.DoesNotContain(conventions, c => c.Id.Value == conventionId);
+            Assert.Empty(conventions);
         }
     }
 
