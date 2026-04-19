@@ -213,6 +213,8 @@ public static class AuthEndpoints
             var confirmLink = $"{frontendUrl}/confirm-email" +
                               $"?email={Uri.EscapeDataString(request.Email)}" +
                               $"&token={Uri.EscapeDataString(emailToken)}";
+            if (tenantId.HasValue)
+                confirmLink += $"&tenantId={tenantId.Value}";
 
             await emailService.SendEmailConfirmationAsync(request.Email, string.Empty, confirmLink, ct);
 
@@ -222,10 +224,14 @@ public static class AuthEndpoints
         app.MapPost("/auth/confirm-email", async (
             ConfirmEmailRequest request,
             UserManager<ApplicationUser> userManager,
+            TenantAwareUserService tenantAwareUserService,
             ITenantRepository tenantRepository,
             CancellationToken ct) =>
         {
-            var user = await userManager.FindByEmailAsync(request.Email);
+            var user = request.TenantId.HasValue
+                ? await tenantAwareUserService.FindTenantUserAsync(request.Email, request.TenantId.Value, ct)
+                : await userManager.FindByEmailAsync(request.Email);
+            
             if (user is null)
                 return Results.Problem("Ogiltig länk.", statusCode: 400);
 
@@ -260,12 +266,20 @@ public static class AuthEndpoints
         app.MapPost("/auth/resend-confirmation", async (
             ResendConfirmationRequest request,
             UserManager<ApplicationUser> userManager,
+            TenantAwareUserService tenantAwareUserService,
+            ITenantContext tenantContext,
+            IOptions<MultitenancyOptions> multitenancyOptions,
             IPersonRepository personRepo,
             IEmailService emailService,
             IConfiguration configuration,
             CancellationToken ct) =>
         {
-            var user = await userManager.FindByEmailAsync(request.Email);
+            Guid? tenantId = multitenancyOptions.Value.Enabled ? tenantContext.TenantId : null;
+
+            ApplicationUser? user = tenantId.HasValue
+                ? await tenantAwareUserService.FindTenantUserAsync(request.Email, tenantId.Value, ct)
+                : await userManager.FindByEmailAsync(request.Email);
+
             if (user is not null && !user.EmailConfirmed)
             {
                 var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -273,6 +287,8 @@ public static class AuthEndpoints
                 var confirmLink = $"{frontendUrl}/confirm-email" +
                                   $"?email={Uri.EscapeDataString(request.Email)}" +
                                   $"&token={Uri.EscapeDataString(token)}";
+                if (tenantId.HasValue)
+                    confirmLink += $"&tenantId={tenantId.Value}";
 
                 var name = user.PersonId.HasValue
                     ? (await personRepo.GetByIdAsync(new PersonId(user.PersonId.Value), ct))?.Name ?? string.Empty
@@ -287,12 +303,20 @@ public static class AuthEndpoints
         app.MapPost("/auth/forgot-password", async (
             ForgotPasswordRequest request,
             UserManager<ApplicationUser> userManager,
+            TenantAwareUserService tenantAwareUserService,
+            ITenantContext tenantContext,
+            IOptions<MultitenancyOptions> multitenancyOptions,
             IPersonRepository personRepo,
             IEmailService emailService,
             IConfiguration configuration,
             CancellationToken ct) =>
         {
-            var user = await userManager.FindByEmailAsync(request.Email);
+            Guid? tenantId = multitenancyOptions.Value.Enabled ? tenantContext.TenantId : null;
+
+            ApplicationUser? user = tenantId.HasValue
+                ? await tenantAwareUserService.FindTenantUserAsync(request.Email, tenantId.Value, ct)
+                : await userManager.FindByEmailAsync(request.Email);
+
             if (user is not null && user.EmailConfirmed)
             {
                 var token = await userManager.GeneratePasswordResetTokenAsync(user);
@@ -300,6 +324,8 @@ public static class AuthEndpoints
                 var resetLink = $"{frontendUrl}/reset-password" +
                                 $"?email={Uri.EscapeDataString(request.Email)}" +
                                 $"&token={Uri.EscapeDataString(token)}";
+                if (tenantId.HasValue)
+                    resetLink += $"&tenantId={tenantId.Value}";
 
                 var name = user.PersonId.HasValue
                     ? (await personRepo.GetByIdAsync(new PersonId(user.PersonId.Value), ct))?.Name ?? string.Empty
@@ -314,9 +340,16 @@ public static class AuthEndpoints
         app.MapPost("/auth/reset-password", async (
             ResetPasswordRequest request,
             UserManager<ApplicationUser> userManager,
+            TenantAwareUserService tenantAwareUserService,
+            ITenantContext tenantContext,
+            IOptions<MultitenancyOptions> multitenancyOptions,
             CancellationToken ct) =>
         {
-            var user = await userManager.FindByEmailAsync(request.Email);
+            Guid? tenantId = multitenancyOptions.Value.Enabled ? tenantContext.TenantId : null;
+
+            var user = tenantId.HasValue
+                ? await tenantAwareUserService.FindTenantUserAsync(request.Email, tenantId.Value, ct)
+                : await userManager.FindByEmailAsync(request.Email);
             if (user is null)
                 return Results.Problem("Ogiltig återställningslänk.", statusCode: 400);
 
@@ -414,7 +447,7 @@ public static class AuthEndpoints
 
 public record LoginRequest(string Email, string Password);
 public record RegisterRequest(string Email, string Password);
-public record ConfirmEmailRequest(string Email, string Token);
+public record ConfirmEmailRequest(string Email, string Token, Guid? TenantId = null);
 public record ResendConfirmationRequest(string Email);
 public record ForgotPasswordRequest(string Email);
 public record ResetPasswordRequest(string Email, string Token, string NewPassword);
