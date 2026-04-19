@@ -47,7 +47,11 @@ export class RegistrationsComponent {
     this.loading.set(true);
     this.svc.listVisitorRegistrations(editionId).subscribe({
       next: vr => { this.visitorRegistrations.set(vr); this.loading.set(false); },
-      error: () => { this.error.set(ERROR.fetchRegistrations); this.loading.set(false); },
+      error: (err) => {
+        const detail = this.extractErrorDetail(err);
+        this.error.set(detail ? `${ERROR.fetchRegistrations}: ${detail}` : ERROR.fetchRegistrations);
+        this.loading.set(false);
+      },
     });
   }
 
@@ -57,9 +61,14 @@ export class RegistrationsComponent {
   }
 
   private handleError(context: string, err: unknown): void {
-    const detail = (err as { error?: { detail?: string } })?.error?.detail;
+    const detail = this.extractErrorDetail(err);
     this.error.set(detail ? `${context}: ${detail}` : context);
     this.saving.set(false);
+  }
+
+  private extractErrorDetail(err: unknown): string | null {
+    const payload = (err as { error?: { detail?: string; title?: string; message?: string } })?.error;
+    return payload?.detail ?? payload?.title ?? payload?.message ?? null;
   }
 
   confirmPayment(reg: VisitorRegistrationAdminDto): void {
