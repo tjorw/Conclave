@@ -3,9 +3,11 @@ using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Infrastructure.Identity;
+using ConventionSystem.Infrastructure.MultiTenancy;
 using ConventionSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -20,12 +22,24 @@ public static class AuthEndpoints
         app.MapPost("/auth/login", async (
             LoginRequest request,
             UserManager<ApplicationUser> userManager,
+            TenantAwareUserService tenantAwareUserService,
+            ITenantContext tenantContext,
+            IOptions<MultitenancyOptions> multitenancyOptions,
             IConventionRepository conventionRepo,
             IPersonRepository personRepo,
             IConfiguration configuration,
             CancellationToken ct) =>
         {
-            var user = await userManager.FindByEmailAsync(request.Email);
+            ApplicationUser? user;
+            if (multitenancyOptions.Value.Enabled)
+            {
+                user = await tenantAwareUserService.FindTenantUserAsync(request.Email, tenantContext.TenantId, ct);
+            }
+            else
+            {
+                user = await userManager.FindByEmailAsync(request.Email);
+            }
+
             if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
                 return Results.Unauthorized();
 
@@ -82,6 +96,7 @@ public static class AuthEndpoints
         app.MapPost("/auth/register", async (
             RegisterRequest request,
             UserManager<ApplicationUser> userManager,
+            ITenantContext tenantContext,
             IEmailService emailService,
             IConfiguration configuration,
             CancellationToken ct) =>
@@ -89,7 +104,9 @@ public static class AuthEndpoints
             var user = new ApplicationUser
             {
                 UserName = request.Email,
-                Email = request.Email
+                Email = request.Email,
+                UserType = UserType.TenantUser,
+                TenantId = tenantContext.TenantId
             };
 
             var result = await userManager.CreateAsync(user, request.Password);

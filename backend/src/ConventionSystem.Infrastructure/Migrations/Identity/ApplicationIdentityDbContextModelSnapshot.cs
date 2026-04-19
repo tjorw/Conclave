@@ -72,6 +72,10 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -79,18 +83,27 @@ namespace ConventionSystem.Infrastructure.Migrations.Identity
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<int>("UserType")
+                        .HasColumnType("int")
+                        .HasColumnName("user_type");
+
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
+                        .IsUnique()
+                        .HasDatabaseName("UX_users_systemadmin_email")
+                        .HasFilter("[user_type] = 1 AND [NormalizedEmail] IS NOT NULL");
 
                     b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+                        .HasDatabaseName("UserNameIndex");
 
                     b.HasIndex("PersonId")
                         .HasDatabaseName("IX_users_person_id");
+
+                    b.HasIndex("NormalizedEmail", "TenantId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_users_tenant_email")
+                        .HasFilter("[user_type] = 0 AND [NormalizedEmail] IS NOT NULL AND [tenant_id] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", "identity");
                 });

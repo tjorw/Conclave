@@ -48,6 +48,8 @@ public static class DevDataSeeder
         {
             UserName = AdminEmail,
             Email = AdminEmail,
+            UserType = UserType.TenantUser,
+            TenantId = Guid.Empty,
             PersonId = adminPerson!.Id.Value,
             EmailConfirmed = true
         };

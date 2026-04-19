@@ -99,6 +99,8 @@ public static class InfrastructureServiceExtensions
             })
             .AddEntityFrameworkStores<ApplicationIdentityDbContext>();
 
+        services.AddScoped<TenantAwareUserService>();
+
         return services;
     }
 }
