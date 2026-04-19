@@ -102,7 +102,8 @@ public sealed class ValueGeneratedNeverTests(ConventionSystemFactory factory) : 
         await using var scope = Factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
 
-        var convention = await db.Conventions.FirstAsync();
+        var conventionId = new ConventionId(Factory.SeededConventionId);
+        var convention = await db.Conventions.Include(c => c.Administrators).FirstAsync(c => c.Id == conventionId);
         var admin = await db.Persons.FirstAsync(p => p.Email == AdminEmail);
 
         var period = new DatePeriod(DateOnly.FromDateTime(DateTime.Today), DateOnly.FromDateTime(DateTime.Today.AddDays(2)));
@@ -132,7 +133,8 @@ public sealed class ValueGeneratedNeverTests(ConventionSystemFactory factory) : 
         await using var scope = Factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
 
-        var convention = await db.Conventions.FirstAsync();
+        var conventionId = new ConventionId(Factory.SeededConventionId);
+        var convention = await db.Conventions.FirstAsync(c => c.Id == conventionId);
         var admin = await db.Persons.FirstAsync(p => p.Email == AdminEmail);
 
         var period = new DatePeriod(DateOnly.FromDateTime(DateTime.Today), DateOnly.FromDateTime(DateTime.Today.AddDays(2)));
@@ -150,7 +152,8 @@ public sealed class ValueGeneratedNeverTests(ConventionSystemFactory factory) : 
         await using var scope = Factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
 
-        var convention = await db.Conventions.FirstAsync();
+        var conventionId = new ConventionId(Factory.SeededConventionId);
+        var convention = await db.Conventions.FirstAsync(c => c.Id == conventionId);
         var admin = await db.Persons.FirstAsync(p => p.Email == AdminEmail);
 
         var period = new DatePeriod(DateOnly.FromDateTime(DateTime.Today), DateOnly.FromDateTime(DateTime.Today.AddDays(2)));

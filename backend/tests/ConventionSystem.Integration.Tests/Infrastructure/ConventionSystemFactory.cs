@@ -29,6 +29,8 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
     public const string AdminEmail = "admin@test.se";
     public const string AdminPassword = "Admin123!";
 
+    public Guid SeededConventionId { get; private set; }
+
     public async Task InitializeAsync()
     {
         await _sql.StartAsync();
@@ -72,13 +74,7 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
     /// <summary>
     /// Returnerar konventions-ID för den seedade konventionen.
     /// </summary>
-    public async Task<Guid> GetConventionIdAsync()
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
-        var convention = await db.Conventions.FirstAsync();
-        return convention.Id.Value;
-    }
+    public Task<Guid> GetConventionIdAsync() => Task.FromResult(SeededConventionId);
 
     // JWT-nyckeln som används för att signera tokens i testerna.
     // Måste sättas explicit via PostConfigure eftersom JWT-middleware läser sin nyckel
@@ -96,7 +92,8 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
                 ["Jwt:Issuer"] = "ConventionSystem",
                 ["Jwt:Audience"] = "ConventionSystem",
                 ["DevData:EnableSeeding"] = "false",
-                ["UseHttpsRedirect"] = "false"
+                ["UseHttpsRedirect"] = "false",
+                ["Multitenancy:Enabled"] = "false"
             });
         });
 
@@ -126,13 +123,13 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
         var personRepo = sp.GetRequiredService<IPersonRepository>();
         var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
 
-        var conventionId = Guid.CreateVersion7();
+        SeededConventionId = Guid.CreateVersion7();
 
         await sender.Send(new CreateConventionCommand(
-            "Test Convention", "test", "Admin Test", AdminEmail, conventionId));
+            "Test Convention", "test", "Admin Test", AdminEmail, SeededConventionId));
 
         var adminPerson = await personRepo.FindByEmailInConventionAsync(
-            new ConventionId(conventionId), AdminEmail);
+            new ConventionId(SeededConventionId), AdminEmail);
 
         var user = new ApplicationUser
         {

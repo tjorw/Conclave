@@ -7,9 +7,13 @@ using ConventionSystem.Domain.Tenancy.Enums;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.Persistence;
 using ConventionSystem.Integration.Tests.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ConventionSystem.Integration.Tests.Tenancy;
@@ -234,6 +238,53 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
     }
 
     [Fact]
+    public async Task ProvisionTenant_AdminCanLoginViaTenantSubdomain_JwtContainsIsAdminClaim()
+    {
+        var sysToken = CreateToken(new Claim("is_system_admin", "true"));
+        var sysClient = CreateAuthorizedClient(sysToken);
+
+        var subdomain = $"portal-{Guid.NewGuid():N}";
+        var createResponse = await sysClient.PostAsJsonAsync("/system/tenants", new
+        {
+            subdomain,
+            displayName = "Portal Test Tenant"
+        });
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var tenantId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("id").GetGuid();
+
+        var adminEmail = $"portal-admin-{Guid.NewGuid():N}@test.se";
+        var conventionSlug = $"portal-{Guid.NewGuid():N}"[..20];
+        var provisionResponse = await sysClient.PostAsJsonAsync($"/system/tenants/{tenantId}/provision", new
+        {
+            conventionName = "Portal Convention",
+            conventionSlug,
+            adminName = "Portal Admin",
+            adminEmail,
+            adminPassword = "Admin123!"
+        });
+        Assert.Equal(HttpStatusCode.Created, provisionResponse.StatusCode);
+
+        await using var multitenantFactory = CreateMultitenantFactory();
+        var tenantClient = CreateTenantClient(multitenantFactory, $"http://{subdomain}.conclave.se");
+
+        var loginResponse = await tenantClient.PostAsJsonAsync("/auth/login", new
+        {
+            email = adminEmail,
+            password = "Admin123!"
+        });
+
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+        var jwtToken = (await loginResponse.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("token").GetString()!;
+        var claims = ParseClaims(jwtToken).ToList();
+
+        Assert.Contains(claims, c => c.Type == "tenant_id" && c.Value == tenantId.ToString());
+        Assert.Contains(claims, c => c.Type == "user_type" && c.Value == "tenant_user");
+        Assert.Contains(claims, c => c.Type == "is_admin" && c.Value == "true");
+    }
+
+    [Fact]
     public async Task ProvisionTenantConvention_UnknownTenant_Returns404()
     {
         var token = CreateToken(new Claim("is_system_admin", "true"));
@@ -250,6 +301,23 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    private WebApplicationFactory<Program> CreateMultitenantFactory() =>
+        Factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment(Environments.Development);
+            builder.ConfigureAppConfiguration((_, config) =>
+                config.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Multitenancy:Enabled"] = "true"
+                }));
+        });
+
+    private static HttpClient CreateTenantClient(WebApplicationFactory<Program> factory, string baseAddress) =>
+        factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri(baseAddress)
+        });
 
     private static string CreateToken(params Claim[] extraClaims)
     {
