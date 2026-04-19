@@ -22,6 +22,7 @@ public sealed class ConventionDbContext(
 
     private Guid CurrentTenantId => tenantContext.TenantId;
     private bool IsMultitenancyEnabled => optionsAccessor.Value.Enabled;
+    private bool IsSystemContext => CurrentTenantId == Guid.Empty;
 
     // Convention
     public DbSet<Convention> Conventions => Set<Convention>();
@@ -92,9 +93,14 @@ public sealed class ConventionDbContext(
             Expression.Constant(this),
             nameof(IsMultitenancyEnabled));
 
+        var isSystemContext = Expression.Property(
+            Expression.Constant(this),
+            nameof(IsSystemContext));
+
         var currentTenantId = Expression.Property(Expression.Constant(this), nameof(CurrentTenantId));
         var tenantMatch = Expression.Equal(tenantProperty, currentTenantId);
-        var body = Expression.OrElse(Expression.Not(isMultitenancyEnabled), tenantMatch);
+        var bypassFilter = Expression.OrElse(Expression.Not(isMultitenancyEnabled), isSystemContext);
+        var body = Expression.OrElse(bypassFilter, tenantMatch);
 
         return Expression.Lambda(body, parameter);
     }

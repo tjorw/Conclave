@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
+using ConventionSystem.Infrastructure.Persistence;
 
 namespace ConventionSystem.Infrastructure.MultiTenancy;
 
@@ -18,19 +19,31 @@ public sealed class TenantSeedInterceptor(
         if (eventData.Context is null)
             return base.SavingChangesAsync(eventData, result, cancellationToken);
 
+        var entriesToSeed = eventData.Context.ChangeTracker.Entries()
+            .Where(entry => entry.State == EntityState.Added &&
+                            entry.Metadata.FindProperty(TenantIdPropertyName) is not null)
+            .ToList();
+
+        if (entriesToSeed.Count == 0)
+            return base.SavingChangesAsync(eventData, result, cancellationToken);
+
+        var requiresResolvedTenant = entriesToSeed
+            .Any(entry => entry.Entity is not DomainEventLogEntry);
+
+        if (!requiresResolvedTenant)
+        {
+            foreach (var entry in entriesToSeed)
+                entry.Property(TenantIdPropertyName).CurrentValue = Guid.Empty;
+
+            return base.SavingChangesAsync(eventData, result, cancellationToken);
+        }
+
         var tenantId = tenantContext.TenantId;
         if (!options.Value.Enabled && tenantId == Guid.Empty)
             return base.SavingChangesAsync(eventData, result, cancellationToken);
 
-        foreach (var entry in eventData.Context.ChangeTracker.Entries())
+        foreach (var entry in entriesToSeed)
         {
-            if (entry.State != EntityState.Added)
-                continue;
-
-            var tenantProperty = entry.Metadata.FindProperty(TenantIdPropertyName);
-            if (tenantProperty is null)
-                continue;
-
             entry.Property(TenantIdPropertyName).CurrentValue = tenantId;
         }
 
