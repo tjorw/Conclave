@@ -297,11 +297,25 @@ builder.HasIndex(e => e.ConventionId)
     .HasDatabaseName("IX_editions_convention_id");
 ```
 
+### Unit of Work och transaktionsgräns
+
+Varje command-anrop omsluts automatiskt av en databastranansaktion via
+`TransactionBehaviour<TRequest, TResponse>` i MediatR-pipelinen.
+Handlers anropar fortfarande `repository.SaveAsync(ct)` som vanligt –
+`SaveAsync` är `dbContext.SaveChangesAsync` internt och fungerar korrekt
+inom en öppen transaktion. Inget extra transaktionshantering behövs i
+handlers.
+
+Queries (klasser som implementerar `IQuery<TResult>`) exkluderas
+automatiskt från transaktionsomslutning.
+
+`EventDispatchInterceptor` dispatchar domain events inuti `SaveChangesAsync`,
+vilket innebär att events och dataändringar commitas atomiskt i samma transaktion.
+
 ### Repositories
 
 `sealed class` med primär konstruktor som tar `ConventionDbContext`.
-`SaveAsync` anropas i slutet av varje skrivoperation – inget unit-of-work
-exponeras utåt.
+`SaveAsync` anropas i slutet av varje skrivoperation i handlern.
 
 **`GetByIdWith*` – välj rätt metod:**
 Välj den metod som laddar exakt de collections handlern behöver.

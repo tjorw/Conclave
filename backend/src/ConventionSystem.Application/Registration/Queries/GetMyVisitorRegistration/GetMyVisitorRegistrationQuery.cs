@@ -1,5 +1,5 @@
-using MediatR;
+using ConventionSystem.Application.Common;
 
 namespace ConventionSystem.Application.Registration.Queries.GetMyVisitorRegistration;
 
-public sealed record GetMyVisitorRegistrationQuery(Guid EditionId) : IRequest<IReadOnlyList<MyVisitorRegistrationDto>>;
+public sealed record GetMyVisitorRegistrationQuery(Guid EditionId) : IQuery<IReadOnlyList<MyVisitorRegistrationDto>>;

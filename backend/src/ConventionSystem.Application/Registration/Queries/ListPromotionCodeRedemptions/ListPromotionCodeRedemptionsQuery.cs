@@ -1,6 +1,6 @@
-using MediatR;
+using ConventionSystem.Application.Common;
 
 namespace ConventionSystem.Application.Registration.Queries.ListPromotionCodeRedemptions;
 
 public sealed record ListPromotionCodeRedemptionsQuery(Guid PromotionCodeId)
-    : IRequest<IReadOnlyList<PromotionCodeRedemptionHistoryDto>>;
+    : IQuery<IReadOnlyList<PromotionCodeRedemptionHistoryDto>>;

@@ -1,5 +1,5 @@
-using MediatR;
+using ConventionSystem.Application.Common;
 
 namespace ConventionSystem.Application.Registration.Queries.GetMyOrganiserSessions;
 
-public sealed record GetMyOrganiserSessionsQuery(Guid EditionId) : IRequest<IReadOnlyList<MyOrganiserSessionSummaryDto>>;
+public sealed record GetMyOrganiserSessionsQuery(Guid EditionId) : IQuery<IReadOnlyList<MyOrganiserSessionSummaryDto>>;

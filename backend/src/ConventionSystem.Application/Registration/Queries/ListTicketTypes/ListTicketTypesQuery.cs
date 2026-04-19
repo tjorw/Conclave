@@ -1,5 +1,5 @@
-using MediatR;
+using ConventionSystem.Application.Common;
 
 namespace ConventionSystem.Application.Registration.Queries.ListTicketTypes;
 
-public sealed record ListTicketTypesQuery(Guid EditionId) : IRequest<IReadOnlyList<TicketTypeAdminDto>>;
+public sealed record ListTicketTypesQuery(Guid EditionId) : IQuery<IReadOnlyList<TicketTypeAdminDto>>;

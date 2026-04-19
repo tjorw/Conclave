@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Abstractions;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
@@ -65,6 +66,7 @@ public static class InfrastructureServiceExtensions
             };
         });
 
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
         services.AddScoped<EventDispatchInterceptor>();
         services.AddScoped<TenantSeedInterceptor>();
