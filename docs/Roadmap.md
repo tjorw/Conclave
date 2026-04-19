@@ -33,7 +33,7 @@ Oberoende spår – kan köras parallellt med övriga items. R-MT001–R-MT002 b
 - [x] `R-MT006` UC-MT001, UC-MT003, UC-MT004: Skapa/suspendera/återaktivera tenant
 - [x] `R-MT007` UC-MT002: Tenant-resolving med kort TTL-cache (60 s), invalideras vid suspend/restore
 - [x] `R-MT008` UC-MT005, UC-MT006, UC-MT007: Registrering och separata login-endpoints
-- [ ] `R-MT009` UC-MT008: Provisionering av konvent och admin-användare
+- [x] `R-MT009` UC-MT008: Provisionering av konvent och admin-användare
 
 **Fas 3 – Frontend (R-MT010–R-MT012)**
 - [ ] `R-MT010` `tenantDevInterceptor` i shared-biblioteket

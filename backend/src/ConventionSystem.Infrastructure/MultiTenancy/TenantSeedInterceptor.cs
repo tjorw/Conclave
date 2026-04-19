@@ -15,10 +15,11 @@ public sealed class TenantSeedInterceptor(
         InterceptionResult<int> result,
         CancellationToken cancellationToken = default)
     {
-        if (!options.Value.Enabled)
+        if (eventData.Context is null)
             return base.SavingChangesAsync(eventData, result, cancellationToken);
 
-        if (eventData.Context is null)
+        var tenantId = tenantContext.TenantId;
+        if (!options.Value.Enabled && tenantId == Guid.Empty)
             return base.SavingChangesAsync(eventData, result, cancellationToken);
 
         foreach (var entry in eventData.Context.ChangeTracker.Entries())
@@ -30,7 +31,7 @@ public sealed class TenantSeedInterceptor(
             if (tenantProperty is null)
                 continue;
 
-            entry.Property(TenantIdPropertyName).CurrentValue = tenantContext.TenantId;
+            entry.Property(TenantIdPropertyName).CurrentValue = tenantId;
         }
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);

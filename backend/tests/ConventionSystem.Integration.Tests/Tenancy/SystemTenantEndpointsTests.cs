@@ -2,9 +2,12 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Data;
 using ConventionSystem.Domain.Tenancy.Enums;
+using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.Persistence;
 using ConventionSystem.Integration.Tests.Infrastructure;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -155,6 +158,97 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
 
         var restoreResponse = await client.PutAsync($"/system/tenants/{tenantId}/restore", content: null);
         Assert.Equal((HttpStatusCode)422, restoreResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task ProvisionTenantConvention_AsSystemAdmin_CreatesConventionAndAdminUser()
+    {
+        var token = CreateToken(new Claim("is_system_admin", "true"));
+        var client = CreateAuthorizedClient(token);
+
+        var subdomain = $"prov-{Guid.NewGuid():N}";
+        var createTenantResponse = await client.PostAsJsonAsync("/system/tenants", new
+        {
+            subdomain,
+            displayName = "Provision Tenant"
+        });
+        Assert.Equal(HttpStatusCode.Created, createTenantResponse.StatusCode);
+
+        var tenantId = (await createTenantResponse.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("id")
+            .GetGuid();
+
+        var adminEmail = $"tenant-admin-{Guid.NewGuid():N}@test.se";
+        var conventionSlug = $"prov-{Guid.NewGuid():N}"[..24];
+        var provisionResponse = await client.PostAsJsonAsync($"/system/tenants/{tenantId}/provision", new
+        {
+            conventionName = "Provisioned Convention",
+            conventionSlug,
+            adminName = "Tenant Admin",
+            adminEmail,
+            adminPassword = "Admin123!"
+        });
+
+        Assert.Equal(HttpStatusCode.Created, provisionResponse.StatusCode);
+        var body = await provisionResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var conventionId = body.GetProperty("conventionId").GetGuid();
+        Assert.NotEqual(Guid.Empty, conventionId);
+
+        await using var scope = Factory.Services.CreateAsyncScope();
+        var conventionDb = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
+        var identityDb = scope.ServiceProvider.GetRequiredService<ApplicationIdentityDbContext>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        var convention = await conventionDb.Conventions
+            .Include(c => c.Administrators)
+            .SingleAsync(c => c.Slug == conventionSlug);
+
+        await using var command = conventionDb.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "SELECT TOP(1) [tenant_id] FROM [conventions] WHERE [Slug] = @slug";
+        var slugParameter = command.CreateParameter();
+        slugParameter.ParameterName = "@slug";
+        slugParameter.Value = conventionSlug;
+        command.Parameters.Add(slugParameter);
+
+        if (command.Connection!.State != ConnectionState.Open)
+        {
+            await command.Connection.OpenAsync();
+        }
+
+        var tenantIdValue = await command.ExecuteScalarAsync();
+        Assert.NotNull(tenantIdValue);
+        var conventionTenantId = (Guid)tenantIdValue!;
+
+        Assert.Equal(tenantId, conventionTenantId);
+        Assert.Equal(conventionId, convention.Id.Value);
+        Assert.NotEmpty(convention.Administrators);
+
+        var user = await identityDb.Users.SingleAsync(u => u.Email == adminEmail);
+        Assert.Equal(UserType.TenantUser, user.UserType);
+        Assert.Equal(tenantId, user.TenantId);
+        Assert.NotNull(user.PersonId);
+        Assert.Contains(convention.Administrators, a => a.PersonId.Value == user.PersonId!.Value);
+
+        var canLogin = await userManager.CheckPasswordAsync(user, "Admin123!");
+        Assert.True(canLogin);
+    }
+
+    [Fact]
+    public async Task ProvisionTenantConvention_UnknownTenant_Returns404()
+    {
+        var token = CreateToken(new Claim("is_system_admin", "true"));
+        var client = CreateAuthorizedClient(token);
+
+        var response = await client.PostAsJsonAsync($"/system/tenants/{Guid.NewGuid()}/provision", new
+        {
+            conventionName = "Unknown Tenant Convention",
+            conventionSlug = "unknown-tenant-convention",
+            adminName = "Tenant Admin",
+            adminEmail = "unknown-tenant-admin@test.se",
+            adminPassword = "Admin123!"
+        });
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static string CreateToken(params Claim[] extraClaims)
