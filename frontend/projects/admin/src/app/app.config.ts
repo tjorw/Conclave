@@ -4,7 +4,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { routes } from './app.routes';
-import { ENVIRONMENT, conventionInterceptor, authInterceptor, authSessionInterceptor, ConventionDto } from 'shared';
+import { ENVIRONMENT, tenantDevInterceptor, conventionInterceptor, authInterceptor, authSessionInterceptor, ConventionDto } from 'shared';
 import { environment } from '../environments/environment';
 
 function loadConventionId(http: HttpClient) {
@@ -21,7 +21,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideAnimationsAsync(),
-    provideHttpClient(withInterceptors([conventionInterceptor, authInterceptor, authSessionInterceptor])),
+    provideHttpClient(withInterceptors([tenantDevInterceptor, conventionInterceptor, authInterceptor, authSessionInterceptor])),
     { provide: ENVIRONMENT, useValue: environment },
     {
       provide: APP_INITIALIZER,

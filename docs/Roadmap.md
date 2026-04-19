@@ -36,7 +36,7 @@ Oberoende spår – kan köras parallellt med övriga items. R-MT001–R-MT002 b
 - [x] `R-MT009` UC-MT008: Provisionering av konvent och admin-användare
 
 **Fas 3 – Frontend (R-MT010–R-MT012)**
-- [ ] `R-MT010` `tenantDevInterceptor` i shared-biblioteket
+- [x] `R-MT010` `tenantDevInterceptor` i shared-biblioteket
 - [ ] `R-MT011` `portal`-app: grundstruktur, systemadmin-autentisering, guard
 - [ ] `R-MT012` `portal`-app: tenant-hantering (lista, skapa, suspendera/återaktivera)
 

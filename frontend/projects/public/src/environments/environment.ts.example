@@ -4,4 +4,8 @@ export const environment: Environment = {
   production: false,
   apiBaseUrl: 'http://localhost:5127',
   conventionId: 'ac976ccb-7751-4768-a944-99539d12eb43', // ersätt med ditt lokala conventionId
+  multitenancy: {
+    enabled: false,
+    devTenantId: undefined, // ange tenant-id för lokal SaaS-körning
+  },
 };
