@@ -30,7 +30,7 @@ Oberoende spår – kan köras parallellt med övriga items. R-MT001–R-MT002 b
 
 **Fas 2 – Use cases och API (R-MT005–R-MT009)**
 - [x] `R-MT005` Identity: `ApplicationUser` med `UserType`, filtrerade index, `TenantAwareUserService`
-- [ ] `R-MT006` UC-MT001, UC-MT003, UC-MT004: Skapa/suspendera/återaktivera tenant
+- [x] `R-MT006` UC-MT001, UC-MT003, UC-MT004: Skapa/suspendera/återaktivera tenant
 - [ ] `R-MT007` UC-MT002: Tenant-resolving med kort TTL-cache (60 s), invalideras vid suspend/restore
 - [ ] `R-MT008` UC-MT005, UC-MT006, UC-MT007: Registrering och separata login-endpoints
 - [ ] `R-MT009` UC-MT008: Provisionering av konvent och admin-användare

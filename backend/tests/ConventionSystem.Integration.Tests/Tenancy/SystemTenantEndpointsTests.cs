@@ -49,6 +49,15 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
         var createBody = await createResponse.Content.ReadFromJsonAsync<JsonElement>();
         var tenantId = createBody.GetProperty("id").GetGuid();
 
+        await using (var scope = Factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
+            var tenantCreatedEventExists = await db.DomainEventLog
+                .AnyAsync(e => e.EventType == "TenantCreated");
+
+            Assert.True(tenantCreatedEventExists);
+        }
+
         var suspendResponse = await client.PutAsync($"/system/tenants/{tenantId}/suspend", content: null);
         Assert.Equal(HttpStatusCode.NoContent, suspendResponse.StatusCode);
 
@@ -60,6 +69,10 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
                 .Select(t => t.Status)
                 .SingleAsync();
             Assert.Equal(TenantStatus.Suspended, suspendedStatus);
+
+            var tenantSuspendedEventExists = await db.DomainEventLog
+                .AnyAsync(e => e.EventType == "TenantSuspended");
+            Assert.True(tenantSuspendedEventExists);
         }
 
         var restoreResponse = await client.PutAsync($"/system/tenants/{tenantId}/restore", content: null);
@@ -74,6 +87,74 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
                 .SingleAsync();
             Assert.Equal(TenantStatus.Active, activeStatus);
         }
+    }
+
+    [Fact]
+    public async Task CreateTenant_DuplicateSubdomain_Returns422()
+    {
+        var token = CreateToken(new Claim("is_system_admin", "true"));
+        var client = CreateAuthorizedClient(token);
+        var subdomain = $"dup-{Guid.NewGuid():N}";
+
+        var firstResponse = await client.PostAsJsonAsync("/system/tenants", new
+        {
+            subdomain,
+            displayName = "Tenant One"
+        });
+        Assert.Equal(HttpStatusCode.Created, firstResponse.StatusCode);
+
+        var duplicateResponse = await client.PostAsJsonAsync("/system/tenants", new
+        {
+            subdomain,
+            displayName = "Tenant Two"
+        });
+
+        Assert.Equal((HttpStatusCode)422, duplicateResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task SuspendTenant_AlreadySuspended_Returns422()
+    {
+        var token = CreateToken(new Claim("is_system_admin", "true"));
+        var client = CreateAuthorizedClient(token);
+        var subdomain = $"sus-{Guid.NewGuid():N}";
+
+        var createResponse = await client.PostAsJsonAsync("/system/tenants", new
+        {
+            subdomain,
+            displayName = "Suspend Tenant"
+        });
+
+        var tenantId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("id")
+            .GetGuid();
+
+        var firstSuspend = await client.PutAsync($"/system/tenants/{tenantId}/suspend", content: null);
+        Assert.Equal(HttpStatusCode.NoContent, firstSuspend.StatusCode);
+
+        var secondSuspend = await client.PutAsync($"/system/tenants/{tenantId}/suspend", content: null);
+        Assert.Equal((HttpStatusCode)422, secondSuspend.StatusCode);
+    }
+
+    [Fact]
+    public async Task RestoreTenant_AlreadyActive_Returns422()
+    {
+        var token = CreateToken(new Claim("is_system_admin", "true"));
+        var client = CreateAuthorizedClient(token);
+        var subdomain = $"act-{Guid.NewGuid():N}";
+
+        var createResponse = await client.PostAsJsonAsync("/system/tenants", new
+        {
+            subdomain,
+            displayName = "Active Tenant"
+        });
+
+        var tenantId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("id")
+            .GetGuid();
+
+        var restoreResponse = await client.PutAsync($"/system/tenants/{tenantId}/restore", content: null);
+        Assert.Equal((HttpStatusCode)422, restoreResponse.StatusCode);
     }
 
     private static string CreateToken(params Claim[] extraClaims)

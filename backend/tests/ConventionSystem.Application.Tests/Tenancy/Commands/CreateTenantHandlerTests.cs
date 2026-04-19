@@ -1,6 +1,8 @@
 using ConventionSystem.Application.Tenancy.Abstractions;
 using ConventionSystem.Application.Tenancy.Commands.CreateTenant;
 using ConventionSystem.Domain.Tenancy.Aggregates;
+using ConventionSystem.Domain.Tenancy.Enums;
+using ConventionSystem.Domain.Tenancy.Events;
 using NSubstitute;
 
 namespace ConventionSystem.Application.Tests.Tenancy.Commands;
@@ -33,7 +35,11 @@ public class CreateTenantHandlerTests
         await _handler.Handle(new CreateTenantCommand("MyCon", "My Convention"), default);
 
         await _repository.Received(1).AddAsync(
-            Arg.Is<Tenant>(t => t.Subdomain == "mycon" && t.DisplayName == "My Convention"),
+            Arg.Is<Tenant>(t =>
+                t.Subdomain == "mycon"
+                && t.DisplayName == "My Convention"
+                && t.Status == TenantStatus.Active
+                && t.DomainEvents.OfType<TenantCreated>().Any()),
             Arg.Any<CancellationToken>());
         await _repository.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
