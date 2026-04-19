@@ -26,7 +26,6 @@ Prioriterad lista – ej startade överst, klara underst.
 | Post | Beskrivning | Prioritet |
 |------|-------------|-----------|
 | `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |
-| **NU1902: MailKit sårbarhet** | `ConventionSystem.Infrastructure` använder `MailKit` `4.7.1` som flaggas med NU1902 (moderate) i `dotnet restore/build`. Uppgradera till en icke-sårbar version och verifiera att audit-varningen försvinner i CI. | Medel-hög |
 | Social inloggning (OAuth) | ASP.NET Identity stöder det men inte implementerat | Låg |
 | **Feed-cachning och API-nyckel** | Feed-endpointsen är öppna och läser från databasen vid varje anrop. Vid hög trafik bör svaren cachas (HTTP-headers `Cache-Control`/`ETag`, CDN-lager eller Redis). Vid behov av skyddade feeds kan en API-nyckel läggas till utan att ändra URL-strukturen. | Medel – utvärdera inför produktion |
 | **E2E-test för journeys** | Journey-flöden saknar UI-verifiering över hela kedjan. Lägg till browserbaserade E2E-scenarier för kritiska flöden när funktionerna stabiliserats. | Medel – planera efter implementation av 3.x-flöden |
