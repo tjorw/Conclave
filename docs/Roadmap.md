@@ -57,6 +57,12 @@ Oberoende spår – kan köras parallellt med övriga items. R-MT001–R-MT002 b
 
 | Post | Beskrivning | Prioritet |
 |------|-------------|-----------|
+| **`/system/auth`-bypass i `TenantResolutionMiddleware`** | Rad 18 i middleware bypasas för sökvägar som börjar med `/system/auth`, men ingen sådan endpoint finns. Antingen bör bypasset tas bort, eller skapas endpointen och ett test som verifierar bypasset. Tyst bypass mot icke-existerande endpoint är ett underhållsproblem. | Hög |
+| **`TenantLookupDbContext` bör använda `NoTracking`** | Resolvern läser enbart – change tracking är onödigt overhead. Lägg till `.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)` i factory-registreringen i `InfrastructureServiceExtensions`. | Medel |
+| **Tenant-resolver TTL bör höjas** | `CachingTenantResolver` har TTL på 60 s. Nu när `ITenantResolverCacheInvalidator` kallas vid suspend/restore motiverar det ett längre TTL (~5 min) för att minska DB-belastning. | Medel |
+| **Ingen loggning i `TenantResolutionMiddleware`** | `tenant_not_found` och `tenant_suspended` returnerar felkod men loggar ingenting. `ILogger`-injektion med `Warning`-loggning förenklar felsökning i produktion. | Medel |
+| **Cache stampede i `CachingTenantResolver`** | Mönstret `TryGetValue → miss → DB → Set` utan lås ger N parallella DB-träffar vid burst mot okänd tenant. `GetOrCreateAsync` eller en `SemaphoreSlim` per nyckel eliminerar problemet. Låg risk vid nuvarande skala. | Låg |
+| **Oanvänd `using` i `InfrastructureServiceExtensions`** | `using Microsoft.Extensions.Caching.Memory` används inte i filen (`AddMemoryCache()` är en extension method i `Microsoft.Extensions.DependencyInjection`). Bör tas bort. | Låg |
 | `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |
 | Social inloggning (OAuth) | ASP.NET Identity stöder det men inte implementerat | Låg |
 | **Feed-cachning och API-nyckel** | Feed-endpointsen är öppna och läser från databasen vid varje anrop. Vid hög trafik bör svaren cachas (HTTP-headers `Cache-Control`/`ETag`, CDN-lager eller Redis). Vid behov av skyddade feeds kan en API-nyckel läggas till utan att ändra URL-strukturen. | Medel – utvärdera inför produktion |
