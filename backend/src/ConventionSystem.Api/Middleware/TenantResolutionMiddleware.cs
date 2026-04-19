@@ -15,6 +15,12 @@ public sealed class TenantResolutionMiddleware(
 
     public async Task InvokeAsync(HttpContext context)
     {
+        if (context.Request.Path.StartsWithSegments("/system/auth", StringComparison.OrdinalIgnoreCase))
+        {
+            await next(context);
+            return;
+        }
+
         if (!multitenancyOptions.Value.Enabled)
         {
             await next(context);

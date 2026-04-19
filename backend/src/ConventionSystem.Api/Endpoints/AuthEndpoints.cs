@@ -4,7 +4,6 @@ using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.MultiTenancy;
-using ConventionSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -30,15 +29,9 @@ public static class AuthEndpoints
             IConfiguration configuration,
             CancellationToken ct) =>
         {
-            ApplicationUser? user;
-            if (multitenancyOptions.Value.Enabled)
-            {
-                user = await tenantAwareUserService.FindTenantUserAsync(request.Email, tenantContext.TenantId, ct);
-            }
-            else
-            {
-                user = await userManager.FindByEmailAsync(request.Email);
-            }
+            ApplicationUser? user = multitenancyOptions.Value.Enabled
+                ? await tenantAwareUserService.FindTenantUserAsync(request.Email, tenantContext.TenantId, ct)
+                : await userManager.FindByEmailAsync(request.Email);
 
             if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
                 return Results.Unauthorized();
@@ -89,34 +82,127 @@ public static class AuthEndpoints
             }
 
             var isAdmin = convention.IsAdministrator(new PersonId(personId));
-            var token = IssueJwt(personId, isAdmin, isSystemAdmin, configuration);
+            var token = IssueJwt(
+                personId,
+                isAdmin,
+                isSystemAdmin,
+                configuration,
+                AuthConstants.Claims.UserTypeTenantUser,
+                multitenancyOptions.Value.Enabled ? tenantContext.TenantId : user.TenantId);
+            return Results.Ok(new { token });
+        });
+
+        app.MapPost("/system/auth/login", async (
+            HttpContext httpContext,
+            LoginRequest request,
+            UserManager<ApplicationUser> userManager,
+            TenantAwareUserService tenantAwareUserService,
+            IConfiguration configuration,
+            CancellationToken ct) =>
+        {
+            var subdomain = TryExtractSubdomain(httpContext.Request.Host.Host);
+            if (!string.IsNullOrWhiteSpace(subdomain)
+                && !subdomain.Equals("system", StringComparison.OrdinalIgnoreCase))
+            {
+                return Results.NotFound();
+            }
+
+            var user = await tenantAwareUserService.FindSystemAdminAsync(request.Email, ct);
+            if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
+                return Results.Unauthorized();
+
+            if (!user.EmailConfirmed)
+                return Results.Problem(
+                    title: "E-postadressen är inte bekräftad.",
+                    detail: "Kontrollera din inkorg och klicka på bekräftelselänken.",
+                    statusCode: 403);
+
+            var token = IssueJwt(
+                user.PersonId,
+                isAdmin: false,
+                isSystemAdmin: true,
+                configuration,
+                AuthConstants.Claims.UserTypeSystemAdmin,
+                tenantId: null);
             return Results.Ok(new { token });
         });
 
         app.MapPost("/auth/register", async (
             RegisterRequest request,
             UserManager<ApplicationUser> userManager,
+            TenantAwareUserService tenantAwareUserService,
             ITenantContext tenantContext,
+            IOptions<MultitenancyOptions> multitenancyOptions,
+            IConventionRepository conventionRepo,
+            IPersonRepository personRepo,
             IEmailService emailService,
             IConfiguration configuration,
             CancellationToken ct) =>
         {
+            Guid? tenantId = multitenancyOptions.Value.Enabled ? tenantContext.TenantId : null;
+
+            if (tenantId.HasValue)
+            {
+                var existingUser = await tenantAwareUserService.FindTenantUserAsync(request.Email, tenantId.Value, ct);
+                if (existingUser is not null)
+                {
+                    return Results.Problem(
+                        title: "E-postadressen används redan.",
+                        statusCode: 422,
+                        extensions: new Dictionary<string, object?>
+                        {
+                            ["errorCode"] = "email_already_exists"
+                        });
+                }
+            }
+
+            Domain.Convention.Aggregates.Convention? convention = null;
+            if (multitenancyOptions.Value.Enabled)
+            {
+                convention = await conventionRepo.GetSingleAsync(ct);
+                if (convention is null)
+                    return Results.Problem("Konventet är inte konfigurerat.", statusCode: 422);
+            }
+
             var user = new ApplicationUser
             {
-                UserName = request.Email,
+                UserName = tenantId.HasValue
+                    ? $"{tenantId.Value:N}_{request.Email}"
+                    : request.Email,
                 Email = request.Email,
                 UserType = UserType.TenantUser,
-                TenantId = tenantContext.TenantId
+                TenantId = tenantId
             };
 
             var result = await userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
                 if (result.Errors.Any(e => e.Code is "DuplicateEmail" or "DuplicateUserName"))
+                {
+                    if (tenantId.HasValue)
+                    {
+                        return Results.Problem(
+                            title: "E-postadressen används redan.",
+                            statusCode: 422,
+                            extensions: new Dictionary<string, object?>
+                            {
+                                ["errorCode"] = "email_already_exists"
+                            });
+                    }
+
                     return Results.Problem("E-postadressen används redan.", statusCode: 400);
+                }
 
                 var errors = string.Join(" ", result.Errors.Select(e => e.Description));
                 return Results.Problem(errors, statusCode: 400);
+            }
+
+            if (convention is not null)
+            {
+                var person = convention.RegisterPerson(string.Empty, request.Email);
+                await personRepo.AddAndSaveAsync(person, ct);
+                user.PersonId = person.Id.Value;
+                await userManager.UpdateAsync(user);
             }
 
             var emailToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -244,12 +330,23 @@ public static class AuthEndpoints
         return app;
     }
 
-    private static string IssueJwt(Guid personId, bool isAdmin, bool isSystemAdmin, IConfiguration configuration)
+    private static string IssueJwt(
+        Guid? personId,
+        bool isAdmin,
+        bool isSystemAdmin,
+        IConfiguration configuration,
+        string userType,
+        Guid? tenantId)
     {
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
 
-        List<Claim> claims = [new Claim(AuthConstants.Claims.PersonId, personId.ToString())];
+        List<Claim> claims = [new Claim(AuthConstants.Claims.UserType, userType)];
+
+        if (personId.HasValue)
+            claims.Add(new Claim(AuthConstants.Claims.PersonId, personId.Value.ToString()));
+        if (tenantId.HasValue)
+            claims.Add(new Claim(AuthConstants.Claims.TenantId, tenantId.Value.ToString()));
         if (isAdmin)
             claims.Add(new Claim(AuthConstants.Claims.IsAdmin, AuthConstants.Claims.IsAdminTrue));
         if (isSystemAdmin)
@@ -266,6 +363,24 @@ public static class AuthEndpoints
 
         var handler = new JwtSecurityTokenHandler();
         return handler.WriteToken(handler.CreateToken(descriptor));
+    }
+
+    private static string? TryExtractSubdomain(string host)
+    {
+        if (string.IsNullOrWhiteSpace(host))
+            return null;
+
+        if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        if (Uri.CheckHostName(host) == UriHostNameType.IPv4 || Uri.CheckHostName(host) == UriHostNameType.IPv6)
+            return null;
+
+        var segments = host.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (segments.Length < 2)
+            return null;
+
+        return segments[0].ToLowerInvariant();
     }
 
     private static string ResolveFrontendUrl(IConfiguration configuration)

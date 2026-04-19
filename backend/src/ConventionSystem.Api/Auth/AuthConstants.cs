@@ -16,6 +16,10 @@ public static class AuthConstants
     public static class Claims
     {
         public const string PersonId = "person_id";
+        public const string TenantId = "tenant_id";
+        public const string UserType = "user_type";
+        public const string UserTypeTenantUser = "tenant_user";
+        public const string UserTypeSystemAdmin = "system_admin";
         public const string IsAdmin = "is_admin";
         public const string IsAdminTrue = "true";
         public const string IsSystemAdmin = "is_system_admin";
