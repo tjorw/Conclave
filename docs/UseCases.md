@@ -2085,3 +2085,244 @@ Admin (alla roller)
 - [ ] Innehållet byts utan att drawern stängs
 - [ ] Bakåt-knapp visas och fungerar efter navigering
 - [ ] `HelpService.open(topic)` öppnar korrekt topic direkt
+
+---
+
+# Tenancy (MT-kontexten)
+
+---
+
+# UC-MT001 – Skapa tenant (manuell, systemadmin)
+
+## Sammanfattning
+SystemAdmin skapar en ny tenant med subdomän och visningsnamn.
+
+## Aktör
+SystemAdmin
+
+## Förutsättningar
+- Multitenancy aktiverat
+- SystemAdmin inloggad
+
+## Flöde
+1. SystemAdmin skickar `POST /system/tenants` med subdomän och visningsnamn
+2. Systemet validerar att subdomänen är unik och följer format (`[a-z0-9-]+`)
+3. `Tenant`-aggregat skapas med status `Active`
+4. `TenantCreated`-event dispatkas
+5. Systemet returnerar `TenantId`
+
+## Affärsregler
+- Subdomän får inte redan finnas
+- Subdomän valideras mot regex `^[a-z0-9-]{3,63}$`
+- Konvent skapas separat av den nya tenantens admin (ej i detta flöde)
+
+## Acceptanskriterier
+- [ ] Tenant skapas med unik subdomän och status `Active`
+- [ ] Duplikat subdomän ger 422
+- [ ] `TenantCreated`-event dispatkas
+- [ ] Kommandohanterare har tillhörande enhetstest
+
+---
+
+# UC-MT002 – Lös upp tenant från request
+
+## Sammanfattning
+Middleware identifierar aktuell tenant från request-subdomänen (produktion) eller `X-Tenant-ID`-header (development).
+
+## Aktör
+Systemet (middleware)
+
+## Förutsättningar
+- Request inkommer mot SaaS-deploy
+
+## Flöde
+1. Middleware extraherar host-header
+2. I produktion: subdomän parsas ur host (`gammacon.conclave.se` → `gammacon`)
+3. I development: `X-Tenant-ID`-header används som fallback
+4. Tenant slås upp mot `Tenants`-tabell
+5. `TenantId` sätts i `HttpContext.Items`
+6. Suspended tenant returnerar 403 med `errorCode: tenant_suspended`
+7. Okänd tenant returnerar 404
+
+## Affärsregler
+- `X-Tenant-ID`-header ignoreras i produktion
+- Tenant med status `Suspended` ger 403, inte 404
+
+## Acceptanskriterier
+- [ ] Korrekt `TenantId` sätts för känd tenant
+- [ ] `X-Tenant-ID`-header ignoreras i produktionsmiljö
+- [ ] Suspended tenant ger 403
+- [ ] Okänd tenant ger 404
+- [ ] Enhetstester täcker prioritetsordning och edge cases
+
+---
+
+# UC-MT003 – Suspendera tenant
+
+## Sammanfattning
+SystemAdmin suspenderar en aktiv tenant. Efterföljande requests mot tenantens subdomän returnerar 403.
+
+## Aktör
+SystemAdmin
+
+## Förutsättningar
+- Tenant existerar med status `Active`
+
+## Flöde
+1. SystemAdmin skickar `PUT /system/tenants/{tenantId}/suspend`
+2. `Tenant.Suspend()` anropas
+3. `TenantSuspended`-event dispatkas
+4. Efterföljande requests mot tenantens subdomän returnerar 403
+
+## Affärsregler
+- Aktiva sessioner avbryts inte omedelbart – JWT-tokens gäller till expiry
+- Redan suspended tenant ger domain-rule violation
+
+## Acceptanskriterier
+- [ ] Tenant-status ändras till `Suspended`
+- [ ] `TenantSuspended`-event dispatkas
+- [ ] Redan suspended tenant ger 422
+- [ ] Kommandohanterare har tillhörande enhetstest
+
+---
+
+# UC-MT004 – Återaktivera tenant
+
+## Sammanfattning
+SystemAdmin återaktiverar en suspenderad tenant.
+
+## Aktör
+SystemAdmin
+
+## Förutsättningar
+- Tenant med status `Suspended`
+
+## Flöde
+1. SystemAdmin skickar `PUT /system/tenants/{tenantId}/restore`
+2. `Tenant.Restore()` anropas
+3. Tenant returnerar till `Active`
+
+## Acceptanskriterier
+- [ ] Tenant-status ändras tillbaka till `Active`
+- [ ] Kommandohanterare har tillhörande enhetstest
+
+---
+
+# UC-MT005 – Registrera tenant-användare
+
+## Sammanfattning
+En tenant-admin registrerar en ny användare inom sin tenant. Samma e-post kan finnas hos olika tenants utan konflikt.
+
+## Aktör
+Tenant-admin
+
+## Förutsättningar
+- Tenant aktiv
+- Inloggad som `ConventionAdministrator`
+
+## Flöde
+1. Admin skickar `POST /auth/register` med e-post och lösenord på tenant-subdomän
+2. Middleware har redan resolvar `TenantId` från subdomänen
+3. Systemet kontrollerar att e-post inte redan finns för denna tenant
+4. `ApplicationUser` skapas med `UserType = TenantUser` och korrekt `TenantId`
+5. `Person`-entitet skapas i Convention-BC med samma `TenantId`
+6. `ApplicationUser.PersonId` kopplas till den nya `Person`
+
+## Affärsregler
+- Samma e-post kan registreras hos olika tenants utan konflikt
+- Samma e-post hos samma tenant ger 422 med `errorCode: email_already_exists`
+- `TenantId` tas aldrig från request-body – alltid från middleware
+
+## Acceptanskriterier
+- [ ] Användare skapas med korrekt `TenantId` och `UserType = TenantUser`
+- [ ] Duplikat e-post inom samma tenant ger 422
+- [ ] Samma e-post hos annan tenant tillåts
+- [ ] `Person` skapas och kopplas till `ApplicationUser`
+
+---
+
+# UC-MT006 – Logga in som tenant-användare
+
+## Sammanfattning
+En tenant-användare loggar in via tenant-subdomänen. Systemadmin-konton kan aldrig autentiseras via denna endpoint.
+
+## Aktör
+Tenant-användare
+
+## Förutsättningar
+- Användare registrerad hos tenanten
+
+## Flöde
+1. Användare skickar `POST /auth/login` med e-post och lösenord på tenant-subdomän
+2. `TenantAwareUserService.FindTenantUserAsync(email, tenantId)` anropas
+3. Lösenord verifieras
+4. JWT utfärdas med `tenant_id`, `user_type: tenant_user` och relevanta rollclaims
+5. Token returneras
+
+## Affärsregler
+- Felaktigt lösenord ger 401 – aldrig information om huruvida e-posten finns
+- En systemadmins e-post går inte att logga in med via tenant-endpointen
+- Token innehåller alltid `tenant_id` för tenant-användare
+
+## Acceptanskriterier
+- [ ] Lyckad inloggning returnerar JWT med `tenant_id` och `user_type: tenant_user`
+- [ ] Systemadmins e-post kan inte autentiseras via tenant-endpointen
+- [ ] Felaktigt lösenord ger 401
+
+---
+
+# UC-MT007 – Logga in som systemadmin
+
+## Sammanfattning
+SystemAdmin loggar in via en separat endpoint utanför tenant-middleware-scopet.
+
+## Aktör
+SystemAdmin
+
+## Förutsättningar
+- SystemAdmin-användare skapad manuellt i databasen
+
+## Flöde
+1. Admin skickar `POST /system/auth/login` med e-post och lösenord
+2. Endpointen ligger utanför `TenantResolutionMiddleware`s scope
+3. `TenantAwareUserService.FindSystemAdminAsync(email)` anropas
+4. JWT utfärdas med `user_type: system_admin` och `is_system_admin: true`
+5. Token returneras
+
+## Affärsregler
+- Endpointen är inte nåbar via tenant-subdomän – endast via system-ingången
+- En tenant-användares e-post går inte att logga in med via systemadmin-endpointen
+- SystemAdmin-token innehåller aldrig `tenant_id`
+
+## Acceptanskriterier
+- [ ] Lyckad inloggning returnerar JWT med `user_type: system_admin`, utan `tenant_id`
+- [ ] Tenant-användares e-post kan inte autentiseras via systemadmin-endpointen
+- [ ] Endpointen är inte exponerad via tenant-subdomän
+
+---
+
+# UC-MT008 – Provisionera konvent för ny tenant
+
+## Sammanfattning
+SystemAdmin skapar ett konvent och en admin-användare åt en ny tenant. Flödet återanvänder `CreateConventionCommand`; `TenantSeedInterceptor` sätter `TenantId` automatiskt.
+
+## Aktör
+SystemAdmin (fas 1–3), Tenant-admin (fas 4 – self-service)
+
+## Förutsättningar
+- Tenant skapad (UC-MT001)
+
+## Flöde
+1. Aktör skickar `POST /conventions` med `TenantId` i JWT eller header
+2. `Convention`-aggregat skapas med korrekt `TenantId` (satt av interceptorn)
+3. En `Person` skapas och tilldelas rollen `ConventionAdministrator`
+4. Returnerar `ConventionId`
+
+## Affärsregler
+- `TenantId` sätts av `TenantSeedInterceptor`, aldrig manuellt i handlern
+- Flödet återanvänder befintlig `CreateConventionCommand`
+
+## Acceptanskriterier
+- [ ] `Convention` skapas med korrekt `TenantId`
+- [ ] `ConventionAdministrator` skapas för tenant-admin
+- [ ] `ConventionId` returneras

@@ -18,6 +18,37 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-HL04` Hjälpsystem – `HelpPanel`-komponent på listsidor (UC-HL002)
 - [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
 
+### Multitenancy
+
+Oberoende spår – kan köras parallellt med övriga items. R-MT001–R-MT002 bör ske i dedikerade arbetspass eftersom de rör `AppDbContext` och migrations.
+
+**Fas 1 – Infrastruktur (R-MT001–R-MT004)**
+- [ ] `R-MT001` `Tenancy` bounded context – `Tenant`-aggregat, `TenantId`, `TenantStatus`, domain events
+- [ ] `R-MT002` EF Core: `TenantId` på alla tabeller + global query filter + `TenantSeedInterceptor` *(kräver isolationstest innan merge)*
+- [ ] `R-MT003` Middleware: `TenantResolutionMiddleware` – subdomän-resolving + header-fallback i dev
+- [ ] `R-MT004` `SystemAdmin`-roll och policy – ny claim, policy, tenant-CRUD-endpoints
+
+**Fas 2 – Use cases och API (R-MT005–R-MT009)**
+- [ ] `R-MT005` Identity: `ApplicationUser` med `UserType`, filtrerade index, `TenantAwareUserService`
+- [ ] `R-MT006` UC-MT001, UC-MT003, UC-MT004: Skapa/suspendera/återaktivera tenant
+- [ ] `R-MT007` UC-MT002: Tenant-resolving med kort TTL-cache (60 s), invalideras vid suspend/restore
+- [ ] `R-MT008` UC-MT005, UC-MT006, UC-MT007: Registrering och separata login-endpoints
+- [ ] `R-MT009` UC-MT008: Provisionering av konvent och admin-användare
+
+**Fas 3 – Frontend (R-MT010–R-MT012)**
+- [ ] `R-MT010` `tenantDevInterceptor` i shared-biblioteket
+- [ ] `R-MT011` `portal`-app: grundstruktur, systemadmin-autentisering, guard
+- [ ] `R-MT012` `portal`-app: tenant-hantering (lista, skapa, suspendera/återaktivera)
+
+**Fas 4 – Provisioning och self-service (R-MT013–R-MT017)**
+- [ ] `R-MT013` `portal`-app: provisioneringsvy för systemadmin
+- [ ] `R-MT014` `portal`-app: self-service signup (publik del)
+- [ ] `R-MT015` `portal`-app: tenant-dashboard för tenant-ägare
+- [ ] `R-MT016` Välkomstmail vid provisioning
+- [ ] `R-MT017` Faktureringsintegration *(utanför scope – dokumenterat för framtiden)*
+
+**Beroenden till befintlig roadmap:** Multitenansy-arbetet är oberoende av R18–R25 och kan köras parallellt. R-MT001–R-MT002 bör dock ske i ett dedikerat arbetspass eftersom de rör `AppDbContext` och migrations – samma filer som biljettimplementationen rör. Rekommenderad ordning: slutför R18 (biljett) → påbörja R-MT001 → R-MT002 i eget PR.
+
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
 
 ---

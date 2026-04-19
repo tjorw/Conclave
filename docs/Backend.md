@@ -53,6 +53,7 @@ public sealed class Edition : AggregateRoot
 - Invarianter kastas i konstruktorn – aldrig halvinitierat tillstånd
 - Aggregat-rooten raisar domain events via `RaiseDomainEvent(...)`
 - Metoder som skapar barn-entiteter **returnerar** den nya entiteten
+- Aggregate roots i SaaS-deploy implementerar `ITenantScoped` – ett tomt markörgränssnitt som `TenantSeedInterceptor` använder för att automatiskt sätta `TenantId` vid `SaveChanges`
 
 ### Entiteter
 
@@ -338,6 +339,8 @@ transaktion, och dispatchar sedan via MediatR.
 Domain event handlers behöver **inte** anropa `SaveAsync` på nytt –
 interceptorn sköter det.
 
+`TenantSeedInterceptor` följer samma mönster och sätter `TenantId` på alla nya entiteter som implementerar `ITenantScoped`. Aktiveras endast när `Multitenancy:Enabled = true`.
+
 ---
 
 ## API-lagret
@@ -479,6 +482,8 @@ Regler som inte framgår direkt av koden och kräver aktiv uppmärksamhet vid im
 Contexts kommunicerar via domain events och id-referenser – aldrig via
 direkt aggregatreferens.
 
+Fem bounded contexts: `Convention`, `Event`, `Registration`, `Staff` och `Tenancy`. De fyra första är scoped till en tenant i SaaS-deploy via globala query filters. `Tenancy` är **undantaget** – det måste kunna läsa alla tenants och har inga row-level filters.
+
 ```
 Convention ──EditionPublished──▶ Event (skapar evenemangskontext)
 Convention ──EditionPublished──▶ Registration (öppnar registreringskontext)
@@ -489,3 +494,79 @@ Staff      ──ShiftCancelled───▶ Staff (avbokar tilldelningar)
 Cross-context id-referenser (t.ex. `CategoryId` i Event-domänen) lagras som
 råa `Guid` eller en lokal wrapper – **aldrig** som en navigation property
 till det andra contextets entitet.
+
+---
+
+## Multitenancy
+
+Se `docs/Multitenancy.md` för fullständig arkitektur, use cases och roadmap. Nedan sammanfattas de delar som påverkar daglig backendimplementation.
+
+### Strategi och deploy-modeller
+
+| Modell | Användare | Deploy | Tenancy |
+|---|---|---|---|
+| **Dedicated** | Stora konvent | En instans per konvent | Tenant-per-deploy (oförändrat) |
+| **SaaS** | Små aktörer | Gemensam instans | Row-level tenancy |
+
+All ny kod är additiv och aktiveras av feature-flaggan `Multitenancy:Enabled`. En dedicated-deploy kör alltid med `false`.
+
+### Feature-flagga
+
+```json
+// appsettings.json
+{
+  "Multitenancy": {
+    "Enabled": false
+  }
+}
+
+// appsettings.SaaS.json  (ASPNETCORE_ENVIRONMENT=SaaS)
+{
+  "Multitenancy": {
+    "Enabled": true
+  }
+}
+```
+
+I `Program.cs`:
+
+```csharp
+if (builder.Configuration.GetValue<bool>("Multitenancy:Enabled"))
+{
+    builder.Services.AddScoped<ITenantContext, HttpTenantContext>();
+    builder.Services.AddScoped<TenantSeedInterceptor>();
+    app.UseMiddleware<TenantResolutionMiddleware>();
+}
+else
+{
+    // Dedicated deploy: TenantContext är en no-op singleton
+    builder.Services.AddSingleton<ITenantContext, SingleTenantContext>();
+}
+```
+
+### Global query filters i `AppDbContext`
+
+```csharp
+protected override void OnModelCreating(ModelBuilder builder)
+{
+    if (_multitenancyOptions.Enabled)
+    {
+        builder.Entity<Convention>()
+            .HasQueryFilter(e => e.TenantId == _tenantContext.TenantId);
+
+        // Samtliga rotentiteter per BC får samma filter
+        // Event, Registration, Staff – alla aggregate roots
+    }
+}
+```
+
+### Identity och användarhantering
+
+Användare separeras fullständigt per tenant. En enda `AspNetUsers`-tabell med `UserType`-kolumn (`TenantUser | SystemAdmin`) och `TenantId` (NOT NULL för tenant-användare, NULL för systemadmins). Det globala unika indexet på email ersätts med:
+
+- Filtrerat unikt index på `(NormalizedEmail)` där `UserType = SystemAdmin`
+- Filtrerat unikt index på `(NormalizedEmail, TenantId)` där `UserType = TenantUser`
+
+`UserManager.FindByEmailAsync` söker globalt och får **aldrig** användas direkt i SaaS-deployn. En `TenantAwareUserService` kapslar alla användarsökningar och håller `FindTenantUserAsync` och `FindSystemAdminAsync` strikt separata.
+
+Tenant-användare loggar in via `POST /auth/login` (tenant-subdomän). Systemadmins loggar in via `POST /system/auth/login` (utanför middleware-scope).

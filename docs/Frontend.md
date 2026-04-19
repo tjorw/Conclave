@@ -20,6 +20,16 @@ kan skilja sig åt.
 
 **Konventions-ID per deploy** – `conventionId` konfigureras i `environment.ts` och används för att konstruera API-URL:er. Varje konvention är en separat deploy utan delad infrastruktur. Interceptorn i shared-biblioteket sätter ID:t automatiskt på alla API-anrop.
 
+### Appar i frontend-monorepon
+
+| App | Port | Syfte | Tillgång |
+|---|---|---|---|
+| `admin` | 4200 | Konventionsadministration per tenant | `ConventionAdministrator` |
+| `public` | 4201 | Besökarfrontend per tenant | Publik + inloggad |
+| `portal` | 4202 | Systemadmin – tenant-provisioning | `SystemAdmin` |
+
+`portal`-appen lever på `system.conclave.se`, autentiserar via systemadmin-login och har aldrig tillgång till tenant-scopad data. Den använder samma `shared`-bibliotek som de övriga apparna men har ingen tenant-interceptor.
+
 ---
 
 ## Admin-appen (`projects/admin`)
@@ -273,6 +283,20 @@ Ny API-operation → ny metod i `ConventionService`. Request-typer definieras
 som interface i samma fil.
 
 Convention-ID och auth-header sätts automatiskt av interceptors i `shared`.
+
+I SaaS-deploy tillkommer `tenantDevInterceptor` (aktiv om `environment.multitenancy.enabled && !production`). Den sätter `X-Tenant-ID`-headern från `environment.devTenantId` för lokal utveckling mot SaaS-backend:
+
+```typescript
+// shared/interceptors/tenant-dev.interceptor.ts
+export const tenantDevInterceptor: HttpInterceptorFn = (req, next) => {
+  if (!environment.production && environment.devTenantId) {
+    req = req.clone({
+      setHeaders: { 'X-Tenant-ID': environment.devTenantId }
+    });
+  }
+  return next(req);
+};
+```
 
 ---
 
