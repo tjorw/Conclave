@@ -1093,18 +1093,18 @@ Systemet (anropas som del av UC-SR001 – Registrera sig på session)
 
 ## Affärsregler
 - Om en person har flera biljetter räcker det att en är giltig
-- Valideringen utförs av `RegistrationRuleService.ValidateTicket(personId, sessionId)`
+- Valideringen utförs av `RegistrationRuleService.ValidateTicket(ticketId, sessionId)`
 
 ## Domänhändelser
 - Inga (endast validering)
 
 ## Acceptanskriterier
-- [ ] Giltig biljett returnerar lyckat resultat
-- [ ] Ingen betald biljett ger valideringsfel
-- [ ] Biljett vars `validDays` exkluderar sessionens datum ger valideringsfel
-- [ ] Biljett vars `allowedCategories` exkluderar sessionens kategori ger valideringsfel
-- [ ] Person med flera biljetter godkänns om minst en är giltig
-- [ ] Domäntjänst har tillhörande enhetstester
+- [x] Giltig biljett returnerar lyckat resultat
+- [x] Ingen betald biljett ger valideringsfel
+- [x] Biljett vars `validDays` exkluderar sessionens datum ger valideringsfel
+- [x] Biljett vars `allowedCategories` exkluderar sessionens kategori ger valideringsfel
+- [x] Person med flera biljetter godkänns om minst en är giltig
+- [x] Domäntjänst har tillhörande enhetstester
 
 ---
 

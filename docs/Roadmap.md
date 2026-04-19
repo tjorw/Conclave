@@ -10,7 +10,7 @@ Prioriterad lista – ej startade överst, klara underst.
 
 - [x] `R16` Biljettlivscykel reviderad – manuell betalning, webhook, innehavaravbokning (UC-TK003–TK006)
 - [x] `R17` Makuleringskaskad + uthämtning med förmåner (UC-TK007/TK008)
-- [ ] `R18` `RegistrationRuleService.ValidateTicket` med dag- och kategorivalidering (UC-TK009)
+- [x] `R18` `RegistrationRuleService.ValidateTicket` med dag- och kategorivalidering (UC-TK009)
 - [x] `R19` Promotionkoder – skapa, lista, lösa in och deaktivera (UC-PC001–PC005)
 - [x] `R20` Centralisera admin-claimvärde (`"true"`) i auth-konstanter
 - [x] `R23` Bygg admin-gränssnitt för promotionkoder (UC-PC001, UC-PC002, UC-PC004, UC-PC005)
@@ -44,7 +44,6 @@ Prioriterad lista – ej startade överst, klara underst.
 | **Inga `DbSet<Station>` i `ConventionDbContext`** | `Station` och `Venue` nås via `db.Set<T>()` i stället för namngivna `DbSet<T>`-properties. Inkonsekvens mot övriga entiteter. Lägg till `DbSet<Station>` och `DbSet<Venue>` i `ConventionDbContext` om fler queries börjar hämta dem direkt. | Låg |
 | **R21: Centralisera fallback för frontend-URL i auth-flöden** | Default-värdet `http://localhost:4201` upprepas i flera auth-endpoints. Flytta till en gemensam konstant eller options-klass för att undvika inkonsekvent miljökonfiguration. | Medel |
 | **R22: Centralisera JWT-konfigurationsnycklar** | Nycklarna `Jwt:Key`, `Jwt:Issuer` och `Jwt:Audience` används duplicerat i startup och auth. Samla i konstanter/options för att minska typo-risk och förenkla ändringar. | Medel |
-| **Gamla TK-implementationer behöver revideras** | R15, R16 och R17 är genomförda. Kvar att slutföra: full dag-/kategorivalidering i `RegistrationRuleService.ValidateTicket` (R18). | **Hög – blockar korrekt sessionsvalidering tills R18 är klar** |
 
 ---
 

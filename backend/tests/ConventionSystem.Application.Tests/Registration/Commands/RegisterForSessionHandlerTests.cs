@@ -113,4 +113,15 @@ public class RegisterForSessionHandlerTests
             () => _handler.Handle(
                 new RegisterForSessionCommand(sessionId, ticket.Id.Value), default));
     }
+
+    [Fact]
+    public async Task Handle_TicketInvalidForSession_Throws()
+    {
+        var ticket = SetupPaidTicket();
+        _ruleService.ValidateTicket(Arg.Any<TicketId>(), Arg.Any<SessionId>()).Returns(false);
+
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
+            () => _handler.Handle(
+                new RegisterForSessionCommand(Guid.NewGuid(), ticket.Id.Value), default));
+    }
 }
