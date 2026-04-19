@@ -36,6 +36,9 @@ export class TenantsComponent implements OnInit {
   readonly createForm = this.fb.group({
     subdomain: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
     displayName: ['', Validators.required],
+    adminName: ['', Validators.required],
+    adminEmail: ['', [Validators.required, Validators.email]],
+    adminPassword: ['', [Validators.required, Validators.minLength(8)]],
   });
 
   readonly filteredTenants = computed(() => {
@@ -65,6 +68,9 @@ export class TenantsComponent implements OnInit {
     this.service.create({
       subdomain: this.createForm.value.subdomain!,
       displayName: this.createForm.value.displayName!,
+      adminName: this.createForm.value.adminName!,
+      adminEmail: this.createForm.value.adminEmail!,
+      adminPassword: this.createForm.value.adminPassword!,
     }).subscribe({
       next: () => {
         this.createForm.reset();

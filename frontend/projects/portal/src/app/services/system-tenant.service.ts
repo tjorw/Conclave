@@ -14,6 +14,14 @@ interface CreateTenantResponse {
   id: string;
 }
 
+export interface CreateSystemTenantRequest {
+  subdomain: string;
+  displayName: string;
+  adminName: string;
+  adminEmail: string;
+  adminPassword: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SystemTenantService {
   private readonly http = inject(HttpClient);
@@ -23,7 +31,7 @@ export class SystemTenantService {
     return this.http.get<TenantListItem[]>(`${this.env.apiBaseUrl}/system/tenants`);
   }
 
-  create(request: { subdomain: string; displayName: string }) {
+  create(request: CreateSystemTenantRequest) {
     return this.http.post<CreateTenantResponse>(`${this.env.apiBaseUrl}/system/tenants`, request);
   }
 

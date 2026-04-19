@@ -1,7 +1,10 @@
 using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Tenancy.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Tenancy.Enums;
+using ConventionSystem.Domain.Tenancy.Ids;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.MultiTenancy;
 using Microsoft.AspNetCore.Identity;
@@ -219,6 +222,7 @@ public static class AuthEndpoints
         app.MapPost("/auth/confirm-email", async (
             ConfirmEmailRequest request,
             UserManager<ApplicationUser> userManager,
+            ITenantRepository tenantRepository,
             CancellationToken ct) =>
         {
             var user = await userManager.FindByEmailAsync(request.Email);
@@ -228,6 +232,27 @@ public static class AuthEndpoints
             var result = await userManager.ConfirmEmailAsync(user, request.Token);
             if (!result.Succeeded)
                 return Results.Problem("Länken är ogiltig eller har gått ut.", statusCode: 400);
+
+            if (user.UserType == UserType.TenantUser && user.TenantId.HasValue)
+            {
+                var claims = await userManager.GetClaimsAsync(user);
+                var shouldActivateTenant = claims.Any(c =>
+                    c.Type == "activates_tenant" &&
+                    c.Value == "true");
+
+                if (shouldActivateTenant)
+                {
+                    var tenant = await tenantRepository.GetByIdAsync(new TenantId(user.TenantId.Value), ct);
+                    if (tenant is not null && tenant.Status == TenantStatus.Suspended)
+                    {
+                        tenant.Restore();
+                        await tenantRepository.SaveAsync(ct);
+                    }
+
+                    var activationClaim = claims.First(c => c.Type == "activates_tenant" && c.Value == "true");
+                    await userManager.RemoveClaimAsync(user, activationClaim);
+                }
+            }
 
             return Results.Ok();
         });

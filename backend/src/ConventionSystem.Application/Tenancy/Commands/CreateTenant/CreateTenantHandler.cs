@@ -14,6 +14,8 @@ public sealed class CreateTenantHandler(ITenantRepository repository) : IRequest
             throw new InvalidOperationException($"Subdomän '{normalizedSubdomain}' används redan.");
 
         var tenant = new Tenant(TenantId.New(), normalizedSubdomain, command.DisplayName);
+        tenant.Suspend();
+
         await repository.AddAsync(tenant, ct);
         await repository.SaveAsync(ct);
 

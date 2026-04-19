@@ -36,6 +36,36 @@
         }
       </mat-form-field>
 
+      <mat-form-field appearance="outline">
+        <mat-label>Admin-namn</mat-label>
+        <input matInput formControlName="adminName" placeholder="Förnamn Efternamn" />
+        @if (createForm.get('adminName')?.hasError('required') && createForm.get('adminName')?.touched) {
+          <mat-error>Admin-namn krävs.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Admin e-post</mat-label>
+        <input matInput formControlName="adminEmail" placeholder="admin@example.com" />
+        @if (createForm.get('adminEmail')?.hasError('required') && createForm.get('adminEmail')?.touched) {
+          <mat-error>E-post krävs.</mat-error>
+        }
+        @if (createForm.get('adminEmail')?.hasError('email') && createForm.get('adminEmail')?.touched) {
+          <mat-error>Ange en giltig e-postadress.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Admin lösenord</mat-label>
+        <input matInput type="password" formControlName="adminPassword" placeholder="Minst 8 tecken" />
+        @if (createForm.get('adminPassword')?.hasError('required') && createForm.get('adminPassword')?.touched) {
+          <mat-error>Lösenord krävs.</mat-error>
+        }
+        @if (createForm.get('adminPassword')?.hasError('minlength') && createForm.get('adminPassword')?.touched) {
+          <mat-error>Lösenord måste vara minst 8 tecken.</mat-error>
+        }
+      </mat-form-field>
+
       <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
         Skapa tenant
       </button>
