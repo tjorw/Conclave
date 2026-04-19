@@ -24,28 +24,28 @@ public sealed class TenantResolverCacheInvalidationHandlersTests
     }
 
     [Fact]
-    public async Task TenantSuspendedHandler_InvalidatesById()
+    public async Task TenantSuspendedHandler_InvalidatesByIdAndSubdomain()
     {
         var tenantId = TenantId.New();
         var handler = new InvalidateTenantResolverCacheOnTenantSuspendedHandler(_cacheInvalidator);
-        var domainEvent = new TenantSuspended(tenantId, DateTimeOffset.UtcNow);
+        var domainEvent = new TenantSuspended(tenantId, "mycon", DateTimeOffset.UtcNow);
 
         await handler.Handle(domainEvent, default);
 
         await _cacheInvalidator.Received(1)
-            .InvalidateAsync(tenantId.Value, null, Arg.Any<CancellationToken>());
+            .InvalidateAsync(tenantId.Value, "mycon", Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task TenantRestoredHandler_InvalidatesById()
+    public async Task TenantRestoredHandler_InvalidatesByIdAndSubdomain()
     {
         var tenantId = TenantId.New();
         var handler = new InvalidateTenantResolverCacheOnTenantRestoredHandler(_cacheInvalidator);
-        var domainEvent = new TenantRestored(tenantId, DateTimeOffset.UtcNow);
+        var domainEvent = new TenantRestored(tenantId, "mycon", DateTimeOffset.UtcNow);
 
         await handler.Handle(domainEvent, default);
 
         await _cacheInvalidator.Received(1)
-            .InvalidateAsync(tenantId.Value, null, Arg.Any<CancellationToken>());
+            .InvalidateAsync(tenantId.Value, "mycon", Arg.Any<CancellationToken>());
     }
 }

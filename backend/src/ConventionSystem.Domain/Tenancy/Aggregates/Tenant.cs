@@ -43,7 +43,7 @@ public sealed class Tenant : AggregateRoot
             throw new TenantAlreadySuspendedException();
 
         Status = TenantStatus.Suspended;
-        RaiseDomainEvent(new TenantSuspended(Id, DateTimeOffset.UtcNow));
+        RaiseDomainEvent(new TenantSuspended(Id, Subdomain, DateTimeOffset.UtcNow));
     }
 
     public void Restore()
@@ -52,6 +52,6 @@ public sealed class Tenant : AggregateRoot
             throw new TenantAlreadyActiveException();
 
         Status = TenantStatus.Active;
-        RaiseDomainEvent(new TenantRestored(Id, DateTimeOffset.UtcNow));
+        RaiseDomainEvent(new TenantRestored(Id, Subdomain, DateTimeOffset.UtcNow));
     }
 }

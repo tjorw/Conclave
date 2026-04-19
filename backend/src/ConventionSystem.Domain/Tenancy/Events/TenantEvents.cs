@@ -11,8 +11,10 @@ public record TenantCreated(
 
 public record TenantSuspended(
     TenantId TenantId,
+    string Subdomain,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
 public record TenantRestored(
     TenantId TenantId,
+    string Subdomain,
     DateTimeOffset OccurredAt) : IDomainEvent;

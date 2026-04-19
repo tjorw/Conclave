@@ -18,7 +18,7 @@ public sealed class InvalidateTenantResolverCacheOnTenantSuspendedHandler(
 {
     public async Task Handle(TenantSuspended notification, CancellationToken ct)
     {
-        await cacheInvalidator.InvalidateAsync(notification.TenantId.Value, ct: ct);
+        await cacheInvalidator.InvalidateAsync(notification.TenantId.Value, notification.Subdomain, ct);
     }
 }
 
@@ -27,6 +27,6 @@ public sealed class InvalidateTenantResolverCacheOnTenantRestoredHandler(
 {
     public async Task Handle(TenantRestored notification, CancellationToken ct)
     {
-        await cacheInvalidator.InvalidateAsync(notification.TenantId.Value, ct: ct);
+        await cacheInvalidator.InvalidateAsync(notification.TenantId.Value, notification.Subdomain, ct);
     }
 }
