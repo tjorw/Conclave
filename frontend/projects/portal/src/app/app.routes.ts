@@ -35,6 +35,11 @@ export const routes: Routes = [
 				loadComponent: () =>
 					import('./features/tenants/tenants.component').then(m => m.TenantsComponent),
 			},
+			{
+				path: 'tenants/:tenantId/admins',
+				loadComponent: () =>
+					import('./features/tenant-admins/tenant-admins.component').then(m => m.TenantAdminsComponent),
+			},
 			{ path: '', redirectTo: 'tenants', pathMatch: 'full' },
 		],
 	},

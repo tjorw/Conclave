@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ENVIRONMENT } from 'shared';
+import { ENVIRONMENT, PersonDto } from 'shared';
 
 export interface TenantListItem {
   id: string;
@@ -8,6 +8,12 @@ export interface TenantListItem {
   displayName: string;
   status: 'Active' | 'Suspended' | string;
   createdAt: string;
+}
+
+export interface TenantConvention {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 interface CreateTenantResponse {
@@ -41,5 +47,28 @@ export class SystemTenantService {
 
   restore(tenantId: string) {
     return this.http.put<void>(`${this.env.apiBaseUrl}/system/tenants/${tenantId}/restore`, null);
+  }
+
+  listConventions(tenantId: string) {
+    return this.http.get<TenantConvention[]>(`${this.env.apiBaseUrl}/system/tenants/${tenantId}/conventions`);
+  }
+
+  listConventionPersons(tenantId: string, conventionId: string) {
+    return this.http.get<PersonDto[]>(
+      `${this.env.apiBaseUrl}/system/tenants/${tenantId}/conventions/${conventionId}/persons`,
+    );
+  }
+
+  addConventionAdministrator(tenantId: string, conventionId: string, personId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/system/tenants/${tenantId}/conventions/${conventionId}/administrators`,
+      { personId },
+    );
+  }
+
+  removeConventionAdministrator(tenantId: string, conventionId: string, personId: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/system/tenants/${tenantId}/conventions/${conventionId}/administrators/${personId}`,
+    );
   }
 }

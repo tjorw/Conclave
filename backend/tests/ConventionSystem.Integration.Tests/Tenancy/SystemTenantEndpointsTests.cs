@@ -3,6 +3,9 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Data;
+using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Domain.Convention.Entities;
+using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Tenancy.Enums;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.Persistence;
@@ -362,6 +365,102 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
         });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SystemTenantConventionAdmins_CanBeManagedFromSystemEndpoints()
+    {
+        var token = CreateToken(new Claim("is_system_admin", "true"));
+        var client = CreateAuthorizedClient(token);
+
+        var subdomain = $"admins-{Guid.NewGuid():N}";
+        var bootstrapAdminEmail = $"admins-bootstrap-{Guid.NewGuid():N}@test.se";
+        var createResponse = await client.PostAsJsonAsync("/system/tenants", new
+        {
+            subdomain,
+            displayName = "Admins Tenant",
+            adminName = "Bootstrap Admin",
+            adminEmail = bootstrapAdminEmail,
+            adminPassword = "Admin123!"
+        });
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        var createBody = await createResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var tenantId = createBody.GetProperty("id").GetGuid();
+        var conventionId = createBody.GetProperty("conventionId").GetGuid();
+
+        Guid personId;
+        await using (var scope = Factory.Services.CreateAsyncScope())
+        {
+            var conventionRepository = scope.ServiceProvider.GetRequiredService<IConventionRepository>();
+            var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
+
+            var convention = await conventionRepository.GetByIdAsync(new ConventionId(conventionId));
+            Assert.NotNull(convention);
+
+            var person = convention!.CreatePerson("Portal Admin Candidate", $"candidate-{Guid.NewGuid():N}@test.se");
+            await db.Persons.AddAsync(person);
+            db.Entry(person).Property("TenantId").CurrentValue = tenantId;
+            await db.SaveChangesAsync();
+            personId = person.Id.Value;
+
+            var personTenantId = await db.Persons
+                .Where(p => p.Id == new PersonId(personId))
+                .Select(p => EF.Property<Guid>(p, "TenantId"))
+                .SingleAsync();
+            Assert.Equal(tenantId, personTenantId);
+        }
+
+        var conventionsResponse = await client.GetAsync($"/system/tenants/{tenantId}/conventions");
+        Assert.Equal(HttpStatusCode.OK, conventionsResponse.StatusCode);
+        var conventions = await conventionsResponse.Content.ReadFromJsonAsync<List<JsonElement>>();
+        Assert.NotNull(conventions);
+        Assert.Contains(conventions!, c => c.GetProperty("id").GetGuid() == conventionId);
+
+        var personsBeforeResponse = await client.GetAsync($"/system/tenants/{tenantId}/conventions/{conventionId}/persons");
+        Assert.Equal(HttpStatusCode.OK, personsBeforeResponse.StatusCode);
+        var personsBefore = await personsBeforeResponse.Content.ReadFromJsonAsync<List<JsonElement>>();
+        Assert.NotNull(personsBefore);
+        Assert.Contains(personsBefore!, p => p.GetProperty("id").GetGuid() == personId && !p.GetProperty("isAdmin").GetBoolean());
+
+        var addAdminResponse = await client.PostAsJsonAsync(
+            $"/system/tenants/{tenantId}/conventions/{conventionId}/administrators",
+            new { personId });
+        Assert.Equal(HttpStatusCode.NoContent, addAdminResponse.StatusCode);
+
+        await using (var scope = Factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
+
+            var adminTenantId = await db.Set<ConventionAdministrator>()
+                .Where(a => EF.Property<ConventionId>(a, "ConventionId") == new ConventionId(conventionId)
+                            && a.PersonId == new PersonId(personId))
+                .Select(a => EF.Property<Guid>(a, "TenantId"))
+                .SingleAsync();
+            Assert.Equal(tenantId, adminTenantId);
+
+            var personTenantId = await db.Persons
+                .Where(p => p.Id == new PersonId(personId))
+                .Select(p => EF.Property<Guid>(p, "TenantId"))
+                .SingleAsync();
+            Assert.Equal(tenantId, personTenantId);
+        }
+
+        var personsAfterAddResponse = await client.GetAsync($"/system/tenants/{tenantId}/conventions/{conventionId}/persons");
+        Assert.Equal(HttpStatusCode.OK, personsAfterAddResponse.StatusCode);
+        var personsAfterAdd = await personsAfterAddResponse.Content.ReadFromJsonAsync<List<JsonElement>>();
+        Assert.NotNull(personsAfterAdd);
+        Assert.Contains(personsAfterAdd!, p => p.GetProperty("id").GetGuid() == personId && p.GetProperty("isAdmin").GetBoolean());
+
+        var removeAdminResponse = await client.DeleteAsync(
+            $"/system/tenants/{tenantId}/conventions/{conventionId}/administrators/{personId}");
+        Assert.Equal(HttpStatusCode.NoContent, removeAdminResponse.StatusCode);
+
+        var personsAfterRemoveResponse = await client.GetAsync($"/system/tenants/{tenantId}/conventions/{conventionId}/persons");
+        Assert.Equal(HttpStatusCode.OK, personsAfterRemoveResponse.StatusCode);
+        var personsAfterRemove = await personsAfterRemoveResponse.Content.ReadFromJsonAsync<List<JsonElement>>();
+        Assert.NotNull(personsAfterRemove);
+        Assert.Contains(personsAfterRemove!, p => p.GetProperty("id").GetGuid() == personId && !p.GetProperty("isAdmin").GetBoolean());
     }
 
     private WebApplicationFactory<Program> CreateMultitenantFactory() =>

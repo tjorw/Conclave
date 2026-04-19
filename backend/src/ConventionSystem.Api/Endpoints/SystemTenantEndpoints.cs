@@ -2,6 +2,7 @@ using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateConvention;
+using ConventionSystem.Application.Convention.Queries.ListPersons;
 using ConventionSystem.Application.Tenancy.Abstractions;
 using ConventionSystem.Application.Tenancy.Commands.CreateTenant;
 using ConventionSystem.Application.Tenancy.Commands.RestoreTenant;
@@ -11,8 +12,10 @@ using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Tenancy.Ids;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.MultiTenancy;
+using ConventionSystem.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace ConventionSystem.Api.Endpoints;
@@ -127,6 +130,93 @@ public static class SystemTenantEndpoints
             return Results.NoContent();
         });
 
+        group.MapGet("/{tenantId:guid}/conventions", async (
+            Guid tenantId,
+            ConventionDbContext db,
+            CancellationToken ct) =>
+        {
+            var conventions = await db.Conventions
+                .Where(c => EF.Property<Guid>(c, "TenantId") == tenantId)
+                .OrderBy(c => c.Name)
+                .Select(c => new TenantConventionDto(c.Id.Value, c.Name, c.Slug))
+                .ToListAsync(ct);
+
+            return Results.Ok(conventions);
+        });
+
+        group.MapGet("/{tenantId:guid}/conventions/{conventionId:guid}/persons", async (
+            Guid tenantId,
+            Guid conventionId,
+            HttpContext httpContext,
+            ISender sender,
+            ConventionDbContext db,
+            CancellationToken ct) =>
+        {
+            httpContext.Items[TenantContextItemKeys.TenantId] = tenantId;
+
+            var belongsToTenant = await db.Conventions
+                .AnyAsync(c => c.Id == new ConventionId(conventionId)
+                               && EF.Property<Guid>(c, "TenantId") == tenantId, ct);
+
+            if (!belongsToTenant)
+                return Results.NotFound();
+
+            var persons = await sender.Send(new ListPersonsQuery(conventionId), ct);
+            return Results.Ok(persons);
+        });
+
+        group.MapPost("/{tenantId:guid}/conventions/{conventionId:guid}/administrators", async (
+            Guid tenantId,
+            Guid conventionId,
+            AddSystemAdministratorRequest request,
+            HttpContext httpContext,
+            IConventionRepository conventionRepository,
+            ConventionDbContext db,
+            CancellationToken ct) =>
+        {
+            httpContext.Items[TenantContextItemKeys.TenantId] = tenantId;
+
+            var convention = await conventionRepository.GetByIdAsync(new ConventionId(conventionId), ct);
+            if (convention is null)
+                return Results.NotFound();
+
+            var belongsToTenant = await db.Conventions
+                .AnyAsync(c => c.Id == new ConventionId(conventionId)
+                               && EF.Property<Guid>(c, "TenantId") == tenantId, ct);
+            if (!belongsToTenant)
+                return Results.NotFound();
+
+            convention.AddAdministrator(new PersonId(request.PersonId), PersonId.New());
+            await conventionRepository.SaveAsync(ct);
+            return Results.NoContent();
+        });
+
+        group.MapDelete("/{tenantId:guid}/conventions/{conventionId:guid}/administrators/{personId:guid}", async (
+            Guid tenantId,
+            Guid conventionId,
+            Guid personId,
+            HttpContext httpContext,
+            IConventionRepository conventionRepository,
+            ConventionDbContext db,
+            CancellationToken ct) =>
+        {
+            httpContext.Items[TenantContextItemKeys.TenantId] = tenantId;
+
+            var convention = await conventionRepository.GetByIdAsync(new ConventionId(conventionId), ct);
+            if (convention is null)
+                return Results.NotFound();
+
+            var belongsToTenant = await db.Conventions
+                .AnyAsync(c => c.Id == new ConventionId(conventionId)
+                               && EF.Property<Guid>(c, "TenantId") == tenantId, ct);
+            if (!belongsToTenant)
+                return Results.NotFound();
+
+            convention.RemoveAdministrator(new PersonId(personId), PersonId.New());
+            await conventionRepository.SaveAsync(ct);
+            return Results.NoContent();
+        });
+
         group.MapPost("/{tenantId:guid}/provision", async (
             Guid tenantId,
             ProvisionTenantConventionRequest request,
@@ -228,3 +318,5 @@ public record ProvisionTenantConventionRequest(
     string AdminName,
     string AdminEmail,
     string AdminPassword);
+public record TenantConventionDto(Guid Id, string Name, string Slug);
+public record AddSystemAdministratorRequest(Guid PersonId);

@@ -92,6 +92,9 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
                 ["Jwt:Issuer"] = "ConventionSystem",
                 ["Jwt:Audience"] = "ConventionSystem",
                 ["DevData:EnableSeeding"] = "false",
+                ["Email:Provider"] = "Logging",
+                ["Logging:LogLevel:Microsoft.EntityFrameworkCore.Database.Command"] = "Warning",
+                ["Logging:LogLevel:Microsoft.EntityFrameworkCore.Migrations"] = "Warning",
                 ["UseHttpsRedirect"] = "false",
                 ["Multitenancy:Enabled"] = "false"
             });

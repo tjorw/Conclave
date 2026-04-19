@@ -115,6 +115,7 @@
                     Återaktivera
                   </button>
                 }
+                <a mat-stroked-button [routerLink]="['/tenants', tenant.id, 'admins']">Admins</a>
               </td>
             </tr>
           } @empty {
