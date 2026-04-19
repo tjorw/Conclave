@@ -11,6 +11,9 @@ import {
   TicketTypeAdminDto,
   VisitorTicketTypeDto,
   VisitorRegistrationAdminDto,
+  PromotionCodeAdminDto,
+  PromotionCodeRedemptionHistoryDto,
+  PromotionDiscountType,
 } from '../models/registration.models';
 
 @Injectable({ providedIn: 'root' })
@@ -180,6 +183,41 @@ export class RegistrationService {
   revokeTicket(ticketId: string) {
     return this.http.delete<void>(
       `${this.env.apiBaseUrl}/tickets/${ticketId}`
+    );
+  }
+
+  listPromotionCodes(editionId: string) {
+    return this.http.get<PromotionCodeAdminDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/promotion-codes`
+    );
+  }
+
+  createPromotionCode(editionId: string, body: {
+    code: string;
+    description: string;
+    discountType: PromotionDiscountType;
+    discountValue: number;
+    maxRedemptions?: number | null;
+    validFrom?: string | null;
+    validUntil?: string | null;
+    allowedTicketTypeIds?: string[] | null;
+  }) {
+    return this.http.post<{ id: string }>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/promotion-codes`,
+      body
+    );
+  }
+
+  deactivatePromotionCode(promotionCodeId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/promotion-codes/${promotionCodeId}/deactivate`,
+      {}
+    );
+  }
+
+  listPromotionCodeRedemptions(promotionCodeId: string) {
+    return this.http.get<PromotionCodeRedemptionHistoryDto[]>(
+      `${this.env.apiBaseUrl}/promotion-codes/${promotionCodeId}/redemptions`
     );
   }
 }

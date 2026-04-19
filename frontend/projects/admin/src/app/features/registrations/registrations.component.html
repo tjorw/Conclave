@@ -11,45 +11,206 @@
     <div class="loading-center"><mat-spinner diameter="40" /></div>
   } @else {
 
-    <table class="data-table" aria-label="Besökarregistreringar">
-      <thead>
-        <tr>
-          <th>Person</th>
-          <th>Biljetttyp</th>
-          <th>Status</th>
-          <th>Registrerad</th>
-          <th>Betalningsref.</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (reg of visitorRegistrations(); track reg.id) {
-          <tr>
-            <td>{{ reg.personName }}</td>
-            <td>{{ reg.ticketTypeName ?? '–' }}</td>
-            <td>
-              <span [class]="'status-chip ' + statusChip(reg.status)">{{ statusLabel(reg.status) }}</span>
-            </td>
-            <td>{{ reg.registeredAt | date:'d/M/yy HH:mm' }}</td>
-            <td>{{ reg.paymentReference ?? '–' }}</td>
-            <td class="actions-cell">
-              @if (reg.status === 'PendingPayment') {
-                <button mat-stroked-button color="primary" [disabled]="saving()" (click)="confirmPayment(reg)">
-                  Bekräfta betalning
-                </button>
+    <mat-tab-group animationDuration="150ms">
+      <mat-tab label="Besökarregistreringar">
+        <div class="tab-content">
+          <table class="data-table" aria-label="Besökarregistreringar">
+            <thead>
+              <tr>
+                <th>Person</th>
+                <th>Biljetttyp</th>
+                <th>Status</th>
+                <th>Registrerad</th>
+                <th>Betalningsref.</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (reg of visitorRegistrations(); track reg.id) {
+                <tr>
+                  <td>{{ reg.personName }}</td>
+                  <td>{{ reg.ticketTypeName ?? '–' }}</td>
+                  <td>
+                    <span [class]="'status-chip ' + statusChip(reg.status)">{{ statusLabel(reg.status) }}</span>
+                  </td>
+                  <td>{{ reg.registeredAt | date:'d/M/yy HH:mm' }}</td>
+                  <td>{{ reg.paymentReference ?? '–' }}</td>
+                  <td class="actions-cell">
+                    @if (reg.status === 'PendingPayment') {
+                      <button mat-stroked-button color="primary" [disabled]="saving()" (click)="confirmPayment(reg)">
+                        Bekräfta betalning
+                      </button>
+                    }
+                    @if (canCancelRegistration(reg)) {
+                      <button mat-stroked-button color="warn" [disabled]="saving()" (click)="cancelRegistration(reg)">
+                        Makulera registrering
+                      </button>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="6" class="empty-row">Inga registreringar för denna upplaga.</td></tr>
               }
-              @if (canCancelRegistration(reg)) {
-                <button mat-stroked-button color="warn" [disabled]="saving()" (click)="cancelRegistration(reg)">
-                  Makulera registrering
-                </button>
-              }
-            </td>
-          </tr>
-        } @empty {
-          <tr><td colspan="6" class="empty-row">Inga registreringar för denna upplaga.</td></tr>
-        }
-      </tbody>
-    </table>
+            </tbody>
+          </table>
+        </div>
+      </mat-tab>
 
+      <mat-tab label="Kampanjkoder">
+        <div class="tab-content">
+          <mat-card class="form-card">
+            <mat-card-header>
+              <mat-card-title>Skapa kampanjkod</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <form [formGroup]="promotionCodeForm" (ngSubmit)="createPromotionCode()" class="form-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Kod</mat-label>
+                  <input matInput formControlName="code" maxlength="64" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Beskrivning</mat-label>
+                  <input matInput formControlName="description" maxlength="200" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Rabattyp</mat-label>
+                  <mat-select formControlName="discountType">
+                    @for (option of discountTypeOptions; track option.value) {
+                      <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Rabattvärde</mat-label>
+                  <input matInput type="number" min="0" formControlName="discountValue" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Max antal inlösningar</mat-label>
+                  <input matInput type="number" min="1" formControlName="maxRedemptions" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Giltig från</mat-label>
+                  <input matInput type="datetime-local" formControlName="validFrom" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Giltig till</mat-label>
+                  <input matInput type="datetime-local" formControlName="validUntil" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Tillåtna biljettyper</mat-label>
+                  <mat-select formControlName="allowedTicketTypeIds" multiple>
+                    @for (ticketType of ticketTypes(); track ticketType.id) {
+                      <mat-option [value]="ticketType.id">{{ ticketType.name }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <div class="form-actions">
+                  <button mat-flat-button color="primary" type="submit" [disabled]="saving() || promotionCodeForm.invalid">
+                    Skapa kampanjkod
+                  </button>
+                </div>
+              </form>
+            </mat-card-content>
+          </mat-card>
+
+          <table class="data-table" aria-label="Kampanjkoder">
+            <thead>
+              <tr>
+                <th>Kod</th>
+                <th>Beskrivning</th>
+                <th>Rabatt</th>
+                <th>Status</th>
+                <th>Inlösta</th>
+                <th>Giltighet</th>
+                <th>Biljettyper</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (code of promotionCodes(); track code.id) {
+                <tr>
+                  <td><strong>{{ code.code }}</strong></td>
+                  <td>{{ code.description }}</td>
+                  <td>{{ promotionDiscountLabel(code) }}</td>
+                  <td>
+                    <span class="status-chip" [class.chip-green]="code.isActive" [class.chip-grey]="!code.isActive">
+                      {{ code.isActive ? 'Aktiv' : 'Inaktiv' }}
+                    </span>
+                  </td>
+                  <td>
+                    {{ code.redemptionCount }}
+                    @if (code.maxRedemptions !== null) { / {{ code.maxRedemptions }} }
+                  </td>
+                  <td>
+                    @if (code.validFrom || code.validUntil) {
+                      {{ code.validFrom ? (code.validFrom | date:'d/M/yy HH:mm') : '–' }}
+                      –
+                      {{ code.validUntil ? (code.validUntil | date:'d/M/yy HH:mm') : '–' }}
+                    } @else {
+                      Ingen begränsning
+                    }
+                  </td>
+                  <td>{{ allowedTicketTypeLabel(code.allowedTicketTypeIds) }}</td>
+                  <td class="actions-cell">
+                    <button mat-stroked-button [disabled]="saving()" (click)="togglePromotionHistory(code)">
+                      {{ isPromotionHistoryOpen(code.id) ? 'Dölj historik' : 'Visa historik' }}
+                    </button>
+                    @if (code.isActive) {
+                      <button mat-stroked-button color="warn" [disabled]="saving()" (click)="deactivatePromotionCode(code)">
+                        Deaktivera
+                      </button>
+                    }
+                  </td>
+                </tr>
+                @if (isPromotionHistoryOpen(code.id)) {
+                  <tr>
+                    <td colspan="8" class="history-cell">
+                      @if (loadingHistoryFor() === code.id) {
+                        <div class="history-loading"><mat-spinner diameter="28" /></div>
+                      } @else {
+                        <table class="nested-table" aria-label="Inlösningshistorik">
+                          <thead>
+                            <tr>
+                              <th>Person</th>
+                              <th>Biljett</th>
+                              <th>Rabatt</th>
+                              <th>Slutpris</th>
+                              <th>Inlöst</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (item of promotionHistory(); track item.id) {
+                              <tr>
+                                <td>{{ personNameFromRegistration(item.personId) }}</td>
+                                <td>{{ item.ticketId }}</td>
+                                <td>{{ item.discountApplied }} kr</td>
+                                <td>{{ item.finalPrice }} kr</td>
+                                <td>{{ item.redeemedAt | date:'d/M/yy HH:mm' }}</td>
+                              </tr>
+                            } @empty {
+                              <tr><td colspan="5" class="empty-row">Ingen inlösningshistorik ännu.</td></tr>
+                            }
+                          </tbody>
+                        </table>
+                      }
+                    </td>
+                  </tr>
+                }
+              } @empty {
+                <tr><td colspan="8" class="empty-row">Inga kampanjkoder för denna upplaga.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
   }
 </div>

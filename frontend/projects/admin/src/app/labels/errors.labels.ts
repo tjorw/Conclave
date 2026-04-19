@@ -12,6 +12,7 @@ export const ERROR = {
   fetchStaffAreas:      'Kunde inte hämta funktioneringsdata.',
   fetchDashboard:       'Kunde inte hämta konventdata.',
   fetchEvents:          'Kunde inte hämta evenemangslistan.',
+  fetchTicketTypes:     'Kunde inte hämta biljettyper.',
 
   // Upplaga
   createEdition:        'Kunde inte skapa upplaga',
@@ -79,6 +80,10 @@ export const ERROR = {
   // Registrering
   confirmPayment:         'Kunde inte bekräfta betalning',
   cancelRegistration:     'Kunde inte makulera registrering',
+  fetchPromotionCodes:    'Kunde inte hämta kampanjkoder',
+  createPromotionCode:    'Kunde inte skapa kampanjkod',
+  deactivatePromotionCode:'Kunde inte deaktivera kampanjkod',
+  fetchPromotionHistory:  'Kunde inte hämta inlösningshistorik',
 
   // Person
   createPerson:           'Kunde inte skapa person',

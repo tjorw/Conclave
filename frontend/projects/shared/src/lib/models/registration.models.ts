@@ -3,6 +3,7 @@ export type SessionRegistrationStatus = 'Confirmed' | 'Cancelled';
 export type StaffApplicationStatus = 'Received' | 'UnderReview' | 'Assigned' | 'Confirmed' | 'Rejected';
 export type TicketStatus = 'Reserved' | 'Paid' | 'Collected' | 'Revoked';
 export type TicketTypeCategory = 'Visitor' | 'Organiser' | 'Staff';
+export type PromotionDiscountType = 'Percentage' | 'Fixed' | 'Free';
 
 export interface TicketTypeAdminDto {
   id: string;
@@ -17,6 +18,29 @@ export interface VisitorTicketTypeDto {
   id: string;
   name: string;
   price: number;
+}
+
+export interface PromotionCodeAdminDto {
+  id: string;
+  code: string;
+  description: string;
+  discountType: PromotionDiscountType;
+  discountValue: number;
+  isActive: boolean;
+  redemptionCount: number;
+  maxRedemptions: number | null;
+  validFrom: string | null;
+  validUntil: string | null;
+  allowedTicketTypeIds: string[] | null;
+}
+
+export interface PromotionCodeRedemptionHistoryDto {
+  id: string;
+  personId: string;
+  ticketId: string;
+  redeemedAt: string;
+  discountApplied: number;
+  finalPrice: number;
 }
 
 export interface VisitorRegistrationAdminDto {

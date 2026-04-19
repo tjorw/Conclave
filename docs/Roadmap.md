@@ -13,7 +13,7 @@ Prioriterad lista – ej startade överst, klara underst.
 - [ ] `R18` `RegistrationRuleService.ValidateTicket` med dag- och kategorivalidering (UC-TK009)
 - [x] `R19` Promotionkoder – skapa, lista, lösa in och deaktivera (UC-PC001–PC005)
 - [x] `R20` Centralisera admin-claimvärde (`"true"`) i auth-konstanter
-- [ ] `R23` Bygg admin-gränssnitt för promotionkoder (UC-PC001, UC-PC002, UC-PC004, UC-PC005)
+- [x] `R23` Bygg admin-gränssnitt för promotionkoder (UC-PC001, UC-PC002, UC-PC004, UC-PC005)
 - [ ] `R24` Bygg publik vy för inlösen av promotionkod (UC-PC003)
 - [ ] `R21` Centralisera fallback för frontend-URL i auth-flöden
 - [ ] `R22` Centralisera JWT-konfigurationsnycklar (`Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience`)
