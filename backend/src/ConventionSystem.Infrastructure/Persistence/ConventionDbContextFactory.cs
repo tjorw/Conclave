@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using System;
+using ConventionSystem.Infrastructure.MultiTenancy;
+using Microsoft.Extensions.Options;
 
 namespace ConventionSystem.Infrastructure.Persistence;
 
@@ -17,7 +19,10 @@ public sealed class ConventionDbContextFactory : IDesignTimeDbContextFactory<Con
             .UseSqlServer(connectionString)
             .Options;
 
-        return new ConventionDbContext(options);
+        return new ConventionDbContext(
+            options,
+            new DesignTimeTenantContext(),
+            Options.Create(new MultitenancyOptions { Enabled = false, DefaultSubdomain = "default" }));
     }
 
     private static string ResolveConnectionString(string[] args)
@@ -51,5 +56,10 @@ public sealed class ConventionDbContextFactory : IDesignTimeDbContextFactory<Con
         }
 
         return null;
+    }
+
+    private sealed class DesignTimeTenantContext : ITenantContext
+    {
+        public Guid TenantId => Guid.Empty;
     }
 }

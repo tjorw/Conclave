@@ -8,6 +8,7 @@ using ConventionSystem.Domain.Registration.Services;
 using ConventionSystem.Infrastructure.Dispatching;
 using ConventionSystem.Infrastructure.Email;
 using ConventionSystem.Infrastructure.Identity;
+using ConventionSystem.Infrastructure.MultiTenancy;
 using ConventionSystem.Infrastructure.Persistence;
 using ConventionSystem.Infrastructure.Persistence.Repositories;
 using ConventionSystem.Infrastructure.Registration;
@@ -63,13 +64,20 @@ public static class InfrastructureServiceExtensions
 
         services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
         services.AddScoped<EventDispatchInterceptor>();
+        services.AddScoped<TenantSeedInterceptor>();
+
+        services.AddOptions<MultitenancyOptions>()
+            .Bind(configuration.GetSection(MultitenancyOptions.SectionName));
+
+        services.AddScoped<ITenantContext, DefaultTenantContext>();
 
         services.AddDbContext<ConventionDbContext>((provider, options) =>
         {
-            var interceptor = provider.GetRequiredService<EventDispatchInterceptor>();
+            var eventDispatchInterceptor = provider.GetRequiredService<EventDispatchInterceptor>();
+            var tenantSeedInterceptor = provider.GetRequiredService<TenantSeedInterceptor>();
             options
                 .UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
-                .AddInterceptors(interceptor);
+                .AddInterceptors(eventDispatchInterceptor, tenantSeedInterceptor);
         });
 
         services.AddDbContext<ApplicationIdentityDbContext>(options =>

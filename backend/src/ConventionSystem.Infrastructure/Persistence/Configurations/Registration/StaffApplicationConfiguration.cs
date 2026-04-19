@@ -68,9 +68,12 @@ public sealed class StaffApplicationConfiguration : IEntityTypeConfiguration<Sta
             sp.WithOwner().HasForeignKey("StaffApplicationId");
             sp.Property<Guid>("Id").HasDefaultValueSql("newsequentialid()");
             sp.HasKey("Id");
+            sp.Property<Guid>("TenantId").HasColumnName("tenant_id");
             sp.Property(p => p.StationId)
                 .HasConversion(id => id.Value, value => new StationId(value))
                 .HasColumnName("station_id");
+
+            sp.HasIndex("TenantId");
         });
 
         builder.Navigation(a => a.Availabilities).HasField("_availabilities");

@@ -1,16 +1,28 @@
 using System.Reflection;
+using System.Linq.Expressions;
 using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Entities;
 using ConventionSystem.Domain.Staff.Aggregates;
+using ConventionSystem.Domain.Tenancy.Aggregates;
+using ConventionSystem.Infrastructure.MultiTenancy;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using DomainEvent = ConventionSystem.Domain.Event.Aggregates.Event;
 
 namespace ConventionSystem.Infrastructure.Persistence;
 
-public sealed class ConventionDbContext(DbContextOptions<ConventionDbContext> options) : DbContext(options)
+public sealed class ConventionDbContext(
+    DbContextOptions<ConventionDbContext> options,
+    ITenantContext tenantContext,
+    IOptions<MultitenancyOptions> optionsAccessor) : DbContext(options)
 {
+    private const string TenantIdPropertyName = "TenantId";
+
+    private Guid CurrentTenantId => tenantContext.TenantId;
+    private bool IsMultitenancyEnabled => optionsAccessor.Value.Enabled;
+
     // Convention
     public DbSet<Convention> Conventions => Set<Convention>();
     public DbSet<Edition> Editions => Set<Edition>();
@@ -33,6 +45,9 @@ public sealed class ConventionDbContext(DbContextOptions<ConventionDbContext> op
     // Staff
     public DbSet<Shift> Shifts => Set<Shift>();
 
+    // Tenancy
+    public DbSet<Tenant> Tenants => Set<Tenant>();
+
     // Infrastructure
     public DbSet<DomainEventLogEntry> DomainEventLog => Set<DomainEventLogEntry>();
 
@@ -40,5 +55,47 @@ public sealed class ConventionDbContext(DbContextOptions<ConventionDbContext> op
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        ConfigureTenantScoping(modelBuilder);
+    }
+
+    private void ConfigureTenantScoping(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (entityType.IsOwned())
+                continue;
+
+            if (entityType.GetTableName() is null)
+                continue;
+
+            if (entityType.ClrType == typeof(Tenant))
+                continue;
+
+            var builder = modelBuilder.Entity(entityType.Name);
+            builder.Property<Guid>(TenantIdPropertyName).HasColumnName("tenant_id");
+            builder.HasIndex(TenantIdPropertyName);
+            builder.HasQueryFilter(BuildTenantFilterExpression(entityType.ClrType));
+        }
+    }
+
+    private LambdaExpression BuildTenantFilterExpression(Type entityType)
+    {
+        var parameter = Expression.Parameter(entityType, "e");
+        var tenantProperty = Expression.Call(
+            typeof(EF),
+            nameof(EF.Property),
+            [typeof(Guid)],
+            parameter,
+            Expression.Constant(TenantIdPropertyName));
+
+        var isMultitenancyEnabled = Expression.Property(
+            Expression.Constant(this),
+            nameof(IsMultitenancyEnabled));
+
+        var currentTenantId = Expression.Property(Expression.Constant(this), nameof(CurrentTenantId));
+        var tenantMatch = Expression.Equal(tenantProperty, currentTenantId);
+        var body = Expression.OrElse(Expression.Not(isMultitenancyEnabled), tenantMatch);
+
+        return Expression.Lambda(body, parameter);
     }
 }
