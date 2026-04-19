@@ -50,7 +50,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(AuthConstants.Policies.IsAdmin, policy =>
-        policy.RequireClaim(AuthConstants.Claims.IsAdmin, "true"));
+    policy.RequireClaim(AuthConstants.Claims.IsAdmin, AuthConstants.Claims.IsAdminTrue));
 });
 
 builder.Services.AddCors(options =>

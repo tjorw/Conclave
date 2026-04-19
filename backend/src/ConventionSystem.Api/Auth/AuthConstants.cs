@@ -11,5 +11,6 @@ public static class AuthConstants
     {
         public const string PersonId = "person_id";
         public const string IsAdmin = "is_admin";
+        public const string IsAdminTrue = "true";
     }
 }

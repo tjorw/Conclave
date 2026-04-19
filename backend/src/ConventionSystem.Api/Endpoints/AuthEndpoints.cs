@@ -229,7 +229,7 @@ public static class AuthEndpoints
 
         List<Claim> claims = [new Claim(AuthConstants.Claims.PersonId, personId.ToString())];
         if (isAdmin)
-            claims.Add(new Claim(AuthConstants.Claims.IsAdmin, "true"));
+            claims.Add(new Claim(AuthConstants.Claims.IsAdmin, AuthConstants.Claims.IsAdminTrue));
 
         var descriptor = new SecurityTokenDescriptor
         {

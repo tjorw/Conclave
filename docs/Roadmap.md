@@ -12,7 +12,7 @@ Prioriterad lista – ej startade överst, klara underst.
 - [x] `R17` Makuleringskaskad + uthämtning med förmåner (UC-TK007/TK008)
 - [ ] `R18` `RegistrationRuleService.ValidateTicket` med dag- och kategorivalidering (UC-TK009)
 - [ ] `R19` Promotionkoder – skapa, lista, lösa in och deaktivera (UC-PC001–PC005)
-- [ ] `R20` Centralisera admin-claimvärde (`"true"`) i auth-konstanter
+- [x] `R20` Centralisera admin-claimvärde (`"true"`) i auth-konstanter
 - [ ] `R21` Centralisera fallback för frontend-URL i auth-flöden
 - [ ] `R22` Centralisera JWT-konfigurationsnycklar (`Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience`)
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
@@ -36,7 +36,6 @@ Prioriterad lista – ej startade överst, klara underst.
 | **`Shift` saknar `EditionId`** | `Shift` har ingen direkt koppling till `EditionId`. `MyScheduleRepository` löser detta via `Edition.Stations`-navigeringen (shadow FK). Om Shift-kontexten växer bör ett direkt `EditionId` övervägas på `Shift` för att slippa join-beroendet mot Convention. | Låg – fungerar korrekt, men fragil vid schemamigration |
 | **Deduplikering i tidsschema** | Om samma session förekommer i flera kategorier (t.ex. bokad OCH arrangör) prioriteras Booked > Organiser > Watching i `MyScheduleRepository`. Prioriteringslogiken är inte testad på domännivå. Om affärsreglerna ändras (t.ex. "visa alltid arrangörsrollen oavsett bokning") behöver deduplikeringen ses över. | Låg – nuvarande beteende är rimligt |
 | **Inga `DbSet<Station>` i `ConventionDbContext`** | `Station` och `Venue` nås via `db.Set<T>()` i stället för namngivna `DbSet<T>`-properties. Inkonsekvens mot övriga entiteter. Lägg till `DbSet<Station>` och `DbSet<Venue>` i `ConventionDbContext` om fler queries börjar hämta dem direkt. | Låg |
-| **R20: Centralisera admin-claimvärde (`"true"`)** | Samma claimvärde hårdkodas vid både token-utgivning och policykontroll. Inför en gemensam konstant (t.ex. i `AuthConstants`) så att claim-kontraktet inte divergerar. | Medel |
 | **R21: Centralisera fallback för frontend-URL i auth-flöden** | Default-värdet `http://localhost:4201` upprepas i flera auth-endpoints. Flytta till en gemensam konstant eller options-klass för att undvika inkonsekvent miljökonfiguration. | Medel |
 | **R22: Centralisera JWT-konfigurationsnycklar** | Nycklarna `Jwt:Key`, `Jwt:Issuer` och `Jwt:Audience` används duplicerat i startup och auth. Samla i konstanter/options för att minska typo-risk och förenkla ändringar. | Medel |
 | **Gamla TK-implementationer behöver revideras** | R15, R16 och R17 är genomförda. Kvar att slutföra: full dag-/kategorivalidering i `RegistrationRuleService.ValidateTicket` (R18). | **Hög – blockar korrekt sessionsvalidering tills R18 är klar** |
