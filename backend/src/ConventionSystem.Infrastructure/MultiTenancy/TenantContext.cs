@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -11,14 +12,24 @@ public interface ITenantContext
 
 public sealed class DefaultTenantContext(
     IConfiguration configuration,
+    IHttpContextAccessor httpContextAccessor,
     IOptions<MultitenancyOptions> options) : ITenantContext
 {
     private Guid? _tenantId;
 
-    public Guid TenantId => _tenantId ??= ResolveTenantId(configuration, options.Value);
+    public Guid TenantId => _tenantId ??= ResolveTenantId(configuration, httpContextAccessor, options.Value);
 
-    private static Guid ResolveTenantId(IConfiguration configuration, MultitenancyOptions options)
+    private static Guid ResolveTenantId(
+        IConfiguration configuration,
+        IHttpContextAccessor httpContextAccessor,
+        MultitenancyOptions options)
     {
+        if (httpContextAccessor.HttpContext?.Items.TryGetValue(TenantContextItemKeys.TenantId, out var resolvedTenant) == true
+            && resolvedTenant is Guid tenantIdFromRequest)
+        {
+            return tenantIdFromRequest;
+        }
+
         if (!options.Enabled)
             return Guid.Empty;
 

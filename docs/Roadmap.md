@@ -25,7 +25,7 @@ Oberoende spår – kan köras parallellt med övriga items. R-MT001–R-MT002 b
 **Fas 1 – Infrastruktur (R-MT001–R-MT004)**
 - [x] `R-MT001` `Tenancy` bounded context – `Tenant`-aggregat, `TenantId`, `TenantStatus`, domain events
 - [x] `R-MT002` EF Core: `TenantId` på alla tabeller + global query filter + `TenantSeedInterceptor` *(kräver isolationstest innan merge)*
-- [ ] `R-MT003` Middleware: `TenantResolutionMiddleware` – subdomän-resolving + header-fallback i dev
+- [x] `R-MT003` Middleware: `TenantResolutionMiddleware` – subdomän-resolving + header-fallback i dev
 - [ ] `R-MT004` `SystemAdmin`-roll och policy – ny claim, policy, tenant-CRUD-endpoints
 
 **Fas 2 – Use cases och API (R-MT005–R-MT009)**
