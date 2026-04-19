@@ -14,6 +14,7 @@ using ConventionSystem.Infrastructure.Persistence;
 using ConventionSystem.Infrastructure.Persistence.Repositories;
 using ConventionSystem.Infrastructure.Registration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -71,7 +72,11 @@ public static class InfrastructureServiceExtensions
         services.AddOptions<MultitenancyOptions>()
             .Bind(configuration.GetSection(MultitenancyOptions.SectionName));
 
+        services.AddMemoryCache();
         services.AddScoped<ITenantContext, DefaultTenantContext>();
+        services.AddDbContextFactory<TenantLookupDbContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+        services.AddSingleton<ITenantResolver, CachingTenantResolver>();
 
         services.AddDbContext<ConventionDbContext>((provider, options) =>
         {

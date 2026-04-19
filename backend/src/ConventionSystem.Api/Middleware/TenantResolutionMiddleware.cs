@@ -1,16 +1,15 @@
 using ConventionSystem.Domain.Tenancy.Enums;
 using ConventionSystem.Infrastructure.MultiTenancy;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
 namespace ConventionSystem.Api.Middleware;
 
 public sealed class TenantResolutionMiddleware(
     RequestDelegate next,
-    IConfiguration configuration,
     IHostEnvironment hostEnvironment,
-    IOptions<MultitenancyOptions> multitenancyOptions)
+    IOptions<MultitenancyOptions> multitenancyOptions,
+    ITenantResolver tenantResolver)
 {
     private const string TenantIdHeader = "X-Tenant-ID";
 
@@ -51,7 +50,7 @@ public sealed class TenantResolutionMiddleware(
     {
         var subdomain = TryExtractSubdomain(context.Request.Host.Host);
         if (!string.IsNullOrWhiteSpace(subdomain))
-            return await GetTenantBySubdomainAsync(subdomain);
+            return await tenantResolver.ResolveBySubdomainAsync(subdomain, context.RequestAborted);
 
         if (!hostEnvironment.IsDevelopment())
             return null;
@@ -60,49 +59,7 @@ public sealed class TenantResolutionMiddleware(
         if (!Guid.TryParse(tenantIdHeaderValue, out var tenantId))
             return null;
 
-        return await GetTenantByIdAsync(tenantId);
-    }
-
-    private async Task<ResolvedTenant?> GetTenantBySubdomainAsync(string subdomain)
-    {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("Anslutningsstrang saknas for DefaultConnection.");
-
-        await using var connection = new SqlConnection(connectionString);
-        await connection.OpenAsync();
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT TOP (1) [Id], [Status] FROM [tenants] WHERE [Subdomain] = @subdomain";
-        command.Parameters.AddWithValue("@subdomain", subdomain);
-
-        await using var reader = await command.ExecuteReaderAsync();
-        if (!await reader.ReadAsync())
-            return null;
-
-        return new ResolvedTenant(
-            reader.GetGuid(0),
-            Enum.Parse<TenantStatus>(reader.GetString(1), ignoreCase: true));
-    }
-
-    private async Task<ResolvedTenant?> GetTenantByIdAsync(Guid tenantId)
-    {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("Anslutningsstrang saknas for DefaultConnection.");
-
-        await using var connection = new SqlConnection(connectionString);
-        await connection.OpenAsync();
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT TOP (1) [Id], [Status] FROM [tenants] WHERE [Id] = @tenantId";
-        command.Parameters.AddWithValue("@tenantId", tenantId);
-
-        await using var reader = await command.ExecuteReaderAsync();
-        if (!await reader.ReadAsync())
-            return null;
-
-        return new ResolvedTenant(
-            reader.GetGuid(0),
-            Enum.Parse<TenantStatus>(reader.GetString(1), ignoreCase: true));
+        return await tenantResolver.ResolveByIdAsync(tenantId, context.RequestAborted);
     }
 
     private static string? TryExtractSubdomain(string host)
@@ -137,6 +94,4 @@ public sealed class TenantResolutionMiddleware(
 
         await context.Response.WriteAsJsonAsync(problem);
     }
-
-    private sealed record ResolvedTenant(Guid Id, TenantStatus Status);
 }
