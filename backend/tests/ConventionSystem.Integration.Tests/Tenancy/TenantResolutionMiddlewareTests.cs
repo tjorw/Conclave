@@ -1,10 +1,15 @@
 using System.Net;
+using System.Net.Http.Headers;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using ConventionSystem.Domain.Tenancy.Aggregates;
+using ConventionSystem.Domain.Tenancy.Enums;
 using ConventionSystem.Domain.Tenancy.Ids;
 using ConventionSystem.Infrastructure.Persistence;
 using ConventionSystem.Integration.Tests.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +71,7 @@ public sealed class TenantResolutionMiddlewareTests(ConventionSystemFactory fact
         {
             var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
             tenantId = await db.Tenants
+                .Where(t => t.Status == TenantStatus.Active)
                 .Select(t => t.Id.Value)
                 .FirstAsync();
         }
@@ -80,6 +86,110 @@ public sealed class TenantResolutionMiddlewareTests(ConventionSystemFactory fact
         var response = await client.PostAsJsonAsync("/auth/login", new { email = "nobody@test.se", password = "invalid" });
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Request_AfterSuspend_UsesInvalidatedCacheAndReturns403()
+    {
+        var subdomain = $"cache-suspend-{Guid.NewGuid():N}";
+
+        await using (var scope = Factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
+            db.Tenants.Add(new Tenant(TenantId.New(), subdomain, "Cache Suspend Tenant"));
+            await db.SaveChangesAsync();
+        }
+
+        await using var multitenantFactory = CreateMultitenantFactory();
+
+        var client = CreateSystemAdminClient(multitenantFactory, $"http://{subdomain}.conclave.se");
+
+        var beforeSuspend = await client.PostAsJsonAsync("/auth/login", new { email = "nobody@test.se", password = "invalid" });
+        Assert.Equal(HttpStatusCode.Unauthorized, beforeSuspend.StatusCode);
+
+        await using var queryScope = Factory.Services.CreateAsyncScope();
+        var queryDb = queryScope.ServiceProvider.GetRequiredService<ConventionDbContext>();
+        var tenantId = await queryDb.Tenants.Where(t => t.Subdomain == subdomain).Select(t => t.Id.Value).SingleAsync();
+
+        var suspendResponse = await client.PutAsync($"/system/tenants/{tenantId}/suspend", content: null);
+        Assert.Equal(HttpStatusCode.NoContent, suspendResponse.StatusCode);
+
+        var afterSuspend = await client.PostAsJsonAsync("/auth/login", new { email = "nobody@test.se", password = "invalid" });
+        Assert.Equal(HttpStatusCode.Forbidden, afterSuspend.StatusCode);
+    }
+
+    [Fact]
+    public async Task Request_AfterRestore_UsesInvalidatedCacheAndReturns401()
+    {
+        var subdomain = $"cache-restore-{Guid.NewGuid():N}";
+        var contextSubdomain = $"cache-context-{Guid.NewGuid():N}";
+        Guid contextTenantId;
+
+        await using (var scope = Factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
+            var tenant = new Tenant(TenantId.New(), subdomain, "Cache Restore Tenant");
+            tenant.Suspend();
+            db.Tenants.Add(tenant);
+            var contextTenant = new Tenant(TenantId.New(), contextSubdomain, "Cache Context Tenant");
+            db.Tenants.Add(contextTenant);
+            await db.SaveChangesAsync();
+            contextTenantId = contextTenant.Id.Value;
+        }
+
+        await using var multitenantFactory = CreateMultitenantFactory();
+
+        var tenantClient = multitenantFactory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri($"http://{subdomain}.conclave.se")
+        });
+
+        var systemClient = CreateSystemAdminClient(multitenantFactory, "http://localhost");
+        systemClient.DefaultRequestHeaders.Add("X-Tenant-ID", contextTenantId.ToString());
+
+        var beforeRestore = await tenantClient.PostAsJsonAsync("/auth/login", new { email = "nobody@test.se", password = "invalid" });
+        Assert.Equal(HttpStatusCode.Forbidden, beforeRestore.StatusCode);
+
+        await using var queryScope = Factory.Services.CreateAsyncScope();
+        var queryDb = queryScope.ServiceProvider.GetRequiredService<ConventionDbContext>();
+        var tenantId = await queryDb.Tenants.Where(t => t.Subdomain == subdomain).Select(t => t.Id.Value).SingleAsync();
+
+        var restoreResponse = await systemClient.PutAsync($"/system/tenants/{tenantId}/restore", content: null);
+        Assert.Equal(HttpStatusCode.NoContent, restoreResponse.StatusCode);
+
+        var afterRestore = await tenantClient.PostAsJsonAsync("/auth/login", new { email = "nobody@test.se", password = "invalid" });
+        Assert.Equal(HttpStatusCode.Unauthorized, afterRestore.StatusCode);
+    }
+
+    private static HttpClient CreateSystemAdminClient(WebApplicationFactory<Program> factory, string baseAddress)
+    {
+        var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri(baseAddress)
+        });
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", CreateSystemAdminToken());
+        return client;
+    }
+
+    private static string CreateSystemAdminToken()
+    {
+        var descriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(
+            [
+                new Claim("person_id", Guid.NewGuid().ToString()),
+                new Claim("is_system_admin", "true")
+            ]),
+            Expires = DateTimeOffset.UtcNow.AddHours(1).UtcDateTime,
+            Issuer = "ConventionSystem",
+            Audience = "ConventionSystem",
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(ConventionSystemFactory.TestJwtKey)),
+                SecurityAlgorithms.HmacSha256)
+        };
+
+        var handler = new JwtSecurityTokenHandler();
+        return handler.WriteToken(handler.CreateToken(descriptor));
     }
 
     private WebApplicationFactory<Program> CreateMultitenantFactory()

@@ -76,7 +76,9 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ITenantContext, DefaultTenantContext>();
         services.AddDbContextFactory<TenantLookupDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-        services.AddSingleton<ITenantResolver, CachingTenantResolver>();
+        services.AddSingleton<CachingTenantResolver>();
+        services.AddSingleton<ITenantResolver>(provider => provider.GetRequiredService<CachingTenantResolver>());
+        services.AddSingleton<ITenantResolverCacheInvalidator>(provider => provider.GetRequiredService<CachingTenantResolver>());
 
         services.AddDbContext<ConventionDbContext>((provider, options) =>
         {
