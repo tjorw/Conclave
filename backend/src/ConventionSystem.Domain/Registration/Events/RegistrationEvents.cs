@@ -54,3 +54,22 @@ public record TicketRevoked(
     PersonId PersonId,
     PersonId PerformedById,
     DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record PromotionCodeCreated(
+    PromotionCodeId PromotionCodeId,
+    EditionId EditionId,
+    string Code,
+    PersonId CreatedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record PromotionCodeRedeemed(
+    PromotionCodeId PromotionCodeId,
+    TicketId TicketId,
+    PersonId PersonId,
+    int DiscountApplied,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record PromotionCodeDeactivated(
+    PromotionCodeId PromotionCodeId,
+    PersonId PerformedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;

@@ -9,9 +9,12 @@ using ConventionSystem.Application.Registration.Commands.CancelVisitorRegistrati
 using ConventionSystem.Application.Registration.Commands.CollectTicket;
 using ConventionSystem.Application.Registration.Commands.ConfirmTicketPaymentWebhook;
 using ConventionSystem.Application.Registration.Commands.ConfirmVisitorRegistrationPayment;
+using ConventionSystem.Application.Registration.Commands.CreatePromotionCode;
 using ConventionSystem.Application.Registration.Commands.CreateTicketType;
+using ConventionSystem.Application.Registration.Commands.DeactivatePromotionCode;
 using ConventionSystem.Application.Registration.Commands.DeleteTicketType;
 using ConventionSystem.Application.Registration.Commands.IssueTicket;
+using ConventionSystem.Application.Registration.Commands.RedeemPromotionCode;
 using ConventionSystem.Application.Registration.Commands.RegisterForSession;
 using ConventionSystem.Application.Registration.Commands.RegisterManualTicketPayment;
 using ConventionSystem.Application.Registration.Commands.RejectStaffApplication;
@@ -30,6 +33,8 @@ using ConventionSystem.Application.Registration.Queries.GetMyAssignedShifts;
 using ConventionSystem.Application.Registration.Queries.GetMyOrganiserSessions;
 using ConventionSystem.Application.Registration.Queries.GetMyWatchedSessions;
 using ConventionSystem.Application.Registration.Queries.ListAvailableTicketTypes;
+using ConventionSystem.Application.Registration.Queries.ListPromotionCodeRedemptions;
+using ConventionSystem.Application.Registration.Queries.ListPromotionCodes;
 using ConventionSystem.Application.Registration.Queries.ListTicketTypes;
 using ConventionSystem.Application.Registration.Queries.ListVisitorRegistrations;
 using ConventionSystem.Application.Staff.Queries.ListStaffApplications;
@@ -50,6 +55,23 @@ public static class RegistrationEndpoints
                     request.ValidDays, request.AllowedCategories), ct);
                 return Results.Created($"/ticket-types/{id}", new { id });
             }).RequireAuthorization();
+
+        // UC-PC001: Skapa kampanjkod
+        app.MapPost("/editions/{editionId:guid}/promotion-codes",
+            async (Guid editionId, CreatePromotionCodeRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var id = await sender.Send(new CreatePromotionCodeCommand(
+                    editionId,
+                    request.Code,
+                    request.Description,
+                    request.DiscountType,
+                    request.DiscountValue,
+                    request.MaxRedemptions,
+                    request.ValidFrom,
+                    request.ValidUntil,
+                    request.AllowedTicketTypeIds), ct);
+                return Results.Created($"/promotion-codes/{id}", new { id });
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         // UC-VR001: Anmäl som besökare
         app.MapPost("/editions/{editionId:guid}/visitor-registrations",
@@ -74,6 +96,14 @@ public static class RegistrationEndpoints
                 await sender.Send(new RegisterManualTicketPaymentCommand(ticketId, request.ExternalReference), ct);
                 return Results.NoContent();
             }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        // UC-PC003: Lös in kampanjkod
+        app.MapPost("/tickets/{ticketId:guid}/redeem-promotion-code",
+            async (Guid ticketId, RedeemPromotionCodeRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var result = await sender.Send(new RedeemPromotionCodeCommand(ticketId, request.Code), ct);
+                return Results.Ok(result);
+            }).RequireAuthorization();
 
         // UC-TK005: Bekräfta betalning via webhook
         app.MapPost("/payments/webhook/tickets",
@@ -125,6 +155,14 @@ public static class RegistrationEndpoints
                 await sender.Send(new RevokeTicketCommand(ticketId), ct);
                 return Results.NoContent();
             }).RequireAuthorization();
+
+        // UC-PC004: Deaktivera kampanjkod
+        app.MapPost("/promotion-codes/{promotionCodeId:guid}/deactivate",
+            async (Guid promotionCodeId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new DeactivatePromotionCodeCommand(promotionCodeId), ct);
+                return Results.NoContent();
+            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
         // UC-SA001: Skicka in staffansökan
         app.MapPost("/editions/{editionId:guid}/staff-applications",
@@ -272,6 +310,18 @@ public static class RegistrationEndpoints
                 Results.Ok(await sender.Send(new ListTicketTypesQuery(editionId), ct)))
             .RequireAuthorization(AuthConstants.Policies.IsAdmin);
 
+        // UC-PC002: Lista kampanjkoder för upplaga
+        app.MapGet("/editions/{editionId:guid}/promotion-codes",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListPromotionCodesQuery(editionId), ct)))
+            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
+        // UC-PC005: Visa inlösningshistorik för kampanjkod
+        app.MapGet("/promotion-codes/{promotionCodeId:guid}/redemptions",
+            async (Guid promotionCodeId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListPromotionCodeRedemptionsQuery(promotionCodeId), ct)))
+            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
+
         // 3.1.8 – Uppdatera biljetttyp (UC-TK005)
         app.MapPut("/editions/{editionId:guid}/ticket-types/{ticketTypeId:guid}",
             async (Guid ticketTypeId, UpdateTicketTypeRequest request, ISender sender, CancellationToken ct) =>
@@ -309,8 +359,18 @@ public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory
 public record UpdateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
 public record SubmitVisitorRegistrationRequest(Guid TicketTypeId);
 public record ConfirmPaymentRequest(string ExternalReference);
+public record CreatePromotionCodeRequest(
+    string Code,
+    string Description,
+    PromotionDiscountType DiscountType,
+    int DiscountValue,
+    int? MaxRedemptions,
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidUntil,
+    Guid[]? AllowedTicketTypeIds);
 public record ManualTicketPaymentRequest(string? ExternalReference);
 public record TicketPaymentWebhookRequest(Guid VisitorRegistrationId, string ExternalReference, string PaymentStatus);
+public record RedeemPromotionCodeRequest(string Code);
 public record IssueTicketRequest(Guid PersonId, Guid TicketTypeId);
 public record SubmitStaffApplicationRequest(string InterestDescription);
 public record AddAvailabilityRequest(DateTime From, DateTime To);

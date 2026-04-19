@@ -110,4 +110,27 @@ public class TicketTests
 
         Assert.Throws<TicketAlreadyRevokedException>(() => ticket.Revoke(PersonId.New()));
     }
+
+    [Fact]
+    public void ApplyPromotion_SetsFinalPriceAndRedemptionReference()
+    {
+        var ticket = CreateTicket();
+        var redemptionId = PromotionCodeRedemptionId.New();
+
+        ticket.ApplyPromotion(redemptionId, 2500);
+
+        Assert.Equal(2500, ticket.FinalPrice);
+        Assert.Equal(redemptionId, ticket.PromotionCodeRedemptionId);
+        Assert.Equal(TicketStatus.Reserved, ticket.Status);
+    }
+
+    [Fact]
+    public void ApplyPromotion_FinalPriceZero_AutoPaysTicket()
+    {
+        var ticket = CreateTicket();
+
+        ticket.ApplyPromotion(PromotionCodeRedemptionId.New(), 0);
+
+        Assert.Equal(TicketStatus.Paid, ticket.Status);
+    }
 }

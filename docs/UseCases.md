@@ -1843,10 +1843,10 @@ Konventionsadministratör
 - `PromotionCodeCreated { promotionCodeId, editionId, code, createdById, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Administratör kan skapa en kampanjkod med alla fält
-- [ ] Duplikat kod för samma upplaga ger 422 med felkod `promotion_code_already_exists`
-- [ ] Fri biljett-kod skapar kod med `DiscountType = Free`
-- [ ] Kommandohanterare har tillhörande enhetstest
+- [x] Administratör kan skapa en kampanjkod med alla fält
+- [x] Duplikat kod för samma upplaga ger 422 med felkod `promotion_code_already_exists`
+- [x] Fri biljett-kod skapar kod med `DiscountType = Free`
+- [x] Kommandohanterare har tillhörande enhetstest
 
 ---
 
@@ -1871,7 +1871,7 @@ Konventionsadministratör
 - Inga
 
 ## Acceptanskriterier
-- [ ] Listan visar `redemptionCount` och `maxRedemptions` korrekt
+- [x] Listan visar `redemptionCount` och `maxRedemptions` korrekt
 
 ---
 
@@ -1908,11 +1908,11 @@ Autentiserad besökare
 - `PromotionCodeRedeemed { promotionCodeId, ticketId, personId, discountApplied, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Inlösning av fri biljett sätter `Ticket.Status = Paid` utan betalning
-- [ ] Inlösning av rabatt uppdaterar `finalPrice` korrekt
-- [ ] Inaktiv eller utgången kod ger 422 med korrekt felkod
-- [ ] Inlösning ökar `redemptionCount` med 1
-- [ ] Kommandohanterare har tillhörande enhetstest
+- [x] Inlösning av fri biljett sätter `Ticket.Status = Paid` utan betalning
+- [x] Inlösning av rabatt uppdaterar `finalPrice` korrekt
+- [x] Inaktiv eller utgången kod ger 422 med korrekt felkod
+- [x] Inlösning ökar `redemptionCount` med 1
+- [x] Kommandohanterare har tillhörande enhetstest
 
 ---
 
@@ -1940,9 +1940,9 @@ Konventionsadministratör
 - `PromotionCodeDeactivated { promotionCodeId, performedById, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Deaktivering gör att koden inte kan lösas in
-- [ ] Befintliga inlösningar påverkas inte av deaktivering
-- [ ] Kommandohanterare har tillhörande enhetstest
+- [x] Deaktivering gör att koden inte kan lösas in
+- [x] Befintliga inlösningar påverkas inte av deaktivering
+- [x] Kommandohanterare har tillhörande enhetstest
 
 ---
 
@@ -1967,4 +1967,4 @@ Konventionsadministratör
 - Inga
 
 ## Acceptanskriterier
-- [ ] Historiklistan visar korrekt `discountApplied` per inlösning
+- [x] Historiklistan visar korrekt `discountApplied` per inlösning

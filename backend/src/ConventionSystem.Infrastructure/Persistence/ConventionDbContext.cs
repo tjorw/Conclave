@@ -28,6 +28,7 @@ public sealed class ConventionDbContext(DbContextOptions<ConventionDbContext> op
     public DbSet<StaffApplication> StaffApplications => Set<StaffApplication>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<TicketType> TicketTypes => Set<TicketType>();
+    public DbSet<PromotionCode> PromotionCodes => Set<PromotionCode>();
 
     // Staff
     public DbSet<Shift> Shifts => Set<Shift>();

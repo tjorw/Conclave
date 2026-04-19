@@ -68,3 +68,24 @@ public record MyAssignedShiftSummaryDto(
 public record MyStaffApplicationDto(
     Guid Id,
     string Status);
+
+public record PromotionCodeAdminDto(
+    Guid Id,
+    string Code,
+    string Description,
+    string DiscountType,
+    int DiscountValue,
+    bool IsActive,
+    int RedemptionCount,
+    int? MaxRedemptions,
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidUntil,
+    Guid[]? AllowedTicketTypeIds);
+
+public record PromotionCodeRedemptionHistoryDto(
+    Guid Id,
+    Guid PersonId,
+    Guid TicketId,
+    DateTimeOffset RedeemedAt,
+    int DiscountApplied,
+    int FinalPrice);

@@ -32,6 +32,7 @@ public static class InfrastructureServiceExtensions
 
         services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
+        services.AddScoped<IPromotionCodeRepository, PromotionCodeRepository>();
         services.AddScoped<IVisitorRegistrationRepository, VisitorRegistrationRepository>();
         services.AddScoped<IStaffApplicationRepository, StaffApplicationRepository>();
         services.AddScoped<ISessionRegistrationRepository, SessionRegistrationRepository>();

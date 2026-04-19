@@ -38,6 +38,13 @@ public sealed class TicketConfiguration : IEntityTypeConfiguration<Ticket>
             .HasConversion<string>()
             .HasMaxLength(50);
 
+        builder.Property(t => t.PromotionCodeRedemptionId)
+            .HasConversion(id => id!.Value.Value, value => (PromotionCodeRedemptionId?)new PromotionCodeRedemptionId(value))
+            .HasColumnName("promotion_code_redemption_id");
+
+        builder.Property(t => t.FinalPrice)
+            .HasColumnName("final_price");
+
         builder.Property(t => t.CollectedById)
             .HasConversion(id => id!.Value.Value, value => (PersonId?)new PersonId(value))
             .HasColumnName("collected_by_id");

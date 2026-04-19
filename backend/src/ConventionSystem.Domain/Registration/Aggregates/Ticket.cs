@@ -15,6 +15,8 @@ public sealed class Ticket : AggregateRoot
     public EditionId EditionId { get; private set; }
     public PersonId? AssignedById { get; private set; }
     public TicketStatus Status { get; private set; }
+    public PromotionCodeRedemptionId? PromotionCodeRedemptionId { get; private set; }
+    public int? FinalPrice { get; private set; }
     public PersonId? CollectedById { get; private set; }
     public DateTimeOffset? CollectedAt { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
@@ -50,6 +52,21 @@ public sealed class Ticket : AggregateRoot
 
         Status = TicketStatus.Revoked;
         RaiseDomainEvent(new TicketRevoked(Id, PersonId, PersonId, DateTimeOffset.UtcNow));
+    }
+
+    public void ApplyPromotion(PromotionCodeRedemptionId redemptionId, int finalPrice)
+    {
+        if (Status != TicketStatus.Reserved)
+            throw new TicketNotReservedForPromotionException();
+
+        if (finalPrice < 0)
+            throw new ArgumentException("Slutpris får inte vara negativt.", nameof(finalPrice));
+
+        PromotionCodeRedemptionId = redemptionId;
+        FinalPrice = finalPrice;
+
+        if (finalPrice == 0)
+            ConfirmPayment();
     }
 
     public void Collect(PersonId performedById)
