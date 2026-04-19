@@ -38,7 +38,7 @@ public class CreateTenantHandlerTests
             Arg.Is<Tenant>(t =>
                 t.Subdomain == "mycon"
                 && t.DisplayName == "My Convention"
-                && t.Status == TenantStatus.Active
+                && t.Status == TenantStatus.Suspended
                 && t.DomainEvents.OfType<TenantCreated>().Any()),
             Arg.Any<CancellationToken>());
         await _repository.Received(1).SaveAsync(Arg.Any<CancellationToken>());
