@@ -29,6 +29,7 @@ public sealed class ConventionRepository(ConventionDbContext db) : IConventionRe
     public Task<Domain.Convention.Aggregates.Convention?> GetSingleAsync(CancellationToken ct = default)
         => db.Conventions
             .Include(c => c.Administrators)
+            .OrderBy(c => EF.Property<Guid>(c, "TenantId"))
             .FirstOrDefaultAsync(ct);
 
     public Task<ConventionDto?> GetProjectedByIdAsync(ConventionId id, CancellationToken ct = default)
