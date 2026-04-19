@@ -350,9 +350,10 @@ Hanterar de tre registreringstyperna: besöksregistrering (vill gå på konventi
 
 | Typ | Namn |
 |---|---|
-| Aggregate roots | `VisitorRegistration`, `SessionRegistration`, `StaffApplication`, `Ticket` |
-| Entiteter | `Availability`, `StationPreference`, `TicketType`, `TicketPerk` |
-| Domain service | `RegistrationRuleService` (validerar platser och biljetter) |
+| Aggregate roots | `VisitorRegistration`, `SessionRegistration`, `StaffApplication`, `Ticket`, `PromotionCode` |
+| Entiteter | `Availability`, `StationPreference`, `TicketType`, `TicketPerk`, `PromotionCodeRedemption` |
+| Value objects | `DiscountType` |
+| Domain service | `RegistrationRuleService` (validerar platser, biljetter och promotionkoder) |
 
 ### Staff
 

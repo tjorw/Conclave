@@ -11,6 +11,7 @@ Prioriterad lista – ej startade överst, klara underst.
 - [x] `R16` Biljettlivscykel reviderad – manuell betalning, webhook, innehavaravbokning (UC-TK003–TK006)
 - [ ] `R17` Makuleringskaskad + uthämtning med förmåner (UC-TK007/TK008)
 - [ ] `R18` `RegistrationRuleService.ValidateTicket` med dag- och kategorivalidering (UC-TK009)
+- [ ] `R19` Promotionkoder – skapa, lista, lösa in och deaktivera (UC-PC001–PC005)
 - [ ] `R20` Centralisera admin-claimvärde (`"true"`) i auth-konstanter
 - [ ] `R21` Centralisera fallback för frontend-URL i auth-flöden
 - [ ] `R22` Centralisera JWT-konfigurationsnycklar (`Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience`)

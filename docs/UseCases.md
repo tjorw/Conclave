@@ -1809,3 +1809,162 @@ Arrangör, kategoriansvarig eller konventionsadministratör
 - [x] Arrangör kan kvittera svarad kommentar
 - [x] Admin-listning visar antal öppna kommentarer per evenemang
 - [x] Kommandohanterare och domänregler har tillhörande enhetstester
+
+---
+
+# Promotionkoder (Registration-kontexten)
+
+---
+
+# UC-PC001 – Skapa promotionkod
+
+## Sammanfattning
+En administratör skapar en promotionkod för en upplaga med rabattyp, värde och valfria begränsningar.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Upplagan existerar
+
+## Flöde
+1. Administratören anger kod, beskrivning, rabattyp och -värde, valfria begränsningar (maxInlösningar, giltighetstid, biljetttyper)
+2. Systemet validerar att koden är unik för upplagan
+3. `PromotionCode`-aggregat skapas. `PromotionCodeCreated` dispatches
+4. Systemet returnerar det nya `promotionCodeId`
+
+## Affärsregler
+- Koden måste vara unik per `editionId` (unique index på `(EditionId, Code)`, Code lagras i uppercase)
+- `discountValue` för `Percentage` måste vara i intervallet 0–100
+- `ValidFrom` får inte vara senare än `ValidUntil`
+- `DiscountType`: `Percentage | Fixed | Free`
+
+## Domänhändelser
+- `PromotionCodeCreated { promotionCodeId, editionId, code, createdById, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Administratör kan skapa en kampanjkod med alla fält
+- [ ] Duplikat kod för samma upplaga ger 422 med felkod `promotion_code_already_exists`
+- [ ] Fri biljett-kod skapar kod med `DiscountType = Free`
+- [ ] Kommandohanterare har tillhörande enhetstest
+
+---
+
+# UC-PC002 – Lista promotionkoder för en upplaga
+
+## Sammanfattning
+Administratören listar alla promotionkoder för en upplaga inklusive inlösningsstatistik.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Upplagan existerar
+
+## Flöde
+1. Systemet returnerar alla promotionkoder för upplagan, inklusive `redemptionCount` och `maxRedemptions`
+
+## Affärsregler
+- Inga
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Listan visar `redemptionCount` och `maxRedemptions` korrekt
+
+---
+
+# UC-PC003 – Lösa in promotionkod
+
+## Sammanfattning
+En autentiserad besökare löser in en promotionkod på en reserverad biljett. Fri biljett markeras direkt som betald utan betalningsflöde.
+
+## Aktör
+Autentiserad besökare
+
+## Förutsättningar
+- Besökaren har en `Ticket` i status `Reserved`
+
+## Flöde
+1. Besökaren anger kampanjkoden i betalningssteget
+2. Systemet slår upp koden (versalokänslig matchning) för aktuell upplaga
+3. `RegistrationRuleService.ValidatePromotionCode(...)` kontrollerar domänreglerna
+4. `promotionCode.Redeem(personId, ticketTypeId, now)` anropas; `redemptionCount` ökas
+5. `Ticket` uppdateras: `finalPrice` beräknas (golv 0), `promotionCodeRedemptionId` sätts
+6. `PromotionCodeRedeemed` dispatches
+7. Om `finalPrice == 0`: biljetten transiteras direkt till `Paid` utan betalningsflöde
+
+## Affärsregler
+- Koden måste vara aktiv (`isActive = true`)
+- `redemptionCount` får inte överskrida `maxRedemptions` (om satt)
+- Aktuell tid måste falla inom `validFrom`–`validUntil` (om satta)
+- `ticketTypeId` måste finnas i `allowedTicketTypeIds` om listan är icke-tom
+- `finalPrice` kan aldrig bli negativ – golv vid 0
+- `Ticket` måste ha status `Reserved`
+- Samma person kan lösa in samma kod flera gånger om `maxRedemptions` tillåter det
+
+## Domänhändelser
+- `PromotionCodeRedeemed { promotionCodeId, ticketId, personId, discountApplied, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Inlösning av fri biljett sätter `Ticket.Status = Paid` utan betalning
+- [ ] Inlösning av rabatt uppdaterar `finalPrice` korrekt
+- [ ] Inaktiv eller utgången kod ger 422 med korrekt felkod
+- [ ] Inlösning ökar `redemptionCount` med 1
+- [ ] Kommandohanterare har tillhörande enhetstest
+
+---
+
+# UC-PC004 – Deaktivera promotionkod
+
+## Sammanfattning
+En administratör deaktiverar en promotionkod. Befintliga inlösningar påverkas inte.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Koden existerar och är aktiv
+
+## Flöde
+1. Administratören deaktiverar koden
+2. `promotionCode.Deactivate(performedById)` anropas; `isActive` sätts till `false`
+3. `PromotionCodeDeactivated` dispatches
+4. Befintliga inlösningar och `Ticket`s påverkas inte
+
+## Affärsregler
+- En deaktiverad kod kan inte återaktiveras via domänmodellen
+
+## Domänhändelser
+- `PromotionCodeDeactivated { promotionCodeId, performedById, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Deaktivering gör att koden inte kan lösas in
+- [ ] Befintliga inlösningar påverkas inte av deaktivering
+- [ ] Kommandohanterare har tillhörande enhetstest
+
+---
+
+# UC-PC005 – Visa inlösningshistorik för en promotionkod
+
+## Sammanfattning
+Administratören ser alla inlösningar för en promotionkod med person, biljett, tidpunkt och tillämpad rabatt.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Koden existerar
+
+## Flöde
+1. Systemet returnerar alla `PromotionCodeRedemption`-poster för koden med `personId`, `ticketId`, `redeemedAt` och `discountApplied`
+
+## Affärsregler
+- Inga
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Historiklistan visar korrekt `discountApplied` per inlösning
