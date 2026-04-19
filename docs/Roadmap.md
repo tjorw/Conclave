@@ -23,7 +23,7 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 Oberoende spår – kan köras parallellt med övriga items. R-MT001–R-MT002 bör ske i dedikerade arbetspass eftersom de rör `AppDbContext` och migrations.
 
 **Fas 1 – Infrastruktur (R-MT001–R-MT004)**
-- [ ] `R-MT001` `Tenancy` bounded context – `Tenant`-aggregat, `TenantId`, `TenantStatus`, domain events
+- [x] `R-MT001` `Tenancy` bounded context – `Tenant`-aggregat, `TenantId`, `TenantStatus`, domain events
 - [ ] `R-MT002` EF Core: `TenantId` på alla tabeller + global query filter + `TenantSeedInterceptor` *(kräver isolationstest innan merge)*
 - [ ] `R-MT003` Middleware: `TenantResolutionMiddleware` – subdomän-resolving + header-fallback i dev
 - [ ] `R-MT004` `SystemAdmin`-roll och policy – ny claim, policy, tenant-CRUD-endpoints
