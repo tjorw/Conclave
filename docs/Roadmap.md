@@ -27,8 +27,6 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-MT016` Välkomstmail vid provisioning
 - [ ] `R-MT017` Faktureringsintegration *(utanför scope – dokumenterat för framtiden)*
 
-**Beroenden till befintlig roadmap:** Multitenansy-arbetet är oberoende av R18–R25 och kan köras parallellt. R-MT001–R-MT002 bör dock ske i ett dedikerat arbetspass eftersom de rör `AppDbContext` och migrations – samma filer som biljettimplementationen rör. Rekommenderad ordning: slutför R18 (biljett) → påbörja R-MT001 → R-MT002 i eget PR.
-
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
 
 ---
