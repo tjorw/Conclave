@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Data;
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Convention.Ids;
@@ -13,9 +14,11 @@ using ConventionSystem.Integration.Tests.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
@@ -208,6 +211,63 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
         });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ProvisionTenantConvention_SendsProvisioningWelcomeEmail()
+    {
+        var fakeEmailService = new CapturingEmailService();
+        await using var app = Factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureAppConfiguration((_, config) =>
+                config.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["App:AdminUrlTemplate"] = "https://{subdomain}.conclave.se/admin"
+                }));
+            builder.ConfigureTestServices(services =>
+            {
+                services.RemoveAll<IEmailService>();
+                services.AddSingleton<IEmailService>(fakeEmailService);
+            });
+        });
+
+        var token = CreateToken(new Claim("is_system_admin", "true"));
+        var client = app.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var subdomain = $"mail-{Guid.NewGuid():N}";
+        var adminEmail = $"mail-admin-{Guid.NewGuid():N}@test.se";
+
+        var createResponse = await client.PostAsJsonAsync("/system/tenants", new
+        {
+            subdomain,
+            displayName = "Mail Tenant"
+        });
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var tenantId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("id")
+            .GetGuid();
+
+        var restoreResponse = await client.PutAsync($"/system/tenants/{tenantId}/restore", content: null);
+        Assert.Equal(HttpStatusCode.NoContent, restoreResponse.StatusCode);
+
+        var provisionResponse = await client.PostAsJsonAsync($"/system/tenants/{tenantId}/provision", new
+        {
+            adminName = "Mail Admin",
+            adminEmail,
+            adminPassword = "Admin123!"
+        });
+
+        Assert.Equal(HttpStatusCode.Created, provisionResponse.StatusCode);
+
+        Assert.Single(fakeEmailService.ProvisionedWelcomeEmails);
+        var email = fakeEmailService.ProvisionedWelcomeEmails.Single();
+        Assert.Equal(adminEmail, email.ToEmail);
+        Assert.Equal("Mail Admin", email.ToName);
+        Assert.Equal("Mail Tenant", email.OrganizationName);
+        Assert.Equal(subdomain, email.Subdomain);
+        Assert.Equal("Admin123!", email.TemporaryPassword);
+        Assert.Equal($"https://{subdomain}.conclave.se/admin/login", email.LoginLink);
     }
 
     [Fact]
@@ -515,3 +575,54 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
         return client;
     }
 }
+
+file sealed class CapturingEmailService : IEmailService
+{
+    public List<ProvisionedWelcomeEmail> ProvisionedWelcomeEmails { get; } = [];
+
+    public Task SendVisitorRegistrationConfirmedAsync(string toEmail, string toName, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendStaffApplicationReceivedAsync(string toEmail, string toName, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendStaffApplicationAcceptedAsync(string toEmail, string toName, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendStaffApplicationRejectedAsync(string toEmail, string toName, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendEventApprovedAsync(string toEmail, string toName, string eventTitle, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendEventRejectedAsync(string toEmail, string toName, string eventTitle, string comment, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendPasswordResetAsync(string toEmail, string toName, string resetLink, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendEmailConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendResendConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendPasswordChangedAsync(string toEmail, string toName, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendTenantSignupWelcomeAsync(
+        string toEmail,
+        string toName,
+        string organizationName,
+        string subdomain,
+        string temporaryPassword,
+        string confirmLink,
+        CancellationToken ct = default) => Task.CompletedTask;
+
+    public Task SendTenantProvisionedWelcomeAsync(
+        string toEmail,
+        string toName,
+        string organizationName,
+        string subdomain,
+        string temporaryPassword,
+        string loginLink,
+        CancellationToken ct = default)
+    {
+        ProvisionedWelcomeEmails.Add(new ProvisionedWelcomeEmail(
+            toEmail,
+            toName,
+            organizationName,
+            subdomain,
+            temporaryPassword,
+            loginLink));
+        return Task.CompletedTask;
+    }
+}
+
+file sealed record ProvisionedWelcomeEmail(
+    string ToEmail,
+    string ToName,
+    string OrganizationName,
+    string Subdomain,
+    string TemporaryPassword,
+    string LoginLink);

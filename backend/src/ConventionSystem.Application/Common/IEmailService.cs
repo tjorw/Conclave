@@ -20,4 +20,12 @@ public interface IEmailService
         string temporaryPassword,
         string confirmLink,
         CancellationToken ct = default);
+    Task SendTenantProvisionedWelcomeAsync(
+        string toEmail,
+        string toName,
+        string organizationName,
+        string subdomain,
+        string temporaryPassword,
+        string loginLink,
+        CancellationToken ct = default);
 }

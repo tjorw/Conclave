@@ -67,4 +67,21 @@ internal static class EmailTemplates
             $"{temporaryPassword}\n\n" +
             "Byt lösenord efter första inloggningen.\n\n" +
             "Vänliga hälsningar,\nConclave");
+    public static (string Subject, string Body) TenantProvisionedWelcome(
+        string organizationName,
+        string subdomain,
+        string toEmail,
+        string temporaryPassword,
+        string loginLink)
+        => (
+            $"VÃ¤lkommen till Conclave Admin - {organizationName}",
+            "Hej!\n\n" +
+            $"Ditt konvent '{organizationName}' har nu provisionerats med subdomÃ¤nen '{subdomain}'.\n" +
+            "Du kan logga in som konventsadmin via lÃ¤nken nedan:\n" +
+            $"{loginLink}\n\n" +
+            "Dina inloggningsuppgifter Ã¤r:\n" +
+            $"E-post: {toEmail}\n" +
+            $"LÃ¶senord: {temporaryPassword}\n\n" +
+            "Byt lÃ¶senord efter fÃ¶rsta inloggningen.\n\n" +
+            "VÃ¤nliga hÃ¤lsningar,\nConclave");
 }

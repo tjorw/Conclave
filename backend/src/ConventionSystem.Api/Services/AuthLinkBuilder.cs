@@ -39,6 +39,15 @@ public sealed class AuthLinkBuilder(IConfiguration configuration) : IAuthLinkBui
                $"&subdomain={Uri.EscapeDataString(subdomain)}";
     }
 
+    public string BuildTenantAdminLoginLink(string subdomain)
+    {
+        var template = configuration["App:AdminUrlTemplate"] ?? "http://localhost:4200";
+        var baseUrl = template.Replace("{subdomain}", Uri.EscapeDataString(subdomain), StringComparison.OrdinalIgnoreCase)
+            .TrimEnd('/');
+
+        return $"{baseUrl}/login";
+    }
+
     private string ResolveFrontendUrl()
         => configuration["App:FrontendUrl"] ?? AuthConstants.Frontend.DefaultUrl;
 }

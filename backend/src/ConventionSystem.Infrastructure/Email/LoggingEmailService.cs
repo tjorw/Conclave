@@ -89,4 +89,23 @@ public sealed class LoggingEmailService(ILogger<LoggingEmailService> logger) : I
             confirmLink);
         return Task.CompletedTask;
     }
+    public Task SendTenantProvisionedWelcomeAsync(
+        string toEmail,
+        string toName,
+        string organizationName,
+        string subdomain,
+        string temporaryPassword,
+        string loginLink,
+        CancellationToken ct = default)
+    {
+        logger.LogInformation(
+            "[EMAIL] Tenant provisioning -> {Name} <{Email}>, organization: {Organization}, subdomain: {Subdomain}, temporary password: {Password}, login link: {Link}",
+            toName,
+            toEmail,
+            organizationName,
+            subdomain,
+            temporaryPassword,
+            loginLink);
+        return Task.CompletedTask;
+    }
 }

@@ -24,7 +24,7 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [x] `R-MT013` `portal`-app: provisioneringsvy för systemadmin
 - [ ] `R-MT014` `portal`-app: self-service signup (publik del)
 - [ ] `R-MT015` `portal`-app: tenant-dashboard för tenant-ägare
-- [ ] `R-MT016` Välkomstmail vid provisioning
+- [x] `R-MT016` Välkomstmail vid provisioning
 - [ ] `R-MT017` Faktureringsintegration *(utanför scope – dokumenterat för framtiden)*
 
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).

@@ -224,6 +224,8 @@ public static class SystemTenantEndpoints
             IPersonRepository personRepository,
             TenantAwareUserService tenantAwareUserService,
             UserManager<ApplicationUser> userManager,
+            IEmailService emailService,
+            IAuthLinkBuilder authLinkBuilder,
             CancellationToken ct) =>
         {
             var tenant = await tenantRepository.GetByIdAsync(new TenantId(tenantId), ct);
@@ -291,6 +293,16 @@ public static class SystemTenantEndpoints
                 var errors = string.Join(" ", result.Errors.Select(e => e.Description));
                 return Results.Problem(errors, statusCode: 400);
             }
+
+            var loginLink = authLinkBuilder.BuildTenantAdminLoginLink(tenant.Subdomain);
+            await emailService.SendTenantProvisionedWelcomeAsync(
+                request.AdminEmail,
+                request.AdminName,
+                tenant.DisplayName,
+                tenant.Subdomain,
+                request.AdminPassword,
+                loginLink,
+                ct);
 
             return Results.Created(
                 $"/system/tenants/{tenantId}/provision/{conventionId}",
