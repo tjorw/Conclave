@@ -1,4 +1,6 @@
-﻿using ConventionSystem.Domain.Tenancy.Enums;
+﻿using System.Security.Claims;
+using ConventionSystem.Api.Auth;
+using ConventionSystem.Domain.Tenancy.Enums;
 using ConventionSystem.Infrastructure.MultiTenancy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -51,6 +53,17 @@ public sealed class TenantResolutionMiddleware(
                 StatusCodes.Status403Forbidden,
                 "Tenanten är suspenderad.",
                 "tenant_suspended");
+            return;
+        }
+
+        var jwtTenantId = context.User.FindFirstValue(AuthConstants.Claims.TenantId);
+        if (jwtTenantId is not null && Guid.TryParse(jwtTenantId, out var jwtTenantGuid) && jwtTenantGuid != tenant.Id)
+        {
+            await WriteProblemAsync(
+                context,
+                StatusCodes.Status401Unauthorized,
+                "Token tillhör en annan tenant.",
+                "tenant_mismatch");
             return;
         }
 

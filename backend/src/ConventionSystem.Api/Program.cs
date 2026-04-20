@@ -94,8 +94,8 @@ app.UseExceptionHandler();
 if (app.Configuration.GetValue("UseHttpsRedirect", true))
     app.UseHttpsRedirection();
 app.UseCors("Frontend");
-app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthentication();
+app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();
 
 app.MapAuthEndpoints();
