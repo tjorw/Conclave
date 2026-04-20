@@ -30,6 +30,9 @@ builder.Services.AddIdentityCore<ApplicationUser>().AddDefaultTokenProviders();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+builder.Services.AddSingleton<IJwtTokenIssuer, JwtTokenIssuer>();
+builder.Services.AddSingleton<IAuthLinkBuilder, AuthLinkBuilder>();
+builder.Services.AddSingleton<ITemporaryPasswordGenerator, TemporaryPasswordGenerator>();
 
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT-nyckel saknas i konfigurationen (Jwt:Key).");

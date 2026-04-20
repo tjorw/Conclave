@@ -1,3 +1,4 @@
+using ConventionSystem.Api.Services;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateConvention;
@@ -15,7 +16,6 @@ using ConventionSystem.Infrastructure.MultiTenancy;
 using ConventionSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
-using System.Security.Cryptography;
 
 namespace ConventionSystem.Api.Endpoints;
 
@@ -31,7 +31,8 @@ public static class SystemTenantEndpoints
             TenantAwareUserService tenantAwareUserService,
             UserManager<ApplicationUser> userManager,
             IEmailService emailService,
-            IConfiguration configuration,
+            IAuthLinkBuilder authLinkBuilder,
+            ITemporaryPasswordGenerator temporaryPasswordGenerator,
             CancellationToken ct) =>
         {
             var tenantId = await sender.Send(new CreateTenantCommand(request.Subdomain, request.OrganizationName), ct);
@@ -66,7 +67,7 @@ public static class SystemTenantEndpoints
             if (person is null)
                 return Results.Problem("Kunde inte skapa kontaktperson för tenanten.", statusCode: 422);
 
-            var temporaryPassword = GenerateTemporaryPassword();
+            var temporaryPassword = temporaryPasswordGenerator.Generate();
             var user = new ApplicationUser
             {
                 UserName = $"{tenantId:N}_{request.ContactEmail}",
@@ -98,8 +99,7 @@ public static class SystemTenantEndpoints
             await userManager.AddClaimAsync(user, new Claim("activates_tenant", "true"));
 
             var emailToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            var confirmLink = BuildSignupConfirmationLink(
-                configuration,
+            var confirmLink = authLinkBuilder.BuildSignupConfirmationLink(
                 request.ContactEmail,
                 tenantId,
                 request.Subdomain,
@@ -298,53 +298,6 @@ public static class SystemTenantEndpoints
         });
 
     }
-
-    private static string BuildSignupConfirmationLink(
-        IConfiguration configuration,
-        string email,
-        Guid tenantId,
-        string subdomain,
-        string token)
-    {
-        var portalUrl = configuration["App:PortalUrl"] ?? "http://localhost:4202";
-
-        return $"{portalUrl}/signup/confirm-email" +
-               $"?email={Uri.EscapeDataString(email)}" +
-               $"&token={Uri.EscapeDataString(token)}" +
-               $"&tenantId={tenantId}" +
-               $"&subdomain={Uri.EscapeDataString(subdomain)}";
-    }
-
-    private static string GenerateTemporaryPassword()
-    {
-        const string upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-        const string lower = "abcdefghijkmnopqrstuvwxyz";
-        const string digits = "23456789";
-        const string special = "!@#$%&*?";
-        var all = upper + lower + digits + special;
-
-        var chars = new[]
-        {
-            upper[RandomNumberGenerator.GetInt32(upper.Length)],
-            lower[RandomNumberGenerator.GetInt32(lower.Length)],
-            digits[RandomNumberGenerator.GetInt32(digits.Length)],
-            special[RandomNumberGenerator.GetInt32(special.Length)]
-        }.ToList();
-
-        while (chars.Count < 14)
-        {
-            chars.Add(all[RandomNumberGenerator.GetInt32(all.Length)]);
-        }
-
-        for (var i = chars.Count - 1; i > 0; i--)
-        {
-            var j = RandomNumberGenerator.GetInt32(i + 1);
-            (chars[i], chars[j]) = (chars[j], chars[i]);
-        }
-
-        return new string(chars.ToArray());
-    }
-
     private static async Task<ExistingProvisioning?> FindExistingProvisioningAsync(
         Guid tenantId,
         string requestedAdminEmail,

@@ -1,5 +1,6 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using ConventionSystem.Api.Auth;
+using ConventionSystem.Api.Helpers;
 using ConventionSystem.Domain.Tenancy.Enums;
 using ConventionSystem.Infrastructure.MultiTenancy;
 using Microsoft.AspNetCore.Mvc;
@@ -73,7 +74,7 @@ public sealed class TenantResolutionMiddleware(
 
     private async Task<ResolvedTenant?> ResolveTenantAsync(HttpContext context)
     {
-        var subdomain = TryExtractSubdomain(context.Request.Host.Host);
+        var subdomain = HostNameHelpers.TryExtractSubdomain(context.Request.Host.Host);
         if (!string.IsNullOrWhiteSpace(subdomain))
             return await tenantResolver.ResolveBySubdomainAsync(subdomain, context.RequestAborted);
 
@@ -85,24 +86,6 @@ public sealed class TenantResolutionMiddleware(
             return null;
 
         return await tenantResolver.ResolveByIdAsync(tenantId, context.RequestAborted);
-    }
-
-    private static string? TryExtractSubdomain(string host)
-    {
-        if (string.IsNullOrWhiteSpace(host))
-            return null;
-
-        if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
-            return null;
-
-        if (Uri.CheckHostName(host) == UriHostNameType.IPv4 || Uri.CheckHostName(host) == UriHostNameType.IPv6)
-            return null;
-
-        var segments = host.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (segments.Length < 2)
-            return null;
-
-        return segments[0].ToLowerInvariant();
     }
 
     private static async Task WriteProblemAsync(HttpContext context, int statusCode, string title, string errorCode)

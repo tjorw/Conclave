@@ -1,4 +1,6 @@
-﻿using ConventionSystem.Api.Auth;
+using ConventionSystem.Api.Auth;
+using ConventionSystem.Api.Helpers;
+using ConventionSystem.Api.Services;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Tenancy.Abstractions;
@@ -10,10 +12,6 @@ using ConventionSystem.Infrastructure.MultiTenancy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace ConventionSystem.Api.Endpoints;
 
@@ -29,7 +27,7 @@ public static class AuthEndpoints
             IOptions<MultitenancyOptions> multitenancyOptions,
             IConventionRepository conventionRepo,
             IPersonRepository personRepo,
-            IConfiguration configuration,
+            IJwtTokenIssuer jwtTokenIssuer,
             CancellationToken ct) =>
         {
             ApplicationUser? user = multitenancyOptions.Value.Enabled
@@ -85,11 +83,10 @@ public static class AuthEndpoints
             }
 
             var isAdmin = convention.IsAdministrator(new PersonId(personId));
-            var token = IssueJwt(
+            var token = jwtTokenIssuer.Issue(
                 personId,
                 isAdmin,
                 isSystemAdmin,
-                configuration,
                 AuthConstants.Claims.UserTypeTenantUser,
                 multitenancyOptions.Value.Enabled ? tenantContext.TenantId : user.TenantId);
             return Results.Ok(new { token });
@@ -100,10 +97,10 @@ public static class AuthEndpoints
             LoginRequest request,
             UserManager<ApplicationUser> userManager,
             TenantAwareUserService tenantAwareUserService,
-            IConfiguration configuration,
+            IJwtTokenIssuer jwtTokenIssuer,
             CancellationToken ct) =>
         {
-            var subdomain = TryExtractSubdomain(httpContext.Request.Host.Host);
+            var subdomain = HostNameHelpers.TryExtractSubdomain(httpContext.Request.Host.Host);
             if (!string.IsNullOrWhiteSpace(subdomain)
                 && !subdomain.Equals("system", StringComparison.OrdinalIgnoreCase))
             {
@@ -120,11 +117,10 @@ public static class AuthEndpoints
                     detail: "Kontrollera din inkorg och klicka på bekräftelselänken.",
                     statusCode: 403);
 
-            var token = IssueJwt(
+            var token = jwtTokenIssuer.Issue(
                 user.PersonId,
                 isAdmin: false,
                 isSystemAdmin: true,
-                configuration,
                 AuthConstants.Claims.UserTypeSystemAdmin,
                 tenantId: null);
             return Results.Ok(new { token });
@@ -139,7 +135,7 @@ public static class AuthEndpoints
             IConventionRepository conventionRepo,
             IPersonRepository personRepo,
             IEmailService emailService,
-            IConfiguration configuration,
+            IAuthLinkBuilder authLinkBuilder,
             CancellationToken ct) =>
         {
             Guid? tenantId = multitenancyOptions.Value.Enabled ? tenantContext.TenantId : null;
@@ -209,12 +205,7 @@ public static class AuthEndpoints
             }
 
             var emailToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            var frontendUrl = ResolveFrontendUrl(configuration);
-            var confirmLink = $"{frontendUrl}/confirm-email" +
-                              $"?email={Uri.EscapeDataString(request.Email)}" +
-                              $"&token={Uri.EscapeDataString(emailToken)}";
-            if (tenantId.HasValue)
-                confirmLink += $"&tenantId={tenantId.Value}";
+            var confirmLink = authLinkBuilder.BuildEmailConfirmationLink(request.Email, emailToken, tenantId);
 
             await emailService.SendEmailConfirmationAsync(request.Email, string.Empty, confirmLink, ct);
 
@@ -231,7 +222,7 @@ public static class AuthEndpoints
             var user = request.TenantId.HasValue
                 ? await tenantAwareUserService.FindTenantUserAsync(request.Email, request.TenantId.Value, ct)
                 : await userManager.FindByEmailAsync(request.Email);
-            
+
             if (user is null)
                 return Results.Problem("Ogiltig länk.", statusCode: 400);
 
@@ -271,7 +262,7 @@ public static class AuthEndpoints
             IOptions<MultitenancyOptions> multitenancyOptions,
             IPersonRepository personRepo,
             IEmailService emailService,
-            IConfiguration configuration,
+            IAuthLinkBuilder authLinkBuilder,
             CancellationToken ct) =>
         {
             Guid? tenantId = multitenancyOptions.Value.Enabled ? tenantContext.TenantId : null;
@@ -283,12 +274,7 @@ public static class AuthEndpoints
             if (user is not null && !user.EmailConfirmed)
             {
                 var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                var frontendUrl = ResolveFrontendUrl(configuration);
-                var confirmLink = $"{frontendUrl}/confirm-email" +
-                                  $"?email={Uri.EscapeDataString(request.Email)}" +
-                                  $"&token={Uri.EscapeDataString(token)}";
-                if (tenantId.HasValue)
-                    confirmLink += $"&tenantId={tenantId.Value}";
+                var confirmLink = authLinkBuilder.BuildEmailConfirmationLink(request.Email, token, tenantId);
 
                 var name = user.PersonId.HasValue
                     ? (await personRepo.GetByIdAsync(new PersonId(user.PersonId.Value), ct))?.Name ?? string.Empty
@@ -308,7 +294,7 @@ public static class AuthEndpoints
             IOptions<MultitenancyOptions> multitenancyOptions,
             IPersonRepository personRepo,
             IEmailService emailService,
-            IConfiguration configuration,
+            IAuthLinkBuilder authLinkBuilder,
             CancellationToken ct) =>
         {
             Guid? tenantId = multitenancyOptions.Value.Enabled ? tenantContext.TenantId : null;
@@ -320,12 +306,7 @@ public static class AuthEndpoints
             if (user is not null && user.EmailConfirmed)
             {
                 var token = await userManager.GeneratePasswordResetTokenAsync(user);
-                var frontendUrl = ResolveFrontendUrl(configuration);
-                var resetLink = $"{frontendUrl}/reset-password" +
-                                $"?email={Uri.EscapeDataString(request.Email)}" +
-                                $"&token={Uri.EscapeDataString(token)}";
-                if (tenantId.HasValue)
-                    resetLink += $"&tenantId={tenantId.Value}";
+                var resetLink = authLinkBuilder.BuildPasswordResetLink(request.Email, token, tenantId);
 
                 var name = user.PersonId.HasValue
                     ? (await personRepo.GetByIdAsync(new PersonId(user.PersonId.Value), ct))?.Name ?? string.Empty
@@ -385,62 +366,6 @@ public static class AuthEndpoints
             return Results.NoContent();
         });
     }
-
-    private static string IssueJwt(
-        Guid? personId,
-        bool isAdmin,
-        bool isSystemAdmin,
-        IConfiguration configuration,
-        string userType,
-        Guid? tenantId)
-    {
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
-
-        List<Claim> claims = [new Claim(AuthConstants.Claims.UserType, userType)];
-
-        if (personId.HasValue)
-            claims.Add(new Claim(AuthConstants.Claims.PersonId, personId.Value.ToString()));
-        if (tenantId.HasValue)
-            claims.Add(new Claim(AuthConstants.Claims.TenantId, tenantId.Value.ToString()));
-        if (isAdmin)
-            claims.Add(new Claim(AuthConstants.Claims.IsAdmin, AuthConstants.Claims.IsAdminTrue));
-        if (isSystemAdmin)
-            claims.Add(new Claim(AuthConstants.Claims.IsSystemAdmin, AuthConstants.Claims.IsSystemAdminTrue));
-
-        var descriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(claims),
-            Expires = DateTimeOffset.UtcNow.AddHours(8).UtcDateTime,
-            Issuer = configuration["Jwt:Issuer"],
-            Audience = configuration["Jwt:Audience"],
-            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-        };
-
-        var handler = new JwtSecurityTokenHandler();
-        return handler.WriteToken(handler.CreateToken(descriptor));
-    }
-
-    private static string? TryExtractSubdomain(string host)
-    {
-        if (string.IsNullOrWhiteSpace(host))
-            return null;
-
-        if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
-            return null;
-
-        if (Uri.CheckHostName(host) == UriHostNameType.IPv4 || Uri.CheckHostName(host) == UriHostNameType.IPv6)
-            return null;
-
-        var segments = host.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (segments.Length < 2)
-            return null;
-
-        return segments[0].ToLowerInvariant();
-    }
-
-    private static string ResolveFrontendUrl(IConfiguration configuration)
-        => configuration["App:FrontendUrl"] ?? AuthConstants.Frontend.DefaultUrl;
 }
 
 public record LoginRequest(string Email, string Password);

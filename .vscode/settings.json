@@ -1,3 +1,4 @@
 {
-  "dotnet.defaultSolution": "backend/ConventionSystem.sln"
+  "dotnet.defaultSolution": "backend/ConventionSystem.sln",
+  "testing.automaticallyOpenTestResults": "neverOpen"
 }
