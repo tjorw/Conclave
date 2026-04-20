@@ -7,9 +7,9 @@ namespace ConventionSystem.Api.Endpoints;
 
 public static class FeedEndpoints
 {
-    public static IEndpointRouteBuilder MapFeedEndpoints(this IEndpointRouteBuilder app)
+    public static void MapFeedEndpoints(this RouteGroups groups)
     {
-        var feed = app.MapGroup("/feed/{conventionId:guid}");
+        var feed = groups.Anonymous.MapGroup("/feed/{conventionId:guid}");
 
         feed.MapGet("/editions/{editionId:guid}", async (
             Guid editionId, ISender sender, CancellationToken ct) =>
@@ -32,6 +32,5 @@ public static class FeedEndpoints
             return result is null ? Results.NotFound() : Results.Ok(result);
         });
 
-        return app;
     }
 }

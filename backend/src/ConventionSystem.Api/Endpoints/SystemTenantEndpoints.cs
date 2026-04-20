@@ -1,4 +1,3 @@
-using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateConvention;
@@ -22,9 +21,9 @@ namespace ConventionSystem.Api.Endpoints;
 
 public static class SystemTenantEndpoints
 {
-    public static IEndpointRouteBuilder MapSystemTenantEndpoints(this IEndpointRouteBuilder app)
+    public static void MapSystemTenantEndpoints(this RouteGroups groups)
     {
-        app.MapPost("/system/signup", async (
+        groups.Anonymous.MapPost("/system/signup", async (
             TenantSignupRequest request,
             HttpContext httpContext,
             ISender sender,
@@ -120,8 +119,7 @@ public static class SystemTenantEndpoints
                 new TenantSignupResponse(tenantId, conventionId, request.ContactEmail, request.Subdomain));
         });
 
-        var group = app.MapGroup("/system/tenants")
-            .RequireAuthorization(AuthConstants.Policies.IsSystemAdmin);
+        var group = groups.SystemAdmin.MapGroup("/system/tenants");
 
         group.MapGet("/", async (ISender sender, CancellationToken ct) =>
         {
@@ -299,7 +297,6 @@ public static class SystemTenantEndpoints
                 new ProvisionTenantConventionResponse(conventionId, user.Id, false));
         });
 
-        return app;
     }
 
     private static string BuildSignupConfirmationLink(

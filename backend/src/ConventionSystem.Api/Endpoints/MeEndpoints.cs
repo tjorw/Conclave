@@ -1,4 +1,4 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.UpdatePerson;
 using ConventionSystem.Domain.Convention.Ids;
@@ -7,9 +7,9 @@ namespace ConventionSystem.Api.Endpoints;
 
 public static class MeEndpoints
 {
-    public static IEndpointRouteBuilder MapMeEndpoints(this IEndpointRouteBuilder app)
+    public static void MapMeEndpoints(this RouteGroups groups)
     {
-        app.MapGet("/me/profile", async (
+        groups.Authenticated.MapGet("/me/profile", async (
             ICurrentUser currentUser,
             IPersonRepository personRepo,
             CancellationToken ct) =>
@@ -19,9 +19,9 @@ public static class MeEndpoints
                 return Results.NotFound();
 
             return Results.Ok(new MyProfileDto(person.Name, person.Email, person.Phone));
-        }).RequireAuthorization();
+        });
 
-        app.MapPut("/me/profile", async (
+        groups.Authenticated.MapPut("/me/profile", async (
             UpdateProfileRequest request,
             ICurrentUser currentUser,
             ISender sender,
@@ -34,9 +34,7 @@ public static class MeEndpoints
                 request.Phone), ct);
 
             return Results.NoContent();
-        }).RequireAuthorization();
-
-        return app;
+        });
     }
 }
 

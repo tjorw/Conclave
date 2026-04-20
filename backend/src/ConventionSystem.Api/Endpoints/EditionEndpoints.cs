@@ -1,4 +1,3 @@
-﻿using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Convention.Commands.ChangeCategoryResponsible;
 using ConventionSystem.Application.Convention.Queries.ListEditionResponsibles;
 using ConventionSystem.Application.Convention.Commands.SetActiveEdition;
@@ -32,57 +31,9 @@ namespace ConventionSystem.Api.Endpoints;
 
 public static class EditionEndpoints
 {
-    public static IEndpointRouteBuilder MapEditionEndpoints(this IEndpointRouteBuilder app)
+    public static void MapEditionEndpoints(this RouteGroups groups)
     {
-        app.MapPut("/editions/{editionId:guid}",
-            async (Guid editionId, UpdateEditionRequest request, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new UpdateEditionCommand(
-                    editionId,
-                    request.Name,
-                    request.StartDate,
-                    request.EndDate,
-                    request.StaffCoordinatorId,
-                    request.EventCoordinatorId), ct);
-                return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapPut("/editions/{editionId:guid}/venues/{venueId:guid}",
-            async (Guid editionId, Guid venueId, UpdateVenueRequest request, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new UpdateVenueCommand(editionId, venueId, request.Name, request.Building, request.Description), ct);
-                return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapDelete("/editions/{editionId:guid}/venues/{venueId:guid}",
-            async (Guid editionId, Guid venueId, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new RemoveVenueCommand(editionId, venueId), ct);
-                return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapPut("/editions/{editionId:guid}/staff-areas/{staffAreaId:guid}",
-            async (Guid editionId, Guid staffAreaId, UpdateStaffAreaRequest request, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new UpdateStaffAreaCommand(editionId, staffAreaId, request.Name, request.Description, request.ResponsibleId), ct);
-                return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapDelete("/editions/{editionId:guid}/staff-areas/{staffAreaId:guid}",
-            async (Guid editionId, Guid staffAreaId, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new RemoveStaffAreaCommand(editionId, staffAreaId), ct);
-                return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapDelete("/editions/{editionId:guid}/categories/{categoryId:guid}",
-            async (Guid editionId, Guid categoryId, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new RemoveCategoryCommand(editionId, categoryId), ct);
-                return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapPost("/conventions/{conventionId:guid}/editions",
+        groups.Admin.MapPost("/conventions/{conventionId:guid}/editions",
             async (Guid conventionId, CreateEditionRequest request, ISender sender, CancellationToken ct) =>
             {
                 var id = await sender.Send(new CreateEditionCommand(
@@ -93,169 +44,211 @@ public static class EditionEndpoints
                     request.StaffCoordinatorId,
                     request.EventCoordinatorId), ct);
                 return Results.Created($"/editions/{id}", new { id });
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/editions/{editionId:guid}/publish",
+        var editions = groups.Admin.MapGroup("/editions/{editionId:guid}");
+
+        editions.MapPut("/",
+            async (Guid editionId, UpdateEditionRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateEditionCommand(
+                    editionId,
+                    request.Name,
+                    request.StartDate,
+                    request.EndDate,
+                    request.StaffCoordinatorId,
+                    request.EventCoordinatorId), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapPost("/publish",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new PublishEditionCommand(editionId), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/editions/{editionId:guid}/unpublish",
+        editions.MapPost("/unpublish",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new UnpublishEditionCommand(editionId), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/editions/{editionId:guid}/copy-structure",
+        editions.MapPost("/copy-structure",
             async (Guid editionId, CopyEditionStructureRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new CopyEditionStructureCommand(editionId, request.SourceEditionId), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPut("/editions/{editionId:guid}/categories/{categoryId:guid}",
-            async (Guid editionId, Guid categoryId, UpdateCategoryRequest request, ISender sender, CancellationToken ct) =>
+        editions.MapPost("/set-active",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new UpdateCategoryCommand(editionId, categoryId, request.Name, request.Description, request.ResponsibleId), ct);
+                await sender.Send(new SetActiveEditionCommand(editionId), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        // UC011 – Byt kategoriansvarig
-        app.MapPut("/editions/{editionId:guid}/categories/{categoryId:guid}/responsible",
-            async (Guid editionId, Guid categoryId, ChangeCategoryResponsibleRequest request, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new ChangeCategoryResponsibleCommand(editionId, categoryId, request.NewResponsibleId), ct);
-                return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapPost("/editions/{editionId:guid}/categories",
-            async (Guid editionId, CreateCategoryRequest request, ISender sender, CancellationToken ct) =>
-            {
-                var id = await sender.Send(new CreateCategoryCommand(
-                    editionId, request.Name, request.Description, request.ResponsibleId), ct);
-                return Results.Created($"/categories/{id}", new { id });
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapPost("/editions/{editionId:guid}/staff-areas",
-            async (Guid editionId, CreateStaffAreaRequest request, ISender sender, CancellationToken ct) =>
-            {
-                var id = await sender.Send(new CreateStaffAreaCommand(
-                    editionId, request.Name, request.Description, request.ResponsibleId), ct);
-                return Results.Created($"/staff-areas/{id}", new { id });
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapPost("/editions/{editionId:guid}/stations",
-            async (Guid editionId, CreateStationRequest request, ISender sender, CancellationToken ct) =>
-            {
-                var id = await sender.Send(new CreateStationCommand(
-                    editionId, request.Name, request.Description, request.StaffAreaId), ct);
-                return Results.Created($"/stations/{id}", new { id });
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapPut("/editions/{editionId:guid}/stations/{stationId:guid}",
-            async (Guid editionId, Guid stationId, UpdateStationRequest request, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new UpdateStationCommand(editionId, stationId, request.Name, request.Description), ct);
-                return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapDelete("/editions/{editionId:guid}/stations/{stationId:guid}",
-            async (Guid editionId, Guid stationId, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new RemoveStationCommand(editionId, stationId), ct);
-                return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapPost("/editions/{editionId:guid}/venues",
-            async (Guid editionId, CreateVenueRequest request, ISender sender, CancellationToken ct) =>
-            {
-                var id = await sender.Send(new CreateVenueCommand(
-                    editionId, request.Name, request.Building, request.Description), ct);
-                return Results.Created($"/venues/{id}", new { id });
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        app.MapPost("/editions/{editionId:guid}/registrations/{type}/open",
+        editions.MapPost("/registrations/{type}/open",
             async (Guid editionId, string type, ISender sender, CancellationToken ct) =>
             {
                 if (!Enum.TryParse<RegistrationType>(type, ignoreCase: true, out var registrationType))
                     return Results.BadRequest($"Okänd registreringstyp: {type}.");
                 await sender.Send(new OpenRegistrationCommand(editionId, registrationType), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/editions/{editionId:guid}/registrations/{type}/close",
+        editions.MapPost("/registrations/{type}/close",
             async (Guid editionId, string type, ISender sender, CancellationToken ct) =>
             {
                 if (!Enum.TryParse<RegistrationType>(type, ignoreCase: true, out var registrationType))
                     return Results.BadRequest($"Okänd registreringstyp: {type}.");
                 await sender.Send(new CloseRegistrationCommand(editionId, registrationType), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/editions/{editionId:guid}/event-submissions/open",
+        editions.MapPost("/event-submissions/open",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new OpenRegistrationCommand(editionId, RegistrationType.Organiser), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/editions/{editionId:guid}/event-submissions/close",
+        editions.MapPost("/event-submissions/close",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new CloseRegistrationCommand(editionId, RegistrationType.Organiser), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/editions/{editionId:guid}/staff-applications/open",
+        editions.MapPost("/staff-applications/open",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new OpenRegistrationCommand(editionId, RegistrationType.Staff), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/editions/{editionId:guid}/staff-applications/close",
+        editions.MapPost("/staff-applications/close",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new CloseRegistrationCommand(editionId, RegistrationType.Staff), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/editions/{editionId:guid}/set-active",
-            async (Guid editionId, ISender sender, CancellationToken ct) =>
+        editions.MapPost("/venues",
+            async (Guid editionId, CreateVenueRequest request, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new SetActiveEditionCommand(editionId), ct);
+                var id = await sender.Send(new CreateVenueCommand(
+                    editionId, request.Name, request.Building, request.Description), ct);
+                return Results.Created($"/venues/{id}", new { id });
+            });
+
+        editions.MapPut("/venues/{venueId:guid}",
+            async (Guid editionId, Guid venueId, UpdateVenueRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateVenueCommand(editionId, venueId, request.Name, request.Building, request.Description), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapGet("/editions/{editionId:guid}/visitors",
+        editions.MapDelete("/venues/{venueId:guid}",
+            async (Guid editionId, Guid venueId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveVenueCommand(editionId, venueId), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapPost("/staff-areas",
+            async (Guid editionId, CreateStaffAreaRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var id = await sender.Send(new CreateStaffAreaCommand(
+                    editionId, request.Name, request.Description, request.ResponsibleId), ct);
+                return Results.Created($"/staff-areas/{id}", new { id });
+            });
+
+        editions.MapPut("/staff-areas/{staffAreaId:guid}",
+            async (Guid editionId, Guid staffAreaId, UpdateStaffAreaRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateStaffAreaCommand(editionId, staffAreaId, request.Name, request.Description, request.ResponsibleId), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapDelete("/staff-areas/{staffAreaId:guid}",
+            async (Guid editionId, Guid staffAreaId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveStaffAreaCommand(editionId, staffAreaId), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapPost("/stations",
+            async (Guid editionId, CreateStationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var id = await sender.Send(new CreateStationCommand(
+                    editionId, request.Name, request.Description, request.StaffAreaId), ct);
+                return Results.Created($"/stations/{id}", new { id });
+            });
+
+        editions.MapPut("/stations/{stationId:guid}",
+            async (Guid editionId, Guid stationId, UpdateStationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateStationCommand(editionId, stationId, request.Name, request.Description), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapDelete("/stations/{stationId:guid}",
+            async (Guid editionId, Guid stationId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveStationCommand(editionId, stationId), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapPost("/categories",
+            async (Guid editionId, CreateCategoryRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var id = await sender.Send(new CreateCategoryCommand(
+                    editionId, request.Name, request.Description, request.ResponsibleId), ct);
+                return Results.Created($"/categories/{id}", new { id });
+            });
+
+        editions.MapPut("/categories/{categoryId:guid}",
+            async (Guid editionId, Guid categoryId, UpdateCategoryRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateCategoryCommand(editionId, categoryId, request.Name, request.Description, request.ResponsibleId), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapPut("/categories/{categoryId:guid}/responsible",
+            async (Guid editionId, Guid categoryId, ChangeCategoryResponsibleRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new ChangeCategoryResponsibleCommand(editionId, categoryId, request.NewResponsibleId), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapDelete("/categories/{categoryId:guid}",
+            async (Guid editionId, Guid categoryId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveCategoryCommand(editionId, categoryId), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapGet("/visitors",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
-                Results.Ok(await sender.Send(new ListEditionVisitorsQuery(editionId), ct)))
-            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
+                Results.Ok(await sender.Send(new ListEditionVisitorsQuery(editionId), ct)));
 
-        app.MapGet("/editions/{editionId:guid}/organisers",
+        editions.MapGet("/organisers",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
-                Results.Ok(await sender.Send(new ListEditionOrganisersQuery(editionId), ct)))
-            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
+                Results.Ok(await sender.Send(new ListEditionOrganisersQuery(editionId), ct)));
 
-        app.MapGet("/editions/{editionId:guid}/staff",
+        editions.MapGet("/staff",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
-                Results.Ok(await sender.Send(new ListEditionStaffQuery(editionId), ct)))
-            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
+                Results.Ok(await sender.Send(new ListEditionStaffQuery(editionId), ct)));
 
-        app.MapGet("/editions/{editionId:guid}/responsibles",
+        editions.MapGet("/responsibles",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
-                Results.Ok(await sender.Send(new ListEditionResponsiblesQuery(editionId), ct)))
-            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
+                Results.Ok(await sender.Send(new ListEditionResponsiblesQuery(editionId), ct)));
 
-        app.MapGet("/editions/{editionId:guid}/sessions",
+        editions.MapGet("/sessions",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
-                Results.Ok(await sender.Send(new GetEditionSessionsQuery(editionId), ct)))
-            .RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        return app;
+                Results.Ok(await sender.Send(new GetEditionSessionsQuery(editionId), ct)));
     }
 }
 

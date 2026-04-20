@@ -1,4 +1,3 @@
-﻿using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreatePerson;
@@ -14,39 +13,41 @@ namespace ConventionSystem.Api.Endpoints;
 
 public static class PersonEndpoints
 {
-    public static IEndpointRouteBuilder MapPersonEndpoints(this IEndpointRouteBuilder app)
+    public static void MapPersonEndpoints(this RouteGroups groups)
     {
-        app.MapPost("/conventions/{conventionId:guid}/persons",
+        groups.Admin.MapPost("/conventions/{conventionId:guid}/persons",
             async (Guid conventionId, CreatePersonRequest request, ISender sender, CancellationToken ct) =>
             {
                 var id = await sender.Send(
                     new CreatePersonCommand(conventionId, request.Name, request.Email, request.Phone), ct);
                 return Results.Created($"/persons/{id}", new { id });
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPut("/persons/{personId:guid}",
+        var persons = groups.Admin.MapGroup("/persons/{personId:guid}");
+
+        persons.MapPut("/",
             async (Guid personId, UpdatePersonRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(
                     new UpdatePersonCommand(personId, request.Name, request.Email, request.Phone), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapDelete("/persons/{personId:guid}",
+        persons.MapDelete("/",
             async (Guid personId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new DeactivatePersonCommand(personId), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/persons/{personId:guid}/reactivate",
+        persons.MapPost("/reactivate",
             async (Guid personId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new ReactivatePersonCommand(personId), ct);
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/persons/{personId:guid}/send-reset-link",
+        persons.MapPost("/send-reset-link",
             async (Guid personId,
                 UserManager<ApplicationUser> userManager,
                 IPersonRepository personRepo,
@@ -66,9 +67,9 @@ public static class PersonEndpoints
                 await emailService.SendPasswordResetAsync(person.Email, person.Name, resetLink, ct);
 
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/persons/{personId:guid}/lock",
+        persons.MapPost("/lock",
             async (Guid personId, UserManager<ApplicationUser> userManager, CancellationToken ct) =>
             {
                 var user = await userManager.Users.FirstOrDefaultAsync(u => u.PersonId == personId, ct);
@@ -79,9 +80,9 @@ public static class PersonEndpoints
                 await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
 
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
+            });
 
-        app.MapPost("/persons/{personId:guid}/unlock",
+        persons.MapPost("/unlock",
             async (Guid personId, UserManager<ApplicationUser> userManager, CancellationToken ct) =>
             {
                 var user = await userManager.Users.FirstOrDefaultAsync(u => u.PersonId == personId, ct);
@@ -91,9 +92,7 @@ public static class PersonEndpoints
                 await userManager.SetLockoutEndDateAsync(user, null);
 
                 return Results.NoContent();
-            }).RequireAuthorization(AuthConstants.Policies.IsAdmin);
-
-        return app;
+            });
     }
 }
 

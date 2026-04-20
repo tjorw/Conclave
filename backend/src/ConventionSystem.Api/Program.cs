@@ -98,16 +98,23 @@ app.UseAuthentication();
 app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();
 
-app.MapAuthEndpoints();
-app.MapMeEndpoints();
-app.MapFeedEndpoints();
-app.MapConventionEndpoints();
-app.MapPersonEndpoints();
-app.MapEditionEndpoints();
-app.MapShiftEndpoints();
-app.MapRegistrationEndpoints();
-app.MapEventEndpoints();
-app.MapSystemTenantEndpoints();
+var groups = new RouteGroups(
+    Anonymous:     app.MapGroup(""),
+    Authenticated: app.MapGroup("").RequireAuthorization(),
+    Admin:         app.MapGroup("").RequireAuthorization(AuthConstants.Policies.IsAdmin),
+    SystemAdmin:   app.MapGroup("").RequireAuthorization(AuthConstants.Policies.IsSystemAdmin)
+);
+
+groups.MapAuthEndpoints();
+groups.MapMeEndpoints();
+groups.MapFeedEndpoints();
+groups.MapConventionEndpoints();
+groups.MapPersonEndpoints();
+groups.MapEditionEndpoints();
+groups.MapShiftEndpoints();
+groups.MapRegistrationEndpoints();
+groups.MapEventEndpoints();
+groups.MapSystemTenantEndpoints();
 
 app.Run();
 

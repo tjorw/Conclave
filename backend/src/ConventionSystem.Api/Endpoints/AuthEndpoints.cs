@@ -19,9 +19,9 @@ namespace ConventionSystem.Api.Endpoints;
 
 public static class AuthEndpoints
 {
-    public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
+    public static void MapAuthEndpoints(this RouteGroups groups)
     {
-        app.MapPost("/auth/login", async (
+        groups.Anonymous.MapPost("/auth/login", async (
             LoginRequest request,
             UserManager<ApplicationUser> userManager,
             TenantAwareUserService tenantAwareUserService,
@@ -95,7 +95,7 @@ public static class AuthEndpoints
             return Results.Ok(new { token });
         });
 
-        app.MapPost("/system/auth/login", async (
+        groups.Anonymous.MapPost("/system/auth/login", async (
             HttpContext httpContext,
             LoginRequest request,
             UserManager<ApplicationUser> userManager,
@@ -130,7 +130,7 @@ public static class AuthEndpoints
             return Results.Ok(new { token });
         });
 
-        app.MapPost("/auth/register", async (
+        groups.Anonymous.MapPost("/auth/register", async (
             RegisterRequest request,
             UserManager<ApplicationUser> userManager,
             TenantAwareUserService tenantAwareUserService,
@@ -221,7 +221,7 @@ public static class AuthEndpoints
             return Results.Ok();
         });
 
-        app.MapPost("/auth/confirm-email", async (
+        groups.Anonymous.MapPost("/auth/confirm-email", async (
             ConfirmEmailRequest request,
             UserManager<ApplicationUser> userManager,
             TenantAwareUserService tenantAwareUserService,
@@ -263,7 +263,7 @@ public static class AuthEndpoints
             return Results.Ok();
         });
 
-        app.MapPost("/auth/resend-confirmation", async (
+        groups.Anonymous.MapPost("/auth/resend-confirmation", async (
             ResendConfirmationRequest request,
             UserManager<ApplicationUser> userManager,
             TenantAwareUserService tenantAwareUserService,
@@ -300,7 +300,7 @@ public static class AuthEndpoints
             return Results.Ok();
         });
 
-        app.MapPost("/auth/forgot-password", async (
+        groups.Anonymous.MapPost("/auth/forgot-password", async (
             ForgotPasswordRequest request,
             UserManager<ApplicationUser> userManager,
             TenantAwareUserService tenantAwareUserService,
@@ -337,7 +337,7 @@ public static class AuthEndpoints
             return Results.Ok();
         });
 
-        app.MapPost("/auth/reset-password", async (
+        groups.Anonymous.MapPost("/auth/reset-password", async (
             ResetPasswordRequest request,
             UserManager<ApplicationUser> userManager,
             TenantAwareUserService tenantAwareUserService,
@@ -360,7 +360,7 @@ public static class AuthEndpoints
             return Results.Ok();
         });
 
-        app.MapPut("/auth/password", async (
+        groups.Authenticated.MapPut("/auth/password", async (
             ChangePasswordRequest request,
             ICurrentUser currentUser,
             UserManager<ApplicationUser> userManager,
@@ -383,9 +383,7 @@ public static class AuthEndpoints
             var person = await personRepo.GetByIdAsync(currentUser.PersonId, ct);
             await emailService.SendPasswordChangedAsync(user.Email!, person?.Name ?? string.Empty, ct);
             return Results.NoContent();
-        }).RequireAuthorization();
-
-        return app;
+        });
     }
 
     private static string IssueJwt(
