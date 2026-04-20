@@ -1,4 +1,4 @@
-using ConventionSystem.Domain.Tenancy.Aggregates;
+﻿using ConventionSystem.Domain.Tenancy.Aggregates;
 using ConventionSystem.Domain.Tenancy.Enums;
 using ConventionSystem.Domain.Tenancy.Events;
 using ConventionSystem.Domain.Tenancy.Exceptions;

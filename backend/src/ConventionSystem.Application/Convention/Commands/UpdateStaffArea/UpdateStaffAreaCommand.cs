@@ -1,5 +1,4 @@
-using MediatR;
-
+﻿
 namespace ConventionSystem.Application.Convention.Commands.UpdateStaffArea;
 
 public sealed record UpdateStaffAreaCommand(
@@ -7,4 +6,4 @@ public sealed record UpdateStaffAreaCommand(
     Guid StaffAreaId,
     string Name,
     string? Description,
-    Guid ResponsibleId) : IRequest;
+    Guid ResponsibleId) : ICommand;

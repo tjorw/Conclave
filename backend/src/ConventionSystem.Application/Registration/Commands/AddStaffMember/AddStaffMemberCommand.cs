@@ -1,5 +1,4 @@
-using MediatR;
-
+﻿
 namespace ConventionSystem.Application.Registration.Commands.AddStaffMember;
 
 public sealed record AddStaffMemberCommand(
@@ -7,4 +6,4 @@ public sealed record AddStaffMemberCommand(
     string Name,
     string Email,
     string? Phone,
-    string? Note) : IRequest<Guid>;
+    string? Note) : ICommand<Guid>;

@@ -1,11 +1,10 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Event.ValueObjects;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.UpdateSession;
 
@@ -14,9 +13,9 @@ public sealed class UpdateSessionHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<UpdateSessionCommand>
+    : CommandHandler<UpdateSessionCommand>
 {
-    public async Task Handle(UpdateSessionCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(UpdateSessionCommand command, CancellationToken ct)
     {
         var sessionId = new SessionId(command.SessionId);
         var venueId = new VenueId(command.VenueId);

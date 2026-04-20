@@ -1,8 +1,7 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.CreateEdition;
 
@@ -11,7 +10,7 @@ public sealed class CreateEditionHandler(
     IPersonRepository personRepository,
     IEditionRepository editionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CreateEditionCommand, Guid>
+    : ICommandHandler<CreateEditionCommand, Guid>
 {
     public async Task<Guid> Handle(CreateEditionCommand command, CancellationToken ct)
     {

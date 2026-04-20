@@ -1,5 +1,4 @@
-using MediatR;
-
+﻿
 namespace ConventionSystem.Application.Convention.Commands.SetActiveEdition;
 
-public sealed record SetActiveEditionCommand(Guid EditionId) : IRequest;
+public sealed record SetActiveEditionCommand(Guid EditionId) : ICommand;

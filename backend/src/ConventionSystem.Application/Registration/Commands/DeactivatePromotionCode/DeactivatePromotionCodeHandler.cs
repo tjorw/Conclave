@@ -1,9 +1,8 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.DeactivatePromotionCode;
 
@@ -12,9 +11,9 @@ public sealed class DeactivatePromotionCodeHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<DeactivatePromotionCodeCommand>
+    : CommandHandler<DeactivatePromotionCodeCommand>
 {
-    public async Task Handle(DeactivatePromotionCodeCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(DeactivatePromotionCodeCommand command, CancellationToken ct)
     {
         var promotionCodeId = new PromotionCodeId(command.PromotionCodeId);
         var performedById = currentUser.PersonId;

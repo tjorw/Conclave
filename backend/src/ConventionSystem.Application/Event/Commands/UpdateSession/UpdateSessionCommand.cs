@@ -1,5 +1,4 @@
-using ConventionSystem.Domain.Event.Enums;
-using MediatR;
+﻿using ConventionSystem.Domain.Event.Enums;
 
 namespace ConventionSystem.Application.Event.Commands.UpdateSession;
 
@@ -10,4 +9,4 @@ public sealed record UpdateSessionCommand(
     DateTime StartTime,
     DateTime EndTime,
     int MaxSeats,
-    StartType StartType) : IRequest;
+    StartType StartType) : ICommand;

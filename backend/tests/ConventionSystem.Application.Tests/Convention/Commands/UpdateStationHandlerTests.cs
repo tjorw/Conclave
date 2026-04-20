@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.UpdateStation;
 using ConventionSystem.Domain.Convention.Exceptions;

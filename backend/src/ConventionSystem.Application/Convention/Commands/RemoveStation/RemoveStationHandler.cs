@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.RemoveStation;
 
@@ -9,9 +8,9 @@ public sealed class RemoveStationHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<RemoveStationCommand>
+    : CommandHandler<RemoveStationCommand>
 {
-    public async Task Handle(RemoveStationCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(RemoveStationCommand command, CancellationToken ct)
     {
         var editionId  = new EditionId(command.EditionId);
         var stationId  = new StationId(command.StationId);

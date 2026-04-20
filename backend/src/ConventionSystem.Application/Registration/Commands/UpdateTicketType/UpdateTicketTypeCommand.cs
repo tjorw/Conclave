@@ -1,5 +1,4 @@
-using MediatR;
-using ConventionSystem.Domain.Registration.Enums;
+﻿using ConventionSystem.Domain.Registration.Enums;
 
 namespace ConventionSystem.Application.Registration.Commands.UpdateTicketType;
 
@@ -9,4 +8,4 @@ public sealed record UpdateTicketTypeCommand(
     int Price,
     TicketTypeCategory Category,
     IReadOnlyList<DateOnly>? ValidDays = null,
-    Guid[]? AllowedCategories = null) : IRequest;
+    Guid[]? AllowedCategories = null) : ICommand;

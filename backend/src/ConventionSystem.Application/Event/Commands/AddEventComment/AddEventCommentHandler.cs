@@ -1,17 +1,16 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.AddEventComment;
 
 public sealed class AddEventCommentHandler(
     IEventRepository eventRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<AddEventCommentCommand>
+    : CommandHandler<AddEventCommentCommand>
 {
-    public async Task Handle(AddEventCommentCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(AddEventCommentCommand command, CancellationToken ct)
     {
         var performedById = currentUser.PersonId;
 

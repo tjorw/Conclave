@@ -1,4 +1,4 @@
-using ConventionSystem.Domain.Convention.Ids;
+﻿using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Aggregates;
 using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Event.Exceptions;

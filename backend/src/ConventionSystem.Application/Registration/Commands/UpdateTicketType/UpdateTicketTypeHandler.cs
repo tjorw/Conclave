@@ -1,10 +1,9 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Registration.Exceptions;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.UpdateTicketType;
 
@@ -13,9 +12,9 @@ public sealed class UpdateTicketTypeHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<UpdateTicketTypeCommand>
+    : CommandHandler<UpdateTicketTypeCommand>
 {
-    public async Task Handle(UpdateTicketTypeCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(UpdateTicketTypeCommand command, CancellationToken ct)
     {
         var performedById = currentUser.PersonId;
 

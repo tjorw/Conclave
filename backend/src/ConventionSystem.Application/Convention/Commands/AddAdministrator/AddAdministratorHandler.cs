@@ -1,8 +1,7 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.AddAdministrator;
 
@@ -10,9 +9,9 @@ public sealed class AddAdministratorHandler(
     IConventionRepository conventionRepository,
     IPersonRepository personRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<AddAdministratorCommand>
+    : CommandHandler<AddAdministratorCommand>
 {
-    public async Task Handle(AddAdministratorCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(AddAdministratorCommand command, CancellationToken ct)
     {
         var conventionId = new ConventionId(command.ConventionId);
 

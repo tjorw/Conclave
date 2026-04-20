@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.ChangeCategoryResponsible;
 
@@ -10,9 +9,9 @@ public sealed class ChangeCategoryResponsibleHandler(
     IConventionRepository conventionRepository,
     IPersonRepository personRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<ChangeCategoryResponsibleCommand>
+    : CommandHandler<ChangeCategoryResponsibleCommand>
 {
-    public async Task Handle(ChangeCategoryResponsibleCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(ChangeCategoryResponsibleCommand command, CancellationToken ct)
     {
         var editionId = new EditionId(command.EditionId);
         var categoryId = new CategoryId(command.CategoryId);

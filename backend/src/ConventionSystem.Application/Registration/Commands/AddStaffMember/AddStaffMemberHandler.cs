@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
@@ -6,7 +6,6 @@ using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.AddStaffMember;
 
@@ -16,7 +15,7 @@ public sealed class AddStaffMemberHandler(
     IPersonRepository personRepository,
     IStaffApplicationRepository staffApplicationRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<AddStaffMemberCommand, Guid>
+    : ICommandHandler<AddStaffMemberCommand, Guid>
 {
     public async Task<Guid> Handle(AddStaffMemberCommand command, CancellationToken ct)
     {

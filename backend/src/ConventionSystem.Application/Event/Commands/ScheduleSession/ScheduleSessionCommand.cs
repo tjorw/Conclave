@@ -1,5 +1,4 @@
-using ConventionSystem.Domain.Event.Enums;
-using MediatR;
+﻿using ConventionSystem.Domain.Event.Enums;
 
 namespace ConventionSystem.Application.Event.Commands.ScheduleSession;
 
@@ -9,4 +8,4 @@ public sealed record ScheduleSessionCommand(
     DateTime StartTime,
     DateTime EndTime,
     int MaxSeats,
-    StartType StartType) : IRequest<Guid>;
+    StartType StartType) : ICommand<Guid>;

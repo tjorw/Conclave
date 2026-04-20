@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Common;
@@ -8,7 +8,6 @@ using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Enums;
 using ConventionSystem.Domain.Registration.Ids;
 using ConventionSystem.Domain.Registration.Services;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.RegisterForSession;
 
@@ -17,7 +16,7 @@ public sealed class RegisterForSessionHandler(
     ITicketRepository ticketRepository,
     IRegistrationRuleService registrationRuleService,
     ICurrentUser currentUser)
-    : IRequestHandler<RegisterForSessionCommand, Guid>
+    : ICommandHandler<RegisterForSessionCommand, Guid>
 {
     public async Task<Guid> Handle(RegisterForSessionCommand command, CancellationToken ct)
     {

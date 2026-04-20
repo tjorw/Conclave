@@ -1,13 +1,12 @@
-using ConventionSystem.Application.Common.Exceptions;
+﻿using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Tenancy.Abstractions;
 using ConventionSystem.Domain.Tenancy.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Tenancy.Commands.SuspendTenant;
 
-public sealed class SuspendTenantHandler(ITenantRepository repository) : IRequestHandler<SuspendTenantCommand>
+public sealed class SuspendTenantHandler(ITenantRepository repository) : CommandHandler<SuspendTenantCommand>
 {
-    public async Task Handle(SuspendTenantCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(SuspendTenantCommand command, CancellationToken ct)
     {
         var tenantId = new TenantId(command.TenantId);
         var tenant = await repository.GetByIdAsync(tenantId, ct)

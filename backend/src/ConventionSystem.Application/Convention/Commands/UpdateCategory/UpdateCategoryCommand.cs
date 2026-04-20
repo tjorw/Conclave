@@ -1,5 +1,4 @@
-using MediatR;
-
+﻿
 namespace ConventionSystem.Application.Convention.Commands.UpdateCategory;
 
 public sealed record UpdateCategoryCommand(
@@ -7,4 +6,4 @@ public sealed record UpdateCategoryCommand(
     Guid CategoryId,
     string Name,
     string? Description,
-    Guid ResponsibleId) : IRequest;
+    Guid ResponsibleId) : ICommand;

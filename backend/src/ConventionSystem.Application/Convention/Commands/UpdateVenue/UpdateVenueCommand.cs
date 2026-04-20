@@ -1,5 +1,4 @@
-using MediatR;
-
+﻿
 namespace ConventionSystem.Application.Convention.Commands.UpdateVenue;
 
 public sealed record UpdateVenueCommand(
@@ -7,4 +6,4 @@ public sealed record UpdateVenueCommand(
     Guid VenueId,
     string Name,
     string Building,
-    string? Description) : IRequest;
+    string? Description) : ICommand;

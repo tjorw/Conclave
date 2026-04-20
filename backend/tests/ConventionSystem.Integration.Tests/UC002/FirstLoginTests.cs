@@ -1,4 +1,4 @@
-using ConventionSystem.Integration.Tests.Infrastructure;
+﻿using ConventionSystem.Integration.Tests.Infrastructure;
 
 namespace ConventionSystem.Integration.Tests.UC002;
 

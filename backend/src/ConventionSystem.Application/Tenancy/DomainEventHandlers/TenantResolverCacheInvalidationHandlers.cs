@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Tenancy.Abstractions;
 using ConventionSystem.Domain.Tenancy.Events;
 

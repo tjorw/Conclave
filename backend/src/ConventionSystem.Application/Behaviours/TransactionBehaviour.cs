@@ -1,12 +1,11 @@
 using ConventionSystem.Application.Abstractions;
 using ConventionSystem.Application.Common;
-using MediatR;
 
 namespace ConventionSystem.Application.Behaviours;
 
 internal sealed class TransactionBehaviour<TRequest, TResponse>(IUnitOfWork unitOfWork)
     : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : notnull
+    where TRequest : IRequest<TResponse>
 {
     public async Task<TResponse> Handle(
         TRequest request,

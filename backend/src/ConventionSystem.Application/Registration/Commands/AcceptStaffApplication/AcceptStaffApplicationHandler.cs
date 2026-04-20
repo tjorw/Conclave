@@ -1,10 +1,9 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
 
@@ -13,9 +12,9 @@ public sealed class AcceptStaffApplicationHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<AcceptStaffApplicationCommand>
+    : CommandHandler<AcceptStaffApplicationCommand>
 {
-    public async Task Handle(AcceptStaffApplicationCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(AcceptStaffApplicationCommand command, CancellationToken ct)
     {
         var applicationId = new StaffApplicationId(command.StaffApplicationId);
         var performedById = currentUser.PersonId;

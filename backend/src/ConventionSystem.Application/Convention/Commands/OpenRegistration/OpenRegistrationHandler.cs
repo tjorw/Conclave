@@ -1,8 +1,7 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Enums;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.OpenRegistration;
 
@@ -10,9 +9,9 @@ public sealed class OpenRegistrationHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<OpenRegistrationCommand>
+    : CommandHandler<OpenRegistrationCommand>
 {
-    public async Task Handle(OpenRegistrationCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(OpenRegistrationCommand command, CancellationToken ct)
     {
         var editionId = new EditionId(command.EditionId);
         var performedById = currentUser.PersonId;

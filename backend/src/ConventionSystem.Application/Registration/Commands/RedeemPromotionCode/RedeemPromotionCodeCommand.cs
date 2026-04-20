@@ -1,10 +1,9 @@
-using MediatR;
-
+﻿
 namespace ConventionSystem.Application.Registration.Commands.RedeemPromotionCode;
 
 public sealed record RedeemPromotionCodeCommand(
     Guid TicketId,
-    string Code) : IRequest<RedeemPromotionCodeResult>;
+    string Code) : ICommand<RedeemPromotionCodeResult>;
 
 public sealed record RedeemPromotionCodeResult(
     Guid TicketId,

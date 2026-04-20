@@ -1,9 +1,8 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Staff.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Staff.Commands.AssignPersonToShift;
 
@@ -13,7 +12,7 @@ public sealed class AssignPersonToShiftHandler(
     IConventionRepository conventionRepository,
     IPersonRepository personRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<AssignPersonToShiftCommand, Guid>
+    : ICommandHandler<AssignPersonToShiftCommand, Guid>
 {
     public async Task<Guid> Handle(AssignPersonToShiftCommand command, CancellationToken ct)
     {

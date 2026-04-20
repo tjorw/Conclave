@@ -1,9 +1,8 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.ReturnToDraft;
 
@@ -12,9 +11,9 @@ public sealed class ReturnToDraftHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<ReturnToDraftCommand>
+    : CommandHandler<ReturnToDraftCommand>
 {
-    public async Task Handle(ReturnToDraftCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(ReturnToDraftCommand command, CancellationToken ct)
     {
         var performedById = currentUser.PersonId;
 

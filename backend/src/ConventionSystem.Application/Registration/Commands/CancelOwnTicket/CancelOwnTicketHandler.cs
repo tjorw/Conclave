@@ -1,9 +1,8 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Registration.Enums;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.CancelOwnTicket;
 
@@ -11,9 +10,9 @@ public sealed class CancelOwnTicketHandler(
     ITicketRepository ticketRepository,
     ITicketTypeRepository ticketTypeRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CancelOwnTicketCommand>
+    : CommandHandler<CancelOwnTicketCommand>
 {
-    public async Task Handle(CancelOwnTicketCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(CancelOwnTicketCommand command, CancellationToken ct)
     {
         var ticketId = new TicketId(command.TicketId);
         var ticket = await ticketRepository.GetByIdAsync(ticketId, ct)

@@ -1,10 +1,9 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.ApproveVersion;
 
@@ -13,9 +12,9 @@ public sealed class ApproveVersionHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<ApproveVersionCommand>
+    : CommandHandler<ApproveVersionCommand>
 {
-    public async Task Handle(ApproveVersionCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(ApproveVersionCommand command, CancellationToken ct)
     {
         var performedById = currentUser.PersonId;
 

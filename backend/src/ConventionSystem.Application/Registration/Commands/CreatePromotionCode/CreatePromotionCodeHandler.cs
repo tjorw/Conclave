@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
@@ -6,7 +6,6 @@ using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Exceptions;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.CreatePromotionCode;
 
@@ -15,7 +14,7 @@ public sealed class CreatePromotionCodeHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CreatePromotionCodeCommand, Guid>
+    : ICommandHandler<CreatePromotionCodeCommand, Guid>
 {
     public async Task<Guid> Handle(CreatePromotionCodeCommand command, CancellationToken ct)
     {

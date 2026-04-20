@@ -67,7 +67,7 @@ public static class InfrastructureServiceExtensions
         });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<EventDispatchInterceptor>();
         services.AddScoped<TenantSeedInterceptor>();
 

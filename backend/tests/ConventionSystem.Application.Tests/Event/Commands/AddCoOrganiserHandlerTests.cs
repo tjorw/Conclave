@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Convention.Abstractions;
+﻿using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.AddCoOrganiser;
 using ConventionSystem.Domain.Convention.Aggregates;

@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.UpdateStation;
 
@@ -9,9 +8,9 @@ public sealed class UpdateStationHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<UpdateStationCommand>
+    : CommandHandler<UpdateStationCommand>
 {
-    public async Task Handle(UpdateStationCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(UpdateStationCommand command, CancellationToken ct)
     {
         var editionId  = new EditionId(command.EditionId);
         var stationId  = new StationId(command.StationId);

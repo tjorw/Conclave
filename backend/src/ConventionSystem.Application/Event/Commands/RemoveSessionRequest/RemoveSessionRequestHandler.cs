@@ -1,14 +1,13 @@
-using ConventionSystem.Application.Common.Exceptions;
+﻿using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.RemoveSessionRequest;
 
 public sealed class RemoveSessionRequestHandler(IEventRepository eventRepository)
-    : IRequestHandler<RemoveSessionRequestCommand>
+    : CommandHandler<RemoveSessionRequestCommand>
 {
-    public async Task Handle(RemoveSessionRequestCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(RemoveSessionRequestCommand command, CancellationToken ct)
     {
         var ev = await eventRepository.GetByIdWithSessionRequestsAsync(new EventId(command.EventId), ct)
             ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());

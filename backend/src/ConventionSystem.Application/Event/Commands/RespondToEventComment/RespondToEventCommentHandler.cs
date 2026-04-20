@@ -1,9 +1,8 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.RespondToEventComment;
 
@@ -12,9 +11,9 @@ public sealed class RespondToEventCommentHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<RespondToEventCommentCommand>
+    : CommandHandler<RespondToEventCommentCommand>
 {
-    public async Task Handle(RespondToEventCommentCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(RespondToEventCommentCommand command, CancellationToken ct)
     {
         var performedById = currentUser.PersonId;
 

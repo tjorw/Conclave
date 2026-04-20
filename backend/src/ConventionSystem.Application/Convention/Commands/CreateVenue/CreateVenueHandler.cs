@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.CreateVenue;
 
@@ -9,7 +8,7 @@ public sealed class CreateVenueHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CreateVenueCommand, Guid>
+    : ICommandHandler<CreateVenueCommand, Guid>
 {
     public async Task<Guid> Handle(CreateVenueCommand command, CancellationToken ct)
     {

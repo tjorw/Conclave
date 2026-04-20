@@ -1,4 +1,4 @@
-using ConventionSystem.Api.Auth;
+﻿using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreatePerson;
@@ -7,7 +7,6 @@ using ConventionSystem.Application.Convention.Commands.ReactivatePerson;
 using ConventionSystem.Application.Convention.Commands.UpdatePerson;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Infrastructure.Identity;
-using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

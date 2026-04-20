@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Common.Exceptions;
+﻿using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.AddStationPreference;

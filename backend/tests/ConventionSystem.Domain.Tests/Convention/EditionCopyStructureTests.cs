@@ -1,4 +1,4 @@
-using ConventionSystem.Domain.Convention.Events;
+﻿using ConventionSystem.Domain.Convention.Events;
 using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;

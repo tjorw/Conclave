@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Staff.Commands.AssignPersonToShift;
+﻿using ConventionSystem.Application.Staff.Commands.AssignPersonToShift;
 using ConventionSystem.Application.Staff.Commands.CancelAssignment;
 using ConventionSystem.Application.Staff.Commands.CancelShift;
 using ConventionSystem.Application.Staff.Commands.ConfirmAssignment;
@@ -6,7 +6,7 @@ using ConventionSystem.Application.Staff.Commands.CreateShift;
 using ConventionSystem.Application.Staff.Commands.RejectAssignment;
 using ConventionSystem.Application.Staff.Queries.GetShift;
 using ConventionSystem.Application.Staff.Queries.ListShifts;
-using MediatR;
+using ConventionSystem.Application.Common;
 
 namespace ConventionSystem.Api.Endpoints;
 

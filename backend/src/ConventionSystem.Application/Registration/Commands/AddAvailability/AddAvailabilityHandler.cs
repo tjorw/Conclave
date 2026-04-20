@@ -1,13 +1,12 @@
-using ConventionSystem.Application.Common.Exceptions;
+﻿using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.AddAvailability;
 
 public sealed class AddAvailabilityHandler(
     IStaffApplicationRepository staffApplicationRepository)
-    : IRequestHandler<AddAvailabilityCommand, Guid>
+    : ICommandHandler<AddAvailabilityCommand, Guid>
 {
     public async Task<Guid> Handle(AddAvailabilityCommand command, CancellationToken ct)
     {

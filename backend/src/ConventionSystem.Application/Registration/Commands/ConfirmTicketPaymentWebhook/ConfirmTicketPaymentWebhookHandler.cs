@@ -1,18 +1,17 @@
-using ConventionSystem.Application.Common.Exceptions;
+﻿using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Registration.Enums;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.ConfirmTicketPaymentWebhook;
 
 public sealed class ConfirmTicketPaymentWebhookHandler(
     IVisitorRegistrationRepository visitorRegistrationRepository,
     ITicketRepository ticketRepository)
-    : IRequestHandler<ConfirmTicketPaymentWebhookCommand>
+    : CommandHandler<ConfirmTicketPaymentWebhookCommand>
 {
-    public async Task Handle(ConfirmTicketPaymentWebhookCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(ConfirmTicketPaymentWebhookCommand command, CancellationToken ct)
     {
         if (!IsSuccessful(command.PaymentStatus))
             return;

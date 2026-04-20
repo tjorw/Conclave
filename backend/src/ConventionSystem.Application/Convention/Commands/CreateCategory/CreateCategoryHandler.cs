@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.CreateCategory;
 
@@ -10,7 +9,7 @@ public sealed class CreateCategoryHandler(
     IConventionRepository conventionRepository,
     IPersonRepository personRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CreateCategoryCommand, Guid>
+    : ICommandHandler<CreateCategoryCommand, Guid>
 {
     public async Task<Guid> Handle(CreateCategoryCommand command, CancellationToken ct)
     {

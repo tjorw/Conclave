@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.UpdateVenue;
 
@@ -9,9 +8,9 @@ public sealed class UpdateVenueHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<UpdateVenueCommand>
+    : CommandHandler<UpdateVenueCommand>
 {
-    public async Task Handle(UpdateVenueCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(UpdateVenueCommand command, CancellationToken ct)
     {
         var editionId = new EditionId(command.EditionId);
         var performedById = currentUser.PersonId;

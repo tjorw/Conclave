@@ -1,10 +1,9 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.CancelEvent;
 
@@ -13,9 +12,9 @@ public sealed class CancelEventHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CancelEventCommand>
+    : CommandHandler<CancelEventCommand>
 {
-    public async Task Handle(CancelEventCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(CancelEventCommand command, CancellationToken ct)
     {
         var performedById = currentUser.PersonId;
 

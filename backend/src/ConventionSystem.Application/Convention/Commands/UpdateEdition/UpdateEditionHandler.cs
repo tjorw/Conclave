@@ -1,8 +1,7 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.UpdateEdition;
 
@@ -10,9 +9,9 @@ public sealed class UpdateEditionHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<UpdateEditionCommand>
+    : CommandHandler<UpdateEditionCommand>
 {
-    public async Task Handle(UpdateEditionCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(UpdateEditionCommand command, CancellationToken ct)
     {
         var editionId = new EditionId(command.EditionId);
         var performedById = currentUser.PersonId;

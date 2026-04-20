@@ -1,4 +1,4 @@
-using ConventionSystem.Infrastructure.MultiTenancy;
+﻿using ConventionSystem.Infrastructure.MultiTenancy;
 using ConventionSystem.Infrastructure.Persistence;
 using ConventionSystem.Integration.Tests.Infrastructure;
 using Microsoft.AspNetCore.Hosting;

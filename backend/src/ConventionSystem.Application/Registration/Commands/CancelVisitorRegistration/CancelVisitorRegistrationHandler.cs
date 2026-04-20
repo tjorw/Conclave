@@ -1,10 +1,9 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Enums;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.CancelVisitorRegistration;
 
@@ -13,9 +12,9 @@ public sealed class CancelVisitorRegistrationHandler(
     ITicketRepository ticketRepository,
     ITicketTypeRepository ticketTypeRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CancelVisitorRegistrationCommand>
+    : CommandHandler<CancelVisitorRegistrationCommand>
 {
-    public async Task Handle(CancelVisitorRegistrationCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(CancelVisitorRegistrationCommand command, CancellationToken ct)
     {
         var registrationId = new VisitorRegistrationId(command.VisitorRegistrationId);
         var performedById = currentUser.PersonId;

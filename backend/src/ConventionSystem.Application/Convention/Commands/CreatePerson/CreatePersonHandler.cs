@@ -1,13 +1,12 @@
-using ConventionSystem.Application.Convention.Abstractions;
+﻿using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.CreatePerson;
 
 public sealed class CreatePersonHandler(
     IConventionRepository conventionRepository,
     IPersonRepository personRepository)
-    : IRequestHandler<CreatePersonCommand, Guid>
+    : ICommandHandler<CreatePersonCommand, Guid>
 {
     public async Task<Guid> Handle(CreatePersonCommand command, CancellationToken ct)
     {

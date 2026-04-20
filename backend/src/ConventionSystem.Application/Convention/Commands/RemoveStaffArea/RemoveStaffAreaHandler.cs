@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.RemoveStaffArea;
 
@@ -9,9 +8,9 @@ public sealed class RemoveStaffAreaHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<RemoveStaffAreaCommand>
+    : CommandHandler<RemoveStaffAreaCommand>
 {
-    public async Task Handle(RemoveStaffAreaCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(RemoveStaffAreaCommand command, CancellationToken ct)
     {
         var editionId = new EditionId(command.EditionId);
         var performedById = currentUser.PersonId;

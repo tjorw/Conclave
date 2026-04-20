@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.CopyEditionStructure;
 
@@ -9,9 +8,9 @@ public sealed class CopyEditionStructureHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CopyEditionStructureCommand>
+    : CommandHandler<CopyEditionStructureCommand>
 {
-    public async Task Handle(CopyEditionStructureCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(CopyEditionStructureCommand command, CancellationToken ct)
     {
         var targetId = new EditionId(command.TargetEditionId);
         var sourceId = new EditionId(command.SourceEditionId);

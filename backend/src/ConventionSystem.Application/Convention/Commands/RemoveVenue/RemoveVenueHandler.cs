@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.RemoveVenue;
 
@@ -9,9 +8,9 @@ public sealed class RemoveVenueHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<RemoveVenueCommand>
+    : CommandHandler<RemoveVenueCommand>
 {
-    public async Task Handle(RemoveVenueCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(RemoveVenueCommand command, CancellationToken ct)
     {
         var editionId = new EditionId(command.EditionId);
         var performedById = currentUser.PersonId;

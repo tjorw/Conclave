@@ -1,10 +1,9 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.DeactivateSession;
 
@@ -13,9 +12,9 @@ public sealed class DeactivateSessionHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<DeactivateSessionCommand>
+    : CommandHandler<DeactivateSessionCommand>
 {
-    public async Task Handle(DeactivateSessionCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(DeactivateSessionCommand command, CancellationToken ct)
     {
         var sessionId = new SessionId(command.SessionId);
         var performedById = currentUser.PersonId;

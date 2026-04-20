@@ -1,4 +1,4 @@
-using ConventionSystem.Domain.Tenancy.Aggregates;
+﻿using ConventionSystem.Domain.Tenancy.Aggregates;
 using ConventionSystem.Domain.Tenancy.Ids;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.Persistence;

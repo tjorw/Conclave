@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Common.Exceptions;
+﻿using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.AddSessionRequest;
 using ConventionSystem.Domain.Convention.Ids;

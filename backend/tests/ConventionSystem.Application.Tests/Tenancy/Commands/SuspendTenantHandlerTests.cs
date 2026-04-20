@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Common.Exceptions;
+﻿using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Tenancy.Abstractions;
 using ConventionSystem.Application.Tenancy.Commands.SuspendTenant;
 using ConventionSystem.Domain.Tenancy.Aggregates;

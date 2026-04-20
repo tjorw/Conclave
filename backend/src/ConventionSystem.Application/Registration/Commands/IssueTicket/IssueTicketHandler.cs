@@ -1,11 +1,10 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.IssueTicket;
 
@@ -16,7 +15,7 @@ public sealed class IssueTicketHandler(
     IConventionRepository conventionRepository,
     IPersonRepository personRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<IssueTicketCommand, Guid>
+    : ICommandHandler<IssueTicketCommand, Guid>
 {
     public async Task<Guid> Handle(IssueTicketCommand command, CancellationToken ct)
     {

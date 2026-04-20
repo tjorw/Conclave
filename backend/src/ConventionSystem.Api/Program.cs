@@ -1,4 +1,4 @@
-using ConventionSystem.Api.Auth;
+﻿using ConventionSystem.Api.Auth;
 using ConventionSystem.Api.Bootstrap;
 using ConventionSystem.Api.Middleware;
 using ConventionSystem.Application;

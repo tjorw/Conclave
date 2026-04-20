@@ -1,5 +1,3 @@
-using MediatR;
-
 namespace ConventionSystem.Application.Common;
 
 public interface IQuery<TResult> : IRequest<TResult> { }

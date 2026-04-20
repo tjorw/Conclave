@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Convention.Abstractions;
+﻿using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.UpdatePerson;
 using ConventionSystem.Domain.Convention.Ids;
 using NSubstitute;

@@ -1,12 +1,11 @@
-using ConventionSystem.Application.Common.Exceptions;
+﻿using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.AddSessionRequest;
 
 public sealed class AddSessionRequestHandler(IEventRepository eventRepository)
-    : IRequestHandler<AddSessionRequestCommand, Guid>
+    : ICommandHandler<AddSessionRequestCommand, Guid>
 {
     public async Task<Guid> Handle(AddSessionRequestCommand command, CancellationToken ct)
     {

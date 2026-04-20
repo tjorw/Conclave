@@ -1,8 +1,7 @@
-using ConventionSystem.Domain.Convention.Enums;
-using MediatR;
+﻿using ConventionSystem.Domain.Convention.Enums;
 
 namespace ConventionSystem.Application.Convention.Commands.CloseRegistration;
 
 public sealed record CloseRegistrationCommand(
     Guid EditionId,
-    RegistrationType RegistrationType) : IRequest;
+    RegistrationType RegistrationType) : ICommand;

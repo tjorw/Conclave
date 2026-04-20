@@ -1,4 +1,4 @@
-using ConventionSystem.Api.Auth;
+﻿using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Convention.Commands.AddAdministrator;
 using ConventionSystem.Application.Convention.Commands.CreateConvention;
 using ConventionSystem.Application.Convention.Commands.RemoveAdministrator;
@@ -6,7 +6,7 @@ using ConventionSystem.Application.Convention.Queries.GetConvention;
 using ConventionSystem.Application.Convention.Queries.GetEdition;
 using ConventionSystem.Application.Convention.Queries.ListEditions;
 using ConventionSystem.Application.Convention.Queries.ListPersons;
-using MediatR;
+using ConventionSystem.Application.Common;
 
 
 namespace ConventionSystem.Api.Endpoints;

@@ -1,4 +1,4 @@
-using ConventionSystem.Api.Auth;
+﻿using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Convention.Commands.ChangeCategoryResponsible;
 using ConventionSystem.Application.Convention.Queries.ListEditionResponsibles;
 using ConventionSystem.Application.Convention.Commands.SetActiveEdition;
@@ -26,7 +26,7 @@ using ConventionSystem.Application.Convention.Commands.UpdateEdition;
 using ConventionSystem.Application.Convention.Commands.UpdateStaffArea;
 using ConventionSystem.Application.Convention.Commands.UpdateVenue;
 using ConventionSystem.Domain.Convention.Enums;
-using MediatR;
+using ConventionSystem.Application.Common;
 
 namespace ConventionSystem.Api.Endpoints;
 

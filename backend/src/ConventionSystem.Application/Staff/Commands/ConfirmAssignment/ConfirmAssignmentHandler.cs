@@ -1,9 +1,8 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Staff.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Staff.Commands.ConfirmAssignment;
 
@@ -12,9 +11,9 @@ public sealed class ConfirmAssignmentHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<ConfirmAssignmentCommand>
+    : CommandHandler<ConfirmAssignmentCommand>
 {
-    public async Task Handle(ConfirmAssignmentCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(ConfirmAssignmentCommand command, CancellationToken ct)
     {
         var shiftId = new ShiftId(command.ShiftId);
         var assignmentId = new StaffAssignmentId(command.AssignmentId);

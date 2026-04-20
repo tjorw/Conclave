@@ -1,5 +1,4 @@
-using ConventionSystem.Application.Tenancy.Abstractions;
-using MediatR;
+﻿using ConventionSystem.Application.Tenancy.Abstractions;
 
 namespace ConventionSystem.Application.Tenancy.Queries.ListTenants;
 

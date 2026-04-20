@@ -1,10 +1,10 @@
-using ConventionSystem.Application.Convention.Abstractions;
+﻿using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateConvention;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.Persistence;
-using MediatR;
+using ConventionSystem.Application.Common;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

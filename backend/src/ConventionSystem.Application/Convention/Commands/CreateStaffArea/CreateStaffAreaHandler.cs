@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.CreateStaffArea;
 
@@ -10,7 +9,7 @@ public sealed class CreateStaffAreaHandler(
     IConventionRepository conventionRepository,
     IPersonRepository personRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CreateStaffAreaCommand, Guid>
+    : ICommandHandler<CreateStaffAreaCommand, Guid>
 {
     public async Task<Guid> Handle(CreateStaffAreaCommand command, CancellationToken ct)
     {

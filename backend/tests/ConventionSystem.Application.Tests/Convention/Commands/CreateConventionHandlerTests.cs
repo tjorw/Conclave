@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Convention.Abstractions;
+﻿using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateConvention;
 using ConventionSystem.Domain.Convention.Entities;
 using NSubstitute;

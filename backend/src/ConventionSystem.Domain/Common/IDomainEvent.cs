@@ -1,8 +1,6 @@
-using MediatR;
-
 namespace ConventionSystem.Domain.Common;
 
-public interface IDomainEvent : INotification
+public interface IDomainEvent
 {
     DateTimeOffset OccurredAt { get; }
 }

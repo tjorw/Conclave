@@ -1,16 +1,15 @@
-using ConventionSystem.Application.Common.Exceptions;
+﻿using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.ConfirmVisitorRegistrationPayment;
 
 public sealed class ConfirmVisitorRegistrationPaymentHandler(
     IVisitorRegistrationRepository visitorRegistrationRepository,
     ITicketRepository ticketRepository)
-    : IRequestHandler<ConfirmVisitorRegistrationPaymentCommand>
+    : CommandHandler<ConfirmVisitorRegistrationPaymentCommand>
 {
-    public async Task Handle(ConfirmVisitorRegistrationPaymentCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(ConfirmVisitorRegistrationPaymentCommand command, CancellationToken ct)
     {
         var registrationId = new VisitorRegistrationId(command.VisitorRegistrationId);
 

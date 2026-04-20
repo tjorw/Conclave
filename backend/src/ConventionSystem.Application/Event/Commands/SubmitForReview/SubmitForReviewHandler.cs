@@ -1,9 +1,8 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.SubmitForReview;
 
@@ -11,9 +10,9 @@ public sealed class SubmitForReviewHandler(
     IEventRepository eventRepository,
     IEditionRepository editionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<SubmitForReviewCommand>
+    : CommandHandler<SubmitForReviewCommand>
 {
-    public async Task Handle(SubmitForReviewCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(SubmitForReviewCommand command, CancellationToken ct)
     {
         var performedById = currentUser.PersonId;
 

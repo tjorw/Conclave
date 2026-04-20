@@ -1,15 +1,14 @@
-using ConventionSystem.Application.Convention.Abstractions;
+﻿using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.ReactivatePerson;
 
 public sealed class ReactivatePersonHandler(
     IConventionRepository conventionRepository,
     IPersonRepository personRepository)
-    : IRequestHandler<ReactivatePersonCommand>
+    : CommandHandler<ReactivatePersonCommand>
 {
-    public async Task Handle(ReactivatePersonCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(ReactivatePersonCommand command, CancellationToken ct)
     {
         var person = await personRepository.GetByIdAsync(new PersonId(command.PersonId), ct)
             ?? throw new InvalidOperationException($"Person '{command.PersonId}' hittades inte.");

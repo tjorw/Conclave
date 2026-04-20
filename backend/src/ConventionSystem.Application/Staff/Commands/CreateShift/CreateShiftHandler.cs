@@ -1,11 +1,10 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Staff.Aggregates;
 using ConventionSystem.Domain.Staff.Ids;
 using ConventionSystem.Domain.Staff.ValueObjects;
-using MediatR;
 
 namespace ConventionSystem.Application.Staff.Commands.CreateShift;
 
@@ -15,7 +14,7 @@ public sealed class CreateShiftHandler(
     IConventionRepository conventionRepository,
     IPersonRepository personRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CreateShiftCommand, Guid>
+    : ICommandHandler<CreateShiftCommand, Guid>
 {
     public async Task<Guid> Handle(CreateShiftCommand command, CancellationToken ct)
     {

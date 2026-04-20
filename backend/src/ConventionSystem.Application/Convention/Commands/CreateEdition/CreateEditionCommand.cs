@@ -1,5 +1,4 @@
-using MediatR;
-
+﻿
 namespace ConventionSystem.Application.Convention.Commands.CreateEdition;
 
 public sealed record CreateEditionCommand(
@@ -8,4 +7,4 @@ public sealed record CreateEditionCommand(
     DateOnly StartDate,
     DateOnly EndDate,
     Guid StaffCoordinatorId,
-    Guid EventCoordinatorId) : IRequest<Guid>;
+    Guid EventCoordinatorId) : ICommand<Guid>;

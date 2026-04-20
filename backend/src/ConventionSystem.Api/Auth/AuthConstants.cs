@@ -1,4 +1,4 @@
-namespace ConventionSystem.Api.Auth;
+﻿namespace ConventionSystem.Api.Auth;
 
 public static class AuthConstants
 {

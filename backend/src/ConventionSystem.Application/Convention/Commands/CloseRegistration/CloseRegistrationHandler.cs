@@ -1,8 +1,7 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Enums;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.CloseRegistration;
 
@@ -10,9 +9,9 @@ public sealed class CloseRegistrationHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CloseRegistrationCommand>
+    : CommandHandler<CloseRegistrationCommand>
 {
-    public async Task Handle(CloseRegistrationCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(CloseRegistrationCommand command, CancellationToken ct)
     {
         var editionId = new EditionId(command.EditionId);
         var performedById = currentUser.PersonId;

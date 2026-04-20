@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Registration.Abstractions;
+﻿using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Queries.ListEditionStaff;
 using ConventionSystem.Application.Staff.Queries;
 using ConventionSystem.Domain.Convention.Ids;

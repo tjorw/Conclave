@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Staff.Ids;
 

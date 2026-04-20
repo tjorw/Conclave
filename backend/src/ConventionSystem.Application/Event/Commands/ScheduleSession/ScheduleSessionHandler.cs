@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
@@ -6,7 +6,6 @@ using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Event.ValueObjects;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.ScheduleSession;
 
@@ -15,7 +14,7 @@ public sealed class ScheduleSessionHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<ScheduleSessionCommand, Guid>
+    : ICommandHandler<ScheduleSessionCommand, Guid>
 {
     public async Task<Guid> Handle(ScheduleSessionCommand command, CancellationToken ct)
     {

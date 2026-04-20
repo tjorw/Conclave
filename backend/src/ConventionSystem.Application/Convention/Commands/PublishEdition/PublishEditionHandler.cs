@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.PublishEdition;
 
@@ -9,9 +8,9 @@ public sealed class PublishEditionHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<PublishEditionCommand>
+    : CommandHandler<PublishEditionCommand>
 {
-    public async Task Handle(PublishEditionCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(PublishEditionCommand command, CancellationToken ct)
     {
         var edition = await editionRepository.GetByIdAsync(new EditionId(command.EditionId), ct)
             ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");

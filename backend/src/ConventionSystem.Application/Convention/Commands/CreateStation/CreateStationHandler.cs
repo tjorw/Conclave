@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.CreateStation;
 
@@ -9,7 +8,7 @@ public sealed class CreateStationHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CreateStationCommand, Guid>
+    : ICommandHandler<CreateStationCommand, Guid>
 {
     public async Task<Guid> Handle(CreateStationCommand command, CancellationToken ct)
     {

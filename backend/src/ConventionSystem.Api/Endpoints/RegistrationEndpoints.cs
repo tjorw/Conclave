@@ -1,4 +1,4 @@
-using ConventionSystem.Api.Auth;
+﻿using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
 using ConventionSystem.Application.Registration.Commands.AddAvailability;
 using ConventionSystem.Application.Registration.Commands.AddStaffMember;
@@ -39,7 +39,7 @@ using ConventionSystem.Application.Registration.Queries.ListTicketTypes;
 using ConventionSystem.Application.Registration.Queries.ListVisitorRegistrations;
 using ConventionSystem.Application.Staff.Queries.ListStaffApplications;
 using ConventionSystem.Domain.Registration.Enums;
-using MediatR;
+using ConventionSystem.Application.Common;
 
 namespace ConventionSystem.Api.Endpoints;
 

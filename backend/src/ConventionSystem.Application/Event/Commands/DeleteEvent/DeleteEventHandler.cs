@@ -1,19 +1,18 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.DeleteEvent;
 
 public sealed class DeleteEventHandler(
     IEventRepository eventRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<DeleteEventCommand>
+    : CommandHandler<DeleteEventCommand>
 {
-    public async Task Handle(DeleteEventCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(DeleteEventCommand command, CancellationToken ct)
     {
         var ev = await eventRepository.GetByIdWithCoOrganisersAsync(new EventId(command.EventId), ct)
             ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());

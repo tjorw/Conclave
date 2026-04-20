@@ -1,9 +1,8 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Staff.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Staff.Commands.RejectAssignment;
 
@@ -12,9 +11,9 @@ public sealed class RejectAssignmentHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<RejectAssignmentCommand>
+    : CommandHandler<RejectAssignmentCommand>
 {
-    public async Task Handle(RejectAssignmentCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(RejectAssignmentCommand command, CancellationToken ct)
     {
         var shiftId = new ShiftId(command.ShiftId);
         var assignmentId = new StaffAssignmentId(command.AssignmentId);

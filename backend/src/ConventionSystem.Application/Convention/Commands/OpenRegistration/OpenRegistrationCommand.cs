@@ -1,8 +1,7 @@
-using ConventionSystem.Domain.Convention.Enums;
-using MediatR;
+﻿using ConventionSystem.Domain.Convention.Enums;
 
 namespace ConventionSystem.Application.Convention.Commands.OpenRegistration;
 
 public sealed record OpenRegistrationCommand(
     Guid EditionId,
-    RegistrationType RegistrationType) : IRequest;
+    RegistrationType RegistrationType) : ICommand;

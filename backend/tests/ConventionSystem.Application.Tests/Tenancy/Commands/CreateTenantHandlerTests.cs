@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Tenancy.Abstractions;
+﻿using ConventionSystem.Application.Tenancy.Abstractions;
 using ConventionSystem.Application.Tenancy.Commands.CreateTenant;
 using ConventionSystem.Domain.Tenancy.Aggregates;
 using ConventionSystem.Domain.Tenancy.Enums;

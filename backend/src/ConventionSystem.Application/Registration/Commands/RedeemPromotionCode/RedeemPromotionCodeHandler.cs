@@ -1,11 +1,10 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Enums;
 using ConventionSystem.Domain.Registration.Exceptions;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.RedeemPromotionCode;
 
@@ -15,7 +14,7 @@ public sealed class RedeemPromotionCodeHandler(
     IVisitorRegistrationRepository visitorRegistrationRepository,
     IPromotionCodeRepository promotionCodeRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<RedeemPromotionCodeCommand, RedeemPromotionCodeResult>
+    : ICommandHandler<RedeemPromotionCodeCommand, RedeemPromotionCodeResult>
 {
     public async Task<RedeemPromotionCodeResult> Handle(RedeemPromotionCodeCommand command, CancellationToken ct)
     {

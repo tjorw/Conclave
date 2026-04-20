@@ -1,17 +1,16 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.CancelSessionRegistration;
 
 public sealed class CancelSessionRegistrationHandler(
     ISessionRegistrationRepository sessionRegistrationRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CancelSessionRegistrationCommand>
+    : CommandHandler<CancelSessionRegistrationCommand>
 {
-    public async Task Handle(CancelSessionRegistrationCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(CancelSessionRegistrationCommand command, CancellationToken ct)
     {
         var registrationId = new SessionRegistrationId(command.SessionRegistrationId);
 

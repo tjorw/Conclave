@@ -1,5 +1,4 @@
-using MediatR;
-
+﻿
 namespace ConventionSystem.Application.Convention.Commands.CreateConvention;
 
 public record CreateConventionCommand(
@@ -7,4 +6,4 @@ public record CreateConventionCommand(
     string Slug,
     string RegistrantName,
     string RegistrantEmail,
-    Guid? ConventionId = null) : IRequest<Guid>;
+    Guid? ConventionId = null) : ICommand<Guid>;

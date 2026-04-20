@@ -1,9 +1,8 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.RegisterManualTicketPayment;
 
@@ -13,9 +12,9 @@ public sealed class RegisterManualTicketPaymentHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<RegisterManualTicketPaymentCommand>
+    : CommandHandler<RegisterManualTicketPaymentCommand>
 {
-    public async Task Handle(RegisterManualTicketPaymentCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(RegisterManualTicketPaymentCommand command, CancellationToken ct)
     {
         var ticketId = new TicketId(command.TicketId);
         var ticket = await ticketRepository.GetByIdAsync(ticketId, ct)

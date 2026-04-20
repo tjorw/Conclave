@@ -1,7 +1,7 @@
-using ConventionSystem.Application.Feed.GetActiveEditionFeed;
+﻿using ConventionSystem.Application.Feed.GetActiveEditionFeed;
 using ConventionSystem.Application.Feed.GetEditionFeed;
 using ConventionSystem.Application.Feed.GetEventFeed;
-using MediatR;
+using ConventionSystem.Application.Common;
 
 namespace ConventionSystem.Api.Endpoints;
 

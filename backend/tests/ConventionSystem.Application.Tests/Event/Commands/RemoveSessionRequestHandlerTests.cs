@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Event.Abstractions;
+﻿using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.RemoveSessionRequest;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Enums;

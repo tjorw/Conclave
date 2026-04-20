@@ -1,5 +1,4 @@
-using ConventionSystem.Domain.Registration.Enums;
-using MediatR;
+﻿using ConventionSystem.Domain.Registration.Enums;
 
 namespace ConventionSystem.Application.Registration.Commands.CreatePromotionCode;
 
@@ -12,4 +11,4 @@ public sealed record CreatePromotionCodeCommand(
     int? MaxRedemptions,
     DateTimeOffset? ValidFrom,
     DateTimeOffset? ValidUntil,
-    Guid[]? AllowedTicketTypeIds) : IRequest<Guid>;
+    Guid[]? AllowedTicketTypeIds) : ICommand<Guid>;

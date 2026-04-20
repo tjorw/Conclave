@@ -1,10 +1,9 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.RejectVersion;
 
@@ -13,9 +12,9 @@ public sealed class RejectVersionHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<RejectVersionCommand>
+    : CommandHandler<RejectVersionCommand>
 {
-    public async Task Handle(RejectVersionCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(RejectVersionCommand command, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(command.Comment))
             throw new InvalidOperationException("En kommentar måste anges vid avvisning.");

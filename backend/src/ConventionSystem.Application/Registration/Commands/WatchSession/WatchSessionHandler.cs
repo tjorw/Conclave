@@ -1,19 +1,18 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Registration.Commands.WatchSession;
 
 public sealed class WatchSessionHandler(
     ISessionWatchRepository sessionWatchRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<WatchSessionCommand>
+    : CommandHandler<WatchSessionCommand>
 {
-    public async Task Handle(WatchSessionCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(WatchSessionCommand command, CancellationToken ct)
     {
         var sessionId = new SessionId(command.SessionId);
         var personId = currentUser.PersonId;

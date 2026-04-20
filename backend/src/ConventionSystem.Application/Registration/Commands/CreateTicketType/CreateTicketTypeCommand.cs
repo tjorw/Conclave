@@ -1,5 +1,4 @@
-using ConventionSystem.Domain.Registration.Enums;
-using MediatR;
+﻿using ConventionSystem.Domain.Registration.Enums;
 
 namespace ConventionSystem.Application.Registration.Commands.CreateTicketType;
 
@@ -9,4 +8,4 @@ public sealed record CreateTicketTypeCommand(
     int Price,
     TicketTypeCategory Category,
     IReadOnlyList<DateOnly>? ValidDays = null,
-    Guid[]? AllowedCategories = null) : IRequest<Guid>;
+    Guid[]? AllowedCategories = null) : ICommand<Guid>;

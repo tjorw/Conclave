@@ -1,8 +1,7 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.RemoveAdministrator;
 
@@ -10,9 +9,9 @@ public sealed class RemoveAdministratorHandler(
     IConventionRepository conventionRepository,
     IPersonRepository personRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<RemoveAdministratorCommand>
+    : CommandHandler<RemoveAdministratorCommand>
 {
-    public async Task Handle(RemoveAdministratorCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(RemoveAdministratorCommand command, CancellationToken ct)
     {
         var conventionId = new ConventionId(command.ConventionId);
 

@@ -1,4 +1,4 @@
-using ConventionSystem.Application.Event.Abstractions;
+﻿using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.DomainEventHandlers;
 using ConventionSystem.Domain.Convention.Ids;

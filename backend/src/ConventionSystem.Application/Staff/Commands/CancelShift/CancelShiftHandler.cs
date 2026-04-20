@@ -1,9 +1,8 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Staff.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Staff.Commands.CancelShift;
 
@@ -12,9 +11,9 @@ public sealed class CancelShiftHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CancelShiftCommand>
+    : CommandHandler<CancelShiftCommand>
 {
-    public async Task Handle(CancelShiftCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(CancelShiftCommand command, CancellationToken ct)
     {
         var shiftId = new ShiftId(command.ShiftId);
         var performedById = currentUser.PersonId;

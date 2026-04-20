@@ -1,11 +1,10 @@
-using ConventionSystem.Application.Tenancy.Abstractions;
+﻿using ConventionSystem.Application.Tenancy.Abstractions;
 using ConventionSystem.Domain.Tenancy.Aggregates;
 using ConventionSystem.Domain.Tenancy.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Tenancy.Commands.CreateTenant;
 
-public sealed class CreateTenantHandler(ITenantRepository repository) : IRequestHandler<CreateTenantCommand, Guid>
+public sealed class CreateTenantHandler(ITenantRepository repository) : ICommandHandler<CreateTenantCommand, Guid>
 {
     public async Task<Guid> Handle(CreateTenantCommand command, CancellationToken ct)
     {

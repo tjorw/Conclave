@@ -1,10 +1,9 @@
-using ConventionSystem.Application.Common.Exceptions;
+﻿using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Enums;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Event.Commands.CreateEvent;
 
@@ -12,7 +11,7 @@ public sealed class CreateEventHandler(
     IEventRepository eventRepository,
     IEditionRepository editionRepository,
     IPersonRepository personRepository)
-    : IRequestHandler<CreateEventCommand, Guid>
+    : ICommandHandler<CreateEventCommand, Guid>
 {
     public async Task<Guid> Handle(CreateEventCommand command, CancellationToken ct)
     {

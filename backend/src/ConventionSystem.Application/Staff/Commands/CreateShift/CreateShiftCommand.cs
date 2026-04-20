@@ -1,5 +1,4 @@
-using MediatR;
-
+﻿
 namespace ConventionSystem.Application.Staff.Commands.CreateShift;
 
 public sealed record CreateShiftCommand(
@@ -8,4 +7,4 @@ public sealed record CreateShiftCommand(
     DateTime StartTime,
     DateTime EndTime,
     int MinPersons,
-    int MaxPersons) : IRequest<Guid>;
+    int MaxPersons) : ICommand<Guid>;

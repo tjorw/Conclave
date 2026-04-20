@@ -1,7 +1,6 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Convention.Commands.UpdateCategory;
 
@@ -9,9 +8,9 @@ public sealed class UpdateCategoryHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<UpdateCategoryCommand>
+    : CommandHandler<UpdateCategoryCommand>
 {
-    public async Task Handle(UpdateCategoryCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(UpdateCategoryCommand command, CancellationToken ct)
     {
         var editionId = new EditionId(command.EditionId);
         var performedById = currentUser.PersonId;

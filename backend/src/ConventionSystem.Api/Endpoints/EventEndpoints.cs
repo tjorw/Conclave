@@ -1,4 +1,4 @@
-using ConventionSystem.Api.Auth;
+﻿using ConventionSystem.Api.Auth;
 using ConventionSystem.Application.Event.Commands.AddCoOrganiser;
 using ConventionSystem.Application.Event.Commands.AddEventComment;
 using ConventionSystem.Application.Event.Commands.AcknowledgeEventComment;
@@ -21,7 +21,7 @@ using ConventionSystem.Application.Event.Queries.GetEvent;
 using ConventionSystem.Application.Event.Queries.ListEvents;
 using ConventionSystem.Application.Event.Queries.ListMyEvents;
 using ConventionSystem.Domain.Event.Enums;
-using MediatR;
+using ConventionSystem.Application.Common;
 
 namespace ConventionSystem.Api.Endpoints;
 

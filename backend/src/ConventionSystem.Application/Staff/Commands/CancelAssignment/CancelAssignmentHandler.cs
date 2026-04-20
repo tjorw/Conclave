@@ -1,9 +1,8 @@
-using ConventionSystem.Application.Common;
+﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Staff.Ids;
-using MediatR;
 
 namespace ConventionSystem.Application.Staff.Commands.CancelAssignment;
 
@@ -12,9 +11,9 @@ public sealed class CancelAssignmentHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : IRequestHandler<CancelAssignmentCommand>
+    : CommandHandler<CancelAssignmentCommand>
 {
-    public async Task Handle(CancelAssignmentCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(CancelAssignmentCommand command, CancellationToken ct)
     {
         var shiftId = new ShiftId(command.ShiftId);
         var assignmentId = new StaffAssignmentId(command.AssignmentId);
