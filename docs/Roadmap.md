@@ -61,7 +61,7 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 ## Fas 4 – Demo och driftsättning
 
 ### 4.1 Demo-deploy (ett fiktivt konvent)
-- Bygg-pipeline: Angular-appar (admin + publik) byggs in i `wwwroot` som en del av .NET publish-steget
+- Bygg-pipeline: Angular-appar (admin + publik +  portal) byggs in i `wwwroot` som en del av .NET publish-steget
 - En SQL Server-instans med en databas (`dbo` för domändata, `identity` för ASP.NET Identity)
 - Self-contained .NET-publish deployad till en host (VPS, Azure App Service eller liknande)
 - `DevDataSeeder` körs i `Development`-miljö och skapar demo-konvention med exempeldata
