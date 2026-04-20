@@ -25,6 +25,8 @@
     "@angular/material": "^21.2.6",
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
+    "@emnapi/core": "^1.10.0",
+    "@emnapi/runtime": "^1.10.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
