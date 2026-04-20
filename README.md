@@ -349,16 +349,11 @@ Tips:
 
 #### Steg 3 – Konfigurera frontend-miljön
 
-`environment.ts` finns nu med säkra standardvärden i repo:t. För lokal utveckling behöver du uppdatera `conventionId` i:
+`environment.ts` finns nu med säkra standardvärden i repo:t.
 
-- `frontend/projects/admin/src/environments/environment.ts`
-- `frontend/projects/public/src/environments/environment.ts`
-
-Ersätt placeholder-värdet med konventions-ID:t från konsolen:
-
-```typescript
-conventionId: '<GUID från konsolen>',
-```
+- `admin` och `public` hämtar aktiv konvention från API:t vid uppstart via `GET /convention`, så normalt behöver du inte sätta `conventionId` manuellt för lokal utveckling.
+- `apiBaseUrl` ska fortfarande peka på rätt backend i respektive `environment.ts`.
+- `portal` använder fortfarande sitt konfigurerade `conventionId` som fallback/default där det behövs.
 
 #### Steg 4 – Installera npm-paket (en gång)
 

@@ -4,12 +4,15 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { routes } from './app.routes';
-import { ENVIRONMENT, tenantDevInterceptor, conventionInterceptor, authInterceptor, authSessionInterceptor } from 'shared';
+import { ConventionContextService, ENVIRONMENT, tenantDevInterceptor, conventionInterceptor, authInterceptor, authSessionInterceptor } from 'shared';
 import { environment } from '../environments/environment';
 import { EditionService } from './services/edition.service';
 
-function initEdition(svc: EditionService): () => Promise<void> {
-  return () => svc.load();
+function initEdition(conventionContext: ConventionContextService, svc: EditionService): () => Promise<void> {
+  return async () => {
+    await conventionContext.load();
+    await svc.load();
+  };
 }
 
 export const appConfig: ApplicationConfig = {
@@ -22,7 +25,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: APP_INITIALIZER,
       useFactory: initEdition,
-      deps: [EditionService],
+      deps: [ConventionContextService, EditionService],
       multi: true,
     },
   ],

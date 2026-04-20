@@ -23,6 +23,7 @@ export * from './lib/interceptors/auth-session.interceptor';
 // Services
 export * from './lib/services/auth.service';
 export * from './lib/services/session-state.service';
+export * from './lib/services/convention-context.service';
 export * from './lib/services/convention.service';
 export * from './lib/services/event.service';
 export * from './lib/services/registration.service';

@@ -6,6 +6,6 @@ export interface MultitenancyEnvironment {
 export interface Environment {
   production: boolean;
   apiBaseUrl: string;
-  conventionId: string;
+  conventionId?: string;
   multitenancy?: MultitenancyEnvironment;
 }

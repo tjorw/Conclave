@@ -7,11 +7,11 @@
   <h2>Aktiv upplaga</h2>
   <p class="feed-description">Returnerar alltid den upplaga som är markerad som aktiv. Lämplig för startsidor och widgets.</p>
   <div class="feed-row">
-    <code class="feed-url">{{ activeEditionUrl }}</code>
-    <button mat-icon-button (click)="copy(activeEditionUrl)" [matTooltip]="TOOLTIP.copyUrl">
+    <code class="feed-url">{{ activeEditionUrl() }}</code>
+    <button mat-icon-button (click)="copy(activeEditionUrl())" [matTooltip]="TOOLTIP.copyUrl">
       <mat-icon>content_copy</mat-icon>
     </button>
-    <a mat-icon-button [href]="activeEditionUrl" target="_blank" [matTooltip]="TOOLTIP.openInNewTab">
+    <a mat-icon-button [href]="activeEditionUrl()" target="_blank" [matTooltip]="TOOLTIP.openInNewTab">
       <mat-icon>open_in_new</mat-icon>
     </a>
   </div>
@@ -40,6 +40,6 @@
   <h2>Per evenemang</h2>
   <p class="feed-description">Hämtar ett enskilt evenemang med fullständig sessionsinfo.</p>
   <div class="feed-row">
-    <code class="feed-url">{{ activeEditionUrl.replace('active-edition', 'events/{eventId}') }}</code>
+    <code class="feed-url">{{ activeEditionUrl().replace('active-edition', 'events/{eventId}') }}</code>
   </div>
 </div>

@@ -18,7 +18,7 @@ kan skilja sig åt.
 | HTTP | Angular HttpClient med interceptors | Centraliserad header-hantering |
 | Routing | Standalone components, lazy-loaded feature-moduler | Modern Angular-stil, snabbare initial laddning |
 
-**Konventions-ID per deploy** – `conventionId` konfigureras i `environment.ts` och används för att konstruera API-URL:er. Varje konvention är en separat deploy utan delad infrastruktur. Interceptorn i shared-biblioteket sätter ID:t automatiskt på alla API-anrop.
+**Konventionskontext per deploy** – `admin` och `public` laddar aktuell konvention från `GET /convention` vid app-start och använder det ID:t för konventionsscopade API-URL:er. `environment.conventionId` finns kvar som fallback för specialfall och för `portal`, men är inte längre huvudkällan i de tenantbundna klienterna.
 
 ### Appar i frontend-monorepon
 

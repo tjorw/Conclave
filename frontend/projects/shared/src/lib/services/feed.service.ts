@@ -3,14 +3,16 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ENVIRONMENT } from '../environment/environment.token';
 import { EditionFeedDto, EventFeedDto } from '../models/feed.models';
+import { ConventionContextService } from './convention-context.service';
 
 @Injectable({ providedIn: 'root' })
 export class FeedService {
   private readonly http = inject(HttpClient);
   private readonly env  = inject(ENVIRONMENT);
+  private readonly conventionContext = inject(ConventionContextService);
 
   feedBase(): string {
-    return `${this.env.apiBaseUrl}/feed/${this.env.conventionId}`;
+    return `${this.env.apiBaseUrl}/feed/${this.conventionContext.requireConventionId()}`;
   }
 
   getEdition(editionId: string): Observable<EditionFeedDto> {
