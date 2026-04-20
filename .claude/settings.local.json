@@ -34,7 +34,8 @@
       "Bash(dotnet tool:*)",
       "Bash(ng test:*)",
       "Bash(xargs -I {} basename {})",
-      "Bash(dotnet clean *)"
+      "Bash(dotnet clean *)",
+      "Bash(xargs wc *)"
     ]
   }
 }
