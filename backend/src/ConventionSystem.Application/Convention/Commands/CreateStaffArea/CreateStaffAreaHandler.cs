@@ -1,4 +1,6 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Authorization;
+using ConventionSystem.Application.Common.Contexts;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 
@@ -17,21 +19,23 @@ public sealed class CreateStaffAreaHandler(
         var performedById = currentUser.PersonId;
         var responsibleId = new PersonId(command.ResponsibleId);
 
-        var edition = await editionRepository.GetByIdWithStaffAreasAsync(editionId, ct)
-            ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");
+        var context = await EditionContextLoader.LoadWithStaffAreasAsync(
+            editionRepository,
+            conventionRepository,
+            editionId,
+            ct);
 
-        var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
-
-        if (!convention.IsAdministrator(performedById))
-            throw new InvalidOperationException("Utföraren är inte administratör för denna konvention.");
+        ApplicationAuthorization.EnsureConventionAdmin(
+            context.Convention,
+            performedById,
+            "Utföraren är inte administratör för denna konvention.");
 
         var responsible = await personRepository.GetByIdAsync(responsibleId, ct)
             ?? throw new InvalidOperationException($"Ansvarig person '{command.ResponsibleId}' hittades inte.");
-        if (responsible.ConventionId != edition.ConventionId)
+        if (responsible.ConventionId != context.Edition.ConventionId)
             throw new InvalidOperationException("Ansvarig person tillhör inte denna konvention.");
 
-        var staffArea = edition.CreateStaffArea(command.Name, responsibleId, command.Description);
+        var staffArea = context.Edition.CreateStaffArea(command.Name, responsibleId, command.Description);
         await editionRepository.SaveAsync(ct);
 
         return staffArea.Id.Value;

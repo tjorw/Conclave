@@ -1,4 +1,5 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Staff.Commands.CancelShift;
@@ -79,7 +80,7 @@ public class CancelShiftHandlerTests
         _shiftRepo.GetByIdAsync(Arg.Any<ShiftId>(), Arg.Any<CancellationToken>())
             .Returns((Shift?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new CancelShiftCommand(Guid.NewGuid()), default));
     }
 
@@ -90,7 +91,7 @@ public class CancelShiftHandlerTests
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new CancelShiftCommand(shift.Id.Value), default));
     }
 

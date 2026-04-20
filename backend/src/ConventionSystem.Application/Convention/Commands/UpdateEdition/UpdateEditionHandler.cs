@@ -1,4 +1,6 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Authorization;
+using ConventionSystem.Application.Common.Contexts;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
@@ -16,16 +18,18 @@ public sealed class UpdateEditionHandler(
         var editionId = new EditionId(command.EditionId);
         var performedById = currentUser.PersonId;
 
-        var edition = await editionRepository.GetByIdAsync(editionId, ct)
-            ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");
+        var context = await EditionContextLoader.LoadAsync(
+            editionRepository,
+            conventionRepository,
+            editionId,
+            ct);
 
-        var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+        ApplicationAuthorization.EnsureConventionAdmin(
+            context.Convention,
+            performedById,
+            "Utföraren är inte administratör för denna konvention.");
 
-        if (!convention.IsAdministrator(performedById))
-            throw new InvalidOperationException("Utföraren är inte administratör för denna konvention.");
-
-        edition.UpdateDetails(
+        context.Edition.UpdateDetails(
             command.Name,
             new DatePeriod(command.StartDate, command.EndDate),
             new PersonId(command.StaffCoordinatorId),

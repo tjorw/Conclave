@@ -1,4 +1,6 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Authorization;
+using ConventionSystem.Application.Common.Contexts;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 
@@ -18,21 +20,23 @@ public sealed class ChangeCategoryResponsibleHandler(
         var performedById = currentUser.PersonId;
         var newResponsibleId = new PersonId(command.NewResponsibleId);
 
-        var edition = await editionRepository.GetByIdWithCategoriesAsync(editionId, ct)
-            ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");
+        var context = await EditionContextLoader.LoadWithCategoriesForConventionCommandAsync(
+            editionRepository,
+            conventionRepository,
+            editionId,
+            ct);
 
-        var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
-
-        if (!convention.IsAdministrator(performedById))
-            throw new InvalidOperationException("Utföraren är inte administratör för denna konvention.");
+        ApplicationAuthorization.EnsureConventionAdmin(
+            context.Convention,
+            performedById,
+            "Utföraren är inte administratör för denna konvention.");
 
         var newResponsible = await personRepository.GetByIdAsync(newResponsibleId, ct)
             ?? throw new InvalidOperationException($"Ansvarig person '{command.NewResponsibleId}' hittades inte.");
-        if (newResponsible.ConventionId != edition.ConventionId)
+        if (newResponsible.ConventionId != context.Edition.ConventionId)
             throw new InvalidOperationException("Ny ansvarig person tillhör inte denna konvention.");
 
-        edition.ChangeCategoryResponsible(categoryId, newResponsibleId);
+        context.Edition.ChangeCategoryResponsible(categoryId, newResponsibleId);
         await editionRepository.SaveAsync(ct);
     }
 }

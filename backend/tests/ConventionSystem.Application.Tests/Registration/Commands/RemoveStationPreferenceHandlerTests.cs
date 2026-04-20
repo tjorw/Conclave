@@ -1,4 +1,5 @@
-﻿using ConventionSystem.Application.Common.Exceptions;
+using ConventionSystem.Application.Common.Exceptions;
+using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.RemoveStationPreference;
 using ConventionSystem.Domain.Convention.Ids;
@@ -12,11 +13,13 @@ namespace ConventionSystem.Application.Tests.Registration.Commands;
 public class RemoveStationPreferenceHandlerTests
 {
     private readonly IStaffApplicationRepository _applicationRepo = Substitute.For<IStaffApplicationRepository>();
+    private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
+    private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
     private readonly RemoveStationPreferenceHandler _handler;
 
     public RemoveStationPreferenceHandlerTests()
     {
-        _handler = new RemoveStationPreferenceHandler(_applicationRepo);
+        _handler = new RemoveStationPreferenceHandler(_applicationRepo, _editionRepo, _conventionRepo);
     }
 
     private (StaffApplication application, StationId stationId) SetupWithPreference()
@@ -36,6 +39,8 @@ public class RemoveStationPreferenceHandlerTests
         application.AddStationPreference(station.Id);
 
         _applicationRepo.GetByIdWithDetailsAsync(application.Id, Arg.Any<CancellationToken>()).Returns(application);
+        _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
+        _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
 
         return (application, station.Id);
     }

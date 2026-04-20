@@ -1,4 +1,6 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Authorization;
+using ConventionSystem.Application.Common.Contexts;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
@@ -24,17 +26,20 @@ public sealed class ScheduleSessionHandler(
         var ev = await eventRepository.GetByIdWithSessionsAsync(new EventId(command.EventId), ct)
             ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());
 
-        var edition = await editionRepository.GetByIdWithCategoriesAndVenuesAsync(ev.EditionId, ct)
-            ?? throw new ResourceNotFoundException("Upplaga", ev.EditionId.Value.ToString());
+        var context = await EditionContextLoader.LoadWithCategoriesAndVenuesAsync(
+            editionRepository,
+            conventionRepository,
+            ev.EditionId,
+            ct);
 
-        var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new ResourceNotFoundException("Konvention", edition.ConventionId.Value.ToString());
+        ApplicationAuthorization.EnsureCategoryManager(
+            context.Convention,
+            context.Edition,
+            ev.CategoryId,
+            performedById,
+            "Utföraren har inte behörighet att schemalägga sessioner för detta evenemang.");
 
-        if (!convention.IsAdministrator(performedById)
-            && !edition.IsCategoryResponsible(ev.CategoryId, performedById))
-            throw new ForbiddenException("Utföraren har inte behörighet att schemalägga sessioner för detta evenemang.");
-
-        if (!edition.Venues.Any(v => v.Id == venueId))
+        if (!context.Edition.Venues.Any(v => v.Id == venueId))
             throw new InvalidOperationException("Lokalen hittades inte på denna upplaga.");
 
         var timeSlot = new TimeSlot(command.StartTime, command.EndTime);

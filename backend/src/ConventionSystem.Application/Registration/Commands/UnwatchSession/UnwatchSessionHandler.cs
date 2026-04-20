@@ -10,7 +10,7 @@ public sealed class UnwatchSessionHandler(
     : CommandHandler<UnwatchSessionCommand>
 {
     protected override async Task ExecuteAsync(UnwatchSessionCommand command, CancellationToken ct)
-        => sessionWatchRepository.RemoveByPersonAndSessionAsync(
+        => await sessionWatchRepository.RemoveByPersonAndSessionAsync(
             currentUser.PersonId,
             new SessionId(command.SessionId),
             ct);

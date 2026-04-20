@@ -1,4 +1,6 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Authorization;
+using ConventionSystem.Application.Common.Contexts;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 
@@ -16,18 +18,20 @@ public sealed class CreateStationHandler(
         var performedById = currentUser.PersonId;
         var staffAreaId = new StaffAreaId(command.StaffAreaId);
 
-        var edition = await editionRepository.GetByIdWithStructureAsync(editionId, ct)
-            ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");
+        var context = await EditionContextLoader.LoadWithStructureAsync(
+            editionRepository,
+            conventionRepository,
+            editionId,
+            ct);
 
-        var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+        ApplicationAuthorization.EnsureStaffAreaManager(
+            context.Convention,
+            context.Edition,
+            staffAreaId,
+            performedById,
+            "Utföraren har inte behörighet att skapa stationer för detta funktionsområde.");
 
-        if (!convention.IsAdministrator(performedById)
-            && !edition.IsStaffCoordinator(performedById)
-            && !edition.IsStaffAreaResponsible(staffAreaId, performedById))
-            throw new InvalidOperationException("Utföraren har inte behörighet att skapa stationer för detta funktionsområde.");
-
-        var station = edition.CreateStation(command.Name, staffAreaId, command.Description);
+        var station = context.Edition.CreateStation(command.Name, staffAreaId, command.Description);
         await editionRepository.SaveAsync(ct);
 
         return station.Id.Value;

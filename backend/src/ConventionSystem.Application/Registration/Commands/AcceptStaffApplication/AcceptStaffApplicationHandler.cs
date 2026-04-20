@@ -1,8 +1,8 @@
-﻿using ConventionSystem.Application.Common;
-using ConventionSystem.Application.Common.Exceptions;
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Authorization;
+using ConventionSystem.Application.Common.Contexts;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
-using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Ids;
 
 namespace ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
@@ -19,19 +19,20 @@ public sealed class AcceptStaffApplicationHandler(
         var applicationId = new StaffApplicationId(command.StaffApplicationId);
         var performedById = currentUser.PersonId;
 
-        var application = await staffApplicationRepository.GetByIdAsync(applicationId, ct)
-            ?? throw new ResourceNotFoundException("Staffansökan", command.StaffApplicationId.ToString());
+        var context = await StaffApplicationContextLoader.LoadAsync(
+            staffApplicationRepository,
+            editionRepository,
+            conventionRepository,
+            applicationId,
+            ct);
 
-        var edition = await editionRepository.GetByIdAsync(application.EditionId, ct)
-            ?? throw new ResourceNotFoundException("Upplaga", application.EditionId.Value.ToString());
+        ApplicationAuthorization.EnsureStaffApplicationManager(
+            context.Convention,
+            context.Edition,
+            performedById,
+            "Utföraren har inte behörighet att acceptera staffansökningar.");
 
-        var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new ResourceNotFoundException("Konvention", edition.ConventionId.Value.ToString());
-
-        if (!convention.IsAdministrator(performedById) && !edition.IsStaffCoordinator(performedById))
-            throw new ForbiddenException("Utföraren har inte behörighet att acceptera staffansökningar.");
-
-        application.Accept(performedById);
+        context.Application.Accept(performedById);
         await staffApplicationRepository.SaveAsync(ct);
     }
 }

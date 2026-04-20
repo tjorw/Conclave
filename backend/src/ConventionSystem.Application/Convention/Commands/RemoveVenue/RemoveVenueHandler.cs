@@ -1,4 +1,6 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Authorization;
+using ConventionSystem.Application.Common.Contexts;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 
@@ -15,16 +17,18 @@ public sealed class RemoveVenueHandler(
         var editionId = new EditionId(command.EditionId);
         var performedById = currentUser.PersonId;
 
-        var edition = await editionRepository.GetByIdWithStructureAsync(editionId, ct)
-            ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");
+        var context = await EditionContextLoader.LoadWithStructureAsync(
+            editionRepository,
+            conventionRepository,
+            editionId,
+            ct);
 
-        var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+        ApplicationAuthorization.EnsureConventionAdmin(
+            context.Convention,
+            performedById,
+            "Utföraren är inte administratör för denna konvention.");
 
-        if (!convention.IsAdministrator(performedById))
-            throw new InvalidOperationException("Utföraren är inte administratör för denna konvention.");
-
-        var venue = edition.RemoveVenue(new VenueId(command.VenueId));
+        var venue = context.Edition.RemoveVenue(new VenueId(command.VenueId));
         editionRepository.MarkAsRemoved(venue);
         await editionRepository.SaveAsync(ct);
     }

@@ -1,4 +1,4 @@
-﻿using ConventionSystem.Application.Common.Exceptions;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.AddStationPreference;
@@ -15,14 +15,16 @@ public class AddStationPreferenceHandlerTests
 {
     private readonly IStaffApplicationRepository _applicationRepo = Substitute.For<IStaffApplicationRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
+    private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
     private readonly AddStationPreferenceHandler _handler;
 
     public AddStationPreferenceHandlerTests()
     {
-        _handler = new AddStationPreferenceHandler(_applicationRepo, _editionRepo);
+        _handler = new AddStationPreferenceHandler(_applicationRepo, _editionRepo, _conventionRepo);
     }
 
-    private (StaffApplication application, Domain.Convention.Aggregates.Edition edition, Domain.Convention.Ids.StationId stationId) Setup()
+    private (StaffApplication application, Domain.Convention.Aggregates.Edition edition, Domain.Convention.Ids.StationId stationId, Domain.Convention.Aggregates.Convention convention)
+        Setup()
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
         var admin = convention.RegisterPerson("Admin", "admin@example.com");
@@ -35,19 +37,21 @@ public class AddStationPreferenceHandlerTests
         var staffArea = edition.CreateStaffArea("Reception", admin.Id);
         var station = edition.CreateStation("Info-disk", staffArea.Id);
 
-        var applicant = convention.CreatePerson("Sökande", "applicant@example.com");
+        var applicant = convention.CreatePerson("Sokande", "applicant@example.com");
         var application = new StaffApplication(StaffApplicationId.New(), applicant.Id, edition.Id, "Intresserad");
 
         _applicationRepo.GetByIdWithDetailsAsync(application.Id, Arg.Any<CancellationToken>()).Returns(application);
+        _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _editionRepo.GetByIdWithStructureAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
+        _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
 
-        return (application, edition, station.Id);
+        return (application, edition, station.Id, convention);
     }
 
     [Fact]
     public async Task Handle_ValidCommand_AddsPreferenceAndSaves()
     {
-        var (application, _, stationId) = Setup();
+        var (application, _, stationId, _) = Setup();
 
         await _handler.Handle(new AddStationPreferenceCommand(application.Id.Value, stationId.Value), default);
 
@@ -58,7 +62,7 @@ public class AddStationPreferenceHandlerTests
     [Fact]
     public async Task Handle_StationNotOnEdition_Throws()
     {
-        var (application, _, _) = Setup();
+        var (application, _, _, _) = Setup();
         var unknownStationId = StationId.New();
 
         await Assert.ThrowsAsync<DomainRuleViolationException>(

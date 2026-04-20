@@ -1,4 +1,6 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Authorization;
+using ConventionSystem.Application.Common.Contexts;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Enums;
 using ConventionSystem.Domain.Convention.Ids;
@@ -16,25 +18,27 @@ public sealed class CloseRegistrationHandler(
         var editionId = new EditionId(command.EditionId);
         var performedById = currentUser.PersonId;
 
-        var edition = await editionRepository.GetByIdAsync(editionId, ct)
-            ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");
+        var context = await EditionContextLoader.LoadAsync(
+            editionRepository,
+            conventionRepository,
+            editionId,
+            ct);
 
-        var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
-
-        if (!convention.IsAdministrator(performedById))
-            throw new InvalidOperationException("Utföraren är inte administratör för denna konvention.");
+        ApplicationAuthorization.EnsureConventionAdmin(
+            context.Convention,
+            performedById,
+            "Utföraren är inte administratör för denna konvention.");
 
         switch (command.RegistrationType)
         {
             case RegistrationType.Organiser:
-                edition.CloseOrganiserRegistration(performedById);
+                context.Edition.CloseOrganiserRegistration(performedById);
                 break;
             case RegistrationType.Staff:
-                edition.CloseStaffRegistration(performedById);
+                context.Edition.CloseStaffRegistration(performedById);
                 break;
             case RegistrationType.Visitor:
-                edition.CloseVisitorRegistration(performedById);
+                context.Edition.CloseVisitorRegistration(performedById);
                 break;
             default:
                 throw new InvalidOperationException($"Stängning stöds inte för registreringstypen: {command.RegistrationType}.");

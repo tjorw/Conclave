@@ -1,4 +1,6 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Authorization;
+using ConventionSystem.Application.Common.Contexts;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 
@@ -12,22 +14,24 @@ public sealed class RemoveStationHandler(
 {
     protected override async Task ExecuteAsync(RemoveStationCommand command, CancellationToken ct)
     {
-        var editionId  = new EditionId(command.EditionId);
-        var stationId  = new StationId(command.StationId);
+        var editionId = new EditionId(command.EditionId);
+        var stationId = new StationId(command.StationId);
         var performedById = currentUser.PersonId;
 
-        var edition = await editionRepository.GetByIdWithStructureAsync(editionId, ct)
-            ?? throw new InvalidOperationException($"Upplaga '{command.EditionId}' hittades inte.");
+        var context = await EditionContextLoader.LoadWithStructureAsync(
+            editionRepository,
+            conventionRepository,
+            editionId,
+            ct);
 
-        var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
-            ?? throw new InvalidOperationException("Konventionen hittades inte.");
+        ApplicationAuthorization.EnsureStationManager(
+            context.Convention,
+            context.Edition,
+            stationId,
+            performedById,
+            "Utföraren har inte behörighet att ta bort denna station.");
 
-        if (!convention.IsAdministrator(performedById)
-            && !edition.IsStaffCoordinator(performedById)
-            && !edition.IsStaffAreaResponsibleForStation(stationId, performedById))
-            throw new InvalidOperationException("Utföraren har inte behörighet att ta bort denna station.");
-
-        var station = edition.RemoveStation(stationId);
+        var station = context.Edition.RemoveStation(stationId);
         editionRepository.MarkAsRemoved(station);
         await editionRepository.SaveAsync(ct);
     }
