@@ -18,6 +18,45 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-HL04` Hjälpsystem – `HelpPanel`-komponent på listsidor (UC-HL002)
 - [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
 
+### R25 – Sessions-UX i klienter
+
+Implementeras som ett gemensamt spår i `frontend/projects/shared` och kopplas sedan in i `admin`, `portal` och `public`. Målet är att undvika tre separata speciallösningar för auth-status, session timeout och HTTP-fel.
+
+**Målbild**
+- Global auth-status i shell/layout för alla klienter
+- Sessionvarning innan JWT `exp` passeras
+- Konsekvent 401-flöde: rensa session, bevara `returnUrl`, skicka användaren till login med tydlig orsak
+- Konsekvent 403-flöde utan tyst logout
+- Global nätverksbanner för `status === 0`
+
+**Teknisk riktning**
+- Ny `SessionStateService` i `shared` ansvarar för sessionsstatus, timeout-varning, senaste auth-fel och nätverksstatus
+- `AuthService` utökas så att token-livscykeln centraliseras därifrån i stället för att varje klient eller interceptor gör egna antaganden
+- `authSessionInterceptor` blir gemensam plats för 401/403/nätverkshantering, med undantag för auth-endpoints där lokala formulärfel ska fortsätta visas inline
+- Ny återanvändbar `GlobalStatusBannerComponent` renderas i shell för `admin`, `portal` och `public`
+
+**Föreslagen arbetsordning**
+1. Inför `SessionStateService` i `shared` med signals för `isAuthenticated`, `expiresAt`, `showExpiryWarning`, `authError` och `networkError`
+2. Utöka `AuthService` så att login/logout/bootstrap uppdaterar sessionsstatus och tolkar JWT-claims (`exp`, roller, person-id)
+3. Uppdatera `authSessionInterceptor` för tre tydliga flöden:
+   - `401`: markera `session-expired`, logga ut, navigera till login med `returnUrl`
+   - `403`: visa global behörighetsbanner utan automatisk logout
+   - `0`: visa global nätverksbanner och återställ den vid nästa lyckade anrop
+4. Lägg in global banner-komponent i shell/layout i alla tre appar
+5. Städa duplicerad copy för `reason=session-expired` i login-komponenterna så att språk och beteende blir konsekvent
+6. Lägg till tester för token-parsing, timeout-varning, interceptor-flöden och banner-visning
+
+**Avgränsningar**
+- Ingen refresh-token eller silent renew i denna punkt; varningen ska hjälpa användaren att spara arbete och logga in igen
+- Rollspecifika guard-flöden kan behållas, men R25 bör undvika aggressiv logout vid rena 403-svar från API
+
+**Definition of done**
+- Alla klienter visar global auth/session-status i shell
+- Sessionvarning visas innan utgång och försvinner korrekt vid ny login/logout
+- 401, 403 och nätverksfel presenteras konsekvent och begripligt
+- `returnUrl` bevaras efter utloggning på grund av utgången session
+- Shared-enhetstester täcker kärnflödena
+
 ### Multitenancy
 
 Oberoende spår – kan köras parallellt med övriga items. R-MT001–R-MT002 bör ske i dedikerade arbetspass eftersom de rör `AppDbContext` och migrations.
