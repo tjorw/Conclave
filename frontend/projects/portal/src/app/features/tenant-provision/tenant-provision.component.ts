@@ -6,6 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { PersonDto } from 'shared';
 import {
   ProvisionTenantConventionResponse,
   SystemTenantService,
@@ -38,12 +39,12 @@ export class TenantProvisionComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly tenant = signal<TenantListItem | null>(null);
   readonly provisionResult = signal<ProvisionTenantConventionResult | null>(null);
+  readonly existingConventionId = signal<string | null>(null);
+  readonly existingAdmin = signal<PersonDto | null>(null);
 
   private latestAdminEmail: string | null = null;
 
   readonly form = this.fb.group({
-    conventionName: ['', Validators.required],
-    conventionSlug: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
     adminName: ['', Validators.required],
     adminEmail: ['', [Validators.required, Validators.email]],
     adminPassword: ['', [Validators.required, Validators.minLength(8)]],
@@ -72,8 +73,6 @@ export class TenantProvisionComponent implements OnInit {
     this.latestAdminEmail = this.form.value.adminEmail ?? null;
 
     this.service.provision(this.tenantId(), {
-      conventionName: this.form.value.conventionName!,
-      conventionSlug: this.form.value.conventionSlug!,
       adminName: this.form.value.adminName!,
       adminEmail: this.form.value.adminEmail!,
       adminPassword: this.form.value.adminPassword!,
@@ -84,7 +83,7 @@ export class TenantProvisionComponent implements OnInit {
           adminEmail: this.latestAdminEmail,
         });
         this.saving.set(false);
-        this.form.reset();
+        this.form.patchValue({ adminPassword: '' });
         this.loadTenant(false);
       },
       error: err => this.handleError('Kunde inte provisionera tenant', err),
@@ -101,16 +100,52 @@ export class TenantProvisionComponent implements OnInit {
 
         if (!tenant) {
           this.error.set('Tenanten kunde inte hittas.');
-        } else if (!this.form.dirty && !this.provisionResult()) {
-          this.form.patchValue({
-            conventionName: tenant.displayName,
-            conventionSlug: tenant.subdomain,
-          });
+          this.loading.set(false);
+          return;
         }
 
-        this.loading.set(false);
+        this.loadExistingProvisioning();
       },
       error: err => this.handleError('Kunde inte hämta tenant', err, true),
+    });
+  }
+
+  private loadExistingProvisioning(): void {
+    this.service.listConventions(this.tenantId()).subscribe({
+      next: conventions => {
+        const convention = conventions[0] ?? null;
+        this.existingConventionId.set(convention?.id ?? null);
+
+        if (!convention) {
+          this.existingAdmin.set(null);
+          this.loading.set(false);
+          return;
+        }
+
+        this.service.listConventionPersons(this.tenantId(), convention.id).subscribe({
+          next: persons => {
+            const admin = persons.find(person => person.isAdmin) ?? null;
+            this.existingAdmin.set(admin);
+
+            if (admin) {
+              const adminNameControl = this.form.get('adminName');
+              const adminEmailControl = this.form.get('adminEmail');
+
+              if (adminNameControl?.pristine) {
+                adminNameControl.patchValue(admin.name);
+              }
+
+              if (adminEmailControl?.pristine) {
+                adminEmailControl.patchValue(admin.email);
+              }
+            }
+
+            this.loading.set(false);
+          },
+          error: err => this.handleError('Kunde inte hämta tenant-admin', err, true),
+        });
+      },
+      error: err => this.handleError('Kunde inte hämta tenantens konvent', err, true),
     });
   }
 

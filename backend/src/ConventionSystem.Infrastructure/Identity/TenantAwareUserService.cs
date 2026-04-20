@@ -25,4 +25,14 @@ public sealed class TenantAwareUserService(ApplicationIdentityDbContext db)
                      && u.NormalizedEmail == normalizedEmail)
             .SingleOrDefaultAsync(ct);
     }
+
+    public Task<string?> FindTenantUserIdByPersonAsync(Guid tenantId, Guid personId, CancellationToken ct = default)
+    {
+        return db.Users
+            .Where(u => u.UserType == UserType.TenantUser
+                     && u.TenantId == tenantId
+                     && u.PersonId == personId)
+            .Select(u => u.Id)
+            .FirstOrDefaultAsync(ct);
+    }
 }

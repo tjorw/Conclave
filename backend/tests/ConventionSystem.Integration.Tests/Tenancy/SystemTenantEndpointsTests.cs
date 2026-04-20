@@ -202,8 +202,6 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
 
         var response = await client.PostAsJsonAsync($"/system/tenants/{Guid.NewGuid()}/provision", new
         {
-            conventionName = "Unknown Tenant Convention",
-            conventionSlug = "unknown-tenant-convention",
             adminName = "Tenant Admin",
             adminEmail = "unknown-tenant-admin@test.se",
             adminPassword = "Admin123!"
@@ -330,8 +328,6 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
 
         var provisionResponse = await client.PostAsJsonAsync($"/system/tenants/{tenantId}/provision", new
         {
-            conventionName = "Admins Tenant Convention",
-            conventionSlug = subdomain,
             adminName = "Bootstrap Admin",
             adminEmail = $"admins-bootstrap-{Guid.NewGuid():N}@test.se",
             adminPassword = "Admin123!"
@@ -412,6 +408,64 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
         var personsAfterRemove = await personsAfterRemoveResponse.Content.ReadFromJsonAsync<List<JsonElement>>();
         Assert.NotNull(personsAfterRemove);
         Assert.Contains(personsAfterRemove!, p => p.GetProperty("id").GetGuid() == personId && !p.GetProperty("isAdmin").GetBoolean());
+    }
+
+    [Fact]
+    public async Task ProvisionTenantConvention_IsIdempotent_WhenTenantIsAlreadyProvisioned()
+    {
+        var token = CreateToken(new Claim("is_system_admin", "true"));
+        var client = CreateAuthorizedClient(token);
+
+        var subdomain = $"idem-{Guid.NewGuid():N}";
+        var createResponse = await client.PostAsJsonAsync("/system/tenants", new
+        {
+            subdomain,
+            displayName = "Idempotent Tenant"
+        });
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var tenantId = (await createResponse.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("id").GetGuid();
+
+        var restoreResponse = await client.PutAsync($"/system/tenants/{tenantId}/restore", content: null);
+        Assert.Equal(HttpStatusCode.NoContent, restoreResponse.StatusCode);
+
+        var adminEmail = $"idem-admin-{Guid.NewGuid():N}@test.se";
+
+        var firstProvision = await client.PostAsJsonAsync($"/system/tenants/{tenantId}/provision", new
+        {
+            adminName = "Bootstrap Admin",
+            adminEmail,
+            adminPassword = "Admin123!"
+        });
+        Assert.Equal(HttpStatusCode.Created, firstProvision.StatusCode);
+        var firstBody = await firstProvision.Content.ReadFromJsonAsync<JsonElement>();
+        var conventionId = firstBody.GetProperty("conventionId").GetGuid();
+        var adminUserId = firstBody.GetProperty("adminUserId").GetString();
+        Assert.False(firstBody.GetProperty("alreadyProvisioned").GetBoolean());
+
+        var secondProvision = await client.PostAsJsonAsync($"/system/tenants/{tenantId}/provision", new
+        {
+            adminName = "Bootstrap Admin",
+            adminEmail,
+            adminPassword = "Admin123!"
+        });
+        Assert.Equal(HttpStatusCode.OK, secondProvision.StatusCode);
+        var secondBody = await secondProvision.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(conventionId, secondBody.GetProperty("conventionId").GetGuid());
+        Assert.Equal(adminUserId, secondBody.GetProperty("adminUserId").GetString());
+        Assert.True(secondBody.GetProperty("alreadyProvisioned").GetBoolean());
+
+        await using var scope = Factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
+        var identityDb = scope.ServiceProvider.GetRequiredService<ApplicationIdentityDbContext>();
+
+        var conventionCount = await db.Conventions
+            .CountAsync(c => EF.Property<Guid>(c, "TenantId") == tenantId);
+        Assert.Equal(1, conventionCount);
+
+        var userCount = await identityDb.Users
+            .CountAsync(u => u.TenantId == tenantId && u.Email == adminEmail);
+        Assert.Equal(1, userCount);
     }
 
     private WebApplicationFactory<Program> CreateMultitenantFactory() =>

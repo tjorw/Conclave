@@ -3,7 +3,7 @@
     <a mat-button routerLink="/tenants">Tillbaka till tenants</a>
     <div>
       <h1>Provisionera tenant</h1>
-      <p>Skapa första konventet och ett tenant-adminkonto för vald tenant.</p>
+      <p>Skapa tenantens första konvent och adminkonto med tenantens namn och subdomän.</p>
     </div>
   </div>
 
@@ -38,10 +38,25 @@
     </mat-card>
   }
 
+  @if (existingConventionId() && !provisionResult()) {
+    <mat-card class="tenant-card">
+      <p>Tenanten har redan ett provisionerat konvent.</p>
+      @if (existingAdmin(); as admin) {
+        <p>Adminuppgifterna är förifyllda från <strong>{{ admin.name || admin.email }}</strong>.</p>
+      }
+    </mat-card>
+  }
+
   @if (provisionResult(); as result) {
     <mat-card class="success-card">
-      <h2>Provisionering klar</h2>
-      <p>Konventet och adminkontot har skapats för tenanten.</p>
+      <h2>{{ result.alreadyProvisioned ? 'Provisionering redan klar' : 'Provisionering klar' }}</h2>
+      <p>
+        @if (result.alreadyProvisioned) {
+          Tenanten hade redan ett provisionerat konvent och samma provisionering returnerades igen.
+        } @else {
+          Konventet och adminkontot har skapats för tenanten.
+        }
+      </p>
       <dl class="result-grid">
         <div>
           <dt>ConventionId</dt>
@@ -58,28 +73,14 @@
   <mat-card class="form-card">
     <mat-card-header>
       <mat-card-title>Provisioneringsuppgifter</mat-card-title>
+      @if (tenant(); as tenant) {
+        <mat-card-subtitle>
+          Konventet skapas som <strong>{{ tenant.displayName }}</strong> med slug <strong>{{ tenant.subdomain }}</strong>.
+        </mat-card-subtitle>
+      }
     </mat-card-header>
     <mat-card-content>
       <form class="provision-form" [formGroup]="form" (ngSubmit)="submit()">
-        <mat-form-field appearance="outline">
-          <mat-label>Konventnamn</mat-label>
-          <input matInput formControlName="conventionName" placeholder="Exempelkonvent" />
-          @if (form.get('conventionName')?.hasError('required') && form.get('conventionName')?.touched) {
-            <mat-error>Konventnamn krävs.</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Konventslug</mat-label>
-          <input matInput formControlName="conventionSlug" placeholder="exempelkonvent" />
-          @if (form.get('conventionSlug')?.hasError('required') && form.get('conventionSlug')?.touched) {
-            <mat-error>Slug krävs.</mat-error>
-          }
-          @if (form.get('conventionSlug')?.hasError('pattern') && form.get('conventionSlug')?.touched) {
-            <mat-error>Slug får bara innehålla gemener, siffror och bindestreck.</mat-error>
-          }
-        </mat-form-field>
-
         <mat-form-field appearance="outline">
           <mat-label>Admin-namn</mat-label>
           <input matInput formControlName="adminName" placeholder="Förnamn Efternamn" />

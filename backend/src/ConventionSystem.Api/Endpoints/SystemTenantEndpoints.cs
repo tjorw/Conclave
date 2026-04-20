@@ -8,13 +8,13 @@ using ConventionSystem.Application.Tenancy.Commands.CreateTenant;
 using ConventionSystem.Application.Tenancy.Commands.RestoreTenant;
 using ConventionSystem.Application.Tenancy.Commands.SuspendTenant;
 using ConventionSystem.Application.Tenancy.Queries.ListTenants;
+using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Tenancy.Ids;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.MultiTenancy;
 using ConventionSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
@@ -65,7 +65,7 @@ public static class SystemTenantEndpoints
                 ct);
 
             if (person is null)
-                return Results.Problem("Kunde inte skapa kontaktperson for tenanten.", statusCode: 422);
+                return Results.Problem("Kunde inte skapa kontaktperson för tenanten.", statusCode: 422);
 
             var temporaryPassword = GenerateTemporaryPassword();
             var user = new ApplicationUser
@@ -152,15 +152,10 @@ public static class SystemTenantEndpoints
 
         group.MapGet("/{tenantId:guid}/conventions", async (
             Guid tenantId,
-            ConventionDbContext db,
+            ISystemTenantReadService readService,
             CancellationToken ct) =>
         {
-            var conventions = await db.Conventions
-                .Where(c => EF.Property<Guid>(c, "TenantId") == tenantId)
-                .OrderBy(c => c.Name)
-                .Select(c => new TenantConventionDto(c.Id.Value, c.Name, c.Slug))
-                .ToListAsync(ct);
-
+            var conventions = await readService.ListConventionsAsync(tenantId, ct);
             return Results.Ok(conventions);
         });
 
@@ -169,16 +164,13 @@ public static class SystemTenantEndpoints
             Guid conventionId,
             HttpContext httpContext,
             ISender sender,
-            ConventionDbContext db,
+            IConventionRepository conventionRepository,
             CancellationToken ct) =>
         {
             httpContext.Items[TenantContextItemKeys.TenantId] = tenantId;
 
-            var belongsToTenant = await db.Conventions
-                .AnyAsync(c => c.Id == new ConventionId(conventionId)
-                               && EF.Property<Guid>(c, "TenantId") == tenantId, ct);
-
-            if (!belongsToTenant)
+            var convention = await conventionRepository.GetByIdAsync(new ConventionId(conventionId), ct);
+            if (convention is null)
                 return Results.NotFound();
 
             var persons = await sender.Send(new ListPersonsQuery(conventionId), ct);
@@ -191,19 +183,12 @@ public static class SystemTenantEndpoints
             AddSystemAdministratorRequest request,
             HttpContext httpContext,
             IConventionRepository conventionRepository,
-            ConventionDbContext db,
             CancellationToken ct) =>
         {
             httpContext.Items[TenantContextItemKeys.TenantId] = tenantId;
 
             var convention = await conventionRepository.GetByIdAsync(new ConventionId(conventionId), ct);
             if (convention is null)
-                return Results.NotFound();
-
-            var belongsToTenant = await db.Conventions
-                .AnyAsync(c => c.Id == new ConventionId(conventionId)
-                               && EF.Property<Guid>(c, "TenantId") == tenantId, ct);
-            if (!belongsToTenant)
                 return Results.NotFound();
 
             convention.AddAdministrator(new PersonId(request.PersonId), PersonId.New());
@@ -217,19 +202,12 @@ public static class SystemTenantEndpoints
             Guid personId,
             HttpContext httpContext,
             IConventionRepository conventionRepository,
-            ConventionDbContext db,
             CancellationToken ct) =>
         {
             httpContext.Items[TenantContextItemKeys.TenantId] = tenantId;
 
             var convention = await conventionRepository.GetByIdAsync(new ConventionId(conventionId), ct);
             if (convention is null)
-                return Results.NotFound();
-
-            var belongsToTenant = await db.Conventions
-                .AnyAsync(c => c.Id == new ConventionId(conventionId)
-                               && EF.Property<Guid>(c, "TenantId") == tenantId, ct);
-            if (!belongsToTenant)
                 return Results.NotFound();
 
             convention.RemoveAdministrator(new PersonId(personId), PersonId.New());
@@ -243,6 +221,8 @@ public static class SystemTenantEndpoints
             HttpContext httpContext,
             ISender sender,
             ITenantRepository tenantRepository,
+            IConventionRepository conventionRepository,
+            ISystemTenantReadService systemTenantReadService,
             IPersonRepository personRepository,
             TenantAwareUserService tenantAwareUserService,
             UserManager<ApplicationUser> userManager,
@@ -252,24 +232,28 @@ public static class SystemTenantEndpoints
             if (tenant is null)
                 return Results.NotFound();
 
-            var existingUser = await tenantAwareUserService.FindTenantUserAsync(request.AdminEmail, tenantId, ct);
-            if (existingUser is not null)
-            {
-                return Results.Problem(
-                    title: "E-postadressen används redan.",
-                    statusCode: 422,
-                    extensions: new Dictionary<string, object?>
-                    {
-                        ["errorCode"] = "email_already_exists"
-                    });
-            }
-
             httpContext.Items[TenantContextItemKeys.TenantId] = tenantId;
 
+            var existingProvisioning = await FindExistingProvisioningAsync(
+                tenantId,
+                request.AdminEmail,
+                systemTenantReadService,
+                conventionRepository,
+                personRepository,
+                tenantAwareUserService,
+                ct);
+
+            if (existingProvisioning is not null)
+            {
+                return Results.Ok(new ProvisionTenantConventionResponse(
+                    existingProvisioning.ConventionId,
+                    existingProvisioning.AdminUserId,
+                    true));
+            }
             var conventionId = await sender.Send(
                 new CreateConventionCommand(
-                    request.ConventionName,
-                    request.ConventionSlug,
+                    tenant.DisplayName,
+                    tenant.Subdomain,
                     request.AdminName,
                     request.AdminEmail),
                 ct);
@@ -280,7 +264,7 @@ public static class SystemTenantEndpoints
                 ct);
 
             if (person is null)
-                return Results.Problem("Kunde inte skapa admin-person for konventet.", statusCode: 422);
+                return Results.Problem("Kunde inte skapa admin-person för konventet.", statusCode: 422);
 
             var user = new ApplicationUser
             {
@@ -312,11 +296,7 @@ public static class SystemTenantEndpoints
 
             return Results.Created(
                 $"/system/tenants/{tenantId}/provision/{conventionId}",
-                new
-                {
-                    conventionId,
-                    adminUserId = user.Id
-                });
+                new ProvisionTenantConventionResponse(conventionId, user.Id, false));
         });
 
         return app;
@@ -367,16 +347,47 @@ public static class SystemTenantEndpoints
 
         return new string(chars.ToArray());
     }
+
+    private static async Task<ExistingProvisioning?> FindExistingProvisioningAsync(
+        Guid tenantId,
+        string requestedAdminEmail,
+        ISystemTenantReadService systemTenantReadService,
+        IConventionRepository conventionRepository,
+        IPersonRepository personRepository,
+        TenantAwareUserService tenantAwareUserService,
+        CancellationToken ct)
+    {
+        var existingConvention = (await systemTenantReadService.ListConventionsAsync(tenantId, ct)).FirstOrDefault();
+        if (existingConvention is null)
+            return null;
+
+        var requestedAdmin = await tenantAwareUserService.FindTenantUserAsync(requestedAdminEmail, tenantId, ct);
+        if (requestedAdmin is not null)
+            return new ExistingProvisioning(existingConvention.Id, requestedAdmin.Id);
+
+        var persons = await personRepository.ListByConventionIdAsync(new ConventionId(existingConvention.Id), ct);
+        var existingAdmin = persons.FirstOrDefault(p => p.IsAdmin);
+        if (existingAdmin is null)
+            return new ExistingProvisioning(existingConvention.Id, null);
+
+        var existingAdminUserId = await tenantAwareUserService.FindTenantUserIdByPersonAsync(
+            tenantId,
+            existingAdmin.Id,
+            ct);
+
+        return new ExistingProvisioning(existingConvention.Id, existingAdminUserId);
+    }
 }
 
 public record CreateSystemTenantRequest(string Subdomain, string DisplayName);
 public record TenantSignupRequest(string OrganizationName, string Subdomain, string ContactName, string ContactEmail);
 public record TenantSignupResponse(Guid TenantId, Guid ConventionId, string ContactEmail, string Subdomain);
 public record ProvisionTenantConventionRequest(
-    string ConventionName,
-    string ConventionSlug,
     string AdminName,
     string AdminEmail,
     string AdminPassword);
+public record ProvisionTenantConventionResponse(Guid ConventionId, string? AdminUserId, bool AlreadyProvisioned);
 public record TenantConventionDto(Guid Id, string Name, string Slug);
 public record AddSystemAdministratorRequest(Guid PersonId);
+
+sealed record ExistingProvisioning(Guid ConventionId, string? AdminUserId);

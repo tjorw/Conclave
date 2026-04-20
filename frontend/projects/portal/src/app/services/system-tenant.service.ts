@@ -35,8 +35,6 @@ export interface TenantSignupResponse {
 }
 
 export interface ProvisionTenantConventionRequest {
-  conventionName: string;
-  conventionSlug: string;
   adminName: string;
   adminEmail: string;
   adminPassword: string;
@@ -44,7 +42,8 @@ export interface ProvisionTenantConventionRequest {
 
 export interface ProvisionTenantConventionResponse {
   conventionId: string;
-  adminUserId: string;
+  adminUserId: string | null;
+  alreadyProvisioned: boolean;
 }
 
 export interface CreateSystemTenantRequest {

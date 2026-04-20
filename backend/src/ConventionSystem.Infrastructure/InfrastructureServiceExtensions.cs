@@ -34,6 +34,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IShiftRepository, ShiftRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<ITenantRepository, TenantRepository>();
+        services.AddScoped<ISystemTenantReadService, SystemTenantReadService>();
 
         services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
