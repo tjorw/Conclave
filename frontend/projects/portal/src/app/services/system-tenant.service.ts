@@ -20,6 +20,20 @@ interface CreateTenantResponse {
   id: string;
 }
 
+export interface TenantSignupRequest {
+  organizationName: string;
+  subdomain: string;
+  contactName: string;
+  contactEmail: string;
+}
+
+export interface TenantSignupResponse {
+  tenantId: string;
+  conventionId: string;
+  contactEmail: string;
+  subdomain: string;
+}
+
 export interface ProvisionTenantConventionRequest {
   conventionName: string;
   conventionSlug: string;
@@ -49,6 +63,10 @@ export class SystemTenantService {
 
   create(request: CreateSystemTenantRequest) {
     return this.http.post<CreateTenantResponse>(`${this.env.apiBaseUrl}/system/tenants`, request);
+  }
+
+  signup(request: TenantSignupRequest) {
+    return this.http.post<TenantSignupResponse>(`${this.env.apiBaseUrl}/system/signup`, request);
   }
 
   suspend(tenantId: string) {

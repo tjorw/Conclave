@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,6 +12,7 @@ import { AuthService, getLoginReasonMessage } from 'shared';
   selector: 'app-login',
   standalone: true,
   imports: [
+    RouterLink,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,

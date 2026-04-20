@@ -12,4 +12,12 @@ public interface IEmailService
     Task SendEmailConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default);
     Task SendResendConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default);
     Task SendPasswordChangedAsync(string toEmail, string toName, CancellationToken ct = default);
+    Task SendTenantSignupWelcomeAsync(
+        string toEmail,
+        string toName,
+        string organizationName,
+        string subdomain,
+        string temporaryPassword,
+        string confirmLink,
+        CancellationToken ct = default);
 }

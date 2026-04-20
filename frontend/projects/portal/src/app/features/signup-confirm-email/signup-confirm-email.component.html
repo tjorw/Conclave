@@ -1,0 +1,25 @@
+<div class="confirm-wrapper">
+  <mat-card class="confirm-card">
+    @if (loading()) {
+      <div class="confirm-state">
+        <mat-spinner diameter="36" />
+        <p>Bekräftar din e-postadress...</p>
+      </div>
+    } @else if (success()) {
+      <div class="confirm-state">
+        <h1>Tenanten är nu aktiverad</h1>
+        <p>Din e-postadress är bekräftad och tenantens första konto är klart att använda.</p>
+        @if (subdomain(); as subdomain) {
+          <p>Logga sedan in via tenantens egen inloggning för <strong>{{ subdomain }}</strong>.</p>
+        }
+        <a mat-flat-button color="primary" routerLink="/login">Till portalens login</a>
+      </div>
+    } @else {
+      <div class="confirm-state">
+        <h1>Länken kunde inte verifieras</h1>
+        <p>Kontrollera att du öppnade den senaste länken från mejlet.</p>
+        <a mat-button routerLink="/signup">Tillbaka till signup</a>
+      </div>
+    }
+  </mat-card>
+</div>

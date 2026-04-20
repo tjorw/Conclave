@@ -69,6 +69,23 @@ public sealed class SendGridEmailService(IOptions<EmailOptions> options) : IEmai
         return SendAsync(toEmail, toName, subject, body, ct);
     }
 
+    public Task SendTenantSignupWelcomeAsync(
+        string toEmail,
+        string toName,
+        string organizationName,
+        string subdomain,
+        string temporaryPassword,
+        string confirmLink,
+        CancellationToken ct = default)
+    {
+        var (subject, body) = EmailTemplates.TenantSignupWelcome(
+            organizationName,
+            subdomain,
+            temporaryPassword,
+            confirmLink);
+        return SendAsync(toEmail, toName, subject, body, ct);
+    }
+
     private async Task SendAsync(string toEmail, string toName, string subject, string body, CancellationToken ct)
     {
         ValidateConfiguration();

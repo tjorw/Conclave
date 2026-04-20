@@ -1,0 +1,21 @@
+.confirm-wrapper {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at top left, rgba(255, 214, 153, 0.55), transparent 36%),
+    linear-gradient(180deg, #fff8ef 0%, #f6efe4 100%);
+}
+
+.confirm-card {
+  width: min(560px, 100%);
+}
+
+.confirm-state {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  text-align: center;
+  padding: 1rem 0.5rem;
+}

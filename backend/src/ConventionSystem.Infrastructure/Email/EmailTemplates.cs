@@ -51,4 +51,20 @@ internal static class EmailTemplates
         => (
             "Ditt lösenord har ändrats",
             "Hej!\n\nDitt lösenord har ändrats. Om det inte var du, kontakta support omgående.");
+
+    public static (string Subject, string Body) TenantSignupWelcome(
+        string organizationName,
+        string subdomain,
+        string temporaryPassword,
+        string confirmLink)
+        => (
+            $"Välkommen till Conclave - {organizationName}",
+            "Hej!\n\n" +
+            $"Din tenant '{organizationName}' har skapats med subdomanen '{subdomain}'.\n" +
+            "Bekräfta först din e-postadress via länken nedan för att aktivera tenanten:\n" +
+            $"{confirmLink}\n\n" +
+            "När bekräftelsen är klar kan du logga in med den här temporära lösenordsuppgiften:\n" +
+            $"{temporaryPassword}\n\n" +
+            "Byt lösenord efter första inloggningen.\n\n" +
+            "Vänliga hälsningar,\nConclave");
 }

@@ -35,6 +35,7 @@ export interface RegisterRequest {
 export interface ConfirmEmailRequest {
   email: string;
   token: string;
+  tenantId?: string | null;
 }
 
 export interface ForgotPasswordRequest {

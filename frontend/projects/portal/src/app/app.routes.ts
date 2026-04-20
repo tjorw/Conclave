@@ -3,6 +3,16 @@ import { authGuard, systemAdminGuard } from 'shared';
 
 export const routes: Routes = [
 	{
+		path: 'signup',
+		loadComponent: () =>
+			import('./features/signup/signup.component').then(m => m.SignupComponent),
+	},
+	{
+		path: 'signup/confirm-email',
+		loadComponent: () =>
+			import('./features/signup-confirm-email/signup-confirm-email.component').then(m => m.SignupConfirmEmailComponent),
+	},
+	{
 		path: 'login',
 		loadComponent: () =>
 			import('./features/auth/login.component').then(m => m.LoginComponent),

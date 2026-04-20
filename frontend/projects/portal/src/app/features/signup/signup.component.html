@@ -1,0 +1,83 @@
+<section class="signup-page">
+  <div class="hero">
+    <div>
+      <p class="eyebrow">Conclave Portal</p>
+      <h1>Starta din tenant</h1>
+      <p class="lead">
+        Registrera organisationen, välj önskad subdomän och ange kontaktperson.
+        Vi skickar sedan en bekräftelselänk och inloggningsuppgifter till kontaktpersonen.
+      </p>
+    </div>
+
+    <a mat-button routerLink="/login">Systemadmin-login</a>
+  </div>
+
+  @if (saving()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (error()) {
+    <mat-card class="error-card">{{ error() }}</mat-card>
+  }
+
+  @if (result(); as result) {
+    <mat-card class="success-card">
+      <h2>Begäran mottagen</h2>
+      <p>
+        Vi har skapat tenanten <strong>{{ result.subdomain }}</strong> och skickat ett mejl till
+        <strong>{{ result.contactEmail }}</strong>.
+      </p>
+      <p>Bekräfta e-postadressen i mejlet för att aktivera tenanten.</p>
+    </mat-card>
+  }
+
+  <mat-card class="form-card">
+    <mat-card-content>
+      <form class="signup-form" [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Organisationsnamn</mat-label>
+          <input matInput formControlName="organizationName" placeholder="Gamma Con" />
+          @if (form.get('organizationName')?.hasError('required') && form.get('organizationName')?.touched) {
+            <mat-error>Organisationsnamn krävs.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Önskad subdomän</mat-label>
+          <input matInput formControlName="subdomain" placeholder="gammacon" />
+          @if (form.get('subdomain')?.hasError('required') && form.get('subdomain')?.touched) {
+            <mat-error>Subdomän krävs.</mat-error>
+          }
+          @if (form.get('subdomain')?.hasError('pattern') && form.get('subdomain')?.touched) {
+            <mat-error>Använd 3-63 tecken: gemener, siffror och bindestreck.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Kontaktperson</mat-label>
+          <input matInput formControlName="contactName" placeholder="Förnamn Efternamn" />
+          @if (form.get('contactName')?.hasError('required') && form.get('contactName')?.touched) {
+            <mat-error>Kontaktperson krävs.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Kontaktpersonens e-post</mat-label>
+          <input matInput type="email" formControlName="contactEmail" placeholder="kontakt@example.com" />
+          @if (form.get('contactEmail')?.hasError('required') && form.get('contactEmail')?.touched) {
+            <mat-error>E-post krävs.</mat-error>
+          }
+          @if (form.get('contactEmail')?.hasError('email') && form.get('contactEmail')?.touched) {
+            <mat-error>Ange en giltig e-postadress.</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="actions">
+          <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+            Skapa tenant
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</section>

@@ -213,6 +213,106 @@ public sealed class SystemTenantEndpointsTests(ConventionSystemFactory factory) 
     }
 
     [Fact]
+    public async Task PublicSignup_CreatesSuspendedTenant_Convention_AndPendingAdmin()
+    {
+        await using var multitenantFactory = CreateMultitenantFactory();
+        var client = CreateTenantClient(multitenantFactory, "http://system.conclave.se");
+        var subdomain = $"signup-{Guid.NewGuid():N}"[..20];
+        var email = $"signup-{Guid.NewGuid():N}@test.se";
+
+        var response = await client.PostAsJsonAsync("/system/signup", new
+        {
+            organizationName = "Signup Tenant",
+            subdomain,
+            contactName = "Signup Owner",
+            contactEmail = email
+        });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var tenantId = body.GetProperty("tenantId").GetGuid();
+        var conventionId = body.GetProperty("conventionId").GetGuid();
+
+        await using var scope = Factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        var tenant = await db.Tenants.SingleAsync(t => t.Subdomain == subdomain);
+        Assert.Equal(TenantStatus.Suspended, tenant.Status);
+        Assert.Equal(subdomain, tenant.Subdomain);
+
+        var conventionTenantId = await db.Conventions
+            .Where(c => c.Id == new ConventionId(conventionId))
+            .Select(c => EF.Property<Guid>(c, "TenantId"))
+            .SingleAsync();
+        Assert.Equal(tenantId, conventionTenantId);
+
+        var user = await userManager.FindByEmailAsync(email);
+        Assert.NotNull(user);
+        Assert.False(user!.EmailConfirmed);
+        Assert.Equal(tenantId, user.TenantId);
+        Assert.NotNull(user.PersonId);
+
+        var claims = await userManager.GetClaimsAsync(user);
+        Assert.Contains(claims, c => c.Type == "activates_tenant" && c.Value == "true");
+    }
+
+    [Fact]
+    public async Task PublicSignup_ConfirmEmail_ActivatesTenant()
+    {
+        await using var multitenantFactory = CreateMultitenantFactory();
+        var client = CreateTenantClient(multitenantFactory, "http://system.conclave.se");
+        var subdomain = $"confirm-{Guid.NewGuid():N}"[..20];
+        var email = $"confirm-{Guid.NewGuid():N}@test.se";
+
+        var signupResponse = await client.PostAsJsonAsync("/system/signup", new
+        {
+            organizationName = "Confirm Tenant",
+            subdomain,
+            contactName = "Confirm Owner",
+            contactEmail = email
+        });
+
+        Assert.Equal(HttpStatusCode.Created, signupResponse.StatusCode);
+        var signupBody = await signupResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var tenantId = signupBody.GetProperty("tenantId").GetGuid();
+
+        string token;
+        await using (var scope = Factory.Services.CreateAsyncScope())
+        {
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var user = await userManager.FindByEmailAsync(email);
+            Assert.NotNull(user);
+            token = await userManager.GenerateEmailConfirmationTokenAsync(user!);
+        }
+
+        var confirmResponse = await client.PostAsJsonAsync("/auth/confirm-email", new
+        {
+            email,
+            token,
+            tenantId
+        });
+
+        Assert.Equal(HttpStatusCode.OK, confirmResponse.StatusCode);
+
+        await using (var scope = Factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ConventionDbContext>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+            var tenant = await db.Tenants.SingleAsync(t => t.Subdomain == subdomain);
+            Assert.Equal(TenantStatus.Active, tenant.Status);
+
+            var user = await userManager.FindByEmailAsync(email);
+            Assert.NotNull(user);
+            Assert.True(user!.EmailConfirmed);
+
+            var claims = await userManager.GetClaimsAsync(user);
+            Assert.DoesNotContain(claims, c => c.Type == "activates_tenant" && c.Value == "true");
+        }
+    }
+
+    [Fact]
     public async Task SystemTenantConventionAdmins_CanBeManagedFromSystemEndpoints()
     {
         var token = CreateToken(new Claim("is_system_admin", "true"));
