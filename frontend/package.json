@@ -6,7 +6,12 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "npm run test:all",
+    "test:all": "ng test shared --watch=false && ng test admin --watch=false && ng test public --watch=false && ng test portal --watch=false",
+    "test:shared": "ng test shared --watch=false",
+    "test:admin": "ng test admin --watch=false",
+    "test:public": "ng test public --watch=false",
+    "test:portal": "ng test portal --watch=false"
   },
   "private": true,
   "packageManager": "npm@11.6.2",
