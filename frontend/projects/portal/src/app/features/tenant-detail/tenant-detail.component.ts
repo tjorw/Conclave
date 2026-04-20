@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -6,12 +7,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { PersonDto } from 'shared';
-import { SystemTenantService, TenantConvention } from '../../services/system-tenant.service';
+import { SystemTenantService, TenantConvention, TenantListItem } from '../../services/system-tenant.service';
 
 @Component({
-  selector: 'app-tenant-admins',
+  selector: 'app-tenant-detail',
   standalone: true,
   imports: [
+    DatePipe,
     RouterLink,
     MatButtonModule,
     MatCardModule,
@@ -19,32 +21,42 @@ import { SystemTenantService, TenantConvention } from '../../services/system-ten
     MatProgressBarModule,
     MatSelectModule,
   ],
-  templateUrl: './tenant-admins.component.html',
-  styleUrl: './tenant-admins.component.scss',
+  templateUrl: './tenant-detail.component.html',
+  styleUrl: './tenant-detail.component.scss',
 })
-export class TenantAdminsComponent implements OnInit {
+export class TenantDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(SystemTenantService);
 
   readonly tenantId = signal<string>('');
+  readonly loadingTenant = signal(true);
   readonly loadingConventions = signal(true);
   readonly loadingPersons = signal(false);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
 
+  readonly tenant = signal<TenantListItem | null>(null);
   readonly conventions = signal<TenantConvention[]>([]);
   readonly selectedConventionId = signal<string | null>(null);
   readonly persons = signal<PersonDto[]>([]);
+
+  readonly selectedConvention = computed(
+    () => this.conventions().find(convention => convention.id === this.selectedConventionId()) ?? null,
+  );
+
+  readonly canProvision = computed(() => this.tenant()?.status === 'Active');
 
   ngOnInit(): void {
     const tenantId = this.route.snapshot.paramMap.get('tenantId');
     if (!tenantId) {
       this.error.set('Saknar tenant-id i URL.');
+      this.loadingTenant.set(false);
       this.loadingConventions.set(false);
       return;
     }
 
     this.tenantId.set(tenantId);
+    this.loadTenant();
     this.loadConventions();
   }
 
@@ -65,7 +77,7 @@ export class TenantAdminsComponent implements OnInit {
         this.saving.set(false);
         this.loadPersons();
       },
-      error: (err) => this.handleError('Kunde inte lägga till admin', err),
+      error: err => this.handleError('Kunde inte lägga till admin', err),
     });
   }
 
@@ -81,7 +93,26 @@ export class TenantAdminsComponent implements OnInit {
         this.saving.set(false);
         this.loadPersons();
       },
-      error: (err) => this.handleError('Kunde inte ta bort admin', err),
+      error: err => this.handleError('Kunde inte ta bort admin', err),
+    });
+  }
+
+  private loadTenant(): void {
+    this.loadingTenant.set(true);
+    this.error.set(null);
+
+    this.service.list().subscribe({
+      next: tenants => {
+        const tenant = tenants.find(item => item.id === this.tenantId()) ?? null;
+        this.tenant.set(tenant);
+
+        if (!tenant) {
+          this.error.set('Tenanten kunde inte hittas.');
+        }
+
+        this.loadingTenant.set(false);
+      },
+      error: err => this.handleError('Kunde inte hämta tenant', err, true),
     });
   }
 
@@ -90,20 +121,24 @@ export class TenantAdminsComponent implements OnInit {
     this.error.set(null);
 
     this.service.listConventions(this.tenantId()).subscribe({
-      next: (conventions) => {
+      next: conventions => {
         const sorted = [...conventions].sort((a, b) => a.name.localeCompare(b.name, 'sv'));
         this.conventions.set(sorted);
-        const first = sorted[0]?.id ?? null;
-        this.selectedConventionId.set(first);
+        const selectedConventionId = this.selectedConventionId();
+        const hasSelectedConvention = selectedConventionId && sorted.some(convention => convention.id === selectedConventionId);
+        const nextConventionId = hasSelectedConvention ? selectedConventionId : (sorted[0]?.id ?? null);
+
+        this.selectedConventionId.set(nextConventionId);
         this.loadingConventions.set(false);
 
-        if (first) {
+        if (nextConventionId) {
           this.loadPersons();
         } else {
           this.persons.set([]);
+          this.loadingPersons.set(false);
         }
       },
-      error: (err) => this.handleError('Kunde inte hämta konvent', err, true),
+      error: err => this.handleError('Kunde inte hämta konvent', err, false, true),
     });
   }
 
@@ -115,20 +150,27 @@ export class TenantAdminsComponent implements OnInit {
     this.error.set(null);
 
     this.service.listConventionPersons(this.tenantId(), conventionId).subscribe({
-      next: (persons) => {
+      next: persons => {
         this.persons.set([...persons].sort((a, b) => a.name.localeCompare(b.name, 'sv')));
         this.loadingPersons.set(false);
       },
-      error: (err) => this.handleError('Kunde inte hämta personer', err, false, true),
+      error: err => this.handleError('Kunde inte hämta personer', err, false, false, true),
     });
   }
 
-  private handleError(context: string, err: unknown, resetConventionLoading = false, resetPersonsLoading = false): void {
+  private handleError(
+    context: string,
+    err: unknown,
+    resetTenantLoading = false,
+    resetConventionLoading = false,
+    resetPersonsLoading = false,
+  ): void {
     const detail = (err as { error?: { detail?: string; title?: string } })?.error?.detail
       ?? (err as { error?: { title?: string } })?.error?.title;
 
     this.error.set(detail ? `${context}: ${detail}` : context);
     this.saving.set(false);
+    if (resetTenantLoading) this.loadingTenant.set(false);
     if (resetConventionLoading) this.loadingConventions.set(false);
     if (resetPersonsLoading) this.loadingPersons.set(false);
   }

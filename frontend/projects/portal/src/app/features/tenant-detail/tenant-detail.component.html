@@ -1,0 +1,125 @@
+<section class="page">
+  <div class="page-header">
+    <a mat-button routerLink="/tenants">Tillbaka till tenants</a>
+    <div>
+      <h1>Tenantdetaljer</h1>
+      <p>Överblick över tenantens status, konvent och administratörer.</p>
+    </div>
+  </div>
+
+  @if (loadingTenant()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (error()) {
+    <mat-card class="error-card">{{ error() }}</mat-card>
+  }
+
+  @if (tenant(); as tenant) {
+    <mat-card class="tenant-card">
+      <div class="tenant-meta">
+        <div>
+          <span class="meta-label">Tenant</span>
+          <strong>{{ tenant.displayName }}</strong>
+        </div>
+        <div>
+          <span class="meta-label">Subdomän</span>
+          <strong>{{ tenant.subdomain }}</strong>
+        </div>
+        <div>
+          <span class="meta-label">Status</span>
+          <span class="status-chip" [class.suspended]="tenant.status === 'Suspended'">{{ tenant.status }}</span>
+        </div>
+        <div>
+          <span class="meta-label">Skapad</span>
+          <strong>{{ tenant.createdAt | date:'yyyy-MM-dd HH:mm' }}</strong>
+        </div>
+      </div>
+
+      <div class="tenant-actions">
+        <a mat-flat-button color="primary" [routerLink]="['/tenants', tenant.id, 'provision']" [class.action-disabled]="!canProvision()">
+          Provisionera tenant
+        </a>
+        @if (!canProvision()) {
+          <p class="status-note">Suspenderade tenants kan inte provisioneras innan de har återaktiverats.</p>
+        }
+      </div>
+    </mat-card>
+  }
+
+  <mat-card class="content-card">
+    <div class="section-header">
+      <div>
+        <h2>Konvent och admins</h2>
+        <p>Välj ett konvent för att se personer och ändra vem som är administratör.</p>
+      </div>
+      @if (selectedConvention(); as convention) {
+        <span class="selected-convention">{{ convention.slug }}</span>
+      }
+    </div>
+
+    @if (loadingConventions()) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    } @else {
+      @if (conventions().length === 0) {
+        <p>Inga konvent finns ännu för denna tenant.</p>
+      } @else {
+        <mat-form-field appearance="outline" class="convention-select">
+          <mat-label>Välj konvent</mat-label>
+          <mat-select [value]="selectedConventionId()" (valueChange)="onConventionChange($event)">
+            @for (convention of conventions(); track convention.id) {
+              <mat-option [value]="convention.id">{{ convention.name }} ({{ convention.slug }})</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+    }
+  </mat-card>
+
+  @if (selectedConventionId()) {
+    <mat-card class="content-card">
+      <h2>Personer i konventet</h2>
+
+      @if (loadingPersons()) {
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      } @else {
+        @if (persons().length === 0) {
+          <p>Inga personer finns i det valda konventet.</p>
+        } @else {
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Namn</th>
+                  <th>E-post</th>
+                  <th>Admin</th>
+                  <th class="actions-col"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (person of persons(); track person.id) {
+                  <tr>
+                    <td>{{ person.name }}</td>
+                    <td>{{ person.email }}</td>
+                    <td>{{ person.isAdmin ? 'Ja' : 'Nej' }}</td>
+                    <td class="row-actions">
+                      @if (person.isAdmin) {
+                        <button mat-stroked-button color="warn" (click)="removeAdmin(person.id)" [disabled]="saving()">
+                          Ta bort admin
+                        </button>
+                      } @else {
+                        <button mat-stroked-button color="primary" (click)="makeAdmin(person.id)" [disabled]="saving()">
+                          Gör admin
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </mat-card>
+  }
+</section>

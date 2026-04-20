@@ -36,9 +36,14 @@ export const routes: Routes = [
 					import('./features/tenants/tenants.component').then(m => m.TenantsComponent),
 			},
 			{
+				path: 'tenants/:tenantId',
+				loadComponent: () =>
+					import('./features/tenant-detail/tenant-detail.component').then(m => m.TenantDetailComponent),
+			},
+			{
 				path: 'tenants/:tenantId/admins',
 				loadComponent: () =>
-					import('./features/tenant-admins/tenant-admins.component').then(m => m.TenantAdminsComponent),
+					import('./features/tenant-detail/tenant-detail.component').then(m => m.TenantDetailComponent),
 			},
 			{
 				path: 'tenants/:tenantId/provision',

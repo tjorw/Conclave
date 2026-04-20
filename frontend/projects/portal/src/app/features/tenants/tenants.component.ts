@@ -54,6 +54,10 @@ export class TenantsComponent implements OnInit {
     return tenant.status === 'Active' || tenant.status === 'Suspended';
   }
 
+  tenantDetailsLink(tenantId: string): string[] {
+    return ['/tenants', tenantId];
+  }
+
   ngOnInit(): void {
     this.reload();
   }

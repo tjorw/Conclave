@@ -76,6 +76,7 @@
               </td>
               <td>{{ tenant.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
               <td class="row-actions">
+                <a mat-flat-button color="primary" [routerLink]="tenantDetailsLink(tenant.id)">Detaljer</a>
                 @if (tenant.status === 'Active') {
                   <button mat-stroked-button color="warn" (click)="suspendTenant(tenant.id)" [disabled]="saving()">
                     Suspendera
@@ -93,7 +94,6 @@
                   [class.action-disabled]="!isProvisioningAllowed(tenant)">
                   Provisionera
                 </a>
-                <a mat-stroked-button [routerLink]="['/tenants', tenant.id, 'admins']">Admins</a>
               </td>
             </tr>
           } @empty {
