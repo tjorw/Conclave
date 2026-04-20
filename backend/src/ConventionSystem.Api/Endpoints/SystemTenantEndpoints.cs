@@ -34,87 +34,11 @@ public static class SystemTenantEndpoints
 
         group.MapPost("/", async (
             CreateSystemTenantRequest request,
-            HttpContext httpContext,
             ISender sender,
-            IPersonRepository personRepository,
-            TenantAwareUserService tenantAwareUserService,
-            UserManager<ApplicationUser> userManager,
-            IEmailService emailService,
-            IConfiguration configuration,
             CancellationToken ct) =>
         {
             var tenantId = await sender.Send(new CreateTenantCommand(request.Subdomain, request.DisplayName), ct);
-
-            var existingUser = await tenantAwareUserService.FindTenantUserAsync(request.AdminEmail, tenantId, ct);
-            if (existingUser is not null)
-            {
-                return Results.Problem(
-                    title: "E-postadressen används redan.",
-                    statusCode: 422,
-                    extensions: new Dictionary<string, object?>
-                    {
-                        ["errorCode"] = "email_already_exists"
-                    });
-            }
-
-            httpContext.Items[TenantContextItemKeys.TenantId] = tenantId;
-
-            var conventionId = await sender.Send(
-                new CreateConventionCommand(
-                    request.DisplayName,
-                    request.Subdomain,
-                    request.AdminName,
-                    request.AdminEmail),
-                ct);
-
-            var person = await personRepository.FindByEmailInConventionAsync(
-                new ConventionId(conventionId),
-                request.AdminEmail,
-                ct);
-
-            if (person is null)
-                return Results.Problem("Kunde inte skapa admin-person för konventet.", statusCode: 422);
-
-            var user = new ApplicationUser
-            {
-                UserName = $"{tenantId:N}_{request.AdminEmail}",
-                Email = request.AdminEmail,
-                UserType = UserType.TenantUser,
-                TenantId = tenantId,
-                PersonId = person.Id.Value,
-                EmailConfirmed = false
-            };
-
-            var result = await userManager.CreateAsync(user, request.AdminPassword);
-            if (!result.Succeeded)
-            {
-                if (result.Errors.Any(e => e.Code is "DuplicateEmail" or "DuplicateUserName"))
-                {
-                    return Results.Problem(
-                        title: "E-postadressen används redan.",
-                        statusCode: 422,
-                        extensions: new Dictionary<string, object?>
-                        {
-                            ["errorCode"] = "email_already_exists"
-                        });
-                }
-
-                var errors = string.Join(" ", result.Errors.Select(e => e.Description));
-                return Results.Problem(errors, statusCode: 400);
-            }
-
-            await userManager.AddClaimAsync(user, new Claim("activates_tenant", "true"));
-
-            var emailToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            var frontendUrl = ResolveFrontendUrl(configuration);
-            var confirmLink = $"{frontendUrl}/confirm-email" +
-                              $"?email={Uri.EscapeDataString(request.AdminEmail)}" +
-                              $"&token={Uri.EscapeDataString(emailToken)}" +
-                              $"&tenantId={tenantId}";
-
-            await emailService.SendEmailConfirmationAsync(request.AdminEmail, request.AdminName, confirmLink, ct);
-
-            return Results.Created($"/system/tenants/{tenantId}", new { id = tenantId, conventionId, adminUserId = user.Id });
+            return Results.Created($"/system/tenants/{tenantId}", new { id = tenantId });
         });
 
         group.MapPut("/{tenantId:guid}/suspend", async (Guid tenantId, ISender sender, CancellationToken ct) =>
@@ -301,16 +225,9 @@ public static class SystemTenantEndpoints
         return app;
     }
 
-    private static string ResolveFrontendUrl(IConfiguration configuration)
-        => configuration["App:FrontendUrl"] ?? AuthConstants.Frontend.DefaultUrl;
 }
 
-public record CreateSystemTenantRequest(
-    string Subdomain,
-    string DisplayName,
-    string AdminName,
-    string AdminEmail,
-    string AdminPassword);
+public record CreateSystemTenantRequest(string Subdomain, string DisplayName);
 public record ProvisionTenantConventionRequest(
     string ConventionName,
     string ConventionSlug,

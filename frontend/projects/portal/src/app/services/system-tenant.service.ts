@@ -36,9 +36,6 @@ export interface ProvisionTenantConventionResponse {
 export interface CreateSystemTenantRequest {
   subdomain: string;
   displayName: string;
-  adminName: string;
-  adminEmail: string;
-  adminPassword: string;
 }
 
 @Injectable({ providedIn: 'root' })
