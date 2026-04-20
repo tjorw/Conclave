@@ -20,6 +20,19 @@ interface CreateTenantResponse {
   id: string;
 }
 
+export interface ProvisionTenantConventionRequest {
+  conventionName: string;
+  conventionSlug: string;
+  adminName: string;
+  adminEmail: string;
+  adminPassword: string;
+}
+
+export interface ProvisionTenantConventionResponse {
+  conventionId: string;
+  adminUserId: string;
+}
+
 export interface CreateSystemTenantRequest {
   subdomain: string;
   displayName: string;
@@ -69,6 +82,13 @@ export class SystemTenantService {
   removeConventionAdministrator(tenantId: string, conventionId: string, personId: string) {
     return this.http.delete<void>(
       `${this.env.apiBaseUrl}/system/tenants/${tenantId}/conventions/${conventionId}/administrators/${personId}`,
+    );
+  }
+
+  provision(tenantId: string, request: ProvisionTenantConventionRequest) {
+    return this.http.post<ProvisionTenantConventionResponse>(
+      `${this.env.apiBaseUrl}/system/tenants/${tenantId}/provision`,
+      request,
     );
   }
 }

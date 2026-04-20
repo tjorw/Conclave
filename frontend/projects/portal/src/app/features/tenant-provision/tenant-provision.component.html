@@ -1,0 +1,121 @@
+<section class="page">
+  <div class="page-header">
+    <a mat-button routerLink="/tenants">Tillbaka till tenants</a>
+    <div>
+      <h1>Provisionera tenant</h1>
+      <p>Skapa första konventet och ett tenant-adminkonto för vald tenant.</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (error()) {
+    <mat-card class="error-card">{{ error() }}</mat-card>
+  }
+
+  @if (tenant(); as tenant) {
+    <mat-card class="tenant-card">
+      <div class="tenant-meta">
+        <div>
+          <span class="meta-label">Tenant</span>
+          <strong>{{ tenant.displayName }}</strong>
+        </div>
+        <div>
+          <span class="meta-label">Subdomän</span>
+          <strong>{{ tenant.subdomain }}</strong>
+        </div>
+        <div>
+          <span class="meta-label">Status</span>
+          <span class="status-chip" [class.suspended]="tenant.status === 'Suspended'">{{ tenant.status }}</span>
+        </div>
+      </div>
+
+      @if (!canProvision()) {
+        <p class="status-note">Suspenderade tenants kan inte provisioneras innan de har återaktiverats.</p>
+      }
+    </mat-card>
+  }
+
+  @if (provisionResult(); as result) {
+    <mat-card class="success-card">
+      <h2>Provisionering klar</h2>
+      <p>Konventet och adminkontot har skapats för tenanten.</p>
+      <dl class="result-grid">
+        <div>
+          <dt>ConventionId</dt>
+          <dd>{{ result.conventionId }}</dd>
+        </div>
+        <div>
+          <dt>Admin e-post</dt>
+          <dd>{{ result.adminEmail }}</dd>
+        </div>
+      </dl>
+    </mat-card>
+  }
+
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>Provisioneringsuppgifter</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form class="provision-form" [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Konventnamn</mat-label>
+          <input matInput formControlName="conventionName" placeholder="Exempelkonvent" />
+          @if (form.get('conventionName')?.hasError('required') && form.get('conventionName')?.touched) {
+            <mat-error>Konventnamn krävs.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Konventslug</mat-label>
+          <input matInput formControlName="conventionSlug" placeholder="exempelkonvent" />
+          @if (form.get('conventionSlug')?.hasError('required') && form.get('conventionSlug')?.touched) {
+            <mat-error>Slug krävs.</mat-error>
+          }
+          @if (form.get('conventionSlug')?.hasError('pattern') && form.get('conventionSlug')?.touched) {
+            <mat-error>Slug får bara innehålla gemener, siffror och bindestreck.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Admin-namn</mat-label>
+          <input matInput formControlName="adminName" placeholder="Förnamn Efternamn" />
+          @if (form.get('adminName')?.hasError('required') && form.get('adminName')?.touched) {
+            <mat-error>Admin-namn krävs.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Admin e-post</mat-label>
+          <input matInput formControlName="adminEmail" placeholder="admin@example.com" />
+          @if (form.get('adminEmail')?.hasError('required') && form.get('adminEmail')?.touched) {
+            <mat-error>E-post krävs.</mat-error>
+          }
+          @if (form.get('adminEmail')?.hasError('email') && form.get('adminEmail')?.touched) {
+            <mat-error>Ange en giltig e-postadress.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Temporärt lösenord</mat-label>
+          <input matInput type="password" formControlName="adminPassword" placeholder="Minst 8 tecken" />
+          @if (form.get('adminPassword')?.hasError('required') && form.get('adminPassword')?.touched) {
+            <mat-error>Lösenord krävs.</mat-error>
+          }
+          @if (form.get('adminPassword')?.hasError('minlength') && form.get('adminPassword')?.touched) {
+            <mat-error>Lösenordet måste vara minst 8 tecken.</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-flat-button color="primary" type="submit" [disabled]="saving() || !canProvision()">
+            Provisionera tenant
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</section>

@@ -40,6 +40,11 @@ export const routes: Routes = [
 				loadComponent: () =>
 					import('./features/tenant-admins/tenant-admins.component').then(m => m.TenantAdminsComponent),
 			},
+			{
+				path: 'tenants/:tenantId/provision',
+				loadComponent: () =>
+					import('./features/tenant-provision/tenant-provision.component').then(m => m.TenantProvisionComponent),
+			},
 			{ path: '', redirectTo: 'tenants', pathMatch: 'full' },
 		],
 	},

@@ -115,6 +115,14 @@
                     Återaktivera
                   </button>
                 }
+                <a
+                  mat-stroked-button
+                  color="primary"
+                  [routerLink]="['/tenants', tenant.id, 'provision']"
+                  [attr.aria-disabled]="!isProvisioningAllowed(tenant)"
+                  [class.action-disabled]="!isProvisioningAllowed(tenant)">
+                  Provisionera
+                </a>
                 <a mat-stroked-button [routerLink]="['/tenants', tenant.id, 'admins']">Admins</a>
               </td>
             </tr>

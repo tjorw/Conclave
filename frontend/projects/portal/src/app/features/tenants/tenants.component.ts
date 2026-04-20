@@ -53,6 +53,10 @@ export class TenantsComponent implements OnInit {
       t.status.toLowerCase().includes(query));
   });
 
+  isProvisioningAllowed(tenant: TenantListItem): boolean {
+    return tenant.status === 'Active';
+  }
+
   ngOnInit(): void {
     this.reload();
   }
