@@ -490,6 +490,3 @@ appsettings.Development.json
 frontend/dist/
 frontend/.angular/
 
-# Lokal Angular-konfiguration (conventionId skiljer sig per utvecklare)
-frontend/projects/admin/src/environments/environment.ts
-frontend/projects/public/src/environments/environment.ts

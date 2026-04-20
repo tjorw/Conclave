@@ -349,19 +349,12 @@ Tips:
 
 #### Steg 3 – Konfigurera frontend-miljön
 
-`environment.ts` är gitignorerad (innehåller lokalt `conventionId`). Kopiera exempelfilerna och fyll i GUID:t från konsolen:
+`environment.ts` finns nu med säkra standardvärden i repo:t. För lokal utveckling behöver du uppdatera `conventionId` i:
 
-```bash
-# Admin-app
-cp frontend/projects/admin/src/environments/environment.ts.example \
-   frontend/projects/admin/src/environments/environment.ts
+- `frontend/projects/admin/src/environments/environment.ts`
+- `frontend/projects/public/src/environments/environment.ts`
 
-# Publik app
-cp frontend/projects/public/src/environments/environment.ts.example \
-   frontend/projects/public/src/environments/environment.ts
-```
-
-Öppna båda filerna och ersätt placeholder-värdet med konventions-ID:t från konsolen:
+Ersätt placeholder-värdet med konventions-ID:t från konsolen:
 
 ```typescript
 conventionId: '<GUID från konsolen>',
