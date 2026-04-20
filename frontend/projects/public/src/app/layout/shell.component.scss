@@ -77,6 +77,32 @@
   }
 }
 
+.session-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .14);
+  color: #fff;
+  font-size: .85rem;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 0;
+  }
+}
+
+.session-status-warning {
+  background: rgba(251, 191, 36, .22);
+}
+
+.session-status-detail {
+  opacity: .78;
+}
+
 .nav-links a,
 .nav-actions a {
   color: rgba(255, 255, 255, .8) !important;
@@ -175,6 +201,11 @@
     border-radius: 4px;
     text-align: center;
     padding: 13px 20px;
+  }
+
+  .session-status {
+    margin: 8px 16px 4px;
+    justify-content: center;
   }
 
   @media (min-width: 768px) {

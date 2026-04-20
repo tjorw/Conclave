@@ -6,7 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { AuthService } from 'shared';
+import { AuthService, getLoginReasonMessage } from 'shared';
 
 @Component({
   selector: 'app-login',
@@ -37,10 +37,7 @@ export class LoginComponent {
   readonly error = signal<string | null>(null);
 
   constructor() {
-    const reason = this.route.snapshot.queryParamMap.get('reason');
-    if (reason === 'session-expired') {
-      this.error.set('Sessionen har gått ut. Logga in igen för att fortsätta.');
-    }
+    this.error.set(getLoginReasonMessage(this.route.snapshot.queryParamMap.get('reason')));
   }
 
   submit(): void {

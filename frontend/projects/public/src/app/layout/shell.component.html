@@ -18,6 +18,13 @@
 
       <div class="nav-actions">
         @if (auth.isLoggedIn()) {
+          <div class="session-status" [class.session-status-warning]="sessionState.showExpiryWarning() || sessionState.sessionExpired()">
+            <mat-icon>{{ sessionState.showExpiryWarning() ? 'schedule' : (sessionState.sessionExpired() ? 'lock_clock' : 'verified_user') }}</mat-icon>
+            <span>{{ sessionState.authStatusLabel() }}</span>
+            @if (sessionState.authStatusDetail(); as detail) {
+              <span class="session-status-detail">{{ detail }}</span>
+            }
+          </div>
           <a mat-button routerLink="/my-pages" routerLinkActive="nav-active">
             <mat-icon>person</mat-icon>
             Mina sidor
@@ -57,6 +64,8 @@
   </nav>
 
   <!-- ── Sidinnehåll ────────────────────────────────────────────────────── -->
+  <app-global-status-banner />
+
   <main class="main-content">
     <router-outlet />
   </main>

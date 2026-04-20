@@ -18,6 +18,15 @@ export interface JwtClaims {
   aud?: string;
 }
 
+export function getLoginReasonMessage(reason: string | null): string | null {
+  switch (reason) {
+    case 'session-expired':
+      return 'Sessionen har gått ut. Logga in igen för att fortsätta.';
+    default:
+      return null;
+  }
+}
+
 export interface RegisterRequest {
   email: string;
   password: string;

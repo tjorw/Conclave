@@ -1,15 +1,35 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, throwError } from 'rxjs';
+import { catchError, tap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { SessionStateService } from '../services/session-state.service';
 
-export const authSessionInterceptor: HttpInterceptorFn = (req, next) =>
-  next(req).pipe(
+function isAuthEndpoint(url: string): boolean {
+  return url.includes('/auth/');
+}
+
+export const authSessionInterceptor: HttpInterceptorFn = (req, next) => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  const sessionState = inject(SessionStateService);
+
+  return next(req).pipe(
+    tap(event => {
+      if (event instanceof HttpResponse) {
+        sessionState.clearNetworkError();
+      }
+    }),
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 && !req.url.includes('/auth/')) {
-        const auth = inject(AuthService);
-        const router = inject(Router);
+      if (error.status === 0) {
+        sessionState.reportNetworkError();
+      }
+
+      if (error.status === 403 && !isAuthEndpoint(req.url)) {
+        sessionState.reportForbidden();
+      }
+
+      if (error.status === 401 && !isAuthEndpoint(req.url)) {
         const returnUrl = router.url || '/';
 
         auth.logout();
@@ -24,3 +44,4 @@ export const authSessionInterceptor: HttpInterceptorFn = (req, next) =>
       return throwError(() => error);
     })
   );
+};

@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { AuthService } from 'shared';
+import { AuthService, GlobalStatusBannerComponent, SessionStateService } from 'shared';
 import { EditionContextService } from '../services/edition-context.service';
 import { NAV } from '../labels/nav.labels';
 import { ACTION } from '../labels/ui.labels';
@@ -28,6 +28,7 @@ import { ACTION } from '../labels/ui.labels';
     MatListModule,
     MatSelectModule,
     MatFormFieldModule,
+    GlobalStatusBannerComponent,
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
@@ -36,6 +37,7 @@ export class ShellComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   readonly editionContext = inject(EditionContextService);
+  readonly sessionState = inject(SessionStateService);
 
   readonly NAV    = NAV;
   readonly ACTION = ACTION;

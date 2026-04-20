@@ -9,7 +9,7 @@ Spårar vad som återstår inför produktionsstart.
 Prioriterad lista – återstående arbete, högst prioritet överst.
 
 - [x] `R24` Bygg publik vy för inlösen av promotionkod (UC-PC003)
-- [ ] `R25` Förbättra sessions-UX i klienter: global auth-status, sessionvarning före utgång och tydlig 401/403/nätverksbanner
+- [x] `R25` Förbättra sessions-UX i klienter: global auth-status, sessionvarning före utgång och tydlig 401/403/nätverksbanner
 - [ ] `R22` Centralisera JWT-konfigurationsnycklar (`Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience`)
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
 - [ ] `R-HL01` Hjälpsystem – `HelpTooltip`-komponent och initiala texter för Convention/Edition (UC-HL001)

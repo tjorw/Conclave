@@ -24,11 +24,22 @@
       </button>
       <span class="toolbar-title">Conclave Portal</span>
       <span class="toolbar-spacer"></span>
+      @if (sessionState.isAuthenticated() || sessionState.sessionExpired()) {
+        <div class="session-status" [class.session-status-warning]="sessionState.showExpiryWarning() || sessionState.sessionExpired()">
+          <mat-icon>{{ sessionState.showExpiryWarning() ? 'schedule' : (sessionState.sessionExpired() ? 'lock_clock' : 'verified_user') }}</mat-icon>
+          <span>{{ sessionState.authStatusLabel() }}</span>
+          @if (sessionState.authStatusDetail(); as detail) {
+            <span class="session-status-detail">{{ detail }}</span>
+          }
+        </div>
+      }
       <button mat-button (click)="logout()">
         <mat-icon>logout</mat-icon>
         Logga ut
       </button>
     </mat-toolbar>
+
+    <app-global-status-banner />
 
     <main class="shell-main">
       <router-outlet />

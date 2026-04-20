@@ -3,7 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { AuthService } from 'shared';
+import { AuthService, GlobalStatusBannerComponent, SessionStateService } from 'shared';
 import { EditionService } from '../services/edition.service';
 
 @Component({
@@ -15,12 +15,14 @@ import { EditionService } from '../services/edition.service';
     RouterLinkActive,
     MatButtonModule,
     MatIconModule,
+    GlobalStatusBannerComponent,
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })
 export class ShellComponent {
   readonly auth       = inject(AuthService);
+  readonly sessionState = inject(SessionStateService);
   readonly editionSvc = inject(EditionService);
   private readonly router = inject(Router);
 
@@ -29,6 +31,6 @@ export class ShellComponent {
   logout(): void {
     this.menuOpen.set(false);
     this.auth.logout();
-    this.router.navigateByUrl('/');
+    void this.router.navigateByUrl('/');
   }
 }

@@ -5,7 +5,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
-import { AuthService } from 'shared';
+import { AuthService, GlobalStatusBannerComponent, SessionStateService } from 'shared';
 
 @Component({
   selector: 'app-shell',
@@ -19,6 +19,7 @@ import { AuthService } from 'shared';
     MatIconModule,
     MatButtonModule,
     MatListModule,
+    GlobalStatusBannerComponent,
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
@@ -26,6 +27,7 @@ import { AuthService } from 'shared';
 export class ShellComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  readonly sessionState = inject(SessionStateService);
 
   logout(): void {
     this.auth.logout();

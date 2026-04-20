@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpErrorResponse } from '@angular/common/http';
 import { catchError, of, switchMap } from 'rxjs';
-import { AuthService } from 'shared';
+import { AuthService, getLoginReasonMessage } from 'shared';
 
 @Component({
   selector: 'app-login',
@@ -24,23 +24,20 @@ import { AuthService } from 'shared';
   styleUrl: './login.component.scss',
 })
 export class LoginComponent {
-  private readonly auth   = inject(AuthService);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly route  = inject(ActivatedRoute);
-  private readonly fb     = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly fb = inject(FormBuilder);
 
   readonly loading = signal(false);
-  readonly error   = signal<string | null>(null);
+  readonly error = signal<string | null>(null);
 
   constructor() {
-    const reason = this.route.snapshot.queryParamMap.get('reason');
-    if (reason === 'session-expired') {
-      this.error.set('Sessionen har gått ut. Logga in igen för att fortsätta.');
-    }
+    this.error.set(getLoginReasonMessage(this.route.snapshot.queryParamMap.get('reason')));
   }
 
   readonly form = this.fb.group({
-    email:    ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
   });
 

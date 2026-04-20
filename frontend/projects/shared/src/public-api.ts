@@ -22,6 +22,7 @@ export * from './lib/interceptors/auth-session.interceptor';
 
 // Services
 export * from './lib/services/auth.service';
+export * from './lib/services/session-state.service';
 export * from './lib/services/convention.service';
 export * from './lib/services/event.service';
 export * from './lib/services/registration.service';
@@ -40,3 +41,4 @@ export * from './lib/labels/staff.labels';
 
 // Components
 export * from './lib/components/date-time-range.component';
+export * from './lib/components/global-status-banner.component';
