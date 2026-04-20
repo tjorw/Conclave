@@ -4,6 +4,9 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <BuildFrontendOnPublish>true</BuildFrontendOnPublish>
+    <FrontendRoot>$(MSBuildProjectDirectory)\..\..\..\frontend</FrontendRoot>
+    <FrontendDistRoot>$(FrontendRoot)\dist</FrontendDistRoot>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,5 +22,34 @@
     <ProjectReference Include="..\ConventionSystem.Application\ConventionSystem.Application.csproj" />
     <ProjectReference Include="..\ConventionSystem.Infrastructure\ConventionSystem.Infrastructure.csproj" />
   </ItemGroup>
+
+  <Target Name="PrepareFrontendForPublish"
+          BeforeTargets="ComputeFilesToPublish"
+          Condition="'$(BuildFrontendOnPublish)' == 'true' and '$(DesignTimeBuild)' != 'true'">
+    <Message Importance="high" Text="Building frontend demo artifacts in $(FrontendRoot)" />
+    <Exec WorkingDirectory="$(FrontendRoot)" Command="npm ci" />
+    <Exec WorkingDirectory="$(FrontendRoot)" Command="npm run build:demo" />
+
+    <ItemGroup>
+      <FrontendPublicFiles Include="$(FrontendDistRoot)\public\browser\**\*" />
+      <FrontendAdminFiles Include="$(FrontendDistRoot)\admin\browser\**\*" />
+      <FrontendPortalFiles Include="$(FrontendDistRoot)\portal\browser\**\*" />
+
+      <ResolvedFileToPublish Include="@(FrontendPublicFiles)">
+        <RelativePath>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <ResolvedFileToPublish Include="@(FrontendAdminFiles)">
+        <RelativePath>wwwroot\admin\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <ResolvedFileToPublish Include="@(FrontendPortalFiles)">
+        <RelativePath>wwwroot\portal\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
 
 </Project>

@@ -66,3 +66,78 @@ jobs:
           dotnet test backend/tests/ConventionSystem.Integration.Tests \
             --no-build --configuration Release \
             --logger "console;verbosity=normal"
+
+  demo_artifact:
+    name: Demo Artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: ci
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: Conclave_demo123!
+        ports:
+          - 1433:1433
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-
+
+      - name: Restore
+        run: dotnet restore backend/ConventionSystem.sln
+
+      - name: Wait for SQL Server
+        run: |
+          for i in {1..30}; do
+            if (echo > /dev/tcp/127.0.0.1/1433) >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "SQL Server did not start in time"
+          exit 1
+
+      - name: Publish demo artifact
+        run: dotnet publish backend/src/ConventionSystem.Api/ConventionSystem.Api.csproj -c Release -o backend/artifacts/demo-publish
+
+      - name: Smoke test published artifact
+        shell: pwsh
+        env:
+          ConnectionStrings__DefaultConnection: Server=127.0.0.1,1433;Database=ConventionSystemDemoCi;User Id=sa;Password=Conclave_demo123!;TrustServerCertificate=True;
+          Jwt__Key: ci-demo-secret-key-at-least-32-characters
+          Jwt__Issuer: ConventionSystem
+          Jwt__Audience: ConventionSystem
+          App__FrontendUrl: http://127.0.0.1:5099
+          App__AdminUrlTemplate: http://127.0.0.1:5099/admin
+          App__PortalUrl: http://127.0.0.1:5099/portal
+          UseHttpsRedirect: false
+        run: ./scripts/Invoke-DemoArtifactSmoke.ps1 -PublishDirectory backend/artifacts/demo-publish -EnvironmentName Demo
+
+      - name: Upload demo artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-publish-linux
+          path: backend/artifacts/demo-publish
+          if-no-files-found: error

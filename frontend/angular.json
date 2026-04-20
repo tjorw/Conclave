@@ -23,6 +23,9 @@
           "options": {
             "browser": "projects/admin/src/main.ts",
             "tsConfig": "projects/admin/tsconfig.app.json",
+            "outputPath": {
+              "base": "dist/admin"
+            },
             "inlineStyleLanguage": "scss",
             "assets": [
               {
@@ -34,6 +37,13 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/admin/",
+              "fileReplacements": [
+                {
+                  "replace": "projects/admin/src/environments/environment.ts",
+                  "with": "projects/admin/src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -89,6 +99,9 @@
           "options": {
             "browser": "projects/public/src/main.ts",
             "tsConfig": "projects/public/tsconfig.app.json",
+            "outputPath": {
+              "base": "dist/public"
+            },
             "inlineStyleLanguage": "scss",
             "assets": [
               {
@@ -100,6 +113,13 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/",
+              "fileReplacements": [
+                {
+                  "replace": "projects/public/src/environments/environment.ts",
+                  "with": "projects/public/src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -184,6 +204,9 @@
           "options": {
             "browser": "projects/portal/src/main.ts",
             "tsConfig": "projects/portal/tsconfig.app.json",
+            "outputPath": {
+              "base": "dist/portal"
+            },
             "inlineStyleLanguage": "scss",
             "assets": [
               {
@@ -195,6 +218,13 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/portal/",
+              "fileReplacements": [
+                {
+                  "replace": "projects/portal/src/environments/environment.ts",
+                  "with": "projects/portal/src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",

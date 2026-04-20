@@ -95,6 +95,174 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
   Skriv en kort körguide för demo-instansen och en checklista för verifiering efter deploy så att `R11` kan bedömas som faktiskt klart och inte bara byggbart.
   Den första smoke-testen ska kunna köras lokalt mot den publicerade artifacten, inte via `dotnet run` + `ng serve`.
 
+#### `AP1` Beslut: hostingmodell för demo-deploy
+`AP1` landas som **en origin, ett API, path-baserad hosting för admin och portal**.
+
+Föreslagen URL-struktur för demo:
+- `https://demo-host/` → `public`
+- `https://demo-host/admin/` → `admin`
+- `https://demo-host/portal/` → `portal`
+- `https://demo-host/...` → API-endpoints på samma origin, utan separat frontend-devserver
+
+Motivering:
+- Detta stödjer roadmapens mål om en lokal publishbar artifact som kan startas och testas som en sammanhållen instans.
+- Det minskar driftkomplexiteten jämfört med separata origins eller flera hostar för samma demo.
+- Det gör det möjligt att verifiera hela demo-deployn lokalt utan extra proxy, separat webbserver eller flera processer för klienterna.
+- `public` bör ligga på roten `/` eftersom den fungerar som den naturliga startsidan för demo-instansen.
+- `admin` och `portal` passar bättre under egna path-prefix eftersom de annars konkurrerar med `public` om root-routes som `/login`.
+
+Konsekvenser för kommande arbetspaket:
+- `admin` måste byggas med `baseHref` och asset-path för `/admin/`.
+- `portal` måste byggas med `baseHref` och asset-path för `/portal/`.
+- `public` kan fortsatt använda `/` som base href.
+- Backend behöver servera tre separata SPA-entrypoints och bara falla tillbaka till respektive `index.html` för klientrutter, aldrig för API-rutter.
+- Frontendkonfigurationen bör på sikt använda samma origin som default för `apiBaseUrl` i demo-artifacten, i stället för hårdkodade externa API-adresser.
+
+Alternativ som väljs bort i `AP1`:
+- **Separata origins per app** väljs bort för demo-spåret eftersom det ökar CORS-behov, lokal testkomplexitet och deployberoenden innan `R11` ens kan verifieras.
+- **Path-baserad hosting för alla tre appar inklusive `public` under `/public/`** väljs bort eftersom det gör demo-instansen mindre naturlig att navigera till och ger sämre startsideupplevelse.
+
+#### `AP2` Status: frontend-build för deploy
+Detta är nu delvis genomfört och verifierat lokalt.
+
+Genomfört:
+- `admin` byggs för `/admin/`
+- `public` byggs för `/`
+- `portal` byggs för `/portal/`
+- varje app har separat output-path under `frontend/dist/`
+- `portal` har nu en separat `environment.prod.ts`
+- produktionsmiljöerna för klienterna använder relativ `apiBaseUrl` för demo-artifacten i stället för placeholder-URL
+- gemensamma npm-scripts finns för `build:admin:prod`, `build:public:prod`, `build:portal:prod` och `build:demo`
+
+Verifierat:
+- `ng build admin --configuration production`
+- `ng build public --configuration production`
+- `ng build portal --configuration production`
+
+Kvar inom `AP2`:
+- vid behov dokumentera hur dessa build-outputar ska kopieras in under `wwwroot` i nästa steg (`AP3`)
+- ta ställning till om fler deployspecifika environment-värden behöver tillföras innan publish-integrationen byggs
+
+#### `AP3` Status: inbäddning i API-publish
+Detta är nu genomfört och verifierat lokalt.
+
+Genomfört:
+- `ConventionSystem.Api.csproj` kör frontend-build under `dotnet publish`
+- publish-flödet kör `npm ci` och därefter `npm run build:demo`
+- `public` kopieras till `wwwroot/`
+- `admin` kopieras till `wwwroot/admin/`
+- `portal` kopieras till `wwwroot/portal/`
+- den lokala demo-artifacten kan nu produceras med ett enda `dotnet publish`
+
+Verifierat:
+- `dotnet publish backend/src/ConventionSystem.Api/ConventionSystem.Api.csproj -c Release -o backend/artifacts/demo-publish`
+- publish-output innehåller:
+  `backend/artifacts/demo-publish/wwwroot/index.html`
+  `backend/artifacts/demo-publish/wwwroot/admin/index.html`
+  `backend/artifacts/demo-publish/wwwroot/portal/index.html`
+- respektive `index.html` har korrekt `base href` för root, `/admin/` och `/portal/`
+
+Kvar inom `AP3`:
+- inget större implementationsarbete återstår i själva paketeringen
+- eventuellt kan `npm ci` senare optimeras bort eller göras villkorligt i vissa CI-scenarier, men det blockerar inte `R11`
+
+Nästa steg:
+- `AP4` behöver lägga till statisk filservering och SPA-fallbacks i API:t så att den publicerade artifacten också går att köra som en sammanhållen instans
+
+#### `AP4` Status: statiska filer och SPA-routing i API
+Detta är nu implementerat i API:t och verifierat på build- och publish-nivå.
+
+Genomfört:
+- `Program.cs` använder `UseDefaultFiles` och `UseStaticFiles` när `wwwroot` finns
+- root-artifacten kan servera `public` från `/`
+- fallback för `admin` finns på `/admin/{*path:nonfile}`
+- fallback för `portal` finns på `/portal/{*path:nonfile}`
+- SPA-hostingen aktiveras bara när `wwwroot` existerar, så lokal utveckling med `dotnet run` utan publicerad frontend påverkas inte
+
+Verifierat:
+- `dotnet build backend/src/ConventionSystem.Api/ConventionSystem.Api.csproj -c Release`
+- `dotnet publish backend/src/ConventionSystem.Api/ConventionSystem.Api.csproj -c Release -o backend/artifacts/demo-publish`
+
+Kvar inom `AP4`:
+- köra en riktig runtime-smoke mot den publicerade artifacten med fungerande databas och runtime-konfiguration
+- bekräfta manuellt att klientrutter under `/admin/...` och `/portal/...` laddar korrekt i browser
+
+Statusuppdatering:
+- en automatiserad lokal artifact-smoke finns nu som `scripts/Invoke-DemoArtifactSmoke.ps1`
+- den verifierar att publishad artifact startar, att SPA-entrypoints svarar korrekt och att API-routes inte fångas av fallback-routing
+
+#### `AP5` Status: demo-konfiguration och secrets
+Detta är nu delvis implementerat och dokumenterat.
+
+Genomfört:
+- separat runtime-profil finns i `appsettings.Demo.json`
+- demo-profilen utgår från en origin och samma path-baserade klientstruktur som `AP1`
+- `DevData:EnableSeeding` styr nu seeding explicit i stället för att vara implicit kopplat till `Development`
+- `DevDataSeeder` får bara köras i `Development` eller `Demo`
+- README dokumenterar vilka miljövariabler som krävs för en riktig demo-instans
+
+Definierade runtime-värden för demo:
+- `ConnectionStrings__DefaultConnection`
+- `Jwt__Key`
+- `Jwt__Issuer`
+- `Jwt__Audience`
+- `App__FrontendUrl`
+- `App__AdminUrlTemplate`
+- `App__PortalUrl`
+- e-postinställningar via `Email__*`
+
+Kvar inom `AP5`:
+- bestäm om demo ska använda `Email:Logging` eller riktig SMTP/leverantör i den första externa deployen
+- ta ställning till om `SystemAdminBootstrap` ska användas i demo eller om allt ska seedas via separat provisioning
+- när `AP6` byggs klart bör CI kunna injecta dessa värden utan lokala filer
+
+#### `AP6` Status: publish-artifact i CI
+Detta är nu implementerat i GitHub Actions.
+
+Genomfört:
+- separat jobb `demo_artifact` finns i `ci.yml`
+- jobbet kör efter ordinarie build och test
+- jobbet kör `dotnet publish` för demo-instansen
+- publicerad artifact laddas upp som `demo-publish-linux`
+- jobbet kör den lokala artifact-smoken som en del av verifieringen
+- demo-konfiguration injiceras i CI via miljövariabler i workflowen i stället för lokala settings-filer
+
+CI-verifiering i `AP6` omfattar:
+- publicering av API + inbyggda klienter
+- uppstart mot SQL Server-service i workflowen
+- smoke-test av `/`, `/admin/`, `/portal/` och klientrutter
+- kontroll att API-routes inte fångas av SPA-fallback
+
+Kvar inom `AP6`:
+- eventuellt publicera även zip-paket eller plattformsspecifika artifacts senare
+- vid behov lägga till manuell deploy eller release-workflow ovanpå artifact-jobbet
+
+#### `AP7` Status: driftguide och smoke-test
+Detta är nu dokumenterat.
+
+Genomfört:
+- separat driftguide finns i `docs/DemoDeploy.md`
+- README länkar till demo-guiden
+- guiden beskriver:
+  obligatoriska miljövariabler
+  rekommenderad demo-policy
+  start av publicerad artifact
+  lokal artifact-smoke
+  manuell post-deploy-checklista
+  felsökning
+
+Post-deploy-smoken för `R11` omfattar nu uttryckligen:
+- `public` laddar på `/`
+- `admin` laddar på `/admin/`
+- `portal` laddar på `/portal/`
+- klientrutter fungerar via refresh under `admin` och `portal`
+- databasen migrerar
+- demo-data finns
+- API-routes beter sig som API och inte som SPA-fallback
+
+Kvar inom `AP7`:
+- vid första riktiga externa deploy bör checklistan köras skarpt och därefter justeras utifrån verkliga driftlärdomar
+
 ### 4.2 Konvent-onboarding
 Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny instans:
 - Ny databas provisioneras (kör EF Core-migrationer mot `DefaultConnection`)

@@ -14,6 +14,168 @@ System för att administrera, annonsera, registrera och driva hobbymässor (tabl
 | Auth | [ASP.NET Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity) med JWT |
 | API | REST, [Minimal API](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/overview) |
 
+## Hostingmodell för demo-deploy
+
+För Demo är beslutad hostingmodell:
+
+- en origin
+- ett API
+- `public` på `/`
+- `admin` på `/admin/`
+- `portal` på `/portal/`
+
+Syftet är att demo-instansen ska kunna paketeras som en sammanhållen publish-artifact och verifieras lokalt utan separat frontend-devserver. Lokal utveckling fortsätter däremot tills vidare att köras med separata Angular-devservrar på egna portar.
+
+För deployspåret byggs klienterna med följande paths:
+
+- `public` med `base href /` och output i `frontend/dist/public`
+- `admin` med `base href /admin/` och output i `frontend/dist/admin`
+- `portal` med `base href /portal/` och output i `frontend/dist/portal`
+
+Samlad produktionsbuild kan köras med:
+
+```bash
+cd frontend
+npm run build:demo
+```
+
+För att paketera demo-artifacten lokalt används:
+
+```bash
+dotnet publish backend/src/ConventionSystem.Api -c Release -o backend/artifacts/demo-publish
+```
+
+Det kommandot bygger klienterna som en del av publish-steget och kopierar dem till:
+
+- `backend/artifacts/demo-publish/wwwroot/` för `public`
+- `backend/artifacts/demo-publish/wwwroot/admin/` för `admin`
+- `backend/artifacts/demo-publish/wwwroot/portal/` för `portal`
+
+Det betyder att paketeringen för Demo nu kan verifieras lokalt utan separat frontend-buildsteg. Den publicerade API-instansen är också förberedd att servera:
+
+- `public` från `/`
+- `admin` från `/admin/*`
+- `portal` från `/portal/*`
+
+SPA-fallbacks aktiveras bara när `wwwroot` faktiskt finns, så vanlig `dotnet run` i utvecklingsläge påverkas inte av demo-hostingen.
+
+För att smoke-testa den publicerade artifacten finns också ett script:
+
+```powershell
+./scripts/Invoke-DemoArtifactSmoke.ps1
+```
+
+Det scriptet:
+
+- startar den publicerade API-artifacten lokalt
+- verifierar `public`, `admin` och `portal` inklusive klientrutter
+- kontrollerar att ett frontend-asset laddar
+- verifierar att en skyddad API-route fortfarande beter sig som API och inte som SPA-fallback
+- stänger sedan ner processen igen
+
+För att starta demo-instansen lokalt utan att sätta alla miljövariabler manuellt finns också:
+
+```powershell
+./scripts/Run-DemoLocal.ps1
+```
+
+Scriptet sätter en lokal `Demo`-profil för artifacten och startar den på `http://localhost:5099` som standard.
+Det väntar också tills root-sidan svarar `200` och skriver sedan ut `Demo ready ...` innan loggen börjar följas.
+
+Normal användning:
+
+1. Publicera artifacten:
+
+```powershell
+dotnet publish backend/src/ConventionSystem.Api -c Release -o backend/artifacts/demo-publish
+```
+
+2. Starta demo-instansen:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/Run-DemoLocal.ps1
+```
+
+3. Öppna i webbläsaren:
+
+- `http://localhost:5099/`
+- `http://localhost:5099/admin/`
+- `http://localhost:5099/portal/`
+
+Scriptet sätter bland annat:
+
+- `ASPNETCORE_ENVIRONMENT=Demo`
+- `ASPNETCORE_URLS=http://localhost:5099`
+- `ConnectionStrings__DefaultConnection`
+- `Jwt__Key`, `Jwt__Issuer`, `Jwt__Audience`
+- `App__FrontendUrl`, `App__AdminUrlTemplate`, `App__PortalUrl`
+- `Email__Provider=Logging`
+- `UseHttpsRedirect=false`
+
+Vanliga parametrar:
+
+```powershell
+# Annan port/origin
+powershell -ExecutionPolicy Bypass -File scripts/Run-DemoLocal.ps1 -BaseUrl "http://localhost:5100"
+
+# Annan databas
+powershell -ExecutionPolicy Bypass -File scripts/Run-DemoLocal.ps1 `
+  -ConnectionString "Server=.;Database=ConventionSystemDemo2;Trusted_Connection=True;TrustServerCertificate=True;"
+
+# Egen JWT-nyckel
+powershell -ExecutionPolicy Bypass -File scripts/Run-DemoLocal.ps1 `
+  -JwtKey "my-local-demo-secret-that-is-at-least-32-chars"
+
+# Starta om om porten redan används
+powershell -ExecutionPolicy Bypass -File scripts/Run-DemoLocal.ps1 -ForceRestart
+```
+
+Avsluta körningen med `Ctrl+C` i terminalen där scriptet körs.
+
+## Demo-konfiguration
+
+För Demo finns nu separat runtime-profil i [appsettings.Demo.json](backend/src/ConventionSystem.Api/appsettings.Demo.json).
+
+Tanken är att demo-instansen körs med:
+
+- `ASPNETCORE_ENVIRONMENT=Demo`
+- `Multitenancy:Enabled=false`
+- `DevData:EnableSeeding=true`
+- klientlänkar byggda för samma origin:
+  `FrontendUrl=https://demo-host`
+  `AdminUrlTemplate=https://demo-host/admin`
+  `PortalUrl=https://demo-host/portal`
+
+Följande värden ska sättas via miljövariabler eller motsvarande hemlighetshantering för en riktig demo-instans:
+
+- `ConnectionStrings__DefaultConnection`
+- `Jwt__Key`
+- `Jwt__Issuer`
+- `Jwt__Audience`
+- `App__FrontendUrl`
+- `App__AdminUrlTemplate`
+- `App__PortalUrl`
+- `Email__Provider`
+- vid behov `Email__Smtp__Host`, `Email__Smtp__Port`, `Email__Smtp__Username`, `Email__Smtp__Password`
+
+Demo-seeding är nu explicit styrt av `DevData:EnableSeeding` och får bara köras i `Development` eller `Demo`. Det gör att en publicerad demo-artifact kan använda en riktig `Demo`-miljö utan att behöva luta sig på utvecklarprofilen.
+
+Exempel:
+
+```powershell
+$env:ASPNETCORE_ENVIRONMENT = "Demo"
+$env:ConnectionStrings__DefaultConnection = "Server=.;Database=ConventionSystemDemo;Trusted_Connection=True;TrustServerCertificate=True;"
+$env:Jwt__Key = "replace-with-a-real-demo-secret-at-least-32-chars"
+$env:Jwt__Issuer = "ConventionSystem"
+$env:Jwt__Audience = "ConventionSystem"
+$env:App__FrontendUrl = "https://demo.example.com"
+$env:App__AdminUrlTemplate = "https://demo.example.com/admin"
+$env:App__PortalUrl = "https://demo.example.com/portal"
+./backend/artifacts/demo-publish/ConventionSystem.Api.exe
+```
+
+En samlad körguide för demo-instansen finns i [docs/DemoDeploy.md](docs/DemoDeploy.md).
+
 ## Beroenden
 
 ### Backend (NuGet)

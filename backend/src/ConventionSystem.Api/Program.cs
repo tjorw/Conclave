@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.FileProviders;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -85,17 +86,38 @@ await SystemAdminBootstrapper.SeedAsync(app.Services, app.Configuration);
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+}
 
-    var enableDevDataSeeding = app.Configuration.GetValue("DevData:EnableSeeding", true);
-    if (enableDevDataSeeding)
+var enableDevDataSeeding = app.Configuration.GetValue("DevData:EnableSeeding", false);
+if (enableDevDataSeeding)
+{
+    if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Demo"))
     {
-        await DevDataSeeder.SeedAsync(app.Services, app.Configuration);
+        throw new InvalidOperationException(
+            "DevData-seeding får bara aktiveras i Development eller Demo.");
     }
+
+    await DevDataSeeder.SeedAsync(app.Services, app.Configuration);
 }
 
 app.UseExceptionHandler();
 if (app.Configuration.GetValue("UseHttpsRedirect", true))
     app.UseHttpsRedirection();
+
+var webRootPath = app.Environment.WebRootPath;
+var publicIndexPath = webRootPath is null ? null : Path.Combine(webRootPath, "index.html");
+var adminIndexPath = webRootPath is null ? null : Path.Combine(webRootPath, "admin", "index.html");
+var portalIndexPath = webRootPath is null ? null : Path.Combine(webRootPath, "portal", "index.html");
+
+if (webRootPath is not null && Directory.Exists(webRootPath))
+{
+    app.UseDefaultFiles(new DefaultFilesOptions
+    {
+        FileProvider = new PhysicalFileProvider(webRootPath)
+    });
+    app.UseStaticFiles();
+}
+
 app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseMiddleware<TenantResolutionMiddleware>();
@@ -118,6 +140,21 @@ groups.MapShiftEndpoints();
 groups.MapRegistrationEndpoints();
 groups.MapEventEndpoints();
 groups.MapSystemTenantEndpoints();
+
+if (publicIndexPath is not null && File.Exists(publicIndexPath))
+{
+    app.MapFallbackToFile("index.html");
+}
+
+if (adminIndexPath is not null && File.Exists(adminIndexPath))
+{
+    app.MapFallbackToFile("/admin/{*path:nonfile}", "admin/index.html");
+}
+
+if (portalIndexPath is not null && File.Exists(portalIndexPath))
+{
+    app.MapFallbackToFile("/portal/{*path:nonfile}", "portal/index.html");
+}
 
 app.Run();
 
