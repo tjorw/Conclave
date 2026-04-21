@@ -1,7 +1,6 @@
 /** Navigationsrubriker och sidenav-etiketter. */
 export const NAV = {
   dashboard:      'Dashboard',
-  personsSection: 'Personer',
   personRegistry: 'Personregister',
   visitors:       'Besökare',
   organisers:     'Arrangörer',
@@ -16,4 +15,7 @@ export const NAV = {
   toggleMenu:     'Växla meny',
   chooseEdition:  'Välj upplaga',
   activeSuffix:   '· Aktiv',
+  eventsSection:  'Evenemang',
+  staffingSection: 'Bemanning',
+  visitorsSection: 'Besökare',
 } as const;

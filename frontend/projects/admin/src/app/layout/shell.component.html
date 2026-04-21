@@ -10,35 +10,21 @@
         <mat-icon matListItemIcon>dashboard</mat-icon>
         <span matListItemTitle>{{ NAV.dashboard }}</span>
       </a>
-
-      <mat-divider />
-      <span class="nav-section-label">{{ NAV.personsSection }}</span>
-
-      <a mat-list-item routerLink="persons"
-         routerLinkActive="active-link"
-         [routerLinkActiveOptions]="{exact: true}">
+      <a mat-list-item routerLink="persons" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
         <mat-icon matListItemIcon>people</mat-icon>
         <span matListItemTitle>{{ NAV.personRegistry }}</span>
-      </a>
-      <a mat-list-item routerLink="persons/visitors" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>emoji_people</mat-icon>
-        <span matListItemTitle>{{ NAV.visitors }}</span>
-      </a>
-      <a mat-list-item routerLink="persons/organisers" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>theater_comedy</mat-icon>
-        <span matListItemTitle>{{ NAV.organisers }}</span>
-      </a>
-      <a mat-list-item routerLink="persons/staff" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>construction</mat-icon>
-        <span matListItemTitle>{{ NAV.staff }}</span>
       </a>
       <a mat-list-item routerLink="persons/responsibles" routerLinkActive="active-link">
         <mat-icon matListItemIcon>supervisor_account</mat-icon>
         <span matListItemTitle>{{ NAV.responsibles }}</span>
       </a>
-
+      
       <mat-divider />
-
+      <span class="nav-section-label">{{ NAV.eventsSection }}</span>
+      <a mat-list-item routerLink="persons/organisers" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>theater_comedy</mat-icon>
+        <span matListItemTitle>{{ NAV.organisers }}</span>
+      </a>
       <a mat-list-item routerLink="events" routerLinkActive="active-link">
         <mat-icon matListItemIcon>event</mat-icon>
         <span matListItemTitle>{{ NAV.events }}</span>
@@ -47,14 +33,28 @@
         <mat-icon matListItemIcon>schedule</mat-icon>
         <span matListItemTitle>{{ NAV.sessions }}</span>
       </a>
+      <mat-divider />
+      <span class="nav-section-label">{{ NAV.staffingSection }}</span>      
+      <a mat-list-item routerLink="persons/staff" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>construction</mat-icon>
+        <span matListItemTitle>{{ NAV.staff }}</span>
+      </a>
       <a mat-list-item routerLink="staffing" routerLinkActive="active-link">
         <mat-icon matListItemIcon>badge</mat-icon>
         <span matListItemTitle>{{ NAV.staffing }}</span>
       </a>
+      <mat-divider />
+      <span class="nav-section-label">{{ NAV.visitorsSection }}</span>
+      <a mat-list-item routerLink="persons/visitors" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>emoji_people</mat-icon>
+        <span matListItemTitle>{{ NAV.visitors }}</span>
+      </a>
+      
       <a mat-list-item routerLink="registrations" routerLinkActive="active-link">
         <mat-icon matListItemIcon>confirmation_number</mat-icon>
         <span matListItemTitle>{{ NAV.registrations }}</span>
       </a>
+      <mat-divider />      
       <a mat-list-item routerLink="feeds" routerLinkActive="active-link">
         <mat-icon matListItemIcon>rss_feed</mat-icon>
         <span matListItemTitle>{{ NAV.feeds }}</span>
@@ -69,28 +69,27 @@
       </button>
       <span class="toolbar-spacer"></span>
       @if (editionContext.editions().length > 0) {
-        <mat-form-field appearance="outline" class="edition-picker" subscriptSizing="dynamic">
-          <mat-select
-            [value]="editionContext.activeEdition()?.id"
-            (selectionChange)="onEditionChange($event.value)"
-            [attr.aria-label]="NAV.chooseEdition"
-          >
-            @for (edition of editionContext.editions(); track edition.id) {
-              <mat-option [value]="edition.id">
-                {{ edition.name }}{{ edition.status === 'Published' ? ' ' + NAV.activeSuffix : '' }}
-              </mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+      <mat-form-field appearance="outline" class="edition-picker" subscriptSizing="dynamic">
+        <mat-select [value]="editionContext.activeEdition()?.id" (selectionChange)="onEditionChange($event.value)"
+          [attr.aria-label]="NAV.chooseEdition">
+          @for (edition of editionContext.editions(); track edition.id) {
+          <mat-option [value]="edition.id">
+            {{ edition.name }}{{ edition.status === 'Published' ? ' ' + NAV.activeSuffix : '' }}
+          </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
       }
       @if (sessionState.isAuthenticated() || sessionState.sessionExpired()) {
-        <div class="session-status" [class.session-status-warning]="sessionState.showExpiryWarning() || sessionState.sessionExpired()">
-          <mat-icon>{{ sessionState.showExpiryWarning() ? 'schedule' : (sessionState.sessionExpired() ? 'lock_clock' : 'verified_user') }}</mat-icon>
-          <span>{{ sessionState.authStatusLabel() }}</span>
-          @if (sessionState.authStatusDetail(); as detail) {
-            <span class="session-status-detail">{{ detail }}</span>
-          }
-        </div>
+      <div class="session-status"
+        [class.session-status-warning]="sessionState.showExpiryWarning() || sessionState.sessionExpired()">
+        <mat-icon>{{ sessionState.showExpiryWarning() ? 'schedule' : (sessionState.sessionExpired() ? 'lock_clock' :
+          'verified_user') }}</mat-icon>
+        <span>{{ sessionState.authStatusLabel() }}</span>
+        @if (sessionState.authStatusDetail(); as detail) {
+        <span class="session-status-detail">{{ detail }}</span>
+        }
+      </div>
       }
       <button mat-button (click)="logout()">
         <mat-icon>logout</mat-icon>
