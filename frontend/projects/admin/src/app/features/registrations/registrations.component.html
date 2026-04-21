@@ -161,6 +161,7 @@
                   <td>{{ allowedTicketTypeLabel(code.allowedTicketTypeIds) }}</td>
                   <td class="actions-cell">
                     <button mat-stroked-button [disabled]="saving()" (click)="togglePromotionHistory(code)">
+                      <mat-icon>{{ isPromotionHistoryOpen(code.id) ? 'expand_less' : 'expand_more' }}</mat-icon>
                       {{ isPromotionHistoryOpen(code.id) ? 'Dölj historik' : 'Visa historik' }}
                     </button>
                     @if (code.isActive) {

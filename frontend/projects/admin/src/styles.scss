@@ -44,6 +44,14 @@ html, body {
     background: transparent;
   }
 
+  tbody tr.navigable-row {
+    cursor: pointer;
+  }
+
+  tbody tr.navigable-row:hover td {
+    background: #f5f5f5;
+  }
+
   .actions-col { width: 88px; }
 }
 
@@ -91,6 +99,13 @@ html, body {
   button {
     width: auto;
   }
+}
+
+.row-indicator {
+  color: #999;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 // Chips

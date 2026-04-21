@@ -21,11 +21,11 @@
             </thead>
             <tbody>
               @for (area of staffAreas; track area.id) {
-                <tr class="area-row" (click)="navigateToArea(area.id)">
+                <tr class="navigable-row" (click)="navigateToArea(area.id)">
                   <td>{{ area.name }}</td>
                   <td>{{ stationCount(area.id) }}</td>
                   <td class="row-actions">
-                    <mat-icon class="chevron-icon">chevron_right</mat-icon>
+                    <mat-icon class="row-indicator">chevron_right</mat-icon>
                   </td>
                 </tr>
               } @empty {

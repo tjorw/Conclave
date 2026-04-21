@@ -54,6 +54,13 @@
   }
 }
 
+.edition-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .active-badge {
   display: inline-block;
   background: #e3f2fd;

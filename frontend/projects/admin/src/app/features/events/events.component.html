@@ -89,7 +89,7 @@
         </thead>
         <tbody>
           @for (event of filteredEvents(); track event.id) {
-            <tr class="clickable-row" (click)="openEvent(event.id)">
+            <tr class="navigable-row" (click)="openEvent(event.id)">
               <td><strong>{{ event.title ?? '(Inget namn)' }}</strong></td>
               <td>{{ event.categoryName ?? '–' }}</td>
               <td>{{ event.leadOrganiserName ?? '–' }}</td>
@@ -106,10 +106,8 @@
                   {{ statusLabel(event.status) }}
                 </span>
               </td>
-              <td class="row-actions" (click)="$event.stopPropagation()">
-                <button mat-icon-button (click)="openEvent(event.id)" [matTooltip]="TOOLTIP.open">
-                  <mat-icon>open_in_new</mat-icon>
-                </button>
+              <td class="row-actions">
+                <mat-icon class="row-indicator">chevron_right</mat-icon>
               </td>
             </tr>
           } @empty {

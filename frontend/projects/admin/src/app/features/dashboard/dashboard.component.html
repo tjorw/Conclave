@@ -35,11 +35,14 @@
             </mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
-            <mat-chip-set>
-              <mat-chip [color]="statusColor(edition.status)" highlighted>
-                {{ statusLabel(edition.status) }}
-              </mat-chip>
-            </mat-chip-set>
+            <div class="edition-card-content">
+              <mat-chip-set>
+                <mat-chip [color]="statusColor(edition.status)" highlighted>
+                  {{ statusLabel(edition.status) }}
+                </mat-chip>
+              </mat-chip-set>
+              <mat-icon class="row-indicator">chevron_right</mat-icon>
+            </div>
           </mat-card-content>
         </mat-card>
       }
