@@ -16,8 +16,11 @@ import {
   StaffAreaDto, StationDto,
   STAFF_APPLICATION_STATUS_LABEL, STAFF_APPLICATION_STATUS_CHIP,
 } from 'shared';
+import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
 
 type StatusFilter = 'all' | 'pending' | 'accepted' | 'rejected';
+type StaffAreaSortKey = 'name' | 'stations';
+type StaffApplicationSortKey = 'person' | 'interest' | 'stations' | 'availability' | 'created' | 'status';
 
 @Component({
   selector: 'app-staffing',
@@ -52,6 +55,8 @@ export class StaffingComponent {
   readonly applications       = signal<StaffApplicationSummaryDto[]>([]);
   readonly applicationsLoaded = signal(false);
   readonly statusFilter       = signal<StatusFilter>('pending');
+  readonly staffAreaSort = signal<SortState<StaffAreaSortKey>>({ key: 'name', direction: 'asc' });
+  readonly applicationSort = signal<SortState<StaffApplicationSortKey>>({ key: 'created', direction: 'desc' });
 
   readonly filteredApplications = computed(() => {
     const filter = this.statusFilter();
@@ -63,6 +68,24 @@ export class StaffingComponent {
       default:         return apps;
     }
   });
+
+  readonly sortedStaffAreas = computed(() =>
+    sortBy(this.staffAreas, this.staffAreaSort(), {
+      name: area => area.name,
+      stations: area => this.stationCount(area.id),
+    })
+  );
+
+  readonly sortedFilteredApplications = computed(() =>
+    sortBy(this.filteredApplications(), this.applicationSort(), {
+      person: app => app.personName ?? app.personId,
+      interest: app => app.interestDescription,
+      stations: app => app.stationPreferenceIds.map(id => this.stationName(id)).join(', '),
+      availability: app => app.availabilities.map(av => `${av.start}-${av.end}`).join(', '),
+      created: app => app.createdAt,
+      status: app => this.applicationStatusLabel(app.status),
+    })
+  );
 
   readonly pendingCount  = computed(() => this.applications().filter(a => a.status === 'Received' || a.status === 'UnderReview').length);
   readonly acceptedCount = computed(() => this.applications().filter(a => a.status === 'Confirmed' || a.status === 'Assigned').length);
@@ -97,6 +120,22 @@ export class StaffingComponent {
 
   navigateToArea(areaId: string): void {
     this.router.navigate(['/staffing/area', areaId]);
+  }
+
+  setStaffAreaSort(key: StaffAreaSortKey): void {
+    this.staffAreaSort.set(nextSort(this.staffAreaSort(), key));
+  }
+
+  staffAreaSortIcon(key: StaffAreaSortKey): string {
+    return sortIcon(this.staffAreaSort(), key);
+  }
+
+  setApplicationSort(key: StaffApplicationSortKey): void {
+    this.applicationSort.set(nextSort(this.applicationSort(), key));
+  }
+
+  applicationSortIcon(key: StaffApplicationSortKey): string {
+    return sortIcon(this.applicationSort(), key);
   }
 
   // ── Ansökningar ──────────────────────────────────────────────────────────

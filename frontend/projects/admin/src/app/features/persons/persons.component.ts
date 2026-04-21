@@ -20,6 +20,9 @@ import {
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, CHIP, FIELD, PERSON_EDITION_ROLE, PERSON_EDITION_ROLE_CHIP, PLACEHOLDER, TOOLTIP } from '../../labels/ui.labels';
+import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+
+type PersonSortKey = 'name' | 'email' | 'phone' | 'roles' | 'status' | 'account';
 
 @Component({
   selector: 'app-persons',
@@ -63,6 +66,7 @@ export class PersonsComponent implements OnInit {
   readonly editionRolesMap = signal<Map<string, string[]>>(new Map());
   readonly rolesLoading = signal(false);
   readonly currentPersonId = this.auth.personId;
+  readonly sort = signal<SortState<PersonSortKey>>({ key: 'name', direction: 'asc' });
 
   constructor() {
     effect(() => {
@@ -143,6 +147,25 @@ export class PersonsComponent implements OnInit {
       return true;
     });
   });
+
+  readonly sortedFilteredPersons = computed(() =>
+    sortBy(this.filteredPersons(), this.sort(), {
+      name: p => p.name,
+      email: p => p.email,
+      phone: p => p.phone ?? '',
+      roles: p => [p.isAdmin ? CHIP.admin : '', ...this.personRoles(p.id)].join(' '),
+      status: p => p.isActive ? CHIP.active : CHIP.inactive,
+      account: p => p.isLocked ? CHIP.locked : (p.hasAccount ? CHIP.hasAccount : CHIP.noAccount),
+    })
+  );
+
+  setSort(key: PersonSortKey): void {
+    this.sort.set(nextSort(this.sort(), key));
+  }
+
+  sortIcon(key: PersonSortKey): string {
+    return sortIcon(this.sort(), key);
+  }
 
   readonly createForm = this.fb.group({
     name: ['', Validators.required],

@@ -8,6 +8,9 @@ import { ConventionService, EditionVisitorDto } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { FIELD, PLACEHOLDER } from '../../labels/ui.labels';
+import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+
+type VisitorSortKey = 'name' | 'email' | 'phone';
 
 @Component({
   selector: 'app-edition-visitors',
@@ -33,6 +36,7 @@ export class EditionVisitorsComponent {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly searchQuery = signal('');
+  readonly sort = signal<SortState<VisitorSortKey>>({ key: 'name', direction: 'asc' });
 
   constructor() {
     effect(() => {
@@ -61,6 +65,22 @@ export class EditionVisitorsComponent {
       v => v.personName.toLowerCase().includes(q) || v.email.toLowerCase().includes(q)
     );
   });
+
+  readonly sortedFiltered = computed(() =>
+    sortBy(this.filtered(), this.sort(), {
+      name: v => v.personName,
+      email: v => v.email,
+      phone: v => v.phone ?? '',
+    })
+  );
+
+  setSort(key: VisitorSortKey): void {
+    this.sort.set(nextSort(this.sort(), key));
+  }
+
+  sortIcon(key: VisitorSortKey): string {
+    return sortIcon(this.sort(), key);
+  }
 
   onSearch(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);

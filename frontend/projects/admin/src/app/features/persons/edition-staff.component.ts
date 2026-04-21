@@ -10,6 +10,9 @@ import { ConventionService, EditionStaffMemberDto, PersonDto, StaffService, STAF
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, PLACEHOLDER, TOOLTIP } from '../../labels/ui.labels';
+import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+
+type StaffSortKey = 'name' | 'email' | 'phone' | 'status';
 
 @Component({
   selector: 'app-edition-staff',
@@ -41,6 +44,7 @@ export class EditionStaffComponent {
   readonly loading     = signal(false);
   readonly error       = signal<string | null>(null);
   readonly searchQuery = signal('');
+  readonly sort = signal<SortState<StaffSortKey>>({ key: 'name', direction: 'asc' });
 
   // ── Lägg till funktionär ─────────────────────────────────────────────────
   readonly persons       = signal<PersonDto[]>([]);
@@ -97,6 +101,23 @@ export class EditionStaffComponent {
       s => s.personName.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)
     );
   });
+
+  readonly sortedFiltered = computed(() =>
+    sortBy(this.filtered(), this.sort(), {
+      name: s => s.personName,
+      email: s => s.email,
+      phone: s => s.phone ?? '',
+      status: s => this.applicationStatusLabel(s.applicationStatus),
+    })
+  );
+
+  setSort(key: StaffSortKey): void {
+    this.sort.set(nextSort(this.sort(), key));
+  }
+
+  sortIcon(key: StaffSortKey): string {
+    return sortIcon(this.sort(), key);
+  }
 
   onSearch(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);

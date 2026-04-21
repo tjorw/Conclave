@@ -23,6 +23,9 @@ import {
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../labels/ui.labels';
+import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+
+type EventSortKey = 'title' | 'category' | 'organiser' | 'sessions' | 'comments' | 'status';
 
 @Component({
   selector: 'app-events',
@@ -62,6 +65,7 @@ export class EventsComponent {
   readonly error      = signal<string | null>(null);
   readonly filter     = signal<string>('UnderReview');
   readonly showCreateForm = signal(false);
+  readonly sort = signal<SortState<EventSortKey>>({ key: 'title', direction: 'asc' });
 
   readonly createForm = this.fb.group({
     categoryId:       ['', Validators.required],
@@ -75,6 +79,17 @@ export class EventsComponent {
     }
     return f === 'All' ? this.events() : this.events().filter(e => e.status === f);
   });
+
+  readonly sortedFilteredEvents = computed(() =>
+    sortBy(this.filteredEvents(), this.sort(), {
+      title: e => e.title ?? '',
+      category: e => e.categoryName ?? '',
+      organiser: e => e.leadOrganiserName ?? '',
+      sessions: e => e.sessionCount,
+      comments: e => e.pendingCommentCount,
+      status: e => this.statusLabel(e.status),
+    })
+  );
 
   readonly counts = computed(() => {
     const all = this.events();
@@ -159,6 +174,14 @@ export class EventsComponent {
 
   openEvent(id: string): void {
     this.router.navigate(['/events', id]);
+  }
+
+  setSort(key: EventSortKey): void {
+    this.sort.set(nextSort(this.sort(), key));
+  }
+
+  sortIcon(key: EventSortKey): string {
+    return sortIcon(this.sort(), key);
   }
 
   statusLabel(status: string): string {

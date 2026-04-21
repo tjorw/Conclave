@@ -86,13 +86,18 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Start</th><th>Slut</th><th>Ansvarig</th>
-              <th>Min</th><th>Max</th><th>Tilldelade</th><th>Status</th>
+              <th><button type="button" class="sort-header" (click)="setShiftSort('start')">Start <mat-icon>{{ shiftSortIcon('start') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setShiftSort('end')">Slut <mat-icon>{{ shiftSortIcon('end') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setShiftSort('responsible')">Ansvarig <mat-icon>{{ shiftSortIcon('responsible') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setShiftSort('min')">Min <mat-icon>{{ shiftSortIcon('min') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setShiftSort('max')">Max <mat-icon>{{ shiftSortIcon('max') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setShiftSort('staffing')">Tilldelade <mat-icon>{{ shiftSortIcon('staffing') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setShiftSort('status')">Status <mat-icon>{{ shiftSortIcon('status') }}</mat-icon></button></th>
               <th class="actions-col"></th>
             </tr>
           </thead>
           <tbody>
-            @for (shift of shiftsByStation()[station.id]; track shift.id) {
+            @for (shift of sortedShifts(shiftsByStation()[station.id]); track shift.id) {
               <tr [class.selected-row]="selectedShift()?.id === shift.id"
                   (click)="selectShift(shift.id)" style="cursor:pointer">
                 <td>{{ shift.start | date:'yyyy-MM-dd HH:mm' }}</td>
@@ -128,10 +133,15 @@
                         <h4 class="section-label">Tilldelningar</h4>
                         <table class="data-table inner-table">
                           <thead>
-                            <tr><th>Person</th><th>Status</th><th>Tilldelad</th><th class="actions-col"></th></tr>
+                            <tr>
+                              <th><button type="button" class="sort-header" (click)="setAssignmentSort('person')">Person <mat-icon>{{ assignmentSortIcon('person') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="setAssignmentSort('status')">Status <mat-icon>{{ assignmentSortIcon('status') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="setAssignmentSort('assigned')">Tilldelad <mat-icon>{{ assignmentSortIcon('assigned') }}</mat-icon></button></th>
+                              <th class="actions-col"></th>
+                            </tr>
                           </thead>
                           <tbody>
-                            @for (a of s.assignments; track a.id) {
+                            @for (a of sortedAssignments(s); track a.id) {
                               <tr>
                                 <td>{{ a.personName ?? a.personId }}</td>
                                 <td><span class="chip chip-grey">{{ assignmentStatusLabel(a.status) }}</span></td>

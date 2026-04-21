@@ -84,17 +84,17 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Namn</th>
-            <th>E-post</th>
-            <th>Telefon</th>
-            <th>Roller</th>
-            <th>Status</th>
-            <th>Konto</th>
+            <th><button type="button" class="sort-header" (click)="setSort('name')">Namn <mat-icon>{{ sortIcon('name') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('email')">E-post <mat-icon>{{ sortIcon('email') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('phone')">Telefon <mat-icon>{{ sortIcon('phone') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('roles')">Roller <mat-icon>{{ sortIcon('roles') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('status')">Status <mat-icon>{{ sortIcon('status') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('account')">Konto <mat-icon>{{ sortIcon('account') }}</mat-icon></button></th>
             <th class="actions-col"></th>
           </tr>
         </thead>
         <tbody>
-          @for (person of filteredPersons(); track person.id) {
+          @for (person of sortedFilteredPersons(); track person.id) {
             <tr [class.inactive-row]="!person.isActive">
               <td><strong>{{ person.name }}</strong></td>
               <td>{{ person.email }}</td>

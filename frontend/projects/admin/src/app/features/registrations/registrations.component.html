@@ -17,16 +17,16 @@
           <table class="data-table" aria-label="Besökarregistreringar">
             <thead>
               <tr>
-                <th>Person</th>
-                <th>Biljetttyp</th>
-                <th>Status</th>
-                <th>Registrerad</th>
-                <th>Betalningsref.</th>
+                <th><button type="button" class="sort-header" (click)="setRegistrationSort('person')">Person <mat-icon>{{ registrationSortIcon('person') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setRegistrationSort('ticket')">Biljetttyp <mat-icon>{{ registrationSortIcon('ticket') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setRegistrationSort('status')">Status <mat-icon>{{ registrationSortIcon('status') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setRegistrationSort('registered')">Registrerad <mat-icon>{{ registrationSortIcon('registered') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setRegistrationSort('payment')">Betalningsref. <mat-icon>{{ registrationSortIcon('payment') }}</mat-icon></button></th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              @for (reg of visitorRegistrations(); track reg.id) {
+              @for (reg of sortedVisitorRegistrations(); track reg.id) {
                 <tr>
                   <td>{{ reg.personName }}</td>
                   <td>{{ reg.ticketTypeName ?? '–' }}</td>
@@ -124,18 +124,18 @@
           <table class="data-table" aria-label="Kampanjkoder">
             <thead>
               <tr>
-                <th>Kod</th>
-                <th>Beskrivning</th>
-                <th>Rabatt</th>
-                <th>Status</th>
-                <th>Inlösta</th>
-                <th>Giltighet</th>
-                <th>Biljettyper</th>
+                <th><button type="button" class="sort-header" (click)="setPromotionSort('code')">Kod <mat-icon>{{ promotionSortIcon('code') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setPromotionSort('description')">Beskrivning <mat-icon>{{ promotionSortIcon('description') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setPromotionSort('discount')">Rabatt <mat-icon>{{ promotionSortIcon('discount') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setPromotionSort('status')">Status <mat-icon>{{ promotionSortIcon('status') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setPromotionSort('redemptions')">Inlösta <mat-icon>{{ promotionSortIcon('redemptions') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setPromotionSort('validity')">Giltighet <mat-icon>{{ promotionSortIcon('validity') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setPromotionSort('tickets')">Biljettyper <mat-icon>{{ promotionSortIcon('tickets') }}</mat-icon></button></th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              @for (code of promotionCodes(); track code.id) {
+              @for (code of sortedPromotionCodes(); track code.id) {
                 <tr>
                   <td><strong>{{ code.code }}</strong></td>
                   <td>{{ code.description }}</td>
@@ -180,15 +180,15 @@
                         <table class="nested-table" aria-label="Inlösningshistorik">
                           <thead>
                             <tr>
-                              <th>Person</th>
-                              <th>Biljett</th>
-                              <th>Rabatt</th>
-                              <th>Slutpris</th>
-                              <th>Inlöst</th>
+                              <th><button type="button" class="sort-header" (click)="setPromotionHistorySort('person')">Person <mat-icon>{{ promotionHistorySortIcon('person') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="setPromotionHistorySort('ticket')">Biljett <mat-icon>{{ promotionHistorySortIcon('ticket') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="setPromotionHistorySort('discount')">Rabatt <mat-icon>{{ promotionHistorySortIcon('discount') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="setPromotionHistorySort('finalPrice')">Slutpris <mat-icon>{{ promotionHistorySortIcon('finalPrice') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="setPromotionHistorySort('redeemed')">Inlöst <mat-icon>{{ promotionHistorySortIcon('redeemed') }}</mat-icon></button></th>
                             </tr>
                           </thead>
                           <tbody>
-                            @for (item of promotionHistory(); track item.id) {
+                            @for (item of sortedPromotionHistory(); track item.id) {
                               <tr>
                                 <td>{{ personNameFromRegistration(item.personId) }}</td>
                                 <td>{{ item.ticketId }}</td>

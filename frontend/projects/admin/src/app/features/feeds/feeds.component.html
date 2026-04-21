@@ -18,7 +18,13 @@
 </div>
 
 <div class="feed-section">
-  <h2>Per upplaga</h2>
+  <div class="section-heading">
+    <h2>Per upplaga</h2>
+    <div class="sort-actions">
+      <button mat-button type="button" (click)="setEditionSort('name')">Namn <mat-icon>{{ editionSortIcon('name') }}</mat-icon></button>
+      <button mat-button type="button" (click)="setEditionSort('url')">URL <mat-icon>{{ editionSortIcon('url') }}</mat-icon></button>
+    </div>
+  </div>
   <p class="feed-description">Specifik upplaga med alla evenemang, lokaler och kategorier.</p>
   @for (ed of editionUrls(); track ed.url) {
     <div class="feed-row">

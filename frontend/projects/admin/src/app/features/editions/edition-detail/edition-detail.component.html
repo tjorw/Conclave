@@ -188,10 +188,15 @@
         @if (e.venues.length > 0) {
           <table class="data-table">
             <thead>
-              <tr><th>Namn</th><th>Byggnad</th><th>Beskrivning</th><th class="actions-col"></th></tr>
+              <tr>
+                <th><button type="button" class="sort-header" (click)="setVenueSort('name')">Namn <mat-icon>{{ venueSortIcon('name') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setVenueSort('building')">Byggnad <mat-icon>{{ venueSortIcon('building') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setVenueSort('description')">Beskrivning <mat-icon>{{ venueSortIcon('description') }}</mat-icon></button></th>
+                <th class="actions-col"></th>
+              </tr>
             </thead>
             <tbody>
-              @for (v of e.venues; track v.id) {
+              @for (v of sortedVenues(e.venues); track v.id) {
                 <tr>
                   <td>{{ v.name }}</td>
                   <td>{{ v.building }}</td>
@@ -247,10 +252,16 @@
         @if (e.staffAreas.length > 0) {
           <table class="data-table">
             <thead>
-              <tr><th>Namn</th><th>Beskrivning</th><th>Ansvarig</th><th>Stationer</th><th class="actions-col"></th></tr>
+              <tr>
+                <th><button type="button" class="sort-header" (click)="setStaffAreaSort('name')">Namn <mat-icon>{{ staffAreaSortIcon('name') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setStaffAreaSort('description')">Beskrivning <mat-icon>{{ staffAreaSortIcon('description') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setStaffAreaSort('responsible')">Ansvarig <mat-icon>{{ staffAreaSortIcon('responsible') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setStaffAreaSort('stations')">Stationer <mat-icon>{{ staffAreaSortIcon('stations') }}</mat-icon></button></th>
+                <th class="actions-col"></th>
+              </tr>
             </thead>
             <tbody>
-              @for (area of e.staffAreas; track area.id) {
+              @for (area of sortedStaffAreas(e.staffAreas); track area.id) {
                 <tr>
                   <td>{{ area.name }}</td>
                   <td class="muted">{{ area.description || '–' }}</td>
@@ -326,10 +337,15 @@
         @if (e.categories.length > 0) {
           <table class="data-table">
             <thead>
-              <tr><th>Namn</th><th>Beskrivning</th><th>Ansvarig</th><th class="actions-col"></th></tr>
+              <tr>
+                <th><button type="button" class="sort-header" (click)="setCategorySort('name')">Namn <mat-icon>{{ categorySortIcon('name') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setCategorySort('description')">Beskrivning <mat-icon>{{ categorySortIcon('description') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setCategorySort('responsible')">Ansvarig <mat-icon>{{ categorySortIcon('responsible') }}</mat-icon></button></th>
+                <th class="actions-col"></th>
+              </tr>
             </thead>
             <tbody>
-              @for (c of e.categories; track c.id) {
+              @for (c of sortedCategories(e.categories); track c.id) {
                 <tr>
                   <td>{{ c.name }}</td>
                   <td class="muted">{{ c.description || '–' }}</td>
@@ -396,16 +412,16 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>Namn</th>
-                <th>Kategori</th>
-                <th>Giltiga dagar</th>
-                <th>Tillåtna kategorier</th>
-                <th class="align-right">Pris</th>
+                <th><button type="button" class="sort-header" (click)="setTicketTypeSort('name')">Namn <mat-icon>{{ ticketTypeSortIcon('name') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setTicketTypeSort('category')">Kategori <mat-icon>{{ ticketTypeSortIcon('category') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setTicketTypeSort('validDays')">Giltiga dagar <mat-icon>{{ ticketTypeSortIcon('validDays') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setTicketTypeSort('allowedCategories')">Tillåtna kategorier <mat-icon>{{ ticketTypeSortIcon('allowedCategories') }}</mat-icon></button></th>
+                <th class="align-right"><button type="button" class="sort-header" (click)="setTicketTypeSort('price')">Pris <mat-icon>{{ ticketTypeSortIcon('price') }}</mat-icon></button></th>
                 <th class="actions-col"></th>
               </tr>
             </thead>
             <tbody>
-              @for (tt of ticketTypes(); track tt.id) {
+              @for (tt of sortedTicketTypes(); track tt.id) {
                 <tr>
                   <td>{{ tt.name }}</td>
                   <td>{{ ticketTypeCategoryLabel(tt.category) }}</td>

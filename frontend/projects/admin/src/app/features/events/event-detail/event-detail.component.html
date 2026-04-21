@@ -197,10 +197,16 @@
         <mat-card-content class="no-pad">
           <table class="data-table">
             <thead>
-              <tr><th>Beskrivning</th><th>Längd (min)</th><th>Platser</th><th>Starttyp</th><th class="actions-col"></th></tr>
+              <tr>
+                <th><button type="button" class="sort-header" (click)="setRequestSort('description')">Beskrivning <mat-icon>{{ requestSortIcon('description') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setRequestSort('duration')">Längd (min) <mat-icon>{{ requestSortIcon('duration') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setRequestSort('seats')">Platser <mat-icon>{{ requestSortIcon('seats') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setRequestSort('startType')">Starttyp <mat-icon>{{ requestSortIcon('startType') }}</mat-icon></button></th>
+                <th class="actions-col"></th>
+              </tr>
             </thead>
             <tbody>
-              @for (req of e.sessionRequests; track req.id) {
+              @for (req of sortedRequests(); track req.id) {
                 <tr>
                   <td>{{ req.description || '–' }}</td>
                   <td>{{ req.durationMinutes }}</td>
@@ -281,7 +287,15 @@
           @if (e.sessions.length > 0) {
             <table class="data-table">
               <thead>
-                <tr><th>Start</th><th>Slut</th><th>Lokal</th><th>Max platser</th><th>Starttyp</th><th>Status</th><th></th></tr>
+                <tr>
+                  <th><button type="button" class="sort-header" (click)="setSessionSort('start')">Start <mat-icon>{{ sessionSortIcon('start') }}</mat-icon></button></th>
+                  <th><button type="button" class="sort-header" (click)="setSessionSort('end')">Slut <mat-icon>{{ sessionSortIcon('end') }}</mat-icon></button></th>
+                  <th><button type="button" class="sort-header" (click)="setSessionSort('venue')">Lokal <mat-icon>{{ sessionSortIcon('venue') }}</mat-icon></button></th>
+                  <th><button type="button" class="sort-header" (click)="setSessionSort('seats')">Max platser <mat-icon>{{ sessionSortIcon('seats') }}</mat-icon></button></th>
+                  <th><button type="button" class="sort-header" (click)="setSessionSort('startType')">Starttyp <mat-icon>{{ sessionSortIcon('startType') }}</mat-icon></button></th>
+                  <th><button type="button" class="sort-header" (click)="setSessionSort('status')">Status <mat-icon>{{ sessionSortIcon('status') }}</mat-icon></button></th>
+                  <th></th>
+                </tr>
               </thead>
               <tbody>
                 @for (s of sortedSessions(); track s.id) {

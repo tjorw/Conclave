@@ -18,6 +18,10 @@ import {
   ASSIGNMENT_STATUS_LABEL, SHIFT_STATUS_LABEL,
 } from 'shared';
 import { MatDividerModule } from '@angular/material/divider';
+import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
+
+type ShiftSortKey = 'responsible' | 'start' | 'end' | 'min' | 'max' | 'staffing' | 'status';
+type AssignmentSortKey = 'person' | 'status' | 'assigned';
 
 @Component({
   selector: 'app-staff-area-detail',
@@ -57,6 +61,8 @@ export class StaffAreaDetailComponent {
   readonly shiftsByStation = signal<Record<string, ShiftSummaryDto[]>>({});
   readonly selectedShift   = signal<ShiftDto | null>(null);
   readonly shiftLoading    = signal(false);
+  readonly shiftSort = signal<SortState<ShiftSortKey>>({ key: 'start', direction: 'desc' });
+  readonly assignmentSort = signal<SortState<AssignmentSortKey>>({ key: 'assigned', direction: 'desc' });
 
   readonly persons = signal<PersonDto[]>([]);
 
@@ -122,7 +128,7 @@ export class StaffAreaDetailComponent {
     for (const station of stations) {
       this.svc.listShifts(station.id).subscribe({
         next: shifts => {
-          result[station.id] = shifts.slice().sort((a, b) => (a.start < b.start ? 1 : -1));
+          result[station.id] = shifts;
           if (--remaining === 0) { this.shiftsByStation.set({ ...result }); this.loading.set(false); }
         },
         error: () => {
@@ -139,6 +145,42 @@ export class StaffAreaDetailComponent {
 
   get stations(): StationDto[] {
     return (this.edition()?.stations ?? []).filter(s => s.staffAreaId === this.areaId());
+  }
+
+  sortedShifts(shifts: ShiftSummaryDto[] | undefined): ShiftSummaryDto[] {
+    return sortBy(shifts ?? [], this.shiftSort(), {
+      responsible: shift => shift.responsibleName,
+      start: shift => shift.start,
+      end: shift => shift.end,
+      min: shift => shift.minPersons,
+      max: shift => shift.maxPersons,
+      staffing: shift => shift.activeAssignmentCount,
+      status: shift => this.shiftStatusLabel(shift.status),
+    });
+  }
+
+  setShiftSort(key: ShiftSortKey): void {
+    this.shiftSort.set(nextSort(this.shiftSort(), key));
+  }
+
+  shiftSortIcon(key: ShiftSortKey): string {
+    return sortIcon(this.shiftSort(), key);
+  }
+
+  sortedAssignments(shift: ShiftDto): ShiftDto['assignments'] {
+    return sortBy(shift.assignments, this.assignmentSort(), {
+      person: assignment => assignment.personName,
+      status: assignment => this.assignmentStatusLabel(assignment.status),
+      assigned: assignment => assignment.assignedAt,
+    });
+  }
+
+  setAssignmentSort(key: AssignmentSortKey): void {
+    this.assignmentSort.set(nextSort(this.assignmentSort(), key));
+  }
+
+  assignmentSortIcon(key: AssignmentSortKey): string {
+    return sortIcon(this.assignmentSort(), key);
   }
 
   goBack(): void {

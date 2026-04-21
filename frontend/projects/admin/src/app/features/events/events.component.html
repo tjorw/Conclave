@@ -78,17 +78,17 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Titel</th>
-            <th>Kategori</th>
-            <th>Arrangör</th>
-            <th>Sessioner</th>
-            <th>Kommentarer</th>
-            <th>Status</th>
+            <th><button type="button" class="sort-header" (click)="setSort('title')">Titel <mat-icon>{{ sortIcon('title') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('category')">Kategori <mat-icon>{{ sortIcon('category') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('organiser')">Arrangör <mat-icon>{{ sortIcon('organiser') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('sessions')">Sessioner <mat-icon>{{ sortIcon('sessions') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('comments')">Kommentarer <mat-icon>{{ sortIcon('comments') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('status')">Status <mat-icon>{{ sortIcon('status') }}</mat-icon></button></th>
             <th class="actions-col"></th>
           </tr>
         </thead>
         <tbody>
-          @for (event of filteredEvents(); track event.id) {
+          @for (event of sortedFilteredEvents(); track event.id) {
             <tr class="navigable-row" (click)="openEvent(event.id)">
               <td><strong>{{ event.title ?? '(Inget namn)' }}</strong></td>
               <td>{{ event.categoryName ?? '–' }}</td>

@@ -109,17 +109,17 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>{{ PAGE.eventColumn }}</th>
-                <th>{{ PAGE.start }}</th>
-                <th>{{ PAGE.end }}</th>
-                <th>{{ FIELD.venue }}</th>
-                <th>{{ FIELD.maxSeats }}</th>
-                <th>{{ FIELD.startType }}</th>
+                <th><button type="button" class="sort-header" (click)="setSort('event')">{{ PAGE.eventColumn }} <mat-icon>{{ sortIcon('event') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setSort('start')">{{ PAGE.start }} <mat-icon>{{ sortIcon('start') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setSort('end')">{{ PAGE.end }} <mat-icon>{{ sortIcon('end') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setSort('venue')">{{ FIELD.venue }} <mat-icon>{{ sortIcon('venue') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setSort('seats')">{{ FIELD.maxSeats }} <mat-icon>{{ sortIcon('seats') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setSort('startType')">{{ FIELD.startType }} <mat-icon>{{ sortIcon('startType') }}</mat-icon></button></th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              @for (session of filteredSessions(); track session.sessionId) {
+              @for (session of sortedFilteredSessions(); track session.sessionId) {
                 <tr>
                   <td>
                     <a [routerLink]="['/events', session.eventId]">{{ session.eventTitle }}</a>

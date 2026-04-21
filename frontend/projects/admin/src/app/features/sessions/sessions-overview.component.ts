@@ -31,6 +31,9 @@ import { EditionContextService } from '../../services/edition-context.service';
 import { EventTimelineComponent } from '../../shared/event-timeline/event-timeline.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog/confirm-dialog.component';
 import { DraftBlock, SessionTimelineComponent } from '../../shared/session-timeline/session-timeline.component';
+import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+
+type SessionSortKey = 'event' | 'start' | 'end' | 'venue' | 'seats' | 'startType';
 
 @Component({
   selector: 'app-sessions-overview',
@@ -82,6 +85,7 @@ export class SessionsOverviewComponent {
   readonly buildingFilter = signal<string>('all');
   readonly categoryFilter = signal<string>('all');
   readonly searchText = signal('');
+  readonly sort = signal<SortState<SessionSortKey>>({ key: 'start', direction: 'asc' });
 
   readonly form = this.fb.group({
     eventId: ['', Validators.required],
@@ -185,6 +189,17 @@ export class SessionsOverviewComponent {
     });
   });
 
+  readonly sortedFilteredSessions = computed(() =>
+    sortBy(this.filteredSessions(), this.sort(), {
+      event: s => s.eventTitle,
+      start: s => s.start,
+      end: s => s.end,
+      venue: s => this.venueById(s.venueId)?.name ?? s.venueId,
+      seats: s => s.maxSeats,
+      startType: s => this.startTypeLabel(s.startType),
+    })
+  );
+
   readonly filteredVenues = computed(() => {
     const venues = this.edition()?.venues ?? [];
     if (this.schedulePerspective() === 'venue' && this.buildingFilter() !== 'all') {
@@ -250,6 +265,14 @@ export class SessionsOverviewComponent {
 
   setViewMode(value: 'timeline' | 'table'): void {
     this.viewMode.set(value);
+  }
+
+  setSort(key: SessionSortKey): void {
+    this.sort.set(nextSort(this.sort(), key));
+  }
+
+  sortIcon(key: SessionSortKey): string {
+    return sortIcon(this.sort(), key);
   }
 
   onTimelineSessionSelected(sessionId: string): void {

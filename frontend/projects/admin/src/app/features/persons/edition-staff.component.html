@@ -95,14 +95,14 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Namn</th>
-            <th>E-post</th>
-            <th>Telefon</th>
-            <th>Status</th>
+            <th><button type="button" class="sort-header" (click)="setSort('name')">Namn <mat-icon>{{ sortIcon('name') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('email')">E-post <mat-icon>{{ sortIcon('email') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('phone')">Telefon <mat-icon>{{ sortIcon('phone') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('status')">Status <mat-icon>{{ sortIcon('status') }}</mat-icon></button></th>
           </tr>
         </thead>
         <tbody>
-          @for (s of filtered(); track s.personId) {
+          @for (s of sortedFiltered(); track s.personId) {
             <tr>
               <td><strong>{{ s.personName }}</strong></td>
               <td>{{ s.email }}</td>

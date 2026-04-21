@@ -25,6 +25,10 @@ import { DraftBlock, SessionTimelineComponent } from '../../../shared/session-ti
 import { ERROR } from '../../../labels/errors.labels';
 import { EVENT_DETAIL } from '../../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
+import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
+
+type RequestSortKey = 'description' | 'duration' | 'seats' | 'startType';
+type EventSessionSortKey = 'start' | 'end' | 'venue' | 'seats' | 'startType' | 'status';
 
 @Component({
   selector: 'app-event-detail',
@@ -89,6 +93,8 @@ export class EventDetailComponent implements OnInit {
   readonly editionSessions       = signal<EditionSessionDto[]>([]);
   readonly timelineLoading       = signal(false);
   private readonly timelineLoaded = signal(false);
+  readonly requestSort = signal<SortState<RequestSortKey>>({ key: 'description', direction: 'asc' });
+  readonly sessionSort = signal<SortState<EventSessionSortKey>>({ key: 'start', direction: 'desc' });
 
   readonly rejectForm = this.fb.group({
     comment: ['', [Validators.required, Validators.minLength(5)]],
@@ -457,9 +463,41 @@ export class EventDetailComponent implements OnInit {
     return SESSION_STATUS_LABEL[status] ?? status;
   }
 
-  readonly sortedSessions = computed(() =>
-    [...(this.event()?.sessions ?? [])].sort((a, b) => (a.start < b.start ? 1 : -1))
+  readonly sortedRequests = computed(() =>
+    sortBy(this.event()?.sessionRequests ?? [], this.requestSort(), {
+      description: request => request.description ?? '',
+      duration: request => request.durationMinutes,
+      seats: request => request.seats,
+      startType: request => this.startTypeLabel(request.startType),
+    })
   );
+
+  readonly sortedSessions = computed(() =>
+    sortBy(this.event()?.sessions ?? [], this.sessionSort(), {
+      start: session => session.start,
+      end: session => session.end,
+      venue: session => this.venueName(session.venueId),
+      seats: session => session.maxSeats,
+      startType: session => this.startTypeLabel(session.startType),
+      status: session => this.sessionStatusLabel(session.status),
+    })
+  );
+
+  setRequestSort(key: RequestSortKey): void {
+    this.requestSort.set(nextSort(this.requestSort(), key));
+  }
+
+  requestSortIcon(key: RequestSortKey): string {
+    return sortIcon(this.requestSort(), key);
+  }
+
+  setSessionSort(key: EventSessionSortKey): void {
+    this.sessionSort.set(nextSort(this.sessionSort(), key));
+  }
+
+  sessionSortIcon(key: EventSessionSortKey): string {
+    return sortIcon(this.sessionSort(), key);
+  }
 
   get sessionMin(): string | undefined { return this.edition()?.start.slice(0, 16); }
   get sessionMax(): string | undefined { return this.edition()?.end.slice(0, 16); }

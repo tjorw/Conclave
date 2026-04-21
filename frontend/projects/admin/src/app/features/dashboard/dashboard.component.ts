@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -14,6 +14,9 @@ import { ConventionDto, ConventionService, PersonDto, EVENT_STATUS_LABEL } from 
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, CHIP, FIELD, PLACEHOLDER } from '../../labels/ui.labels';
+import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+
+type EditionSortKey = 'name' | 'start' | 'end' | 'status';
 
 @Component({
   selector: 'app-dashboard',
@@ -49,6 +52,7 @@ export class DashboardComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
+  readonly editionSort = signal<SortState<EditionSortKey>>({ key: 'start', direction: 'desc' });
 
   readonly createForm = this.fb.group({
     name: ['', Validators.required],
@@ -57,6 +61,15 @@ export class DashboardComponent implements OnInit {
     staffCoordinatorId: ['', Validators.required],
     eventCoordinatorId: ['', Validators.required],
   });
+
+  readonly sortedEditions = computed(() =>
+    sortBy(this.editionContext.editions(), this.editionSort(), {
+      name: edition => edition.name,
+      start: edition => edition.start,
+      end: edition => edition.end,
+      status: edition => this.statusLabel(edition.status),
+    })
+  );
 
   ngOnInit(): void {
     this.conventionService.getCurrentConvention().subscribe({
@@ -71,6 +84,14 @@ export class DashboardComponent implements OnInit {
   openEdition(id: string): void {
     this.editionContext.setActive(id);
     this.router.navigate(['/editions', id]);
+  }
+
+  setEditionSort(key: EditionSortKey): void {
+    this.editionSort.set(nextSort(this.editionSort(), key));
+  }
+
+  editionSortIcon(key: EditionSortKey): string {
+    return sortIcon(this.editionSort(), key);
   }
 
   create(): void {

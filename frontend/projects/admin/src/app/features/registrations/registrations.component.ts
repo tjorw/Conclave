@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -21,6 +21,11 @@ import {
   VISITOR_REGISTRATION_STATUS_LABEL,
   VISITOR_REGISTRATION_STATUS_CHIP,
 } from 'shared';
+import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+
+type RegistrationSortKey = 'person' | 'ticket' | 'status' | 'registered' | 'payment';
+type PromotionSortKey = 'code' | 'description' | 'discount' | 'status' | 'redemptions' | 'validity' | 'tickets';
+type PromotionHistorySortKey = 'person' | 'ticket' | 'discount' | 'finalPrice' | 'redeemed';
 
 @Component({
   selector: 'app-registrations',
@@ -55,6 +60,9 @@ export class RegistrationsComponent {
   readonly promotionHistory = signal<PromotionCodeRedemptionHistoryDto[]>([]);
   readonly selectedPromotionCodeId = signal<string | null>(null);
   readonly loadingHistoryFor = signal<string | null>(null);
+  readonly registrationSort = signal<SortState<RegistrationSortKey>>({ key: 'registered', direction: 'desc' });
+  readonly promotionSort = signal<SortState<PromotionSortKey>>({ key: 'code', direction: 'asc' });
+  readonly promotionHistorySort = signal<SortState<PromotionHistorySortKey>>({ key: 'redeemed', direction: 'desc' });
 
   readonly discountTypeOptions: { value: PromotionDiscountType; label: string }[] = [
     { value: 'Percentage', label: 'Procent' },
@@ -72,6 +80,38 @@ export class RegistrationsComponent {
     validUntil: this.fb.control('', { nonNullable: true }),
     allowedTicketTypeIds: this.fb.control<string[]>([], { nonNullable: true }),
   });
+
+  readonly sortedVisitorRegistrations = computed(() =>
+    sortBy(this.visitorRegistrations(), this.registrationSort(), {
+      person: r => r.personName,
+      ticket: r => r.ticketTypeName ?? '',
+      status: r => this.statusLabel(r.status),
+      registered: r => r.registeredAt,
+      payment: r => r.paymentReference ?? '',
+    })
+  );
+
+  readonly sortedPromotionCodes = computed(() =>
+    sortBy(this.promotionCodes(), this.promotionSort(), {
+      code: c => c.code,
+      description: c => c.description,
+      discount: c => this.promotionDiscountLabel(c),
+      status: c => c.isActive,
+      redemptions: c => c.redemptionCount,
+      validity: c => c.validFrom ?? c.validUntil ?? '',
+      tickets: c => this.allowedTicketTypeLabel(c.allowedTicketTypeIds),
+    })
+  );
+
+  readonly sortedPromotionHistory = computed(() =>
+    sortBy(this.promotionHistory(), this.promotionHistorySort(), {
+      person: h => this.personNameFromRegistration(h.personId),
+      ticket: h => h.ticketId,
+      discount: h => h.discountApplied,
+      finalPrice: h => h.finalPrice,
+      redeemed: h => h.redeemedAt,
+    })
+  );
 
   constructor() {
     effect(() => {
@@ -155,6 +195,30 @@ export class RegistrationsComponent {
 
   canCancelRegistration(reg: VisitorRegistrationAdminDto): boolean {
     return reg.status !== 'Cancelled';
+  }
+
+  setRegistrationSort(key: RegistrationSortKey): void {
+    this.registrationSort.set(nextSort(this.registrationSort(), key));
+  }
+
+  registrationSortIcon(key: RegistrationSortKey): string {
+    return sortIcon(this.registrationSort(), key);
+  }
+
+  setPromotionSort(key: PromotionSortKey): void {
+    this.promotionSort.set(nextSort(this.promotionSort(), key));
+  }
+
+  promotionSortIcon(key: PromotionSortKey): string {
+    return sortIcon(this.promotionSort(), key);
+  }
+
+  setPromotionHistorySort(key: PromotionHistorySortKey): void {
+    this.promotionHistorySort.set(nextSort(this.promotionHistorySort(), key));
+  }
+
+  promotionHistorySortIcon(key: PromotionHistorySortKey): string {
+    return sortIcon(this.promotionHistorySort(), key);
   }
 
   createPromotionCode(): void {

@@ -28,6 +28,12 @@ import { EDITION_DETAIL } from '../../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
 import { EditionContextService } from '../../../services/edition-context.service';
+import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
+
+type VenueSortKey = 'name' | 'building' | 'description';
+type StaffAreaSortKey = 'name' | 'description' | 'responsible' | 'stations';
+type CategorySortKey = 'name' | 'description' | 'responsible';
+type TicketTypeSortKey = 'name' | 'category' | 'validDays' | 'allowedCategories' | 'price';
 
 @Component({
   selector: 'app-edition-detail',
@@ -79,6 +85,10 @@ export class EditionDetailComponent implements OnInit {
   // Biljettyper (laddas separat – inte en del av EditionDto)
   readonly ticketTypes        = signal<TicketTypeAdminDto[]>([]);
   readonly editingTicketType  = signal<TicketTypeAdminDto | null>(null);
+  readonly venueSort = signal<SortState<VenueSortKey>>({ key: 'name', direction: 'asc' });
+  readonly staffAreaSort = signal<SortState<StaffAreaSortKey>>({ key: 'name', direction: 'asc' });
+  readonly categorySort = signal<SortState<CategorySortKey>>({ key: 'name', direction: 'asc' });
+  readonly ticketTypeSort = signal<SortState<TicketTypeSortKey>>({ key: 'name', direction: 'asc' });
 
   private handleError(context: string, err: unknown): void {
     const detail = (err as { error?: { detail?: string } })?.error?.detail;
@@ -271,6 +281,73 @@ export class EditionDetailComponent implements OnInit {
 
   stationsForArea(area: StaffAreaDto): { id: string; name: string; description: string | null }[] {
     return this.edition()?.stations.filter(s => s.staffAreaId === area.id) ?? [];
+  }
+
+  sortedVenues(venues: VenueDto[]): VenueDto[] {
+    return sortBy(venues, this.venueSort(), {
+      name: venue => venue.name,
+      building: venue => venue.building,
+      description: venue => venue.description ?? '',
+    });
+  }
+
+  setVenueSort(key: VenueSortKey): void {
+    this.venueSort.set(nextSort(this.venueSort(), key));
+  }
+
+  venueSortIcon(key: VenueSortKey): string {
+    return sortIcon(this.venueSort(), key);
+  }
+
+  sortedStaffAreas(areas: StaffAreaDto[]): StaffAreaDto[] {
+    return sortBy(areas, this.staffAreaSort(), {
+      name: area => area.name,
+      description: area => area.description ?? '',
+      responsible: area => this.personName(area.responsibleId),
+      stations: area => this.stationsForArea(area).length,
+    });
+  }
+
+  setStaffAreaSort(key: StaffAreaSortKey): void {
+    this.staffAreaSort.set(nextSort(this.staffAreaSort(), key));
+  }
+
+  staffAreaSortIcon(key: StaffAreaSortKey): string {
+    return sortIcon(this.staffAreaSort(), key);
+  }
+
+  sortedCategories(categories: CategoryDto[]): CategoryDto[] {
+    return sortBy(categories, this.categorySort(), {
+      name: category => category.name,
+      description: category => category.description ?? '',
+      responsible: category => this.personName(category.responsibleId),
+    });
+  }
+
+  setCategorySort(key: CategorySortKey): void {
+    this.categorySort.set(nextSort(this.categorySort(), key));
+  }
+
+  categorySortIcon(key: CategorySortKey): string {
+    return sortIcon(this.categorySort(), key);
+  }
+
+  sortedTicketTypes(): TicketTypeAdminDto[] {
+    return sortBy(this.ticketTypes(), this.ticketTypeSort(), {
+      name: ticketType => ticketType.name,
+      category: ticketType => this.ticketTypeCategoryLabel(ticketType.category),
+      validDays: ticketType => this.validDaysLabel(ticketType.validDays),
+      allowedCategories: ticketType => this.allowedCategoriesLabel(ticketType.allowedCategories),
+      price: ticketType => ticketType.price,
+    });
+  }
+
+  setTicketTypeSort(key: TicketTypeSortKey): void {
+    this.ticketTypeSort.set(nextSort(this.ticketTypeSort(), key));
+  }
+
+  ticketTypeSortIcon(key: TicketTypeSortKey): string {
+    return sortIcon(this.ticketTypeSort(), key);
   }
 
   // ── Publicering, Aktiv upplaga & Registrering ────────────────────────────

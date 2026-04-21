@@ -8,6 +8,9 @@ import { ConventionService, EditionOrganiserDto } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { FIELD, PLACEHOLDER } from '../../labels/ui.labels';
+import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+
+type OrganiserSortKey = 'name' | 'email' | 'event' | 'role';
 
 @Component({
   selector: 'app-edition-organisers',
@@ -33,6 +36,7 @@ export class EditionOrganisersComponent {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly searchQuery = signal('');
+  readonly sort = signal<SortState<OrganiserSortKey>>({ key: 'name', direction: 'asc' });
 
   constructor() {
     effect(() => {
@@ -61,6 +65,23 @@ export class EditionOrganisersComponent {
       o => o.personName.toLowerCase().includes(q) || o.eventTitle.toLowerCase().includes(q)
     );
   });
+
+  readonly sortedFiltered = computed(() =>
+    sortBy(this.filtered(), this.sort(), {
+      name: o => o.personName,
+      email: o => o.email,
+      event: o => o.eventTitle,
+      role: o => o.role,
+    })
+  );
+
+  setSort(key: OrganiserSortKey): void {
+    this.sort.set(nextSort(this.sort(), key));
+  }
+
+  sortIcon(key: OrganiserSortKey): string {
+    return sortIcon(this.sort(), key);
+  }
 
   onSearch(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);

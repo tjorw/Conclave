@@ -30,13 +30,13 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Namn</th>
-            <th>E-post</th>
-            <th>Telefon</th>
+            <th><button type="button" class="sort-header" (click)="setSort('name')">Namn <mat-icon>{{ sortIcon('name') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('email')">E-post <mat-icon>{{ sortIcon('email') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('phone')">Telefon <mat-icon>{{ sortIcon('phone') }}</mat-icon></button></th>
           </tr>
         </thead>
         <tbody>
-          @for (v of filtered(); track v.personId) {
+          @for (v of sortedFiltered(); track v.personId) {
             <tr>
               <td><strong>{{ v.personName }}</strong></td>
               <td>{{ v.email }}</td>
