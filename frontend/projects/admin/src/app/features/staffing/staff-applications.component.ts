@@ -1,29 +1,25 @@
+import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { DatePipe } from '@angular/common';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { TOOLTIP } from '../../labels/ui.labels';
 import {
   ConventionService, EditionDto, StaffApplicationSummaryDto, StaffService,
-  StaffAreaDto, StationDto,
-  STAFF_APPLICATION_STATUS_LABEL, STAFF_APPLICATION_STATUS_CHIP,
+  StationDto, STAFF_APPLICATION_STATUS_CHIP, STAFF_APPLICATION_STATUS_LABEL,
 } from 'shared';
 import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
 
 type StatusFilter = 'all' | 'pending' | 'accepted' | 'rejected';
-type StaffAreaSortKey = 'name' | 'stations';
 type StaffApplicationSortKey = 'person' | 'interest' | 'stations' | 'availability' | 'created' | 'status';
 
 @Component({
-  selector: 'app-staffing',
+  selector: 'app-staff-applications',
   standalone: true,
   imports: [
     DatePipe,
@@ -32,30 +28,25 @@ type StaffApplicationSortKey = 'person' | 'interest' | 'stations' | 'availabilit
     MatCardModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatTabsModule,
     MatTooltipModule,
   ],
-  templateUrl: './staffing.component.html',
-  styleUrl: './staffing.component.scss',
+  templateUrl: './staff-applications.component.html',
+  styleUrl: './staff-applications.component.scss',
 })
-export class StaffingComponent {
+export class StaffApplicationsComponent {
   private readonly svc           = inject(StaffService);
   private readonly conventionSvc = inject(ConventionService);
-  private readonly router        = inject(Router);
   readonly editionCtx            = inject(EditionContextService);
 
   readonly TOOLTIP = TOOLTIP;
 
-  readonly loading     = signal(true);
-  readonly saving      = signal(false);
-  readonly error       = signal<string | null>(null);
+  readonly loading = signal(true);
+  readonly saving  = signal(false);
+  readonly error   = signal<string | null>(null);
 
-  readonly edition = signal<EditionDto | null>(null);
-
-  readonly applications       = signal<StaffApplicationSummaryDto[]>([]);
-  readonly applicationsLoaded = signal(false);
-  readonly statusFilter       = signal<StatusFilter>('pending');
-  readonly staffAreaSort = signal<SortState<StaffAreaSortKey>>({ key: 'name', direction: 'asc' });
+  readonly edition      = signal<EditionDto | null>(null);
+  readonly applications = signal<StaffApplicationSummaryDto[]>([]);
+  readonly statusFilter = signal<StatusFilter>('pending');
   readonly applicationSort = signal<SortState<StaffApplicationSortKey>>({ key: 'created', direction: 'desc' });
 
   readonly filteredApplications = computed(() => {
@@ -68,13 +59,6 @@ export class StaffingComponent {
       default:         return apps;
     }
   });
-
-  readonly sortedStaffAreas = computed(() =>
-    sortBy(this.staffAreas, this.staffAreaSort(), {
-      name: area => area.name,
-      stations: area => this.stationCount(area.id),
-    })
-  );
 
   readonly sortedFilteredApplications = computed(() =>
     sortBy(this.filteredApplications(), this.applicationSort(), {
@@ -95,62 +79,22 @@ export class StaffingComponent {
     effect(() => {
       const summary = this.editionCtx.activeEdition();
       if (!summary) { this.loading.set(false); return; }
-      this.loadEdition(summary.id);
+      this.loadPage(summary.id);
     });
   }
 
-  private loadEdition(editionId: string): void {
+  private loadPage(editionId: string): void {
     this.loading.set(true);
     this.error.set(null);
-    this.applicationsLoaded.set(false);
 
     this.conventionSvc.getEdition(editionId).subscribe({
-      next: ed => { this.edition.set(ed); this.loading.set(false); },
-      error: () => { this.error.set(ERROR.fetchEdition); this.loading.set(false); },
+      next: ed => this.edition.set(ed),
+      error: () => this.error.set(ERROR.fetchEdition),
     });
-  }
 
-  get staffAreas(): StaffAreaDto[] {
-    return this.edition()?.staffAreas ?? [];
-  }
-
-  stationCount(areaId: string): number {
-    return (this.edition()?.stations ?? []).filter(s => s.staffAreaId === areaId).length;
-  }
-
-  navigateToArea(areaId: string): void {
-    this.router.navigate(['/staffing/area', areaId]);
-  }
-
-  setStaffAreaSort(key: StaffAreaSortKey): void {
-    this.staffAreaSort.set(nextSort(this.staffAreaSort(), key));
-  }
-
-  staffAreaSortIcon(key: StaffAreaSortKey): string {
-    return sortIcon(this.staffAreaSort(), key);
-  }
-
-  setApplicationSort(key: StaffApplicationSortKey): void {
-    this.applicationSort.set(nextSort(this.applicationSort(), key));
-  }
-
-  applicationSortIcon(key: StaffApplicationSortKey): string {
-    return sortIcon(this.applicationSort(), key);
-  }
-
-  // ── Ansökningar ──────────────────────────────────────────────────────────
-
-  onApplicationsTabSelected(): void {
-    if (this.applicationsLoaded()) return;
-    this.loadApplications();
-  }
-
-  private loadApplications(): void {
-    const summary = this.editionCtx.activeEdition();
-    if (!summary) return;
-    this.svc.listStaffApplications(summary.id).subscribe({
-      next: apps => { this.applications.set(apps); this.applicationsLoaded.set(true); },
-      error: () => this.error.set(ERROR.fetchStaffApplications),
+    this.svc.listStaffApplications(editionId).subscribe({
+      next: apps => { this.applications.set(apps); this.loading.set(false); },
+      error: () => { this.error.set(ERROR.fetchStaffApplications); this.loading.set(false); },
     });
   }
 
@@ -161,6 +105,14 @@ export class StaffingComponent {
       next: apps => this.applications.set(apps),
       error: () => this.error.set(ERROR.fetchStaffApplications),
     });
+  }
+
+  setApplicationSort(key: StaffApplicationSortKey): void {
+    this.applicationSort.set(nextSort(this.applicationSort(), key));
+  }
+
+  applicationSortIcon(key: StaffApplicationSortKey): string {
+    return sortIcon(this.applicationSort(), key);
   }
 
   accept(app: StaffApplicationSummaryDto): void {
@@ -205,8 +157,7 @@ export class StaffingComponent {
     const sTime   = s.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
     const eTime   = e.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
     return sameDay
-      ? `${dateStr} ${sTime}–${eTime}`
-      : `${dateStr} ${sTime} – ${e.toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' })} ${eTime}`;
+      ? `${dateStr} ${sTime}-${eTime}`
+      : `${dateStr} ${sTime} - ${e.toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' })} ${eTime}`;
   }
-
 }

@@ -84,17 +84,24 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'staffing',
+        path: 'staff-areas',
         loadComponent: () =>
-          import('./features/staffing/staffing.component').then(
-            m => m.StaffingComponent
+          import('./features/staffing/staff-areas.component').then(
+            m => m.StaffAreasComponent
           ),
       },
       {
-        path: 'staffing/area/:areaId',
+        path: 'staff-areas/:areaId',
         loadComponent: () =>
           import('./features/staffing/staff-area-detail/staff-area-detail.component').then(
             m => m.StaffAreaDetailComponent
+          ),
+      },
+      {
+        path: 'staff-applications',
+        loadComponent: () =>
+          import('./features/staffing/staff-applications.component').then(
+            m => m.StaffApplicationsComponent
           ),
       },
       {

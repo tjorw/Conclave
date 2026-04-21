@@ -1,0 +1,103 @@
+<div class="page-header">
+  <h1 class="page-title">Ansökningar</h1>
+  <p class="page-subtitle">
+    @if (editionCtx.activeEdition(); as edition) {
+      Funktionärsansökningar för <strong>{{ edition.name }}</strong>
+    } @else {
+      Välj en upplaga i verktygsfältet
+    }
+  </p>
+</div>
+
+@if (loading()) {
+  <div class="spinner-center"><mat-spinner diameter="48" /></div>
+} @else if (!editionCtx.activeEdition()) {
+  <p class="muted-info">Välj en upplaga i verktygsfältet för att se ansökningar.</p>
+} @else {
+  @if (error()) { <div class="error-banner">{{ error() }}</div> }
+
+  <div class="filter-row">
+    <mat-button-toggle-group
+      [value]="statusFilter()"
+      (change)="statusFilter.set($event.value)"
+      aria-label="Statusfilter">
+      <mat-button-toggle value="pending">Att granska ({{ pendingCount() }})</mat-button-toggle>
+      <mat-button-toggle value="rejected">Avslagna ({{ rejectedCount() }})</mat-button-toggle>
+      <mat-button-toggle value="all">Alla ({{ applications().length }})</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <mat-card class="content-card">
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('person')">Person <mat-icon>{{ applicationSortIcon('person') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('interest')">Intressebeskrivning <mat-icon>{{ applicationSortIcon('interest') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('stations')">Stationsönskemål <mat-icon>{{ applicationSortIcon('stations') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('availability')">Tillgänglighet <mat-icon>{{ applicationSortIcon('availability') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('created')">Inskickad <mat-icon>{{ applicationSortIcon('created') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('status')">Status <mat-icon>{{ applicationSortIcon('status') }}</mat-icon></button></th>
+            <th class="actions-col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (app of sortedFilteredApplications(); track app.id) {
+            <tr>
+              <td><strong>{{ app.personName ?? app.personId }}</strong></td>
+              <td class="description-cell">{{ app.interestDescription }}</td>
+              <td>
+                @for (sid of app.stationPreferenceIds; track sid) {
+                  <span class="chip chip-grey station-chip">{{ stationName(sid) }}</span>
+                }
+                @if (app.stationPreferenceIds.length === 0) {
+                  <span class="muted-text">-</span>
+                }
+              </td>
+              <td class="availability-cell">
+                @for (av of app.availabilities; track av.start) {
+                  <span class="availability-slot">{{ formatAvailability(av.start, av.end) }}</span>
+                }
+                @if (app.availabilities.length === 0) {
+                  <span class="muted-text">-</span>
+                }
+              </td>
+              <td>{{ app.createdAt | date:'yyyy-MM-dd' }}</td>
+              <td>
+                <span [class]="applicationStatusChipClass(app.status)">
+                  {{ applicationStatusLabel(app.status) }}
+                </span>
+              </td>
+              <td class="row-actions">
+                @if (canReview(app.status)) {
+                  <button mat-icon-button color="primary"
+                    (click)="accept(app)"
+                    [matTooltip]="TOOLTIP.accept"
+                    [disabled]="saving()">
+                    <mat-icon>check_circle</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn"
+                    (click)="reject(app)"
+                    [matTooltip]="TOOLTIP.reject"
+                    [disabled]="saving()">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-cell">
+                @if (statusFilter() === 'pending') {
+                  Inga ansökningar att granska.
+                } @else {
+                  Inga ansökningar matchar filtret.
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
+}
