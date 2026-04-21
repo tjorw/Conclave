@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -28,6 +28,7 @@ type AssignmentSortKey = 'person' | 'status' | 'assigned';
   standalone: true,
   imports: [
     DatePipe,
+    RouterLink,
     ReactiveFormsModule,
     MatButtonModule,
     MatCardModule,
@@ -48,7 +49,6 @@ export class StaffAreaDetailComponent {
   private readonly conventionSvc = inject(ConventionService);
   private readonly fb            = inject(FormBuilder);
   private readonly route         = inject(ActivatedRoute);
-  private readonly router        = inject(Router);
   readonly editionCtx            = inject(EditionContextService);
 
   readonly loading   = signal(true);
@@ -181,10 +181,6 @@ export class StaffAreaDetailComponent {
 
   assignmentSortIcon(key: AssignmentSortKey): string {
     return sortIcon(this.assignmentSort(), key);
-  }
-
-  goBack(): void {
-    this.router.navigate(['/staffing']);
   }
 
   // ── Stationer ─────────────────────────────────────────────────────────────

@@ -1,8 +1,8 @@
 <!-- Tillbaka-länk -->
 <div class="page-header">
-  <button mat-button (click)="goBack()">
+  <a routerLink="/staffing" class="back-link">
     <mat-icon>arrow_back</mat-icon> Bemanning
-  </button>
+  </a>
   @if (area) {
     <h1 class="page-title">{{ area.name }}</h1>
   }
