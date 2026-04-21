@@ -17,12 +17,6 @@
   gap: 12px;
 }
 
-.page-title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 500;
-}
-
 .page-meta {
   display: flex;
   gap: 20px;
@@ -119,11 +113,6 @@
 
 .muted { opacity: 0.6; font-size: 0.875rem; }
 .full-width { width: 100%; }
-
-.error-message {
-  color: #b71c1c;
-  padding: 16px;
-}
 
 .action-cell {
   width: 80px;

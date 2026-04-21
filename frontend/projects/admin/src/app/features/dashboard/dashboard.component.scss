@@ -1,36 +1,3 @@
-.spinner-wrapper {
-  display: flex;
-  justify-content: center;
-  padding: 48px;
-}
-
-.error-message {
-  color: #b00020;
-  font-size: 0.875rem;
-}
-
-.page-header {
-  margin-bottom: 32px;
-}
-
-.page-title {
-  font-size: 1.75rem;
-  font-weight: 500;
-  margin: 0 0 4px;
-}
-
-.page-subtitle {
-  font-size: 0.875rem;
-  opacity: 0.6;
-  margin: 0;
-}
-
-.section-title {
-  font-size: 1.1rem;
-  font-weight: 500;
-  margin: 0 0 16px;
-}
-
 .editions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
