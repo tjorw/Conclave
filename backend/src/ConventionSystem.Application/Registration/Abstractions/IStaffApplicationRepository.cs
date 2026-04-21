@@ -11,6 +11,7 @@ public interface IStaffApplicationRepository
     Task<StaffApplication?> GetByIdAsync(StaffApplicationId id, CancellationToken ct = default);
     Task<StaffApplication?> GetByIdWithDetailsAsync(StaffApplicationId id, CancellationToken ct = default);
     Task<bool> HasActiveApplicationAsync(PersonId personId, EditionId editionId, CancellationToken ct = default);
+    Task<bool> HasApprovedApplicationAsync(PersonId personId, EditionId editionId, CancellationToken ct = default);
     Task<MyStaffApplicationDto?> GetByPersonAndEditionAsync(PersonId personId, EditionId editionId, CancellationToken ct = default);
     Task<IReadOnlyList<StaffApplicationSummaryDto>> ListByEditionIdAsync(EditionId editionId, CancellationToken ct = default);
     Task<IReadOnlyList<EditionStaffMemberDto>> ListApprovedByEditionIdAsync(EditionId editionId, CancellationToken ct = default);

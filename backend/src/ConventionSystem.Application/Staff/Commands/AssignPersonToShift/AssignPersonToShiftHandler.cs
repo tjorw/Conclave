@@ -1,5 +1,6 @@
 ﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Staff.Ids;
@@ -11,6 +12,7 @@ public sealed class AssignPersonToShiftHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     IPersonRepository personRepository,
+    IStaffApplicationRepository staffApplicationRepository,
     ICurrentUser currentUser)
     : ICommandHandler<AssignPersonToShiftCommand, Guid>
 {
@@ -38,6 +40,8 @@ public sealed class AssignPersonToShiftHandler(
             ?? throw new InvalidOperationException($"Person '{command.PersonId}' hittades inte.");
         if (person.ConventionId != edition.ConventionId)
             throw new InvalidOperationException("Personen tillhör inte denna konvention.");
+        if (!await staffApplicationRepository.HasApprovedApplicationAsync(personId, edition.Id, ct))
+            throw new InvalidOperationException("Personen är inte funktionär för denna upplaga.");
 
         var assignment = shift.AssignPerson(personId, performedById);
         await shiftRepository.SaveAsync(ct);

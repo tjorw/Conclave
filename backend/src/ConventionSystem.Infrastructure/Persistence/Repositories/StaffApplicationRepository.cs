@@ -24,6 +24,11 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
             a => a.PersonId == personId && a.EditionId == editionId
               && a.Status != StaffApplicationStatus.Rejected, ct);
 
+    public Task<bool> HasApprovedApplicationAsync(PersonId personId, EditionId editionId, CancellationToken ct = default)
+        => db.StaffApplications.AnyAsync(
+            a => a.PersonId == personId && a.EditionId == editionId
+              && (a.Status == StaffApplicationStatus.Assigned || a.Status == StaffApplicationStatus.Confirmed), ct);
+
     public async Task<MyStaffApplicationDto?> GetByPersonAndEditionAsync(
         PersonId personId, EditionId editionId, CancellationToken ct = default)
     {

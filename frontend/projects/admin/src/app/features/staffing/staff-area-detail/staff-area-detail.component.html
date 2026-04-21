@@ -178,8 +178,8 @@
                               <mat-form-field appearance="outline">
                                 <mat-label>Tilldela person</mat-label>
                                 <mat-select formControlName="personId">
-                                  @for (p of persons(); track p.id) {
-                                    <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                                  @for (p of staff(); track p.personId) {
+                                    <mat-option [value]="p.personId">{{ p.personName }}</mat-option>
                                   }
                                 </mat-select>
                               </mat-form-field>
@@ -210,8 +210,8 @@
               <mat-form-field appearance="outline">
                 <mat-label>Ansvarig</mat-label>
                 <mat-select formControlName="responsibleId">
-                  @for (p of persons(); track p.id) {
-                    <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                  @for (p of staff(); track p.personId) {
+                    <mat-option [value]="p.personId">{{ p.personName }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>

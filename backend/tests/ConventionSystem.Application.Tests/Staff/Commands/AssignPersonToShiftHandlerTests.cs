@@ -1,5 +1,6 @@
 ﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Staff.Commands.AssignPersonToShift;
 using ConventionSystem.Domain.Convention.Ids;
@@ -17,12 +18,13 @@ public class AssignPersonToShiftHandlerTests
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
     private readonly IPersonRepository _personRepo = Substitute.For<IPersonRepository>();
+    private readonly IStaffApplicationRepository _staffApplicationRepo = Substitute.For<IStaffApplicationRepository>();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly AssignPersonToShiftHandler _handler;
 
     public AssignPersonToShiftHandlerTests()
     {
-        _handler = new AssignPersonToShiftHandler(_shiftRepo, _editionRepo, _conventionRepo, _personRepo,
+        _handler = new AssignPersonToShiftHandler(_shiftRepo, _editionRepo, _conventionRepo, _personRepo, _staffApplicationRepo,
             _currentUser);
     }
 
@@ -52,6 +54,7 @@ public class AssignPersonToShiftHandlerTests
         _editionRepo.GetByStationIdAsync(station.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
         _personRepo.GetByIdAsync(person.Id, Arg.Any<CancellationToken>()).Returns(person);
+        _staffApplicationRepo.HasApprovedApplicationAsync(person.Id, edition.Id, Arg.Any<CancellationToken>()).Returns(true);
 
         return (convention, admin, person, edition, shift);
     }
@@ -134,5 +137,16 @@ public class AssignPersonToShiftHandlerTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, outsider.Id.Value), default));
+    }
+
+    [Fact]
+    public async Task Handle_PersonNotEditionStaff_Throws()
+    {
+        var (_, admin, person, edition, shift) = Setup();
+        _staffApplicationRepo.HasApprovedApplicationAsync(person.Id, edition.Id, Arg.Any<CancellationToken>()).Returns(false);
+        _currentUser.PersonId.Returns(admin.Id);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(new AssignPersonToShiftCommand(shift.Id.Value, person.Id.Value), default));
     }
 }

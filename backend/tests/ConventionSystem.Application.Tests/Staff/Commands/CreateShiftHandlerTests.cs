@@ -1,5 +1,6 @@
 ﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Staff.Commands.CreateShift;
 using ConventionSystem.Domain.Convention.Ids;
@@ -14,12 +15,13 @@ public class CreateShiftHandlerTests
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
     private readonly IPersonRepository _personRepo = Substitute.For<IPersonRepository>();
+    private readonly IStaffApplicationRepository _staffApplicationRepo = Substitute.For<IStaffApplicationRepository>();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly CreateShiftHandler _handler;
 
     public CreateShiftHandlerTests()
     {
-        _handler = new CreateShiftHandler(_shiftRepo, _editionRepo, _conventionRepo, _personRepo, _currentUser);
+        _handler = new CreateShiftHandler(_shiftRepo, _editionRepo, _conventionRepo, _personRepo, _staffApplicationRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -43,6 +45,7 @@ public class CreateShiftHandlerTests
         _editionRepo.GetByStationIdAsync(station.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
         _personRepo.GetByIdAsync(responsible.Id, Arg.Any<CancellationToken>()).Returns(responsible);
+        _staffApplicationRepo.HasApprovedApplicationAsync(responsible.Id, edition.Id, Arg.Any<CancellationToken>()).Returns(true);
 
         return (convention, admin, responsible, edition, station);
     }
@@ -142,6 +145,20 @@ public class CreateShiftHandlerTests
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new CreateShiftCommand(
                 station.Id.Value, outsider.Id.Value,
+                new DateTime(2027, 3, 1, 10, 0, 0), new DateTime(2027, 3, 1, 14, 0, 0),
+                1, 3), default));
+    }
+
+    [Fact]
+    public async Task Handle_ResponsibleNotEditionStaff_Throws()
+    {
+        var (_, admin, responsible, edition, station) = Setup();
+        _staffApplicationRepo.HasApprovedApplicationAsync(responsible.Id, edition.Id, Arg.Any<CancellationToken>()).Returns(false);
+        _currentUser.PersonId.Returns(admin.Id);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(new CreateShiftCommand(
+                station.Id.Value, responsible.Id.Value,
                 new DateTime(2027, 3, 1, 10, 0, 0), new DateTime(2027, 3, 1, 14, 0, 0),
                 1, 3), default));
     }

@@ -13,7 +13,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditionContextService } from '../../../services/edition-context.service';
 import { ERROR } from '../../../labels/errors.labels';
 import {
-  ConventionService, DateTimeRangeComponent, EditionDto, PersonDto, ShiftDto, ShiftSummaryDto,
+  ConventionService, DateTimeRangeComponent, EditionDto, EditionStaffMemberDto, ShiftDto, ShiftSummaryDto,
   StaffService, StaffAreaDto, StationDto,
   ASSIGNMENT_STATUS_LABEL, SHIFT_STATUS_LABEL,
 } from 'shared';
@@ -64,7 +64,7 @@ export class StaffAreaDetailComponent {
   readonly shiftSort = signal<SortState<ShiftSortKey>>({ key: 'start', direction: 'desc' });
   readonly assignmentSort = signal<SortState<AssignmentSortKey>>({ key: 'assigned', direction: 'desc' });
 
-  readonly persons = signal<PersonDto[]>([]);
+  readonly staff = signal<EditionStaffMemberDto[]>([]);
 
   // Stationshantering
   readonly editingStation    = signal<StationDto | null>(null);
@@ -93,14 +93,18 @@ export class StaffAreaDetailComponent {
     const id = this.route.snapshot.paramMap.get('areaId') ?? '';
     this.areaId.set(id);
 
-    this.conventionSvc.listPersons().subscribe({
-      next: persons => this.persons.set(persons.filter(p => p.isActive)),
-    });
-
     effect(() => {
       const summary = this.editionCtx.activeEdition();
       if (!summary) { this.loading.set(false); return; }
       this.loadEdition(summary.id);
+      this.loadStaff(summary.id);
+    });
+  }
+
+  private loadStaff(editionId: string): void {
+    this.conventionSvc.listEditionStaff(editionId).subscribe({
+      next: staff => this.staff.set(staff),
+      error: () => this.error.set(ERROR.fetchStaff),
     });
   }
 

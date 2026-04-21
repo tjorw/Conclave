@@ -81,7 +81,6 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - tidschemat skall markera alla överlapp/konflikter. inte bara det man valt nu.
 - varför startar tidsschemat på 08:00
 - renodla, standardisera knappar, css mm.
-- man skall endast kunna välja bland funktionär när man tilldelar pass.
 - public - funktionering skall visa funktionärsbiljetter
 - arrangör - skall visa arrangörsbiljetter
 - biljetter till arranggörer - man behöver bli tilldelad

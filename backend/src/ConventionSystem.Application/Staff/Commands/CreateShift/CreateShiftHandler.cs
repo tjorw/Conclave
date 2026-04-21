@@ -1,5 +1,6 @@
 ﻿using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Staff.Aggregates;
@@ -13,6 +14,7 @@ public sealed class CreateShiftHandler(
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     IPersonRepository personRepository,
+    IStaffApplicationRepository staffApplicationRepository,
     ICurrentUser currentUser)
     : ICommandHandler<CreateShiftCommand, Guid>
 {
@@ -37,6 +39,8 @@ public sealed class CreateShiftHandler(
             ?? throw new InvalidOperationException($"Skiftansvarig '{command.ResponsibleId}' hittades inte.");
         if (responsible.ConventionId != edition.ConventionId)
             throw new InvalidOperationException("Skiftansvarig tillhör inte denna konvention.");
+        if (!await staffApplicationRepository.HasApprovedApplicationAsync(responsibleId, edition.Id, ct))
+            throw new InvalidOperationException("Skiftansvarig är inte funktionär för denna upplaga.");
 
         var timeSlot = new TimeSlot(command.StartTime, command.EndTime);
         var staffingRequirement = new StaffingRequirement(command.MinPersons, command.MaxPersons);
