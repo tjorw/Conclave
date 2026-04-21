@@ -35,9 +35,7 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 
 | Post | Beskrivning | Prioritet |
 |------|-------------|-----------|
-| **`/system/auth`-bypass i `TenantResolutionMiddleware`** | Rad 18 i middleware bypasas för sökvägar som börjar med `/system/auth`, men ingen sådan endpoint finns. Antingen bör bypasset tas bort, eller skapas endpointen och ett test som verifierar bypasset. Tyst bypass mot icke-existerande endpoint är ett underhållsproblem. | Hög |
-| **`TenantLookupDbContext` bör använda `NoTracking`** | Resolvern läser enbart – change tracking är onödigt overhead. Lägg till `.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)` i factory-registreringen i `InfrastructureServiceExtensions`. | Medel |
-| **Tenant-resolver TTL bör höjas** | `CachingTenantResolver` har TTL på 60 s. Nu när `ITenantResolverCacheInvalidator` kallas vid suspend/restore motiverar det ett längre TTL (~5 min) för att minska DB-belastning. | Medel |
+| **`/system`-bypass i `TenantResolutionMiddleware`** | Middleware bypassar hela `/system`-prefixet för systemadmin- och signup-flöden. Detta är avsiktligt, men bör dokumenteras/testas som ett kontrakt så att nya `/system/*`-endpoints inte råkar förväntas ha tenant-context. Behåll integrationstester för `/system/auth/login`, `/system/signup` och skyddade `/system/tenants/*`. | Medel |
 | **Ingen loggning i `TenantResolutionMiddleware`** | `tenant_not_found` och `tenant_suspended` returnerar felkod men loggar ingenting. `ILogger`-injektion med `Warning`-loggning förenklar felsökning i produktion. | Medel |
 | **Cache stampede i `CachingTenantResolver`** | Mönstret `TryGetValue → miss → DB → Set` utan lås ger N parallella DB-träffar vid burst mot okänd tenant. `GetOrCreateAsync` eller en `SemaphoreSlim` per nyckel eliminerar problemet. Låg risk vid nuvarande skala. | Låg |
 | **Oanvänd `using` i `InfrastructureServiceExtensions`** | `using Microsoft.Extensions.Caching.Memory` används inte i filen (`AddMemoryCache()` är en extension method i `Microsoft.Extensions.DependencyInjection`). Bör tas bort. | Låg |

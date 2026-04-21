@@ -9,7 +9,7 @@ public sealed class CachingTenantResolver(
     IDbContextFactory<TenantLookupDbContext> dbContextFactory,
     IMemoryCache cache) : ITenantResolver, ITenantResolverCacheInvalidator
 {
-    private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(5);
 
     public async Task<ResolvedTenant?> ResolveBySubdomainAsync(string subdomain, CancellationToken ct = default)
     {

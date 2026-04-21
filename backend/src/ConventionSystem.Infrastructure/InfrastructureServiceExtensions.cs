@@ -78,7 +78,9 @@ public static class InfrastructureServiceExtensions
         services.AddMemoryCache();
         services.AddScoped<ITenantContext, DefaultTenantContext>();
         services.AddDbContextFactory<TenantLookupDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            options
+                .UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
         services.AddSingleton<CachingTenantResolver>();
         services.AddSingleton<ITenantResolver>(provider => provider.GetRequiredService<CachingTenantResolver>());
         services.AddSingleton<ITenantResolverCacheInvalidator>(provider => provider.GetRequiredService<CachingTenantResolver>());
