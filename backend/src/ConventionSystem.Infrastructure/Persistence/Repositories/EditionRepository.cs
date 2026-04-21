@@ -89,9 +89,16 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
     {
         var edition = await db.Editions
             .Include(e => e.StaffAreas)
+            .Include(e => e.Stations)
             .Include(e => e.Categories)
             .FirstOrDefaultAsync(e => e.Id == id, ct)
             ?? throw new KeyNotFoundException("Upplagan hittades inte.");
+
+        var stationIds = edition.Stations.Select(s => s.Id).ToHashSet();
+        var shifts = await db.Shifts
+            .Where(s => stationIds.Contains(s.StationId))
+            .OrderBy(s => s.TimeSlot.Start)
+            .ToListAsync(ct);
 
         var events = await db.Events
             .Include(e => e.CoOrganisers)
@@ -104,6 +111,7 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
         if (edition.EventCoordinatorId.HasValue) personIds.Add(edition.EventCoordinatorId.Value);
         foreach (var area in edition.StaffAreas) personIds.Add(area.ResponsibleId);
         foreach (var cat in edition.Categories) personIds.Add(cat.ResponsibleId);
+        foreach (var shift in shifts) personIds.Add(shift.ResponsibleId);
         foreach (var ev in events)
         {
             personIds.Add(ev.LeadOrganiserId);
@@ -141,9 +149,23 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
             result.Add(new($"Kategoriansvarig – {cat.Name}",
                 cat.ResponsibleId.Value, GetName(cat.ResponsibleId), GetEmail(cat.ResponsibleId)));
 
+        var stationNames = edition.Stations.ToDictionary(s => s.Id, s => s.Name);
+        foreach (var shift in shifts)
+        {
+            var station = edition.Stations.FirstOrDefault(s => s.Id == shift.StationId);
+            var stationName = station?.Name ?? "";
+
+            var areaName = edition.StaffAreas.FirstOrDefault(c => c.Id == station?.StaffAreaId)?.Name  ?? "";
+
+            result.Add(new($"Stationsansvarig - {areaName} {stationName}, {shift.TimeSlot.Start:yyyy-MM-dd HH:mm}-{shift.TimeSlot.End:HH:mm}",
+                shift.ResponsibleId.Value, GetName(shift.ResponsibleId), GetEmail(shift.ResponsibleId)));
+        }
+
         foreach (var ev in events)
         {
-            result.Add(new($"Arrangör – {ev.Title}",
+            var categoryName = edition.Categories.FirstOrDefault(c => c.Id == ev.CategoryId)?.Name ?? "";
+
+            result.Add(new($"Arrangör – {categoryName} {ev.Title}",
                 ev.LeadOrganiserId.Value, GetName(ev.LeadOrganiserId), GetEmail(ev.LeadOrganiserId)));
 
             foreach (var co in ev.CoOrganisers)
