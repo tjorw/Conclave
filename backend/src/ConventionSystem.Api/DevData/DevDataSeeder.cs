@@ -223,15 +223,15 @@ public static class DevDataSeeder
         edition.CreateVenue("Spelrummet", "Annexet", null);
 
         var reception = edition.CreateStaffArea("Reception", adminPersonId, "Valkomnande och ackreditering");
-        edition.CreateStation("Nordingang", reception.Id);
-        edition.CreateStation("Soderingang", reception.Id);
+        edition.CreateStation("Nordingång", reception.Id);
+        edition.CreateStation("Söderingång", reception.Id);
 
         var gameSupport = edition.CreateStaffArea("Spelsupport", adminPersonId, "Hjalp med spel och evenemang");
         edition.CreateStation("Sal A", gameSupport.Id);
         edition.CreateStation("Sal B", gameSupport.Id);
 
         edition.CreateCategory("Rollspel", adminPersonId, "Pen & paper-rollspel");
-        edition.CreateCategory("Bradspel", adminPersonId, "Moderna och klassiska bradspel");
+        edition.CreateCategory("Brädspel", adminPersonId, "Moderna och klassiska brädspel");
         edition.CreateCategory("Lajv", adminPersonId, "Levande rollspel");
 
         edition.Publish(adminPersonId);
@@ -273,8 +273,8 @@ public static class DevDataSeeder
             leadOrganiserId,
             approvedById,
             mainVenue.Id,
-            "Drakar over Dimskogen",
-            "Ett introduktionsvanligt fantasyaventyr med mysterier, forhandlingar och ett par daliga ideer som kan bli hjaltedad.",
+            "Drakar över Dimskogen",
+            "Ett introduktionsvänligt fantasyäventyr med mysterier, förhandlingar och ett par dåliga idéer som kan bli hjälte­dåd.",
             eventDate.AddHours(10),
             eventDate.AddHours(12),
             6,
@@ -287,8 +287,8 @@ public static class DevDataSeeder
             leadOrganiserId,
             approvedById,
             sideVenue.Id,
-            "Terraforming Mars: nyborjarbord",
-            "Lugn genomgang och spel for dig som vill prova ett tyngre strategispel utan stress.",
+            "Terraforming Mars: nybörjarbord",
+            "Lugn genomgång och spel för dig som vill prova ett tyngre strategispel utan stress.",
             eventDate.AddHours(13),
             eventDate.AddHours(15),
             4,
@@ -301,8 +301,8 @@ public static class DevDataSeeder
             leadOrganiserId,
             approvedById,
             mainVenue.Id,
-            "Intrigverkstad for forstagangs-lajvare",
-            "Kort workshop dar vi bygger roller, relationer och scener tillsammans.",
+            "Intrigverkstad för förstagångs-lajvare",
+            "Kort workshop där vi bygger roller, relationer och scener tillsammans.",
             eventDate.AddDays(1).AddHours(11),
             eventDate.AddDays(1).AddHours(12),
             12,
