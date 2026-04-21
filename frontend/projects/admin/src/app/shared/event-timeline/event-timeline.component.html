@@ -4,12 +4,12 @@
     <span>{{ TL.empty }}</span>
   </div>
 } @else {
-  @if (hasConflict()) {
-    <div class="etl-conflict-banner">
+  <div class="etl-conflict-slot">
+    <div class="etl-conflict-banner" [class.visible]="hasConflict()" [attr.aria-hidden]="!hasConflict()">
       <mat-icon>warning</mat-icon>
       {{ TL.conflictBanner }}
     </div>
-  }
+  </div>
 
   <div class="etl-scroll">
     <div class="etl-header" [style.padding-left.px]="EVENT_LABEL_WIDTH">
@@ -72,8 +72,9 @@
                   [class.conflict]="db.hasConflict"
                   [style.left.px]="db.left"
                   [style.width.px]="db.width"
-                  [title]="TL.draftTitle">
-                  <span class="etl-block-label">{{ db.hasConflict ? TL.conflict : TL.inProgress }}</span>
+                  [title]="draftTooltip()">
+                  <span class="etl-block-label">{{ draftLabel() }}</span>
+                  <span class="etl-block-time">{{ formatTime(db.start) }}-{{ formatTime(db.end) }}</span>
                 </div>
               }
             }

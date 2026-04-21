@@ -7,6 +7,8 @@ export interface DraftBlock {
   start: string;
   end: string;
   sessionId?: string;
+  eventTitle?: string;
+  venueName?: string;
 }
 
 interface SessionBlock {
@@ -19,6 +21,8 @@ interface SessionBlock {
 
 interface DraftVisualBlock {
   venueId: string;
+  start: string;
+  end: string;
   left: number;
   width: number;
   hasConflict: boolean;
@@ -52,6 +56,45 @@ export class SessionTimelineComponent {
   readonly ROW_HEIGHT        = ROW_HEIGHT;
   readonly TL                = SESSION_TIMELINE;
 
+  // Aktiv session (om draft har sessionId)
+  readonly activeSession = computed(() => {
+    const d = this.draft();
+    if (!d?.sessionId) return null;
+    return this.sessions().find(s => s.sessionId === d.sessionId) ?? null;
+  });
+
+  readonly activeDraftTitle = computed(() => {
+    const d = this.draft();
+    const draftTitle = d?.eventTitle?.trim();
+    if (draftTitle) return draftTitle;
+
+    const activeTitle = this.activeSession()?.eventTitle?.trim();
+    if (activeTitle) return activeTitle;
+
+    const currentEventId = this.currentEventId();
+    if (!currentEventId) return null;
+
+    return this.sessions()
+      .find(s => s.eventId === currentEventId)
+      ?.eventTitle
+      ?.trim() ?? null;
+  });
+
+  readonly draftLabel = computed(() => {
+    const title = this.activeDraftTitle();
+    const prefix = this.hasConflict() ? this.TL.conflict : this.TL.inProgress;
+    return title ? title : prefix;
+  });
+
+  readonly draftTooltip = computed(() => {
+    const d = this.draft();
+    if (!d) return this.TL.draftTitle;
+
+    const title = this.activeDraftTitle();
+    const time = `${this.formatTime(d.start)}-${this.formatTime(d.end)}`;
+    return title ? `${title} ${time}` : time;
+  });
+
   // ── Time range ───────────────────────────────────────────────────────────
 
   private readonly timeRange = computed(() => {
@@ -68,6 +111,7 @@ export class SessionTimelineComponent {
     (this.timeRange().to.getTime() - this.timeRange().from.getTime()) / 60000 * PX_PER_MIN
   );
 
+  
   // Day header segments (one per calendar day)
   readonly daySegments = computed(() => {
     const { from, to } = this.timeRange();
@@ -168,10 +212,13 @@ export class SessionTimelineComponent {
     const { from } = this.timeRange();
     const conflicts = this.conflictingSessionIds();
     const currentEventId = this.currentEventId();
+    const draftSessionId = this.draft()?.sessionId;
     const map = new Map<string, SessionBlock[]>();
 
     for (const s of this.sessions()) {
       if (s.status !== 'Active') continue;
+      if (draftSessionId && s.sessionId === draftSessionId) continue;
+
       const left  = (new Date(s.start).getTime() - from.getTime()) / 60000 * PX_PER_MIN;
       const width = Math.max(
         (new Date(s.end).getTime() - new Date(s.start).getTime()) / 60000 * PX_PER_MIN,
@@ -202,7 +249,7 @@ export class SessionTimelineComponent {
       (new Date(d.end).getTime() - new Date(d.start).getTime()) / 60000 * PX_PER_MIN,
       20
     );
-    return { venueId: editVenueId, left, width, hasConflict: this.hasConflict() };
+    return { venueId: editVenueId, start: d.start, end: d.end, left, width, hasConflict: this.hasConflict() };
   });
 
   // ── Helpers ─────────────────────────────────────────────────────────────

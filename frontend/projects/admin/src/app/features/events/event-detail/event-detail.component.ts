@@ -137,6 +137,8 @@ export class EventDetailComponent implements OnInit {
       start:     v.startTime,
       end:       v.endTime,
       sessionId: this.editingSessionId() ?? undefined,
+      eventTitle: this.event()?.title ?? undefined,
+      venueName:  v.venueId ? this.venueName(v.venueId) : undefined,
     };
   });
 

@@ -216,6 +216,8 @@ export class SessionsOverviewComponent {
       start: values.startTime,
       end: values.endTime,
       sessionId: this.editingSessionId() ?? undefined,
+      eventTitle: values.eventId ? this.eventTitle(values.eventId) : undefined,
+      venueName: values.venueId ? this.venueById(values.venueId)?.name ?? values.venueId : undefined,
     };
   });
 

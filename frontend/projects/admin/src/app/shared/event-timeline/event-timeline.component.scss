@@ -18,6 +18,11 @@
   }
 }
 
+.etl-conflict-slot {
+  min-height: 34px;
+  border-bottom: 1px solid transparent;
+}
+
 .etl-conflict-banner {
   display: flex;
   align-items: center;
@@ -27,12 +32,18 @@
   color: #e65100;
   font-size: 0.8rem;
   font-weight: 500;
-  border-bottom: 1px solid #ffe0b2;
+  opacity: 0;
+  visibility: hidden;
 
   mat-icon {
     font-size: 16px;
     width: 16px;
     height: 16px;
+  }
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
   }
 }
 
@@ -184,6 +195,13 @@
 
   &.conflict {
     background: #f44336;
+  }
+
+  &.draft.conflict {
+    border-color: #fff;
+    box-shadow:
+      0 0 0 2px #b71c1c,
+      0 1px 2px rgba(0, 0, 0, 0.18);
   }
 }
 

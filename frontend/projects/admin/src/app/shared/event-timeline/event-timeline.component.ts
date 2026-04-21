@@ -19,6 +19,8 @@ interface EventBlock {
 
 interface DraftVisualBlock {
   eventId: string;
+  start: string;
+  end: string;
   left: number;
   width: number;
   hasConflict: boolean;
@@ -57,6 +59,38 @@ export class EventTimelineComponent {
       map.set(venue.id, venue.name);
     }
     return map;
+  });
+
+  readonly activeSession = computed(() => {
+    const d = this.draft();
+    if (!d?.sessionId) return null;
+    return this.sessions().find(s => s.sessionId === d.sessionId) ?? null;
+  });
+
+  readonly activeDraftTitle = computed(() => {
+    const d = this.draft();
+    const draftTitle = d?.venueName?.trim();
+    if (draftTitle) return draftTitle;
+
+    const activeVenueId = this.activeSession()?.venueId ?? this.editingVenueId();
+    if (!activeVenueId) return null;
+
+    return this.venueName(activeVenueId).trim() || null;
+  });
+
+  readonly draftLabel = computed(() => {
+    const title = this.activeDraftTitle();
+    const prefix = this.hasConflict() ? this.TL.conflict : this.TL.inProgress;
+    return title ? title : prefix;
+  });
+
+  readonly draftTooltip = computed(() => {
+    const d = this.draft();
+    if (!d) return this.TL.draftTitle;
+
+    const title = this.activeDraftTitle();
+    const time = `${this.formatTime(d.start)}-${this.formatTime(d.end)}`;
+    return title ? `${title} ${time}` : time;
   });
 
   private readonly timeRange = computed(() => {
@@ -131,7 +165,40 @@ export class EventTimelineComponent {
     return [...rows.values()].sort((a, b) => a.eventTitle.localeCompare(b.eventTitle, 'sv-SE'));
   });
 
-  private readonly conflictingSessionIds = computed((): Set<string> => {
+
+  // Alla sessioner som överlappar med någon annan session i samma lokal
+  private readonly allConflictingSessionIds = computed((): Set<string> => {
+    const draftSessionId = this.draft()?.sessionId;
+    const sessions = this.sessions().filter(s => s.status === 'Active' && s.sessionId !== draftSessionId);
+    const conflicts = new Set<string>();
+    // Grupp per lokal
+    const byVenue = new Map<string, EditionSessionDto[]>();
+    for (const s of sessions) {
+      if (!byVenue.has(s.venueId)) byVenue.set(s.venueId, []);
+      byVenue.get(s.venueId)!.push(s);
+    }
+    // För varje lokal, hitta överlappande sessioner
+    for (const venueSessions of byVenue.values()) {
+      for (let i = 0; i < venueSessions.length; i++) {
+        const a = venueSessions[i];
+        const aStart = new Date(a.start).getTime();
+        const aEnd = new Date(a.end).getTime();
+        for (let j = i + 1; j < venueSessions.length; j++) {
+          const b = venueSessions[j];
+          const bStart = new Date(b.start).getTime();
+          const bEnd = new Date(b.end).getTime();
+          if (aStart < bEnd && aEnd > bStart) {
+            conflicts.add(a.sessionId);
+            conflicts.add(b.sessionId);
+          }
+        }
+      }
+    }
+    return conflicts;
+  });
+
+  // Sessioner som överlappar med draft-blocket (för att markera draft-konflikt separat)
+  private readonly draftConflictingSessionIds = computed((): Set<string> => {
     const d = this.draft();
     const editVenueId = this.editingVenueId();
     if (!d?.start || !d?.end || !editVenueId) return new Set();
@@ -151,16 +218,19 @@ export class EventTimelineComponent {
     return ids;
   });
 
-  readonly hasConflict = computed(() => this.conflictingSessionIds().size > 0);
+  readonly hasConflict = computed(() => this.draftConflictingSessionIds().size > 0);
 
   private readonly blocksByEvent = computed(() => {
     const { from } = this.timeRange();
-    const conflicts = this.conflictingSessionIds();
+    const allConflicts = this.allConflictingSessionIds();
+    const draftConflicts = this.draftConflictingSessionIds();
     const selectedVenueId = this.editingVenueId();
+    const draftSessionId = this.draft()?.sessionId;
     const map = new Map<string, EventBlock[]>();
 
     for (const s of this.sessions()) {
       if (s.status !== 'Active') continue;
+      if (draftSessionId && s.sessionId === draftSessionId) continue;
 
       const left = (new Date(s.start).getTime() - from.getTime()) / 60000 * PX_PER_MIN;
       const width = Math.max(
@@ -173,7 +243,7 @@ export class EventTimelineComponent {
         left,
         width,
         isOwn: !!selectedVenueId && s.venueId === selectedVenueId,
-        hasConflict: conflicts.has(s.sessionId),
+        hasConflict: allConflicts.has(s.sessionId) || draftConflicts.has(s.sessionId),
       };
 
       if (!map.has(s.eventId)) map.set(s.eventId, []);
@@ -195,7 +265,7 @@ export class EventTimelineComponent {
       20
     );
 
-    return { eventId: currentEventId, left, width, hasConflict: this.hasConflict() };
+    return { eventId: currentEventId, start: d.start, end: d.end, left, width, hasConflict: this.hasConflict() };
   });
 
   getBlocksForEvent(eventId: string): EventBlock[] {
