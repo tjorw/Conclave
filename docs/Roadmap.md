@@ -84,3 +84,15 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - app-session-timeline och app-event-timeline
 - det gick att skicka in arrangemang trots att den anmälan är stängd
 - man skall endast kunna välja bland funktionär när man tilldelar pass.
+- public - funktionering skall visa funktionärsbiljetter
+- arrangör - skall visa arrangörsbiljetter
+- biljetter till arranggörer - man behöver bli tilldelad
+- bokningar väntlista - man hamnar där först
+- bokningar i arrangmang (tilldelning)
+-- först går först
+-- lottning
+-- manuell
+- språkstyrning
+-- engelsk version
+-admin bemanning, bryt isär till ansökningar och funktionsområden
+- default start och sluttid på evenemanget, men sätt per dag
