@@ -264,3 +264,14 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - `environment.ts` konfigureras med rätt `conventionId` och `apiBaseUrl`
 - Admin-konto skapas via `CreateConventionCommand` + `UserManager`
 - Välkomstmejl med inloggningsuppgifter för konventets admin
+
+
+## Refine
+- Laganmälningar
+- Innehåll och bilder
+- Taggar för arrangemang ("Barnvänligt", "18+", "Nybörjare"). Skall även vara filter publikt.
+- Bakgrundsjobb för mail m.m.
+- Föreslå startdatum i datum kontroller som är första dagen på konventet
+- motsvarande schemaläggning för bemanning
+- markdownbeskrivningar
+- schemaönskemål skulle kunna vara fritext
