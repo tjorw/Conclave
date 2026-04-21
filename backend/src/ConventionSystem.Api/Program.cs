@@ -75,6 +75,7 @@ var app = builder.Build();
 await app.Services.MigrateInfrastructureDatabasesAsync();
 
 await SystemAdminBootstrapper.SeedAsync(app.Services, app.Configuration);
+await SingleTenantBootstrapper.SeedAsync(app.Services, app.Configuration);
 
 if (app.Environment.IsDevelopment())
 {
