@@ -19,7 +19,7 @@
     <div class="cta-grid">
 
       <div class="cta-card" [class.cta-open]="ed.visitorRegistrationOpen">
-        <mat-icon class="cta-icon">confirmation_number</mat-icon>
+        <mat-icon class="mat-icon notranslate material-icons mat-ligature-font mat-icon-no-color cta-icon">local_activity</mat-icon>
         <h2>Bli besökare</h2>
         <p>Köp en biljett och delta i massor av evenemang under helgen.</p>
         @if (ed.visitorRegistrationOpen) {
@@ -32,7 +32,7 @@
       </div>
 
       <div class="cta-card" [class.cta-open]="ed.organiserRegistrationOpen">
-        <mat-icon class="cta-icon">event</mat-icon>
+        <mat-icon class="mat-icon notranslate material-icons mat-ligature-font mat-icon-no-color cta-icon">event</mat-icon>
         <h2>Arrangera ett evenemang</h2>
         <p>Har du en idé till ett rollspel, brädspelssession eller seminarium? Skicka in det!</p>
         @if (ed.organiserRegistrationOpen) {
@@ -45,7 +45,7 @@
       </div>
 
       <div class="cta-card" [class.cta-open]="ed.staffRegistrationOpen">
-        <mat-icon class="cta-icon">badge</mat-icon>
+        <mat-icon class="mat-icon notranslate material-icons mat-ligature-font mat-icon-no-color cta-icon">supervisor_account</mat-icon>
         <h2>Bli funktionär</h2>
         <p>Hjälp till att driva konventet och jobba bakom kulisserna.</p>
         @if (ed.staffRegistrationOpen) {
@@ -75,7 +75,7 @@
           <p class="event-desc">{{ event.description }}</p>
           @if (event.sessions.length > 0) {
             <span class="event-time">
-              <mat-icon>schedule</mat-icon>
+              <mat-icon class="mat-icon notranslate material-icons mat-ligature-font mat-icon-no-color">schedule</mat-icon>
               {{ firstSession(event) }}
             </span>
           }
