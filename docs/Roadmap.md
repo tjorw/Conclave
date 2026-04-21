@@ -81,8 +81,6 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - tidschemat skall markera alla överlapp/konflikter. inte bara det man valt nu.
 - varför startar tidsschemat på 08:00
 - renodla, standardisera knappar, css mm.
-- app-session-timeline och app-event-timeline
-- det gick att skicka in arrangemang trots att den anmälan är stängd
 - man skall endast kunna välja bland funktionär när man tilldelar pass.
 - public - funktionering skall visa funktionärsbiljetter
 - arrangör - skall visa arrangörsbiljetter
@@ -94,5 +92,4 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 -- manuell
 - språkstyrning
 -- engelsk version
--admin bemanning, bryt isär till ansökningar och funktionsområden
 - default start och sluttid på evenemanget, men sätt per dag
