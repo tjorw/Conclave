@@ -230,15 +230,23 @@
           </form>
         }
 
-        <form [formGroup]="venueForm" (ngSubmit)="addVenue()" class="inline-form">
-          <h4 class="form-title">Lägg till lokal</h4>
-          <div class="form-row">
-            <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
-            <mat-form-field><mat-label>Byggnad</mat-label><input matInput formControlName="building" /></mat-form-field>
-            <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
-            <button mat-flat-button color="accent" type="submit" [disabled]="venueForm.invalid || saving()">Lägg till</button>
-          </div>
-        </form>
+        @if (!showAddVenueForm()) {
+          <button mat-stroked-button type="button" class="inline-add-button" (click)="openAddVenueForm()" [disabled]="saving()">
+            <mat-icon>add</mat-icon>
+            Lägg till lokal
+          </button>
+        } @else {
+          <form [formGroup]="venueForm" (ngSubmit)="addVenue()" class="inline-form">
+            <h4 class="form-title">Lägg till lokal</h4>
+            <div class="form-row">
+              <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
+              <mat-form-field><mat-label>Byggnad</mat-label><input matInput formControlName="building" /></mat-form-field>
+              <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
+              <button mat-button type="button" (click)="cancelAddVenueForm()" [disabled]="saving()">Avbryt</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="venueForm.invalid || saving()">Lägg till</button>
+            </div>
+          </form>
+        }
       </div>
     </mat-tab>
 
@@ -310,20 +318,28 @@
           </form>
         }
 
-        <form [formGroup]="staffAreaForm" (ngSubmit)="addStaffArea()" class="inline-form">
-          <h4 class="form-title">Lägg till funktionsområde</h4>
-          <div class="form-row">
-            <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
-            <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
-            <mat-form-field>
-              <mat-label>Ansvarig</mat-label>
-              <mat-select formControlName="responsibleId">
-                @for (p of persons(); track p.id) { <mat-option [value]="p.id">{{ p.name }}</mat-option> }
-              </mat-select>
-            </mat-form-field>
-            <button mat-flat-button color="accent" type="submit" [disabled]="staffAreaForm.invalid || saving()">Lägg till</button>
-          </div>
-        </form>
+        @if (!showAddStaffAreaForm()) {
+          <button mat-stroked-button type="button" class="inline-add-button" (click)="openAddStaffAreaForm()" [disabled]="saving()">
+            <mat-icon>add</mat-icon>
+            Lägg till funktionsområde
+          </button>
+        } @else {
+          <form [formGroup]="staffAreaForm" (ngSubmit)="addStaffArea()" class="inline-form">
+            <h4 class="form-title">Lägg till funktionsområde</h4>
+            <div class="form-row">
+              <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
+              <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
+              <mat-form-field>
+                <mat-label>Ansvarig</mat-label>
+                <mat-select formControlName="responsibleId">
+                  @for (p of persons(); track p.id) { <mat-option [value]="p.id">{{ p.name }}</mat-option> }
+                </mat-select>
+              </mat-form-field>
+              <button mat-button type="button" (click)="cancelAddStaffAreaForm()" [disabled]="saving()">Avbryt</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="staffAreaForm.invalid || saving()">Lägg till</button>
+            </div>
+          </form>
+        }
       </div>
     </mat-tab>
 
@@ -384,20 +400,28 @@
           </form>
         }
 
-        <form [formGroup]="categoryForm" (ngSubmit)="addCategory()" class="inline-form">
-          <h4 class="form-title">Lägg till kategori</h4>
-          <div class="form-row">
-            <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
-            <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
-            <mat-form-field>
-              <mat-label>Ansvarig</mat-label>
-              <mat-select formControlName="responsibleId">
-                @for (p of persons(); track p.id) { <mat-option [value]="p.id">{{ p.name }}</mat-option> }
-              </mat-select>
-            </mat-form-field>
-            <button mat-flat-button color="accent" type="submit" [disabled]="categoryForm.invalid || saving()">Lägg till</button>
-          </div>
-        </form>
+        @if (!showAddCategoryForm()) {
+          <button mat-stroked-button type="button" class="inline-add-button" (click)="openAddCategoryForm()" [disabled]="saving()">
+            <mat-icon>add</mat-icon>
+            Lägg till kategori
+          </button>
+        } @else {
+          <form [formGroup]="categoryForm" (ngSubmit)="addCategory()" class="inline-form">
+            <h4 class="form-title">Lägg till kategori</h4>
+            <div class="form-row">
+              <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
+              <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
+              <mat-form-field>
+                <mat-label>Ansvarig</mat-label>
+                <mat-select formControlName="responsibleId">
+                  @for (p of persons(); track p.id) { <mat-option [value]="p.id">{{ p.name }}</mat-option> }
+                </mat-select>
+              </mat-form-field>
+              <button mat-button type="button" (click)="cancelAddCategoryForm()" [disabled]="saving()">Avbryt</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="categoryForm.invalid || saving()">Lägg till</button>
+            </div>
+          </form>
+        }
       </div>
     </mat-tab>
 
@@ -480,38 +504,46 @@
           </form>
         }
 
-        <form [formGroup]="addTicketTypeForm" (ngSubmit)="addTicketType()" class="inline-form">
-          <h4 class="form-title">Lägg till biljetttyp</h4>
-          <div class="form-row">
-            <mat-form-field><mat-label>{{ FIELD.name }}</mat-label><input matInput formControlName="name" /></mat-form-field>
-            <mat-form-field><mat-label>{{ PAGE.fieldPrice }}</mat-label><input matInput type="number" formControlName="price" min="0" /></mat-form-field>
-            <mat-form-field>
-              <mat-label>{{ FIELD.category }}</mat-label>
-              <mat-select formControlName="category">
-                @for (cat of ticketTypeCategories; track cat.value) {
-                  <mat-option [value]="cat.value">{{ cat.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field>
-              <mat-label>Giltiga dagar</mat-label>
-              <mat-select formControlName="validDays" multiple>
-                @for (day of editionDayOptions(); track day.value) {
-                  <mat-option [value]="day.value">{{ day.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field>
-              <mat-label>Tillåtna kategorier</mat-label>
-              <mat-select formControlName="allowedCategories" multiple>
-                @for (c of e.categories; track c.id) {
-                  <mat-option [value]="c.id">{{ c.name }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <button mat-flat-button color="accent" type="submit" [disabled]="addTicketTypeForm.invalid || saving()">{{ ACTION.add }}</button>
-          </div>
-        </form>
+        @if (!showAddTicketTypeForm()) {
+          <button mat-stroked-button type="button" class="inline-add-button" (click)="openAddTicketTypeForm()" [disabled]="saving()">
+            <mat-icon>add</mat-icon>
+            Lägg till biljetttyp
+          </button>
+        } @else {
+          <form [formGroup]="addTicketTypeForm" (ngSubmit)="addTicketType()" class="inline-form">
+            <h4 class="form-title">Lägg till biljetttyp</h4>
+            <div class="form-row">
+              <mat-form-field><mat-label>{{ FIELD.name }}</mat-label><input matInput formControlName="name" /></mat-form-field>
+              <mat-form-field><mat-label>{{ PAGE.fieldPrice }}</mat-label><input matInput type="number" formControlName="price" min="0" /></mat-form-field>
+              <mat-form-field>
+                <mat-label>{{ FIELD.category }}</mat-label>
+                <mat-select formControlName="category">
+                  @for (cat of ticketTypeCategories; track cat.value) {
+                    <mat-option [value]="cat.value">{{ cat.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Giltiga dagar</mat-label>
+                <mat-select formControlName="validDays" multiple>
+                  @for (day of editionDayOptions(); track day.value) {
+                    <mat-option [value]="day.value">{{ day.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Tillåtna kategorier</mat-label>
+                <mat-select formControlName="allowedCategories" multiple>
+                  @for (c of e.categories; track c.id) {
+                    <mat-option [value]="c.id">{{ c.name }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <button mat-button type="button" (click)="cancelAddTicketTypeForm()" [disabled]="saving()">{{ ACTION.cancel }}</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="addTicketTypeForm.invalid || saving()">{{ ACTION.add }}</button>
+            </div>
+          </form>
+        }
       </div>
     </mat-tab>
 

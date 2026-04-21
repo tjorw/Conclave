@@ -76,6 +76,10 @@ export class EditionDetailComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
+  readonly showAddVenueForm = signal(false);
+  readonly showAddStaffAreaForm = signal(false);
+  readonly showAddCategoryForm = signal(false);
+  readonly showAddTicketTypeForm = signal(false);
 
   // Edit targets
   readonly editingVenue = signal<VenueDto | null>(null);
@@ -437,6 +441,16 @@ export class EditionDetailComponent implements OnInit {
 
   // ── Lokaler ──────────────────────────────────────────────────────────────
 
+  openAddVenueForm(): void {
+    this.venueForm.reset();
+    this.showAddVenueForm.set(true);
+  }
+
+  cancelAddVenueForm(): void {
+    this.venueForm.reset();
+    this.showAddVenueForm.set(false);
+  }
+
   addVenue(): void {
     if (this.venueForm.invalid) return;
     const v = this.venueForm.value;
@@ -444,7 +458,7 @@ export class EditionDetailComponent implements OnInit {
     this.svc.createVenue(this.edition()!.id, {
       name: v.name!, building: v.building!, description: v.description || null,
     }).subscribe({
-      next: () => { this.reload(); this.venueForm.reset(); this.saving.set(false); },
+      next: () => { this.reload(); this.cancelAddVenueForm(); this.saving.set(false); },
       error: (err) => this.handleError(ERROR.createVenue, err),
     });
   }
@@ -481,6 +495,16 @@ export class EditionDetailComponent implements OnInit {
 
   // ── Funktionsområden ─────────────────────────────────────────────────────
 
+  openAddStaffAreaForm(): void {
+    this.staffAreaForm.reset();
+    this.showAddStaffAreaForm.set(true);
+  }
+
+  cancelAddStaffAreaForm(): void {
+    this.staffAreaForm.reset();
+    this.showAddStaffAreaForm.set(false);
+  }
+
   addStaffArea(): void {
     if (this.staffAreaForm.invalid) return;
     const v = this.staffAreaForm.value;
@@ -488,7 +512,7 @@ export class EditionDetailComponent implements OnInit {
     this.svc.createStaffArea(this.edition()!.id, {
       name: v.name!, description: v.description || null, responsibleId: v.responsibleId!,
     }).subscribe({
-      next: () => { this.reload(); this.staffAreaForm.reset(); this.saving.set(false); },
+      next: () => { this.reload(); this.cancelAddStaffAreaForm(); this.saving.set(false); },
       error: (err) => this.handleError(ERROR.createStaffArea, err),
     });
   }
@@ -525,6 +549,16 @@ export class EditionDetailComponent implements OnInit {
 
   // ── Kategorier ───────────────────────────────────────────────────────────
 
+  openAddCategoryForm(): void {
+    this.categoryForm.reset();
+    this.showAddCategoryForm.set(true);
+  }
+
+  cancelAddCategoryForm(): void {
+    this.categoryForm.reset();
+    this.showAddCategoryForm.set(false);
+  }
+
   addCategory(): void {
     if (this.categoryForm.invalid) return;
     const v = this.categoryForm.value;
@@ -532,7 +566,7 @@ export class EditionDetailComponent implements OnInit {
     this.svc.createCategory(this.edition()!.id, {
       name: v.name!, description: v.description || null, responsibleId: v.responsibleId!,
     }).subscribe({
-      next: () => { this.reload(); this.categoryForm.reset(); this.saving.set(false); },
+      next: () => { this.reload(); this.cancelAddCategoryForm(); this.saving.set(false); },
       error: (err) => this.handleError(ERROR.createCategory, err),
     });
   }
@@ -569,6 +603,26 @@ export class EditionDetailComponent implements OnInit {
 
   // ── Biljettyper ──────────────────────────────────────────────────────────
 
+  openAddTicketTypeForm(): void {
+    this.resetAddTicketTypeForm();
+    this.showAddTicketTypeForm.set(true);
+  }
+
+  cancelAddTicketTypeForm(): void {
+    this.resetAddTicketTypeForm();
+    this.showAddTicketTypeForm.set(false);
+  }
+
+  private resetAddTicketTypeForm(): void {
+    this.addTicketTypeForm.reset({
+      name: '',
+      price: 0,
+      category: 'Visitor',
+      validDays: [],
+      allowedCategories: [],
+    });
+  }
+
   addTicketType(): void {
     if (this.addTicketTypeForm.invalid) return;
     const v = this.addTicketTypeForm.value;
@@ -584,13 +638,7 @@ export class EditionDetailComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.reload();
-        this.addTicketTypeForm.reset({
-          name: '',
-          price: 0,
-          category: 'Visitor',
-          validDays: [],
-          allowedCategories: [],
-        });
+        this.cancelAddTicketTypeForm();
         this.saving.set(false);
       },
       error: (err) => this.handleError(ERROR.createTicketType, err),

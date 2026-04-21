@@ -40,6 +40,12 @@
   overflow-x: auto;
 }
 
+.tab-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
 .form-card {
   margin-bottom: 16px;
 }

@@ -58,6 +58,14 @@
 
       <mat-tab label="Kampanjkoder">
         <div class="tab-content">
+          <div class="tab-actions">
+            <button mat-stroked-button type="button" (click)="togglePromotionCodeForm()" [disabled]="saving()">
+              <mat-icon>add</mat-icon>
+              Skapa kampanjkod
+            </button>
+          </div>
+
+          @if (showPromotionCodeForm()) {
           <mat-card class="form-card">
             <mat-card-header>
               <mat-card-title>Skapa kampanjkod</mat-card-title>
@@ -113,6 +121,9 @@
                 </mat-form-field>
 
                 <div class="form-actions">
+                  <button mat-button type="button" (click)="togglePromotionCodeForm()" [disabled]="saving()">
+                    Avbryt
+                  </button>
                   <button mat-flat-button color="primary" type="submit" [disabled]="saving() || promotionCodeForm.invalid">
                     Skapa kampanjkod
                   </button>
@@ -120,6 +131,7 @@
               </form>
             </mat-card-content>
           </mat-card>
+          }
 
           <table class="data-table" aria-label="Kampanjkoder">
             <thead>

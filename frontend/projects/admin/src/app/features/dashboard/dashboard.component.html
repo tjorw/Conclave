@@ -12,12 +12,77 @@
 
   <div class="section-heading">
     <h2 class="section-title">Upplagor</h2>
-    <div class="sort-actions">
-      <button mat-button type="button" (click)="setEditionSort('name')">Namn <mat-icon>{{ editionSortIcon('name') }}</mat-icon></button>
-      <button mat-button type="button" (click)="setEditionSort('start')">Start <mat-icon>{{ editionSortIcon('start') }}</mat-icon></button>
-      <button mat-button type="button" (click)="setEditionSort('status')">Status <mat-icon>{{ editionSortIcon('status') }}</mat-icon></button>
+    <div class="section-actions">
+      <div class="sort-actions">
+        <button mat-button type="button" (click)="setEditionSort('name')">Namn <mat-icon>{{ editionSortIcon('name') }}</mat-icon></button>
+        <button mat-button type="button" (click)="setEditionSort('start')">Start <mat-icon>{{ editionSortIcon('start') }}</mat-icon></button>
+        <button mat-button type="button" (click)="setEditionSort('status')">Status <mat-icon>{{ editionSortIcon('status') }}</mat-icon></button>
+      </div>
+      <button mat-flat-button color="primary" type="button" (click)="toggleCreateForm()" [disabled]="saving()">
+        <mat-icon>add</mat-icon>
+        Skapa upplaga
+      </button>
     </div>
   </div>
+
+  @if (showCreateForm()) {
+    <mat-card class="create-card">
+      <mat-card-header>
+        <mat-card-title>Skapa ny upplaga</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="createForm" (ngSubmit)="create()" class="create-form">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ FIELD.name }}</mat-label>
+            <input matInput formControlName="name" [placeholder]="PLACEHOLDER.editionName" />
+          </mat-form-field>
+
+          <div class="date-row">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ FIELD.startDate }}</mat-label>
+              <input matInput type="date" formControlName="startDate" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ FIELD.endDate }}</mat-label>
+              <input matInput type="date" formControlName="endDate" />
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ FIELD.staffCoord }}</mat-label>
+            <mat-select formControlName="staffCoordinatorId">
+              @for (person of persons(); track person.id) {
+                <mat-option [value]="person.id">{{ person.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>{{ FIELD.eventCoord }}</mat-label>
+            <mat-select formControlName="eventCoordinatorId">
+              @for (person of persons(); track person.id) {
+                <mat-option [value]="person.id">{{ person.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="toggleCreateForm()" [disabled]="saving()">
+              {{ ACTION.cancel }}
+            </button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="createForm.invalid || saving()">
+              @if (saving()) {
+                <mat-spinner diameter="18" />
+              } @else {
+                {{ ACTION.create }}
+              }
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
 
   @if (editionContext.editions().length === 0) {
     <mat-card class="empty-card">
@@ -56,59 +121,4 @@
     </div>
   }
 
-  <mat-expansion-panel class="create-panel">
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        <mat-icon>add</mat-icon>
-        Skapa ny upplaga
-      </mat-panel-title>
-    </mat-expansion-panel-header>
-
-    <form [formGroup]="createForm" (ngSubmit)="create()" class="create-form">
-      <mat-form-field appearance="outline">
-        <mat-label>{{ FIELD.name }}</mat-label>
-        <input matInput formControlName="name" [placeholder]="PLACEHOLDER.editionName" />
-      </mat-form-field>
-
-      <div class="date-row">
-        <mat-form-field appearance="outline">
-          <mat-label>{{ FIELD.startDate }}</mat-label>
-          <input matInput type="date" formControlName="startDate" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>{{ FIELD.endDate }}</mat-label>
-          <input matInput type="date" formControlName="endDate" />
-        </mat-form-field>
-      </div>
-
-      <mat-form-field appearance="outline">
-        <mat-label>{{ FIELD.staffCoord }}</mat-label>
-        <mat-select formControlName="staffCoordinatorId">
-          @for (person of persons(); track person.id) {
-            <mat-option [value]="person.id">{{ person.name }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>{{ FIELD.eventCoord }}</mat-label>
-        <mat-select formControlName="eventCoordinatorId">
-          @for (person of persons(); track person.id) {
-            <mat-option [value]="person.id">{{ person.name }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <div class="form-actions">
-        <button mat-flat-button color="primary" type="submit" [disabled]="createForm.invalid || saving()">
-          @if (saving()) {
-            <mat-spinner diameter="18" />
-          } @else {
-            {{ ACTION.create }}
-          }
-        </button>
-      </div>
-    </form>
-  </mat-expansion-panel>
 }

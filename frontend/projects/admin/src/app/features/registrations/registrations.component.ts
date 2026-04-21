@@ -53,6 +53,7 @@ export class RegistrationsComponent {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
+  readonly showPromotionCodeForm = signal(false);
 
   readonly visitorRegistrations = signal<VisitorRegistrationAdminDto[]>([]);
   readonly promotionCodes = signal<PromotionCodeAdminDto[]>([]);
@@ -175,6 +176,26 @@ export class RegistrationsComponent {
     return payload?.detail ?? payload?.title ?? payload?.message ?? null;
   }
 
+  togglePromotionCodeForm(): void {
+    this.showPromotionCodeForm.update(open => !open);
+    if (!this.showPromotionCodeForm()) {
+      this.resetPromotionCodeForm();
+    }
+  }
+
+  private resetPromotionCodeForm(): void {
+    this.promotionCodeForm.reset({
+      code: '',
+      description: '',
+      discountType: 'Percentage',
+      discountValue: 0,
+      maxRedemptions: null,
+      validFrom: '',
+      validUntil: '',
+      allowedTicketTypeIds: [],
+    });
+  }
+
   confirmPayment(reg: VisitorRegistrationAdminDto): void {
     const ref = prompt('Ange betalningsreferens:');
     if (ref === null) return;
@@ -241,16 +262,8 @@ export class RegistrationsComponent {
       allowedTicketTypeIds: value.allowedTicketTypeIds.length > 0 ? value.allowedTicketTypeIds : null,
     }).subscribe({
       next: () => {
-        this.promotionCodeForm.reset({
-          code: '',
-          description: '',
-          discountType: 'Percentage',
-          discountValue: 0,
-          maxRedemptions: null,
-          validFrom: '',
-          validUntil: '',
-          allowedTicketTypeIds: [],
-        });
+        this.resetPromotionCodeForm();
+        this.showPromotionCodeForm.set(false);
         this.loadPromotionCodes(edition.id);
         this.saving.set(false);
       },

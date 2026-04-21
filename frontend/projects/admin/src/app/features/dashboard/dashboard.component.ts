@@ -6,7 +6,6 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -28,7 +27,6 @@ type EditionSortKey = 'name' | 'start' | 'end' | 'status';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatExpansionModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -52,6 +50,7 @@ export class DashboardComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
+  readonly showCreateForm = signal(false);
   readonly editionSort = signal<SortState<EditionSortKey>>({ key: 'start', direction: 'desc' });
 
   readonly createForm = this.fb.group({
@@ -94,6 +93,13 @@ export class DashboardComponent implements OnInit {
     return sortIcon(this.editionSort(), key);
   }
 
+  toggleCreateForm(): void {
+    this.showCreateForm.update(open => !open);
+    if (!this.showCreateForm()) {
+      this.createForm.reset();
+    }
+  }
+
   create(): void {
     if (this.createForm.invalid) return;
     const v = this.createForm.value;
@@ -107,6 +113,8 @@ export class DashboardComponent implements OnInit {
     }).subscribe({
       next: ({ id }) => {
         this.editionContext.reload();
+        this.createForm.reset();
+        this.showCreateForm.set(false);
         this.saving.set(false);
         this.router.navigate(['/editions', id]);
       },
