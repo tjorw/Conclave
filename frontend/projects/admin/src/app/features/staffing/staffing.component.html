@@ -1,3 +1,14 @@
+<div class="page-header">
+  <h1 class="page-title">Bemanning</h1>
+  <p class="page-subtitle">
+    @if (editionCtx.activeEdition(); as edition) {
+      Funktionsområden, pass och ansökningar för <strong>{{ edition.name }}</strong>
+    } @else {
+      Välj en upplaga i verktygsfältet
+    }
+  </p>
+</div>
+
 <mat-tab-group (selectedTabChange)="$event.index === 1 && onApplicationsTabSelected()">
 
   <!-- ── FUNKTIONSOMRÅDEN ──────────────────────────────────────────────── -->

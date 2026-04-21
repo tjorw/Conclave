@@ -1,5 +1,14 @@
-<div class="page-container">
-  <h1 class="page-title">Registrering</h1>
+<ng-container>
+  <div class="page-header">
+    <h1 class="page-title">Registrering</h1>
+    <p class="page-subtitle">
+      @if (editionCtx.activeEdition(); as edition) {
+        Besökarregistreringar och kampanjkoder för <strong>{{ edition.name }}</strong>
+      } @else {
+        Välj en upplaga i verktygsfältet
+      }
+    </p>
+  </div>
 
   @if (error()) {
     <p class="error-banner">{{ error() }}</p>
@@ -226,4 +235,4 @@
       </mat-tab>
     </mat-tab-group>
   }
-</div>
+</ng-container>

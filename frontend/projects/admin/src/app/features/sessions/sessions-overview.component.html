@@ -1,5 +1,12 @@
 <div class="page-header">
-  <h1>{{ PAGE.title }}</h1>
+  <h1 class="page-title">{{ PAGE.title }}</h1>
+  <p class="page-subtitle">
+    @if (editionContext.activeEdition(); as edition) {
+      Schemaöversikt för <strong>{{ edition.name }}</strong>
+    } @else {
+      Välj en upplaga i verktygsfältet
+    }
+  </p>
 </div>
 
 @if (error()) {
