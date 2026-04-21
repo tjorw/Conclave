@@ -1,0 +1,121 @@
+<div class="page-container staff-page">
+  <div class="back-link">
+    <a routerLink="/my-pages">← Mina sidor</a>
+  </div>
+
+  <header class="page-header">
+    <h1 class="page-title">Min funktionering</h1>
+  </header>
+
+  @if (loading()) {
+    <div class="loading">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else {
+    @if (error()) {
+      <p class="error-banner">{{ error() }}</p>
+    }
+
+    @if (application(); as app) {
+      <section class="card status-card">
+        <h2>Ansökningsstatus</h2>
+        <p class="status-row">
+          <span class="label">Status</span>
+          <span [class]="statusChipClass(app.status)">{{ statusLabel(app.status) }}</span>
+        </p>
+      </section>
+
+      <section class="card shift-card">
+        <h2>Tilldelade pass</h2>
+        @if (assignedShifts().length === 0) {
+          <p class="empty-text">Du har inga tilldelade pass ännu.</p>
+        } @else {
+          <div class="shift-list">
+            @for (shift of assignedShifts(); track shift.shiftId) {
+              <article class="shift-item">
+                <h3>{{ shift.stationName }}</h3>
+                <p>{{ displayDate(shift.start) }}</p>
+                <p>{{ displayTime(shift.start) }} - {{ displayTime(shift.end) }}</p>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    } @else {
+      <section class="card form-card">
+        <h2>Ansök som funktionär</h2>
+
+        @if (!staffRegistrationOpen()) {
+          <p class="registration-closed">
+            Funktionärsregistrering är inte öppen för denna upplaga just nu.
+          </p>
+        }
+
+        <form [formGroup]="applicationForm" (ngSubmit)="submitApplication()">
+          <div class="field-group">
+            <label for="interestDescription">Motivering</label>
+            <textarea
+              id="interestDescription"
+              formControlName="interestDescription"
+              rows="5"
+              placeholder="Beskriv hur du vill bidra och vad du har erfarenhet av"
+            ></textarea>
+          </div>
+
+          <div class="field-group">
+            <p class="group-label">Stationspreferenser</p>
+            @if (stations().length === 0) {
+              <p class="empty-text">Inga stationer är upplagda ännu.</p>
+            } @else {
+              <div class="checkbox-grid">
+                @for (station of stations(); track station.id) {
+                  <label class="checkbox-card">
+                    <input
+                      type="checkbox"
+                      [checked]="isStationSelected(station.id)"
+                      (change)="toggleStation(station.id, $any($event.target).checked)"
+                    />
+                    <span>{{ station.name }}</span>
+                  </label>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="field-group">
+            <p class="group-label">Tillgänglighet</p>
+            @if (availabilityDays().length === 0) {
+              <p class="empty-text">Inga datum finns upplagda för denna upplaga.</p>
+            } @else {
+              <div class="checkbox-grid days">
+                @for (day of availabilityDays(); track day.date) {
+                  <label class="checkbox-card">
+                    <input
+                      type="checkbox"
+                      [checked]="isAvailabilityDateSelected(day.date)"
+                      (change)="toggleAvailabilityDate(day.date, $any($event.target).checked)"
+                    />
+                    <span>{{ day.label }}</span>
+                  </label>
+                }
+              </div>
+            }
+          </div>
+
+          <button
+            mat-flat-button
+            type="submit"
+            class="submit-btn"
+            [disabled]="submitting() || !staffRegistrationOpen()"
+          >
+            @if (submitting()) {
+              Skickar ansökan...
+            } @else {
+              Skicka ansökan
+            }
+          </button>
+        </form>
+      </section>
+    }
+  }
+</div>

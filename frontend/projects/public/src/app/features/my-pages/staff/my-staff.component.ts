@@ -1,11 +1,11 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { firstValueFrom, forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { firstValueFrom, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import {
   ConventionService,
   MyAssignedShiftSummaryDto,
@@ -16,364 +16,22 @@ import {
 } from 'shared';
 import { EditionService } from '../../../services/edition.service';
 
+interface AvailabilityDay {
+  date: string;
+  label: string;
+}
+
+interface EditionDateRange {
+  start: string;
+  end: string;
+}
+
 @Component({
   selector: 'app-my-staff',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatProgressSpinnerModule],
-  template: `
-    <div class="page-container staff-page">
-      <div class="back-link">
-        <a routerLink="/my-pages">← Mina sidor</a>
-      </div>
-
-      <header class="page-header">
-        <h1 class="page-title">Min funktionering</h1>
-      </header>
-
-      @if (loading()) {
-        <div class="loading">
-          <mat-spinner diameter="40" />
-        </div>
-      } @else {
-        @if (error()) {
-          <p class="error-banner">{{ error() }}</p>
-        }
-
-        @if (application(); as app) {
-          <section class="card status-card">
-            <h2>Ansökningsstatus</h2>
-            <p class="status-row">
-              <span class="label">Status</span>
-              <span [class]="statusChipClass(app.status)">{{ statusLabel(app.status) }}</span>
-            </p>
-          </section>
-
-          <section class="card shift-card">
-            <h2>Tilldelade pass</h2>
-            @if (assignedShifts().length === 0) {
-              <p class="empty-text">Du har inga tilldelade pass ännu.</p>
-            } @else {
-              <div class="shift-list">
-                @for (shift of assignedShifts(); track shift.shiftId) {
-                  <article class="shift-item">
-                    <h3>{{ shift.stationName }}</h3>
-                    <p>{{ displayDate(shift.start) }}</p>
-                    <p>{{ displayTime(shift.start) }} - {{ displayTime(shift.end) }}</p>
-                  </article>
-                }
-              </div>
-            }
-          </section>
-        } @else {
-          <section class="card form-card">
-            <h2>Ansök som funktionär</h2>
-
-            @if (!staffRegistrationOpen()) {
-              <p class="registration-closed">
-                Funktionärsregistrering är inte öppen för denna upplaga just nu.
-              </p>
-            }
-
-            <form [formGroup]="applicationForm" (ngSubmit)="submitApplication()">
-              <div class="field-group">
-                <label for="interestDescription">Motivering</label>
-                <textarea
-                  id="interestDescription"
-                  formControlName="interestDescription"
-                  rows="5"
-                  placeholder="Beskriv hur du vill bidra och vad du har erfarenhet av"
-                ></textarea>
-                @if (applicationForm.controls.interestDescription.touched && applicationForm.controls.interestDescription.invalid) {
-                  <p class="field-error">Skriv minst 10 tecken i motiveringen.</p>
-                }
-              </div>
-
-              <div class="field-group">
-                <p class="group-label">Stationspreferenser</p>
-                @if (stations().length === 0) {
-                  <p class="empty-text">Inga stationer är upplagda ännu.</p>
-                } @else {
-                  <div class="checkbox-grid">
-                    @for (station of stations(); track station.id) {
-                      <label class="checkbox-card">
-                        <input
-                          type="checkbox"
-                          [checked]="isStationSelected(station.id)"
-                          (change)="toggleStation(station.id, $any($event.target).checked)"
-                        />
-                        <span>{{ station.name }}</span>
-                      </label>
-                    }
-                  </div>
-                }
-              </div>
-
-              <div class="field-group">
-                <p class="group-label">Tillgänglighet</p>
-                <div class="checkbox-grid days">
-                  <label class="checkbox-card">
-                    <input type="checkbox" formControlName="availableFriday" />
-                    <span>Fredag</span>
-                  </label>
-                  <label class="checkbox-card">
-                    <input type="checkbox" formControlName="availableSaturday" />
-                    <span>Lördag</span>
-                  </label>
-                  <label class="checkbox-card">
-                    <input type="checkbox" formControlName="availableSunday" />
-                    <span>Söndag</span>
-                  </label>
-                </div>
-              </div>
-
-              <button
-                mat-flat-button
-                type="submit"
-                class="submit-btn"
-                [disabled]="submitting() || !staffRegistrationOpen()"
-              >
-                @if (submitting()) {
-                  Skickar ansökan...
-                } @else {
-                  Skicka ansökan
-                }
-              </button>
-            </form>
-          </section>
-        }
-      }
-    </div>
-  `,
-  styles: [`
-    .staff-page {
-      padding-top: 32px;
-      padding-bottom: 48px;
-      max-width: 760px;
-    }
-
-    .back-link {
-      margin-bottom: 8px;
-      font-size: .875rem;
-    }
-
-    .back-link a {
-      color: var(--brand-primary);
-      text-decoration: none;
-    }
-
-    .back-link a:hover {
-      text-decoration: underline;
-    }
-
-    .page-header {
-      margin-bottom: 16px;
-    }
-
-    .page-title {
-      font-size: 1.75rem;
-      font-weight: 500;
-      color: var(--brand-primary);
-      margin: 0;
-    }
-
-    .loading {
-      display: flex;
-      justify-content: center;
-      padding: 48px 0;
-    }
-
-    .error-banner {
-      margin: 0 0 16px;
-      border-radius: 8px;
-      padding: 10px 12px;
-      background: #fdecea;
-      color: #8a1f11;
-      font-size: .9rem;
-    }
-
-    .card {
-      background: var(--brand-surface);
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, .07);
-      padding: 24px;
-    }
-
-    .card h2 {
-      font-size: 1.15rem;
-      margin: 0 0 16px;
-      color: var(--brand-text);
-    }
-
-    .status-card {
-      margin-bottom: 16px;
-    }
-
-    .status-row {
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .label {
-      color: var(--brand-text-muted);
-      font-size: .9rem;
-    }
-
-    .status-chip {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: .78rem;
-      font-weight: 500;
-    }
-
-    .status-chip.green {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-
-    .status-chip.orange {
-      background: #fff7ed;
-      color: #9a3412;
-    }
-
-    .status-chip.red {
-      background: #fdecea;
-      color: #8a1f11;
-    }
-
-    .shift-card {
-      margin-bottom: 16px;
-    }
-
-    .shift-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .shift-item {
-      border: 1px solid #dbe2ea;
-      border-radius: 10px;
-      padding: 12px 14px;
-    }
-
-    .shift-item h3 {
-      margin: 0 0 4px;
-      color: var(--brand-text);
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .shift-item p {
-      margin: 0;
-      color: var(--brand-text-muted);
-      font-size: .88rem;
-    }
-
-    .shift-item p + p {
-      margin-top: 2px;
-    }
-
-    .form-card form {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .field-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .field-group label,
-    .field-group .group-label {
-      margin: 0;
-      color: var(--brand-text);
-      font-weight: 500;
-      font-size: .95rem;
-    }
-
-    textarea {
-      border: 1px solid #dbe2ea;
-      border-radius: 10px;
-      padding: 10px 12px;
-      font: inherit;
-      background: #fff;
-      color: var(--brand-text);
-    }
-
-    textarea:focus {
-      outline: none;
-      border-color: var(--brand-primary);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 16%, transparent);
-    }
-
-    .checkbox-grid {
-      display: grid;
-      gap: 10px;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    }
-
-    .checkbox-grid.days {
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    }
-
-    .checkbox-card {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid #dbe2ea;
-      border-radius: 10px;
-      padding: 10px 12px;
-      background: #fff;
-      color: var(--brand-text);
-      cursor: pointer;
-    }
-
-    .checkbox-card input {
-      width: 16px;
-      height: 16px;
-    }
-
-    .field-error {
-      margin: 0;
-      color: #8a1f11;
-      font-size: .84rem;
-    }
-
-    .empty-text {
-      margin: 0;
-      color: var(--brand-text-muted);
-      font-size: .9rem;
-    }
-
-    .registration-closed {
-      margin: 0 0 4px;
-      border-radius: 8px;
-      padding: 10px 12px;
-      background: #fff7ed;
-      color: #9a3412;
-      font-size: .9rem;
-    }
-
-    .submit-btn {
-      width: fit-content;
-      background-color: var(--brand-primary) !important;
-      color: #fff !important;
-    }
-
-    @media (max-width: 680px) {
-      .card {
-        padding: 18px;
-      }
-
-      .checkbox-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  `],
+  templateUrl: './my-staff.component.html',
+  styleUrl: './my-staff.component.scss',
 })
 export class MyStaffComponent implements OnInit {
   private readonly editionSvc = inject(EditionService);
@@ -387,16 +45,20 @@ export class MyStaffComponent implements OnInit {
   readonly stations = signal<StationDto[]>([]);
   readonly application = signal<MyStaffApplicationDto | null>(null);
   readonly assignedShifts = signal<MyAssignedShiftSummaryDto[]>([]);
+  readonly editionDateRange = signal<EditionDateRange | null>(null);
 
   readonly staffRegistrationOpen = computed(
     () => this.editionSvc.edition()?.staffRegistrationOpen ?? false
   );
 
+  readonly availabilityDays = computed<AvailabilityDay[]>(() => {
+    const range = this.editionDateRange() ?? this.activeFeedDateRange();
+    return range ? this.createAvailabilityDays(range.start, range.end) : [];
+  });
+
   readonly applicationForm = this.fb.group({
-    interestDescription: this.fb.control('', { validators: [Validators.required, Validators.minLength(10)], nonNullable: true }),
-    availableFriday: this.fb.control(true, { nonNullable: true }),
-    availableSaturday: this.fb.control(true, { nonNullable: true }),
-    availableSunday: this.fb.control(true, { nonNullable: true }),
+    interestDescription: this.fb.control('', { validators: Validators.required, nonNullable: true }),
+    availabilityDates: this.fb.control<string[]>([], { nonNullable: true }),
     stationIds: this.fb.control<string[]>([], { nonNullable: true }),
   });
 
@@ -419,21 +81,23 @@ export class MyStaffComponent implements OnInit {
   }
 
   toggleStation(stationId: string, checked: boolean): void {
-    const selected = this.applicationForm.controls.stationIds.value;
-    const updated = checked
-      ? [...selected, stationId]
-      : selected.filter(id => id !== stationId);
+    this.updateStringSelection(this.applicationForm.controls.stationIds, stationId, checked);
+  }
 
-    this.applicationForm.controls.stationIds.setValue(updated);
+  isAvailabilityDateSelected(date: string): boolean {
+    return this.applicationForm.controls.availabilityDates.value.includes(date);
+  }
+
+  toggleAvailabilityDate(date: string, checked: boolean): void {
+    this.updateStringSelection(this.applicationForm.controls.availabilityDates, date, checked);
   }
 
   async submitApplication(): Promise<void> {
     if (this.submitting()) return;
 
     const editionId = this.editionSvc.editionId();
-    const edition = this.editionSvc.edition();
 
-    if (!editionId || !edition) {
+    if (!editionId) {
       this.error.set('Ingen aktiv upplaga hittades.');
       return;
     }
@@ -454,13 +118,13 @@ export class MyStaffComponent implements OnInit {
       return;
     }
 
-    const selectedWeekdays = this.selectedWeekdays();
-    if (selectedWeekdays.length === 0) {
+    const selectedAvailabilityDates = this.applicationForm.controls.availabilityDates.value;
+    if (selectedAvailabilityDates.length === 0) {
       this.error.set('Välj minst en dag för tillgänglighet.');
       return;
     }
 
-    const availabilityRanges = this.createAvailabilityRanges(edition.startDate, edition.endDate, selectedWeekdays);
+    const availabilityRanges = this.createAvailabilityRanges(selectedAvailabilityDates);
     if (availabilityRanges.length === 0) {
       this.error.set('Kunde inte beräkna tillgänglighet för valda dagar inom upplagans datum.');
       return;
@@ -484,8 +148,7 @@ export class MyStaffComponent implements OnInit {
 
       await this.loadApplicationState(editionId);
     } catch (err) {
-      const detail = this.toErrorMessage(err);
-      this.error.set(detail);
+      this.error.set(this.toErrorMessage(err));
     } finally {
       this.submitting.set(false);
     }
@@ -535,9 +198,17 @@ export class MyStaffComponent implements OnInit {
       next: result => {
         this.stations.set(result.edition?.stations ?? []);
         this.application.set(result.application);
-        this.assignedShifts.set(
-          [...result.shifts].sort((a, b) => Date.parse(a.start) - Date.parse(b.start))
+        this.editionDateRange.set(
+          result.edition
+            ? { start: result.edition.start, end: result.edition.end }
+            : this.activeFeedDateRange()
         );
+        this.assignedShifts.set(this.sortShifts(result.shifts));
+
+        if (!result.application) {
+          this.selectDefaultAvailabilityDates();
+        }
+
         this.loading.set(false);
       },
       error: () => {
@@ -554,44 +225,90 @@ export class MyStaffComponent implements OnInit {
     ]);
 
     this.application.set(application);
-    this.assignedShifts.set(
-      [...shifts].sort((a, b) => Date.parse(a.start) - Date.parse(b.start))
-    );
+    this.assignedShifts.set(this.sortShifts(shifts));
   }
 
-  private selectedWeekdays(): number[] {
-    const weekdays: number[] = [];
-    if (this.applicationForm.controls.availableFriday.value) weekdays.push(5);
-    if (this.applicationForm.controls.availableSaturday.value) weekdays.push(6);
-    if (this.applicationForm.controls.availableSunday.value) weekdays.push(0);
-    return weekdays;
+  private activeFeedDateRange(): EditionDateRange | null {
+    const edition = this.editionSvc.edition();
+    return edition ? { start: edition.startDate, end: edition.endDate } : null;
   }
 
-  private createAvailabilityRanges(startDate: string, endDate: string, weekdays: number[]): Array<{ from: string; to: string }> {
-    const start = new Date(`${startDate}T00:00:00`);
-    const end = new Date(`${endDate}T00:00:00`);
-    const ranges: Array<{ from: string; to: string }> = [];
+  private selectDefaultAvailabilityDates(): void {
+    if (this.applicationForm.controls.availabilityDates.value.length > 0) return;
+    this.applicationForm.controls.availabilityDates.setValue(this.availabilityDays().map(day => day.date));
+  }
 
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start > end) {
-      return ranges;
+  private createAvailabilityDays(startDate: string, endDate: string): AvailabilityDay[] {
+    const start = this.parseDateOnly(startDate);
+    const end = this.parseDateOnly(endDate);
+    const days: AvailabilityDay[] = [];
+
+    if (!start || !end || start > end) {
+      return days;
     }
 
     for (const current = new Date(start); current <= end; current.setDate(current.getDate() + 1)) {
-      if (!weekdays.includes(current.getDay())) continue;
-      const year = current.getFullYear();
-      const month = current.getMonth() + 1;
-      const day = current.getDate();
-      ranges.push({
-        from: `${year}-${this.pad2(month)}-${this.pad2(day)}T08:00:00`,
-        to: `${year}-${this.pad2(month)}-${this.pad2(day)}T23:00:00`,
+      const date = this.toDateOnly(current);
+      days.push({
+        date,
+        label: new Intl.DateTimeFormat('sv-SE', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+        }).format(current),
       });
     }
 
-    return ranges;
+    return days;
+  }
+
+  private createAvailabilityRanges(dates: string[]): Array<{ from: string; to: string }> {
+    const availableDates = new Set(this.availabilityDays().map(day => day.date));
+
+    return [...new Set(dates)]
+      .filter(date => availableDates.has(date))
+      .sort()
+      .map(date => ({
+        from: `${date}T08:00:00`,
+        to: `${date}T23:00:00`,
+      }));
+  }
+
+  private parseDateOnly(value: string): Date | null {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+    if (!match) return null;
+
+    const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  private toDateOnly(value: Date): string {
+    return [
+      value.getFullYear(),
+      this.pad2(value.getMonth() + 1),
+      this.pad2(value.getDate()),
+    ].join('-');
   }
 
   private pad2(value: number): string {
     return value.toString().padStart(2, '0');
+  }
+
+  private sortShifts(shifts: MyAssignedShiftSummaryDto[]): MyAssignedShiftSummaryDto[] {
+    return [...shifts].sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+  }
+
+  private updateStringSelection(
+    control: typeof this.applicationForm.controls.stationIds,
+    value: string,
+    checked: boolean
+  ): void {
+    const selected = control.value;
+    const updated = checked
+      ? [...new Set([...selected, value])]
+      : selected.filter(id => id !== value);
+
+    control.setValue(updated);
   }
 
   private toErrorMessage(error: unknown): string {

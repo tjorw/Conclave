@@ -83,6 +83,4 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - renodla, standardisera knappar, css mm.
 - app-session-timeline och app-event-timeline
 - det gick att skicka in arrangemang trots att den anmälan är stängd
-- ta bort begränssning i motivering till staff
 - man skall endast kunna välja bland funktionär när man tilldelar pass.
-- svårt att matcha funktionären mot önskemål
