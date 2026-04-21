@@ -5,7 +5,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
-import { AuthService, GlobalStatusBannerComponent, SessionStateService } from 'shared';
+import { AuthService, ContextDebugComponent, GlobalStatusBannerComponent, SessionStateService } from 'shared';
 
 @Component({
   selector: 'app-shell',
@@ -20,6 +20,7 @@ import { AuthService, GlobalStatusBannerComponent, SessionStateService } from 's
     MatButtonModule,
     MatListModule,
     GlobalStatusBannerComponent,
+    ContextDebugComponent,
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',

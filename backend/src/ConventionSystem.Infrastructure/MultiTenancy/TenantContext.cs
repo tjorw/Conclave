@@ -10,6 +10,7 @@ public interface ITenantContext
 
 public sealed class DefaultTenantContext(
     IHttpContextAccessor httpContextAccessor,
+    IAmbientTenantContext ambientTenantContext,
     IOptions<MultitenancyOptions> options) : ITenantContext
 {
     private const string SystemPathPrefix = "/system";
@@ -18,6 +19,9 @@ public sealed class DefaultTenantContext(
     {
         get
         {
+            if (ambientTenantContext.TenantId is Guid ambientTenantId)
+                return ambientTenantId;
+
             var httpContext = httpContextAccessor.HttpContext;
 
             if (httpContext is null)

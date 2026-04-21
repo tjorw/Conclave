@@ -76,6 +76,7 @@ public static class InfrastructureServiceExtensions
             .Bind(configuration.GetSection(MultitenancyOptions.SectionName));
 
         services.AddMemoryCache();
+        services.AddSingleton<IAmbientTenantContext, AmbientTenantContext>();
         services.AddScoped<ITenantContext, DefaultTenantContext>();
         services.AddDbContextFactory<TenantLookupDbContext>(options =>
             options

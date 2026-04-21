@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { AuthService, GlobalStatusBannerComponent, SessionStateService } from 'shared';
+import { AuthService, ContextDebugComponent, GlobalStatusBannerComponent, SessionStateService } from 'shared';
 import { EditionContextService } from '../services/edition-context.service';
 import { NAV } from '../labels/nav.labels';
 import { ACTION } from '../labels/ui.labels';
@@ -29,6 +29,7 @@ import { ACTION } from '../labels/ui.labels';
     MatSelectModule,
     MatFormFieldModule,
     GlobalStatusBannerComponent,
+    ContextDebugComponent,
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',

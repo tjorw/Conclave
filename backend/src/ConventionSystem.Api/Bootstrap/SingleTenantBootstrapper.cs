@@ -1,17 +1,20 @@
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateConvention;
+using ConventionSystem.Application.Tenancy.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Tenancy.Aggregates;
+using ConventionSystem.Domain.Tenancy.Ids;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.MultiTenancy;
+using ConventionSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace ConventionSystem.Api.Bootstrap;
 
 public static class SingleTenantBootstrapper
 {
-    private static readonly Guid SingleTenantId = Guid.Empty;
-
     public static async Task SeedAsync(IServiceProvider appServices, IConfiguration configuration)
     {
         var multitenancy = configuration.GetSection(MultitenancyOptions.SectionName).Get<MultitenancyOptions>()
@@ -33,10 +36,18 @@ public static class SingleTenantBootstrapper
 
         var logger = appServices.GetRequiredService<ILogger<Program>>();
         var sender = sp.GetRequiredService<ISender>();
+        var ambientTenantContext = sp.GetRequiredService<IAmbientTenantContext>();
+        var tenantRepository = sp.GetRequiredService<ITenantRepository>();
+        var db = sp.GetRequiredService<ConventionDbContext>();
         var conventionRepo = sp.GetRequiredService<IConventionRepository>();
         var personRepo = sp.GetRequiredService<IPersonRepository>();
         var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
         var tenantAwareUserService = sp.GetRequiredService<TenantAwareUserService>();
+
+        var defaultTenantId = await EnsureDefaultTenantAsync(tenantRepository, multitenancy.DefaultSubdomain);
+        await NormalizeExistingSingleTenantRowsAsync(db, defaultTenantId);
+
+        using var tenantScope = ambientTenantContext.Use(defaultTenantId);
 
         var convention = await conventionRepo.GetSingleAsync();
         if (convention is null)
@@ -67,7 +78,7 @@ public static class SingleTenantBootstrapper
             await conventionRepo.SaveAsync();
         }
 
-        var existingAdminUser = await tenantAwareUserService.FindTenantUserAsync(options.AdminEmail, SingleTenantId);
+        var existingAdminUser = await tenantAwareUserService.FindTenantUserAsync(options.AdminEmail, defaultTenantId);
         if (existingAdminUser is null)
         {
             var user = new ApplicationUser
@@ -75,7 +86,7 @@ public static class SingleTenantBootstrapper
                 UserName = options.AdminEmail,
                 Email = options.AdminEmail,
                 UserType = UserType.TenantUser,
-                TenantId = SingleTenantId,
+                TenantId = defaultTenantId,
                 PersonId = adminPerson.Id.Value,
                 EmailConfirmed = true
             };
@@ -90,6 +101,12 @@ public static class SingleTenantBootstrapper
         else
         {
             var changed = false;
+            if (existingAdminUser.TenantId != defaultTenantId)
+            {
+                existingAdminUser.TenantId = defaultTenantId;
+                changed = true;
+            }
+
             if (existingAdminUser.PersonId != adminPerson.Id.Value)
             {
                 existingAdminUser.PersonId = adminPerson.Id.Value;
@@ -131,6 +148,51 @@ public static class SingleTenantBootstrapper
             throw new InvalidOperationException("SingleTenantBootstrap is enabled but AdminEmail is missing.");
         if (string.IsNullOrWhiteSpace(options.AdminPassword))
             throw new InvalidOperationException("SingleTenantBootstrap is enabled but AdminPassword is missing.");
+    }
+
+    private static async Task<Guid> EnsureDefaultTenantAsync(
+        ITenantRepository tenantRepository,
+        string defaultSubdomain)
+    {
+        var normalizedSubdomain = string.IsNullOrWhiteSpace(defaultSubdomain)
+            ? "default"
+            : defaultSubdomain.Trim().ToLowerInvariant();
+
+        var existingTenant = (await tenantRepository.ListAsync())
+            .FirstOrDefault(tenant => tenant.Subdomain == normalizedSubdomain);
+
+        if (existingTenant is not null)
+            return existingTenant.Id;
+
+        var tenant = new Tenant(TenantId.New(), normalizedSubdomain, "Default Tenant");
+        await tenantRepository.AddAsync(tenant);
+        await tenantRepository.SaveAsync();
+        return tenant.Id.Value;
+    }
+
+    private static Task NormalizeExistingSingleTenantRowsAsync(ConventionDbContext db, Guid defaultTenantId)
+    {
+        return db.Database.ExecuteSqlInterpolatedAsync($@"
+DECLARE @TenantId uniqueidentifier = {defaultTenantId};
+DECLARE @EmptyTenantId uniqueidentifier = '00000000-0000-0000-0000-000000000000';
+DECLARE @Sql nvarchar(max) = N'';
+
+SELECT @Sql = @Sql + N'
+UPDATE ' + QUOTENAME(SCHEMA_NAME(t.[schema_id])) + N'.' + QUOTENAME(t.[name]) + N'
+SET [tenant_id] = @TenantId
+WHERE [tenant_id] = @EmptyTenantId;'
+FROM sys.tables t
+JOIN sys.columns c ON c.[object_id] = t.[object_id]
+WHERE c.[name] = N'tenant_id';
+
+IF @Sql <> N''
+BEGIN
+    EXEC sp_executesql
+        @Sql,
+        N'@TenantId uniqueidentifier, @EmptyTenantId uniqueidentifier',
+        @TenantId,
+        @EmptyTenantId;
+END");
     }
 }
 

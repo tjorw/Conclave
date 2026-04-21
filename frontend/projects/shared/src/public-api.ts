@@ -43,3 +43,4 @@ export * from './lib/labels/staff.labels';
 // Components
 export * from './lib/components/date-time-range.component';
 export * from './lib/components/global-status-banner.component';
+export * from './lib/components/context-debug.component';

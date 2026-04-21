@@ -3,7 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { AuthService, GlobalStatusBannerComponent, SessionStateService } from 'shared';
+import { AuthService, ContextDebugComponent, GlobalStatusBannerComponent, SessionStateService } from 'shared';
 import { EditionService } from '../services/edition.service';
 
 @Component({
@@ -16,6 +16,7 @@ import { EditionService } from '../services/edition.service';
     MatButtonModule,
     MatIconModule,
     GlobalStatusBannerComponent,
+    ContextDebugComponent,
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
