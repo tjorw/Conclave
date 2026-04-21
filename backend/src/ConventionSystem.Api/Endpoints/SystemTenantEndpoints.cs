@@ -13,7 +13,6 @@ using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Tenancy.Ids;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.MultiTenancy;
-using ConventionSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 

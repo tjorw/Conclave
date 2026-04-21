@@ -3,10 +3,8 @@ using ConventionSystem.Application.Convention.Commands.CreateConvention;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Infrastructure.Identity;
-using ConventionSystem.Infrastructure.Persistence;
 using ConventionSystem.Application.Common;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace ConventionSystem.Api.DevData;
 
@@ -20,11 +18,11 @@ public static class DevDataSeeder
         await using var scope = appServices.CreateAsyncScope();
         var sp = scope.ServiceProvider;
 
-        var conventionDb = sp.GetRequiredService<ConventionDbContext>();
         var logger = appServices.GetRequiredService<ILogger<Program>>();
+        var conventionRepo = sp.GetRequiredService<IConventionRepository>();
 
         // Hoppa över seeding om konvention redan finns
-        if (await conventionDb.Conventions.AnyAsync())
+        if (await conventionRepo.GetSingleAsync() is not null)
             return;
 
         logger.LogInformation("Seeder: skapar demo-data...");
@@ -32,7 +30,6 @@ public static class DevDataSeeder
         var conventionId = Guid.CreateVersion7();
         var sender = sp.GetRequiredService<ISender>();
         var personRepo = sp.GetRequiredService<IPersonRepository>();
-        var conventionRepo = sp.GetRequiredService<IConventionRepository>();
         var editionRepo = sp.GetRequiredService<IEditionRepository>();
 
         // Konvention + admin-person via command (kräver ej auth)

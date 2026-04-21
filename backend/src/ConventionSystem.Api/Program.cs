@@ -8,10 +8,8 @@ using ConventionSystem.Api.Endpoints;
 using ConventionSystem.Api.Services;
 using ConventionSystem.Infrastructure;
 using ConventionSystem.Infrastructure.Identity;
-using ConventionSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.FileProviders;
 using System.Text;
@@ -74,12 +72,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Migrera databaser automatiskt vid uppstart
-using (var scope = app.Services.CreateScope())
-{
-    await scope.ServiceProvider.GetRequiredService<ConventionDbContext>().Database.MigrateAsync();
-    await scope.ServiceProvider.GetRequiredService<ApplicationIdentityDbContext>().Database.MigrateAsync();
-}
+await app.Services.MigrateInfrastructureDatabasesAsync();
 
 await SystemAdminBootstrapper.SeedAsync(app.Services, app.Configuration);
 
