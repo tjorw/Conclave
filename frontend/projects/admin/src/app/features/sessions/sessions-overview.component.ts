@@ -22,6 +22,7 @@ import {
   EventService,
   START_TYPE_LABEL,
   VenueDto,
+  DateTimeRangeComponent,
 } from 'shared';
 import { ERROR } from '../../labels/errors.labels';
 import { SESSIONS_OVERVIEW } from '../../labels/pages.labels';
@@ -49,6 +50,7 @@ import { DraftBlock, SessionTimelineComponent } from '../../shared/session-timel
     MatTooltipModule,
     EventTimelineComponent,
     SessionTimelineComponent,
+    DateTimeRangeComponent,
   ],
   templateUrl: './sessions-overview.component.html',
   styleUrl: './sessions-overview.component.scss',
