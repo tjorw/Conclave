@@ -29,44 +29,6 @@
   color: #6b7280;
 }
 
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-  margin-top: 16px;
-
-  th, td {
-    padding: 10px 12px;
-    text-align: left;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  th {
-    font-weight: 600;
-    color: #374151;
-    background: #f9fafb;
-  }
-
-  tr:hover td {
-    background: #f9fafb;
-  }
-}
-
-.actions-cell {
-  text-align: right;
-  white-space: nowrap;
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.empty-row {
-  text-align: center;
-  color: #9ca3af;
-  font-style: italic;
-  padding: 24px !important;
-}
-
 .status-chip {
   display: inline-block;
   padding: 2px 10px;
@@ -81,6 +43,7 @@
 
 .tab-content {
   padding-top: 16px;
+  overflow-x: auto;
 }
 
 .form-card {
@@ -111,22 +74,4 @@
   display: flex;
   justify-content: center;
   padding: 20px 0;
-}
-
-.nested-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.8125rem;
-
-  th, td {
-    padding: 8px 10px;
-    text-align: left;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  th {
-    font-weight: 600;
-    color: #374151;
-    background: #eef2f7;
-  }
 }
