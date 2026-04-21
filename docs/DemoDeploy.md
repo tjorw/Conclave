@@ -19,6 +19,7 @@ Runtime-profilen är `Demo`.
 - publicerad artifact från `dotnet publish`
 - en nåbar SQL Server
 - miljövariabler för databas, JWT och klientlänkar
+- miljövariabler för e-post om SMTP eller SendGrid ska användas
 - en host som kan exponera samma origin för API och klienter
 
 ## Publish lokalt
@@ -54,10 +55,19 @@ Sätt dessutom e-post efter vald strategi:
   `Email__Provider=Logging`
 - för riktig SMTP:
   `Email__Provider=Smtp`
+  `Email__FromName="Conclave Demo"`
+  `Email__FromEmail=noreply@demo.example.com`
   `Email__Smtp__Host=...`
-  `Email__Smtp__Port=...`
+  `Email__Smtp__Port=587`
+  `Email__Smtp__UseSsl=false`
+  `Email__Smtp__UseStartTls=true`
   `Email__Smtp__Username=...`
   `Email__Smtp__Password=...`
+- för SendGrid:
+  `Email__Provider=SendGrid`
+  `Email__FromName="Conclave Demo"`
+  `Email__FromEmail=noreply@demo.example.com`
+  `Email__SendGrid__ApiKey=...`
 
 ## Rekommenderad demo-policy
 
@@ -92,6 +102,32 @@ Om du vill ändra databas eller port:
 ./scripts/Run-DemoLocal.ps1 `
   -ConnectionString "Server=.;Database=ConventionSystemDemo2;Trusted_Connection=True;TrustServerCertificate=True;" `
   -BaseUrl "http://localhost:5100"
+```
+
+Om du vill köra lokal demo-artifact mot SMTP:
+
+```powershell
+./scripts/Run-DemoLocal.ps1 `
+  -EmailProvider Smtp `
+  -EmailFromName "Conclave Demo" `
+  -EmailFromEmail "noreply@demo.example.com" `
+  -SmtpHost "smtp.example.com" `
+  -SmtpPort 587 `
+  -SmtpUseStartTls $true `
+  -SmtpUsername "smtp-user" `
+  -SmtpPassword "smtp-password"
+```
+
+Använd `-SmtpUseSsl $true -SmtpUseStartTls $false` för SMTP-servrar som kräver SSL direkt vid anslutning.
+
+Om du vill köra lokal demo-artifact mot SendGrid:
+
+```powershell
+./scripts/Run-DemoLocal.ps1 `
+  -EmailProvider SendGrid `
+  -EmailFromName "Conclave Demo" `
+  -EmailFromEmail "noreply@demo.example.com" `
+  -SendGridApiKey "sendgrid-api-key"
 ```
 
 Om en tidigare lokal demo-instans redan använder porten kan du låta scriptet starta om den:

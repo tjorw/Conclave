@@ -7,6 +7,15 @@ param(
     [string]$JwtIssuer = "ConventionSystem",
     [string]$JwtAudience = "ConventionSystem",
     [string]$EmailProvider = "Logging",
+    [string]$EmailFromName = "Conclave Demo",
+    [string]$EmailFromEmail = "noreply@example.com",
+    [string]$SmtpHost = "",
+    [int]$SmtpPort = 587,
+    [bool]$SmtpUseSsl = $false,
+    [bool]$SmtpUseStartTls = $true,
+    [string]$SmtpUsername = "",
+    [string]$SmtpPassword = "",
+    [string]$SendGridApiKey = "",
     [switch]$ForceRestart
 )
 
@@ -126,6 +135,15 @@ $previousEnvironment = @{
     App__AdminUrlTemplate = $env:App__AdminUrlTemplate
     App__PortalUrl = $env:App__PortalUrl
     Email__Provider = $env:Email__Provider
+    Email__FromName = $env:Email__FromName
+    Email__FromEmail = $env:Email__FromEmail
+    Email__Smtp__Host = $env:Email__Smtp__Host
+    Email__Smtp__Port = $env:Email__Smtp__Port
+    Email__Smtp__UseSsl = $env:Email__Smtp__UseSsl
+    Email__Smtp__UseStartTls = $env:Email__Smtp__UseStartTls
+    Email__Smtp__Username = $env:Email__Smtp__Username
+    Email__Smtp__Password = $env:Email__Smtp__Password
+    Email__SendGrid__ApiKey = $env:Email__SendGrid__ApiKey
     UseHttpsRedirect = $env:UseHttpsRedirect
 }
 
@@ -140,12 +158,22 @@ try {
     $env:App__AdminUrlTemplate = "$baseUrlTrimmed/admin"
     $env:App__PortalUrl = "$baseUrlTrimmed/portal"
     $env:Email__Provider = $EmailProvider
+    $env:Email__FromName = $EmailFromName
+    $env:Email__FromEmail = $EmailFromEmail
+    $env:Email__Smtp__Host = $SmtpHost
+    $env:Email__Smtp__Port = [string]$SmtpPort
+    $env:Email__Smtp__UseSsl = [string]$SmtpUseSsl
+    $env:Email__Smtp__UseStartTls = [string]$SmtpUseStartTls
+    $env:Email__Smtp__Username = $SmtpUsername
+    $env:Email__Smtp__Password = $SmtpPassword
+    $env:Email__SendGrid__ApiKey = $SendGridApiKey
     $env:UseHttpsRedirect = "false"
 
     Write-Host "Starting local demo artifact on $BaseUrl"
     Write-Host "Public : $baseUrlTrimmed/"
     Write-Host "Admin  : $baseUrlTrimmed/admin/"
     Write-Host "Portal : $baseUrlTrimmed/portal/"
+    Write-Host "Email  : $EmailProvider"
 
     $outputLog = Join-Path $publishPath "run-demo-stdout.log"
     $errorLog = Join-Path $publishPath "run-demo-stderr.log"
