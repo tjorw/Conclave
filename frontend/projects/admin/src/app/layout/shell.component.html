@@ -118,9 +118,13 @@
           <span matListItemTitle>{{ NAV.visitors }}</span>
         </a>
         
-        <a mat-list-item routerLink="registrations" routerLinkActive="active-link">
+        <a mat-list-item routerLink="registrations/visitors" routerLinkActive="active-link">
           <mat-icon matListItemIcon>confirmation_number</mat-icon>
-          <span matListItemTitle>{{ NAV.registrations }}</span>
+          <span matListItemTitle>{{ NAV.visitorRegistrations }}</span>
+        </a>
+        <a mat-list-item routerLink="registrations/promotion-codes" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>local_offer</mat-icon>
+          <span matListItemTitle>{{ NAV.promotionCodes }}</span>
         </a>
       }
       <mat-divider />      

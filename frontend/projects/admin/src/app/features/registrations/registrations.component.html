@@ -1,9 +1,9 @@
 <ng-container>
   <div class="page-header">
-    <h1 class="page-title">Registrering</h1>
+    <h1 class="page-title">{{ pageTitle() }}</h1>
     <p class="page-subtitle">
       @if (editionCtx.activeEdition(); as edition) {
-        Besökarregistreringar och kampanjkoder för <strong>{{ edition.name }}</strong>
+        {{ pageTitle() }} för <strong>{{ edition.name }}</strong>
       } @else {
         Välj en upplaga i verktygsfältet
       }
@@ -20,8 +20,7 @@
     <div class="loading-center"><mat-spinner diameter="40" /></div>
   } @else {
 
-    <mat-tab-group animationDuration="150ms">
-      <mat-tab label="Besökarregistreringar">
+    @if (page() === 'visitors') {
         <div class="tab-content">
           <table class="data-table" aria-label="Besökarregistreringar">
             <thead>
@@ -63,9 +62,7 @@
             </tbody>
           </table>
         </div>
-      </mat-tab>
-
-      <mat-tab label="Kampanjkoder">
+    } @else {
         <div class="tab-content">
           <div class="tab-actions">
             <button mat-stroked-button type="button" (click)="togglePromotionCodeForm()" [disabled]="saving()">
@@ -232,7 +229,6 @@
             </tbody>
           </table>
         </div>
-      </mat-tab>
-    </mat-tab-group>
+    }
   }
 </ng-container>

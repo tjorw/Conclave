@@ -45,11 +45,11 @@ export class ShellComponent implements OnInit {
   readonly NAV    = NAV;
   readonly ACTION = ACTION;
   readonly collapsedNavSections: Record<NavSection, boolean> = {
-    editions: false,
-    persons: false,
-    events: false,
-    staffing: false,
-    visitors: false,
+    editions: true,
+    persons: true,
+    events: true,
+    staffing: true,
+    visitors: true,
   };
 
   ngOnInit(): void {

@@ -111,12 +111,22 @@ export const routes: Routes = [
             m => m.StaffApplicationsComponent
           ),
       },
+      { path: 'registrations', redirectTo: 'registrations/visitors', pathMatch: 'full' },
       {
-        path: 'registrations',
+        path: 'registrations/visitors',
         loadComponent: () =>
           import('./features/registrations/registrations.component').then(
             m => m.RegistrationsComponent
           ),
+        data: { page: 'visitors' },
+      },
+      {
+        path: 'registrations/promotion-codes',
+        loadComponent: () =>
+          import('./features/registrations/registrations.component').then(
+            m => m.RegistrationsComponent
+          ),
+        data: { page: 'promotion-codes' },
       },
       {
         path: 'feeds',

@@ -8,7 +8,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { MatTabsModule } from '@angular/material/tabs';
+import { ActivatedRoute } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import {
@@ -27,6 +29,7 @@ import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
 type RegistrationSortKey = 'person' | 'ticket' | 'status' | 'registered' | 'payment';
 type PromotionSortKey = 'code' | 'description' | 'discount' | 'status' | 'redemptions' | 'validity' | 'tickets';
 type PromotionHistorySortKey = 'person' | 'ticket' | 'discount' | 'finalPrice' | 'redeemed';
+type RegistrationPage = 'visitors' | 'promotion-codes';
 
 @Component({
   selector: 'app-registrations',
@@ -41,7 +44,6 @@ type PromotionHistorySortKey = 'person' | 'ticket' | 'discount' | 'finalPrice' |
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
-    MatTabsModule,
   ],
   templateUrl: './registrations.component.html',
   styleUrl: './registrations.component.scss',
@@ -49,8 +51,16 @@ type PromotionHistorySortKey = 'person' | 'ticket' | 'discount' | 'finalPrice' |
 export class RegistrationsComponent {
   private readonly fb = inject(FormBuilder);
   private readonly svc = inject(RegistrationService);
+  private readonly route = inject(ActivatedRoute);
   readonly editionCtx = inject(EditionContextService);
 
+  readonly page = toSignal(
+    this.route.data.pipe(map(data => (data['page'] as RegistrationPage | undefined) ?? 'visitors')),
+    { initialValue: 'visitors' as RegistrationPage }
+  );
+  readonly pageTitle = computed(() =>
+    this.page() === 'visitors' ? 'Biljetter' : 'Kampanjkoder'
+  );
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
