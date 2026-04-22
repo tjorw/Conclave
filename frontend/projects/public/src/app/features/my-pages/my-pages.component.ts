@@ -46,6 +46,9 @@ export class MyPagesComponent implements OnInit {
   readonly activeMyEvents = computed(
     () => this.myEvents().filter(event => event.status !== 'Cancelled')
   );
+  readonly activeMyTickets = computed(
+    () => this.myTickets().filter(ticket => ticket.status !== 'Cancelled')
+  );
   readonly activeMyApplication = computed(() => {
     const application = this.myApplication();
     return application?.status === 'Rejected' ? null : application;
@@ -87,12 +90,12 @@ export class MyPagesComponent implements OnInit {
   }
 
   latestTicketPriceLabel(): string {
-    const latest = this.myTickets()[0]?.ticketPrice ?? null;
+    const latest = this.activeMyTickets()[0]?.ticketPrice ?? null;
     return this.priceLabel(latest);
   }
 
   totalTicketPriceLabel(): string {
-    const total = this.myTickets().reduce((sum, ticket) => sum + (ticket.ticketPrice ?? 0), 0);
+    const total = this.activeMyTickets().reduce((sum, ticket) => sum + (ticket.ticketPrice ?? 0), 0);
     return this.priceLabel(total);
   }
 

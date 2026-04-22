@@ -19,15 +19,15 @@
         <div class="card-icon">🎟</div>
         <div class="card-body">
           <h2 class="card-title">Mina biljetter</h2>
-          @if (myTickets().length > 0) {
+          @if (activeMyTickets().length > 0) {
             <p class="card-summary">
-              {{ myTickets().length }} biljett{{ myTickets().length > 1 ? 'er' : '' }} ·
-              <span [class]="myTickets()[0]!.status === 'Confirmed' ? 'tag-green' : 'tag-orange'">
-                {{ myTickets()[0]!.status === 'Confirmed' ? 'Senaste bekräftad' : 'Senaste inväntar betalning' }}
+              {{ activeMyTickets().length }} biljett{{ activeMyTickets().length > 1 ? 'er' : '' }} ·
+              <span [class]="activeMyTickets()[0]!.status === 'Confirmed' ? 'tag-green' : 'tag-orange'">
+                {{ activeMyTickets()[0]!.status === 'Confirmed' ? 'Senaste bekräftad' : 'Senaste inväntar betalning' }}
               </span>
             </p>
             <p class="card-next">Senaste pris: {{ latestTicketPriceLabel() }}</p>
-            @if (myTickets().length > 1) {
+            @if (activeMyTickets().length > 1) {
               <p class="card-next">Totalt: {{ totalTicketPriceLabel() }}</p>
             }
           } @else {
