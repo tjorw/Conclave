@@ -15,6 +15,16 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-HL03` Hjälpsystem – första omgången Markdown-innehåll (6 filer: convention, event, registration, staff)
 - [ ] `R-HL04` Hjälpsystem – `HelpPanel`-komponent på listsidor (UC-HL002)
 - [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
+- [ ] `R30` schemaönskemål förenklas till ett enda fritextfält – arrangören skriver sina önskemål fritt; fältet visas i schemaläggningsvyn så att schemaläggaren ser det i sitt arbetsflöde. Strukturerade fält (tidspreferenser, konflikter m.m.) tas bort.
+
+### Laganmälningar (R-TM)
+
+- [ ] `R-TM01` `Event.RegistrationMode: Individual | Team` – konfiguration per evenemang (nytt fält på Event-aggregatet)
+- [ ] `R-TM02` `Team`-aggregat – Edition-scoped, captain (`PersonId`), `Members[]` (namn + valfritt `PersonId`)
+- [ ] `R-TM03` `TeamEventRegistration`-aggregat – lag anmäler sig till evenemang, livscykel `Pending → Confirmed | Cancelled`
+- [ ] `R-TM04` Admin-vy: arrangör tilldelar lag till session (`TeamSessionAssignment` på `Session`)
+- [ ] `R-TM05` Tidschema: lagmedlemmars tilldelade sessioner visas via query-projektion (utökning av `MyScheduleRepository`)
+- [ ] `R-TM06` Publik vy: laganmälningsflöde – captain anmäler lag, anger medlemmar; en person per bokning
 
 ### Multitenancy
 
@@ -77,14 +87,10 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 
 ## Refine
-- Laganmälningar
-- Innehåll och bilder
 - Taggar för arrangemang ("Barnvänligt", "18+", "Nybörjare"). Skall även vara filter publikt.
 - Bakgrundsjobb för mail m.m.
 - Föreslå startdatum i datum kontroller som är första dagen på konventet
 - motsvarande schemaläggning för bemanning
-- schemaönskemål skulle kunna vara fritext
-- tidschemat skall markera alla överlapp/konflikter. inte bara det man valt nu.
 - varför startar tidsschemat på 08:00
 - renodla, standardisera knappar, css mm.
 - public - funktionering skall visa funktionärsbiljetter

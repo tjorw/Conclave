@@ -507,25 +507,34 @@ Hanterar livscykeln för ett evenemang (rollspel, brädspel, föreläsning etc.)
 | Typ | Namn |
 |---|---|
 | Aggregate root | `Event` |
-| Entiteter | `Session`, `SessionRequest`, `CoOrganiser`, `EventComment` |
+| Entiteter | `Session`, `SessionRequest`, `CoOrganiser`, `EventComment`, `TeamSessionAssignment` |
 | Value objects | `TimeSlot` |
 
 **Viktiga regler:**
 - Innehållsfälten (titel, beskrivning, registreringstyp) och sessionönskemål lagras direkt på `Event` och är redigerbara i `Draft`-status
 - `SessionRequest` har ingen koppling till `Session` – kategoriansvarig äger schemat och behöver inte följa requests
+- `Event.RegistrationMode: Individual | Team` styr om besökare anmäler sig individuellt till sessioner eller om lag anmäler sig till hela evenemanget
+- Vid `Team`: arrangören tilldelar bekräftade lag till specifika sessioner via `TeamSessionAssignment`; besökare kan inte välja session själv
 
 **Livscykel:** `Draft` → `UnderReview` → `Published` (eller `Cancelled`)
 
 ### Registration
 
-Hanterar de tre registreringstyperna: besöksregistrering (vill gå på konventionen), staffansökan (vill arbeta som funktionär) och sessionsregistrering (vill delta i ett specifikt evenemang). Varje typ är ett eget aggregat med sin regeluppsättning. `RegistrationRuleService` samordnar plats- och biljettvalidering tvärs aggregat.
+Hanterar registreringstyperna: besöksregistrering (vill gå på konventionen), staffansökan (vill arbeta som funktionär), sessionsregistrering (individ vill delta i ett specifikt evenemang) och laganmälan (lag anmäler sig till ett evenemang med turneringsform). Varje typ är ett eget aggregat med sin regeluppsättning. `RegistrationRuleService` samordnar plats- och biljettvalidering tvärs aggregat.
 
 | Typ | Namn |
 |---|---|
-| Aggregate roots | `VisitorRegistration`, `SessionRegistration`, `StaffApplication`, `Ticket`, `PromotionCode` |
-| Entiteter | `Availability`, `StationPreference`, `TicketType`, `TicketPerk`, `PromotionCodeRedemption` |
+| Aggregate roots | `VisitorRegistration`, `SessionRegistration`, `StaffApplication`, `Ticket`, `PromotionCode`, `Team`, `TeamEventRegistration` |
+| Entiteter | `Availability`, `StationPreference`, `TicketType`, `TicketPerk`, `PromotionCodeRedemption`, `TeamMember` |
 | Value objects | `DiscountType` |
 | Domain service | `RegistrationRuleService` (validerar platser, biljetter och promotionkoder) |
+
+**Laganmälan:**
+- `Team` är Edition-scoped och äger sina `TeamMember`s (varje medlem har ett namn och ett valfritt `PersonId` för att koppla till tidsschemat)
+- En `TeamMember` med `PersonId` ser tilldelade sessioner i sitt tidschema via query-projektion
+- Captainen (bokningskontakt) måste ha en giltig biljett; övriga lagmedlemmar behöver inte ha det
+- `TeamEventRegistration` har livscykeln `Pending → Confirmed | Cancelled`; arranggören bekräftar eller nekar
+- Sessionsvisning i tidsschemat sker via query, inte via extra `SessionRegistration`-poster
 
 ### Staff
 

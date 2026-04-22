@@ -2326,3 +2326,203 @@ SystemAdmin (fas 1–3), Tenant-admin (fas 4 – self-service)
 - [ ] `Convention` skapas med korrekt `TenantId`
 - [ ] `ConventionAdministrator` skapas för tenant-admin
 - [ ] `ConventionId` returneras
+
+---
+
+# Laganmälningar (UC-TM)
+
+Laganmälningar används för evenemang med turneringsform där ett lag – inte en individ – är registreringsenheten. En captain (bokningskontakt) anmäler laget och anger medlemmar. Arrangören bekräftar och fördelar sedan laget till specifika sessioner. Lagmedlemmar med konventsticker ser tilldelade sessioner i sitt tidschema.
+
+---
+
+# UC-TM001 – Skapa lag
+
+## Sammanfattning
+En person skapar ett lag för en upplaga. Personen blir automatiskt captain och bokningskontakt.
+
+## Aktör
+Besökare med giltig biljett (autentiserad)
+
+## Förutsättningar
+- Upplagan finns och är publicerad
+- Personen har en giltig betald eller uthämtad biljett för upplagan
+
+## Flöde
+1. Personen anger lagnamn och EditionId
+2. Systemet skapar `Team` med personen som captain
+3. Systemet returnerar det nya TeamId
+
+## Affärsregler
+- Captain måste ha en giltig biljett för upplagan
+- Lagnamnet får inte vara tomt
+
+## Domänhändelser
+- `TeamCreated { teamId, editionId, captainPersonId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] `Team` sparas med korrekt `EditionId` och `CaptainPersonId`
+- [ ] Tom lagnamn returnerar valideringsfel
+- [ ] Saknad/ogiltig biljett returnerar valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TM002 – Hantera lagmedlemmar
+
+## Sammanfattning
+Captain lägger till eller tar bort medlemmar från laget. En medlem kan vara en namngiven person utan konventsticker eller en person med PersonId.
+
+## Aktör
+Captain (lagägare)
+
+## Förutsättningar
+- Laget finns och är inte avbokat
+
+## Flöde (lägg till)
+1. Captain anger TeamId och medlemmens namn samt valfritt PersonId
+2. Systemet lägger till `TeamMember` i laget
+
+## Flöde (ta bort)
+1. Captain anger TeamId och TeamMemberId
+2. Systemet tar bort `TeamMember` från laget
+
+## Affärsregler
+- Namn på lagmedlem får inte vara tomt
+- Om PersonId anges måste personen tillhöra samma upplaga
+- Captain kan inte ta bort sig själv som lagmedlem
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Lagmedlem sparas med namn och valfritt PersonId
+- [ ] Borttagning av captain returnerar valideringsfel
+- [ ] PersonId som inte tillhör upplagan returnerar valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TM003 – Anmäl lag till evenemang
+
+## Sammanfattning
+Captain anmäler laget till ett evenemang med `RegistrationMode = Team`. Anmälan hamnar i status `Pending` tills arrangören bekräftar.
+
+## Aktör
+Captain (bokningskontakt)
+
+## Förutsättningar
+- Laget finns
+- Evenemanget finns, är publicerat och har `RegistrationMode = Team`
+- Laget är inte redan anmält till evenemanget
+
+## Flöde
+1. Captain anger TeamId och EventId
+2. Systemet skapar `TeamEventRegistration` med status `Pending`
+3. Systemet returnerar det nya TeamEventRegistrationId
+
+## Affärsregler
+- Evenemanget måste ha `RegistrationMode = Team`
+- Dubblettanmälan (samma team + event) returnerar valideringsfel
+
+## Domänhändelser
+- `TeamRegisteredForEvent { teamEventRegistrationId, teamId, eventId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] `TeamEventRegistration` sparas med status `Pending`
+- [ ] Anmälan till evenemang med `RegistrationMode = Individual` returnerar valideringsfel
+- [ ] Dubblettanmälan returnerar valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TM004 – Bekräfta laganmälan
+
+## Sammanfattning
+Arrangör eller konventionsadministratör bekräftar en laganmälan. Laget kan sedan tilldelas sessioner.
+
+## Aktör
+Evenemangsarrangör eller konventionsadministratör
+
+## Förutsättningar
+- `TeamEventRegistration` finns med status `Pending`
+
+## Flöde
+1. Aktören anger TeamEventRegistrationId
+2. Systemet anropar `TeamEventRegistration.Confirm()`
+3. Systemet sparar uppdateringen
+
+## Affärsregler
+- Endast `Pending`-anmälningar kan bekräftas
+
+## Domänhändelser
+- `TeamEventRegistrationConfirmed { teamEventRegistrationId, teamId, eventId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Status övergår till `Confirmed`
+- [ ] Bekräftelse av redan bekräftad anmälan returnerar valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TM005 – Avboka laganmälan
+
+## Sammanfattning
+Captain eller administratör avbokar en laganmälan.
+
+## Aktör
+Captain (egen anmälan) eller konventionsadministratör
+
+## Förutsättningar
+- `TeamEventRegistration` finns och är inte redan avbokad
+
+## Flöde
+1. Aktören anger TeamEventRegistrationId
+2. Systemet anropar `TeamEventRegistration.Cancel()`
+3. Systemet sparar uppdateringen
+
+## Affärsregler
+- Redan avbokade anmälningar kan inte avbokas igen
+- Befintliga `TeamSessionAssignment`s för laget måste tas bort när anmälan avbokas
+
+## Domänhändelser
+- `TeamEventRegistrationCancelled { teamEventRegistrationId, teamId, eventId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Status övergår till `Cancelled`
+- [ ] Tillhörande `TeamSessionAssignment`s tas bort
+- [ ] Avbokning av redan avbokad anmälan returnerar valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TM006 – Tilldela lag till session
+
+## Sammanfattning
+Arrangören tilldelar ett bekräftat lag till en specifik session inom evenemanget. Lagmedlemmar med PersonId ser sessionen i sitt tidschema.
+
+## Aktör
+Evenemangsarrangör eller konventionsadministratör
+
+## Förutsättningar
+- Sessionen finns och tillhör ett evenemang med `RegistrationMode = Team`
+- `TeamEventRegistration` för laget är `Confirmed`
+- Laget är inte redan tilldelat sessionen
+
+## Flöde
+1. Aktören anger SessionId och TeamId
+2. Systemet skapar `TeamSessionAssignment` på sessionen
+3. Systemet returnerar det nya TeamSessionAssignmentId
+
+## Affärsregler
+- Laget måste ha en bekräftad anmälan till evenemanget
+- Samma lag kan inte tilldelas samma session två gånger
+
+## Domänhändelser
+- `TeamAssignedToSession { teamSessionAssignmentId, sessionId, teamId, occurredAt }`
+
+## Acceptanskriterier
+- [ ] `TeamSessionAssignment` sparas på sessionen
+- [ ] Lagmedlemmar med PersonId kan hämta sessionen via tidsschemats query-projektion
+- [ ] Tilldelning utan bekräftad anmälan returnerar valideringsfel
+- [ ] Dubbeltilldelning returnerar valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest

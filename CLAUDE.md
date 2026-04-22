@@ -114,7 +114,7 @@ Använd conventional commits:
 - `chore` – verktyg, beroenden, konfiguration
 
 **Scope** motsvarar bounded context eller lager:
-- `convention`, `event`, `registration`, `staff`
+- `convention`, `event`, `registration`, `staff`, `team`
 - `infrastructure`, `api`, `domain`
 
 **Exempel:**
