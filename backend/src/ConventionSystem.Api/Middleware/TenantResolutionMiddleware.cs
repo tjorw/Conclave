@@ -12,7 +12,8 @@ public sealed class TenantResolutionMiddleware(
     RequestDelegate next,
     IHostEnvironment hostEnvironment,
     IOptions<MultitenancyOptions> multitenancyOptions,
-    ITenantResolver tenantResolver)
+    ITenantResolver tenantResolver,
+    ILogger<TenantResolutionMiddleware> logger)
 {
     private const string TenantIdHeader = "X-Tenant-ID";
 
@@ -39,6 +40,11 @@ public sealed class TenantResolutionMiddleware(
         var tenant = await ResolveTenantAsync(context);
         if (tenant is null)
         {
+            logger.LogWarning(
+                "Tenant resolution failed: tenant_not_found for host {Host} and path {Path}.",
+                context.Request.Host.Value,
+                context.Request.Path.Value);
+
             await WriteProblemAsync(
                 context,
                 StatusCodes.Status404NotFound,
@@ -49,6 +55,12 @@ public sealed class TenantResolutionMiddleware(
 
         if (tenant.Status == TenantStatus.Suspended)
         {
+            logger.LogWarning(
+                "Tenant resolution failed: tenant_suspended for tenant {TenantId}, host {Host} and path {Path}.",
+                tenant.Id,
+                context.Request.Host.Value,
+                context.Request.Path.Value);
+
             await WriteProblemAsync(
                 context,
                 StatusCodes.Status403Forbidden,

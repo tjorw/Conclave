@@ -49,7 +49,6 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 | Post | Beskrivning | Prioritet |
 |------|-------------|-----------|
 | **`/system`-bypass i `TenantResolutionMiddleware`** | Middleware bypassar hela `/system`-prefixet för systemadmin- och signup-flöden. Detta är avsiktligt, men bör dokumenteras/testas som ett kontrakt så att nya `/system/*`-endpoints inte råkar förväntas ha tenant-context. Behåll integrationstester för `/system/auth/login`, `/system/signup` och skyddade `/system/tenants/*`. | Medel |
-| **Ingen loggning i `TenantResolutionMiddleware`** | `tenant_not_found` och `tenant_suspended` returnerar felkod men loggar ingenting. `ILogger`-injektion med `Warning`-loggning förenklar felsökning i produktion. | Medel |
 | **Cache stampede i `CachingTenantResolver`** | Mönstret `TryGetValue → miss → DB → Set` utan lås ger N parallella DB-träffar vid burst mot okänd tenant. `GetOrCreateAsync` eller en `SemaphoreSlim` per nyckel eliminerar problemet. Låg risk vid nuvarande skala. | Låg |
 | **Oanvänd `using` i `InfrastructureServiceExtensions`** | `using Microsoft.Extensions.Caching.Memory` används inte i filen (`AddMemoryCache()` är en extension method i `Microsoft.Extensions.DependencyInjection`). Bör tas bort. | Låg |
 | `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |

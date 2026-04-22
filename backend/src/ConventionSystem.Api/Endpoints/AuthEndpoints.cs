@@ -57,8 +57,14 @@ public static class AuthEndpoints
             Guid personId;
             if (user.PersonId.HasValue)
             {
-                // Återinloggning – PersonId redan känt
                 personId = user.PersonId.Value;
+
+                var linkedPerson = await personRepo.GetByIdAsync(new PersonId(personId), ct);
+                if (linkedPerson is not null && linkedPerson.ConventionId != convention.Id)
+                {
+                    convention = await conventionRepo.GetByIdAsync(linkedPerson.ConventionId, ct)
+                        ?? convention;
+                }
             }
             else
             {
