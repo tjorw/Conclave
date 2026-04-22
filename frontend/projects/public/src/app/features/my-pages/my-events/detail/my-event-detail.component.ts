@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -40,6 +41,7 @@ export class MyEventDetailComponent implements OnInit {
   private readonly authSvc    = inject(AuthService);
   private readonly fb         = inject(FormBuilder);
   private readonly editionSvc = inject(EditionService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading       = signal(true);
   readonly event         = signal<EventDto | null>(null);
@@ -133,7 +135,7 @@ export class MyEventDetailComponent implements OnInit {
 
   private loadEvent(): void {
     this.loading.set(true);
-    this.eventSvc.getEvent(this.eventId).subscribe({
+    this.eventSvc.getEvent(this.eventId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ev => {
         this.event.set(ev);
         this.draftForm.patchValue({

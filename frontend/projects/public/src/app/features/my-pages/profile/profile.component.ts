@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,9 +24,10 @@ import { AuthService } from 'shared';
   styleUrl: './profile.component.scss',
 })
 export class ProfileComponent implements OnInit {
-  private readonly auth  = inject(AuthService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly fb    = inject(FormBuilder);
+  private readonly auth       = inject(AuthService);
+  private readonly route      = inject(ActivatedRoute);
+  private readonly fb         = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly onboarding = signal(false);
 
@@ -53,7 +55,7 @@ export class ProfileComponent implements OnInit {
   ngOnInit(): void {
     this.onboarding.set(this.route.snapshot.queryParamMap.get('onboarding') === 'true');
 
-    this.auth.getProfile().subscribe({
+    this.auth.getProfile().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: profile => {
         this.profileForm.setValue({
           name:  profile.name,

@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -38,9 +39,10 @@ type VisitorRegistrationApiShape = MyVisitorRegistrationDto & {
 })
 export class MyTicketComponent implements OnInit {
   private readonly editionSvc = inject(EditionService);
-  private readonly regSvc = inject(RegistrationService);
-  private readonly fb = inject(FormBuilder);
-  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly regSvc     = inject(RegistrationService);
+  private readonly fb         = inject(FormBuilder);
+  private readonly cdr        = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loadingRegistration = signal(true);
   readonly loadingTicketTypes = signal(true);
@@ -265,7 +267,7 @@ export class MyTicketComponent implements OnInit {
     this.redeemResultMessage.set(null);
 
     this.regSvc.getMyVisitorRegistration(editionId)
-      .pipe(catchError(() => of([] as MyVisitorRegistrationDto[])))
+      .pipe(catchError(() => of([] as MyVisitorRegistrationDto[])), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: registrations => {
           const normalizedRegistrations = registrations.map(registration => {
@@ -291,7 +293,7 @@ export class MyTicketComponent implements OnInit {
       });
 
     this.regSvc.getAvailableTicketTypes(editionId)
-      .pipe(catchError(() => of([] as VisitorTicketTypeDto[])))
+      .pipe(catchError(() => of([] as VisitorTicketTypeDto[])), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ticketTypes => {
           if (!this.visitorRegistrationOpen()) {

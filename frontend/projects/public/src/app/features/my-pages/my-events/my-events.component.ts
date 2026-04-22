@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -15,6 +16,7 @@ import { EventService, EventSummaryDto, EVENT_STATUS_LABEL, EVENT_STATUS_CHIP } 
 export class MyEventsComponent implements OnInit {
   private readonly editionSvc = inject(EditionService);
   private readonly eventSvc   = inject(EventService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(true);
   readonly events  = signal<EventSummaryDto[]>([]);
@@ -28,7 +30,7 @@ export class MyEventsComponent implements OnInit {
       this.loading.set(false);
       return;
     }
-    this.eventSvc.getMyEvents(editionId).subscribe({
+    this.eventSvc.getMyEvents(editionId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ev => { this.events.set(ev); this.loading.set(false); },
       error: ()  => this.loading.set(false),
     });

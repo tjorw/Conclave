@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,10 +35,11 @@ interface EditionDateRange {
   styleUrl: './my-staff.component.scss',
 })
 export class MyStaffComponent implements OnInit {
-  private readonly editionSvc = inject(EditionService);
+  private readonly editionSvc    = inject(EditionService);
   private readonly conventionSvc = inject(ConventionService);
-  private readonly regSvc = inject(RegistrationService);
-  private readonly fb = inject(FormBuilder);
+  private readonly regSvc        = inject(RegistrationService);
+  private readonly fb            = inject(FormBuilder);
+  private readonly destroyRef    = inject(DestroyRef);
 
   readonly loading = signal(true);
   readonly submitting = signal(false);
@@ -194,7 +196,7 @@ export class MyStaffComponent implements OnInit {
       edition: this.conventionSvc.getEdition(editionId).pipe(catchError(() => of(null))),
       application: this.regSvc.getMyStaffApplication(editionId).pipe(catchError(() => of(null))),
       shifts: this.regSvc.getMyAssignedShifts(editionId).pipe(catchError(() => of([] as MyAssignedShiftSummaryDto[]))),
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: result => {
         this.stations.set(result.edition?.stations ?? []);
         this.application.set(result.application);

@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,7 +37,8 @@ const SESSION_REGISTRATION_STATUSES: readonly SessionRegistrationStatus[] = ['Co
 })
 export class MyProgramComponent implements OnInit {
   private readonly editionSvc = inject(EditionService);
-  private readonly regSvc = inject(RegistrationService);
+  private readonly regSvc     = inject(RegistrationService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -322,7 +324,7 @@ export class MyProgramComponent implements OnInit {
       watched: this.regSvc.getMyWatchedSessions(editionId).pipe(catchError(() => of([] as MyWatchedSessionSummaryDto[]))),
       organiser: this.regSvc.getMyOrganiserSessions(editionId).pipe(catchError(() => of([] as MyOrganiserSessionSummaryDto[]))),
       shifts: this.regSvc.getMyAssignedShifts(editionId).pipe(catchError(() => of([] as MyAssignedShiftSummaryDto[]))),
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: result => {
         try {
           const booked = this.normalizeBooked(result.booked)

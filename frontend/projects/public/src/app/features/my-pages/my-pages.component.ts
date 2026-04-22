@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { forkJoin, of } from 'rxjs';
@@ -23,10 +24,11 @@ import {
   styleUrl: './my-pages.component.scss',
 })
 export class MyPagesComponent implements OnInit {
-  private readonly editionSvc = inject(EditionService);
-  private readonly eventSvc   = inject(EventService);
-  private readonly regSvc     = inject(RegistrationService);
-  private readonly authSvc    = inject(AuthService);
+  private readonly editionSvc  = inject(EditionService);
+  private readonly eventSvc    = inject(EventService);
+  private readonly regSvc      = inject(RegistrationService);
+  private readonly authSvc     = inject(AuthService);
+  private readonly destroyRef  = inject(DestroyRef);
 
   readonly loading       = signal(true);
   readonly userName      = signal<string | null>(null);
@@ -48,7 +50,7 @@ export class MyPagesComponent implements OnInit {
       tickets:     this.regSvc.getMyVisitorRegistration(editionId).pipe(catchError(() => of([] as MyVisitorRegistrationDto[]))),
       sessions:    this.regSvc.getMySessionRegistrations(editionId).pipe(catchError(() => of([]))),
       application: this.regSvc.getMyStaffApplication(editionId).pipe(catchError(() => of(null))),
-    }).subscribe(result => {
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       this.userName.set(result.profile?.name ?? null);
       this.myEvents.set(result.events);
       this.myTickets.set(result.tickets);
