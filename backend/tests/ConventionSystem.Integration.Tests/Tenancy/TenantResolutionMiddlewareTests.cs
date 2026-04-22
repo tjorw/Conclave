@@ -20,6 +20,55 @@ namespace ConventionSystem.Integration.Tests.Tenancy;
 public sealed class TenantResolutionMiddlewareTests(ConventionSystemFactory factory) : IntegrationTestBase(factory)
 {
     [Fact]
+    public async Task SystemAuthLogin_WithoutTenantSignal_BypassesTenantResolution()
+    {
+        await using var multitenantFactory = CreateMultitenantFactory();
+        var client = multitenantFactory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("http://localhost")
+        });
+
+        var response = await client.PostAsJsonAsync("/system/auth/login", new { email = "nobody@test.se", password = "invalid" });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SystemSignup_WithoutTenantSignal_BypassesTenantResolution()
+    {
+        await using var multitenantFactory = CreateMultitenantFactory();
+        var client = multitenantFactory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("http://localhost")
+        });
+        var subdomain = $"bypass-{Guid.NewGuid():N}"[..20];
+
+        var response = await client.PostAsJsonAsync("/system/signup", new
+        {
+            organizationName = "Bypass Tenant",
+            subdomain,
+            contactName = "Bypass Owner",
+            contactEmail = $"bypass-{Guid.NewGuid():N}@test.se"
+        });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ProtectedSystemTenants_WithoutTenantSignal_BypassesTenantResolution()
+    {
+        await using var multitenantFactory = CreateMultitenantFactory();
+        var client = multitenantFactory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("http://localhost")
+        });
+
+        var response = await client.GetAsync("/system/tenants");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Request_WithUnknownSubdomain_Returns404TenantNotFound()
     {
         await using var multitenantFactory = CreateMultitenantFactory();

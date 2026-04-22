@@ -16,6 +16,7 @@ public sealed class TenantResolutionMiddleware(
     ILogger<TenantResolutionMiddleware> logger)
 {
     private const string TenantIdHeader = "X-Tenant-ID";
+    private const string SystemPathPrefix = "/system";
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -25,7 +26,8 @@ public sealed class TenantResolutionMiddleware(
             return;
         }
 
-        if (context.Request.Path.StartsWithSegments("/system", StringComparison.OrdinalIgnoreCase))
+        // System endpoints are intentionally host-level and must not require tenant context.
+        if (context.Request.Path.StartsWithSegments(SystemPathPrefix, StringComparison.OrdinalIgnoreCase))
         {
             await next(context);
             return;

@@ -48,7 +48,6 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 
 | Post | Beskrivning | Prioritet |
 |------|-------------|-----------|
-| **`/system`-bypass i `TenantResolutionMiddleware`** | Middleware bypassar hela `/system`-prefixet för systemadmin- och signup-flöden. Detta är avsiktligt, men bör dokumenteras/testas som ett kontrakt så att nya `/system/*`-endpoints inte råkar förväntas ha tenant-context. Behåll integrationstester för `/system/auth/login`, `/system/signup` och skyddade `/system/tenants/*`. | Medel |
 | **Cache stampede i `CachingTenantResolver`** | Mönstret `TryGetValue → miss → DB → Set` utan lås ger N parallella DB-träffar vid burst mot okänd tenant. `GetOrCreateAsync` eller en `SemaphoreSlim` per nyckel eliminerar problemet. Låg risk vid nuvarande skala. | Låg |
 | `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |
 | Social inloggning (OAuth) | ASP.NET Identity stöder det men inte implementerat | Låg |
