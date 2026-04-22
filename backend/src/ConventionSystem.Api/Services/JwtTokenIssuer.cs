@@ -1,13 +1,15 @@
 using ConventionSystem.Api.Auth;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 
 namespace ConventionSystem.Api.Services;
 
-public sealed class JwtTokenIssuer(IConfiguration configuration) : IJwtTokenIssuer
+public sealed class JwtTokenIssuer(IOptions<JwtOptions> options) : IJwtTokenIssuer
 {
+    private readonly JwtOptions _options = options.Value;
+
     public string Issue(
         Guid? personId,
         bool isAdmin,
@@ -15,9 +17,6 @@ public sealed class JwtTokenIssuer(IConfiguration configuration) : IJwtTokenIssu
         string userType,
         Guid? tenantId)
     {
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
-
         List<Claim> claims = [new(AuthConstants.Claims.UserType, userType)];
 
         if (personId.HasValue)
@@ -33,9 +32,9 @@ public sealed class JwtTokenIssuer(IConfiguration configuration) : IJwtTokenIssu
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTimeOffset.UtcNow.AddHours(8).UtcDateTime,
-            Issuer = configuration["Jwt:Issuer"],
-            Audience = configuration["Jwt:Audience"],
-            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+            Issuer = _options.Issuer,
+            Audience = _options.Audience,
+            SigningCredentials = new SigningCredentials(_options.CreateSigningKey(), SecurityAlgorithms.HmacSha256)
         };
 
         var handler = new JwtSecurityTokenHandler();

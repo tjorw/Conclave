@@ -175,8 +175,8 @@ public sealed class CrossTenantSecurityTests(ConventionSystemFactory factory) : 
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTimeOffset.UtcNow.AddHours(1).UtcDateTime,
-            Issuer = "ConventionSystem",
-            Audience = "ConventionSystem",
+            Issuer = ConventionSystemFactory.TestJwtIssuer,
+            Audience = ConventionSystemFactory.TestJwtAudience,
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(ConventionSystemFactory.TestJwtKey)),
                 SecurityAlgorithms.HmacSha256)

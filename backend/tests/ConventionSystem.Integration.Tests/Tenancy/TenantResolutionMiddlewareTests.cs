@@ -181,8 +181,8 @@ public sealed class TenantResolutionMiddlewareTests(ConventionSystemFactory fact
                 new Claim("is_system_admin", "true")
             ]),
             Expires = DateTimeOffset.UtcNow.AddHours(1).UtcDateTime,
-            Issuer = "ConventionSystem",
-            Audience = "ConventionSystem",
+            Issuer = ConventionSystemFactory.TestJwtIssuer,
+            Audience = ConventionSystemFactory.TestJwtAudience,
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(ConventionSystemFactory.TestJwtKey)),
                 SecurityAlgorithms.HmacSha256)
