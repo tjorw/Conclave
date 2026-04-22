@@ -44,19 +44,12 @@ public record EventDto(
     string Status,
     string Title,
     string Description,
+    string? ScheduleRequestText,
     string RegistrationType,
     string? DropInRules,
     IReadOnlyList<Guid> CoOrganiserIds,
-    IReadOnlyList<SessionRequestDto> SessionRequests,
     IReadOnlyList<SessionDto> Sessions,
     IReadOnlyList<EventCommentDto> Comments);
-
-public record SessionRequestDto(
-    Guid Id,
-    string Description,
-    int DurationMinutes,
-    int Seats,
-    string StartType);
 
 public record SessionDto(
     Guid Id,

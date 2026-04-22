@@ -47,11 +47,6 @@ public sealed class EventDescriptionRequiredException()
         "Evenemanget måste ha en beskrivning.",
         "event_description_required");
 
-public sealed class SessionRequestNotFoundException()
-    : DomainRuleViolationException(
-        "Sessionönskemålet hittades inte.",
-        "session_request_not_found");
-
 public sealed class SessionNotFoundException()
     : DomainRuleViolationException(
         "Sessionen hittades inte.",

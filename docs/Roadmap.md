@@ -15,7 +15,7 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-HL04` Hjälpsystem – `HelpPanel`-komponent på listsidor (UC-HL002)
 - [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
 - [ ] `R-OB01` Outbox-mönster för extern kommunikation – `OutboxMessage`-tabell, `OutboxEmailSender` (implementerar `IEmailSender`), `OutboxProcessor` (`IHostedService`, kör var 30:e sekund), Polly-retry med exponentiell backoff. Se `docs/Outbox.md` för design.
-- [ ] `R30` schemaönskemål förenklas till ett enda fritextfält – arrangören skriver sina önskemål fritt; fältet visas i schemaläggningsvyn så att schemaläggaren ser det i sitt arbetsflöde. Strukturerade fält (tidspreferenser, konflikter m.m.) tas bort.
+- [x] `R30` schemaönskemål förenklas till ett enda fritextfält – arrangören skriver sina önskemål fritt; fältet visas i schemaläggningsvyn så att schemaläggaren ser det i sitt arbetsflöde. Strukturerade fält (tidspreferenser, konflikter m.m.) tas bort.
 
 ### Laganmälningar (R-TM)
 

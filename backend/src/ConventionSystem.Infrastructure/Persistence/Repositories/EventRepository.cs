@@ -18,11 +18,6 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
     public Task<Domain.Event.Aggregates.Event?> GetByIdAsync(EventId id, CancellationToken ct = default)
         => db.Events.FirstOrDefaultAsync(e => e.Id == id, ct);
 
-    public Task<Domain.Event.Aggregates.Event?> GetByIdWithSessionRequestsAsync(EventId id, CancellationToken ct = default)
-        => db.Events
-            .Include(e => e.SessionRequests)
-            .FirstOrDefaultAsync(e => e.Id == id, ct);
-
     public Task<Domain.Event.Aggregates.Event?> GetByIdWithCoOrganisersAsync(EventId id, CancellationToken ct = default)
         => db.Events
             .Include(e => e.CoOrganisers)
@@ -88,7 +83,6 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
     public async Task<EventDto?> GetProjectedByIdAsync(EventId id, CancellationToken ct = default)
     {
         var ev = await db.Events
-            .Include(e => e.SessionRequests)
             .Include(e => e.Sessions)
             .Include(e => e.CoOrganisers)
             .Include(e => e.Comments)
@@ -130,12 +124,10 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             ev.Status.ToString(),
             ev.Title,
             ev.Description,
+            ev.ScheduleRequestText,
             ev.RegistrationType.ToString(),
             ev.DropInRules,
             ev.CoOrganisers.Select(c => c.PersonId.Value).ToList(),
-            ev.SessionRequests.Select(r => new SessionRequestDto(
-                r.Id.Value, r.Description, r.RequestedDurationMinutes,
-                r.RequestedSeats, r.StartType.ToString())).ToList(),
             ev.Sessions.Select(s => new SessionDto(
                 s.Id.Value, s.VenueId.Value,
                 s.TimeSlot.Start, s.TimeSlot.End,

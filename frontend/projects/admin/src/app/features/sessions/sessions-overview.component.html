@@ -174,15 +174,8 @@
 
             <div class="request-list">
               <strong>{{ PAGE.requestsForEventTitle }}</strong>
-              @if (requestsForSelectedEvent().length > 0) {
-                <ul>
-                  @for (request of requestsForSelectedEvent(); track request.id) {
-                    <li>
-                      <span>{{ request.description }}</span>
-                      <small>{{ request.durationMinutes }} min · {{ request.seats }} platser · {{ startTypeLabel(request.startType) }}</small>
-                    </li>
-                  }
-                </ul>
+              @if (scheduleRequestForSelectedEvent()) {
+                <p>{{ scheduleRequestForSelectedEvent() }}</p>
               } @else {
                 <span>{{ PAGE.noRequestsForEvent }}</span>
               }

@@ -44,6 +44,11 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
             .HasMaxLength(5000)
             .IsRequired(false);
 
+        builder.Property(e => e.ScheduleRequestText)
+            .HasMaxLength(5000)
+            .HasColumnName("schedule_request_text")
+            .IsRequired(false);
+
         builder.Property(e => e.RegistrationType)
             .HasConversion<string>()
             .HasMaxLength(50)
@@ -52,12 +57,6 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
         builder.Property(e => e.DropInRules)
             .HasMaxLength(2000)
             .HasColumnName("drop_in_rules");
-
-        builder.HasMany(e => e.SessionRequests)
-            .WithOne()
-            .HasForeignKey("EventId")
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(e => e.Sessions)
             .WithOne()
@@ -76,7 +75,6 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Navigation(e => e.SessionRequests).HasField("_sessionRequests");
         builder.Navigation(e => e.Sessions).HasField("_sessions");
         builder.Navigation(e => e.CoOrganisers).HasField("_coOrganisers");
         builder.Navigation(e => e.Comments).HasField("_comments");
@@ -195,33 +193,5 @@ public sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
 
         builder.HasIndex(s => s.VenueId).HasDatabaseName("IX_sessions_venue_id");
         builder.HasIndex("EventId").HasDatabaseName("IX_sessions_event_id");
-    }
-}
-
-public sealed class SessionRequestConfiguration : IEntityTypeConfiguration<SessionRequest>
-{
-    public void Configure(EntityTypeBuilder<SessionRequest> builder)
-    {
-        builder.ToTable("session_requests");
-
-        builder.HasKey(r => r.Id);
-        builder.Property(r => r.Id)
-            .HasConversion(id => id.Value, value => new SessionRequestId(value))
-            .ValueGeneratedNever();
-
-        builder.Property(r => r.Description).HasMaxLength(1000).IsRequired();
-
-        builder.Property(r => r.RequestedDurationMinutes)
-            .HasColumnName("requested_duration_minutes");
-
-        builder.Property(r => r.RequestedSeats)
-            .HasColumnName("requested_seats");
-
-        builder.Property(r => r.StartType)
-            .HasConversion<string>()
-            .HasMaxLength(50)
-            .HasColumnName("start_type");
-
-        builder.HasIndex("EventId").HasDatabaseName("IX_session_requests_event_id");
     }
 }

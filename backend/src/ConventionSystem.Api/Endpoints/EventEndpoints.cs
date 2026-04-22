@@ -2,7 +2,6 @@ using ConventionSystem.Application.Event.Commands.AddCoOrganiser;
 using ConventionSystem.Application.Event.Commands.AddEventComment;
 using ConventionSystem.Application.Event.Commands.AcknowledgeEventComment;
 using ConventionSystem.Application.Event.Commands.ChangeCategory;
-using ConventionSystem.Application.Event.Commands.AddSessionRequest;
 using ConventionSystem.Application.Event.Commands.ApproveVersion;
 using ConventionSystem.Application.Event.Commands.CancelEvent;
 using ConventionSystem.Application.Event.Commands.DeleteEvent;
@@ -11,7 +10,6 @@ using ConventionSystem.Application.Event.Commands.DeactivateSession;
 using ConventionSystem.Application.Event.Commands.UpdateSession;
 using ConventionSystem.Application.Event.Commands.EditEventDraft;
 using ConventionSystem.Application.Event.Commands.RejectVersion;
-using ConventionSystem.Application.Event.Commands.RemoveSessionRequest;
 using ConventionSystem.Application.Event.Commands.ReturnToDraft;
 using ConventionSystem.Application.Event.Commands.RespondToEventComment;
 using ConventionSystem.Application.Event.Commands.ScheduleSession;
@@ -63,25 +61,7 @@ public static class EventEndpoints
             {
                 await sender.Send(
                     new EditEventDraftCommand(eventId, request.Title, request.Description,
-                        request.RegistrationType, request.DropInRules), ct);
-                return Results.NoContent();
-            });
-
-        // UC-EV003 – Lägg till sessionönskemål
-        events.MapPost("/session-requests",
-            async (Guid eventId, AddSessionRequestRequest request, ISender sender, CancellationToken ct) =>
-            {
-                var id = await sender.Send(
-                    new AddSessionRequestCommand(eventId, request.Description,
-                        request.DurationMinutes, request.Seats, request.StartType), ct);
-                return Results.Created($"/session-requests/{id}", new { id });
-            });
-
-        // UC-EV004 – Ta bort sessionönskemål
-        events.MapDelete("/session-requests/{requestId:guid}",
-            async (Guid eventId, Guid requestId, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new RemoveSessionRequestCommand(eventId, requestId), ct);
+                        request.RegistrationType, request.DropInRules, request.ScheduleRequestText), ct);
                 return Results.NoContent();
             });
 
@@ -213,8 +193,7 @@ public static class EventEndpoints
 
 public record CreateEventRequest(Guid CategoryId, Guid LeadOrganiserId, Guid ConventionId);
 public record ChangeCategoryRequest(Guid CategoryId);
-public record EditEventDraftRequest(string Title, string Description, RegistrationType RegistrationType, string? DropInRules);
-public record AddSessionRequestRequest(string Description, int DurationMinutes, int Seats, StartType StartType);
+public record EditEventDraftRequest(string Title, string Description, RegistrationType RegistrationType, string? DropInRules, string? ScheduleRequestText);
 public record AddCoOrganiserRequest(Guid PersonId, Guid ConventionId);
 public record RejectVersionRequest(string Comment);
 public record AddEventCommentRequest(string Comment);

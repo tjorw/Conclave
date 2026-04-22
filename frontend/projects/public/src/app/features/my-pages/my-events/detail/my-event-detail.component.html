@@ -17,7 +17,7 @@
       </span>
     </div>
 
-    <!-- ── Adminkommentar ─────────────────────────────────────────────── -->
+    <!-- Adminkommentar -->
     @if (adminComment(); as comment) {
       <div class="admin-comment-banner">
         <strong>Kommentar från administratör:</strong> {{ comment }}
@@ -81,7 +81,7 @@
       </section>
     }
 
-    <!-- ── Åtgärdsknappar ─────────────────────────────────────────────── -->
+    <!-- Åtgärdsknappar -->
     <div class="actions">
       @if (isDraft) {
         @if (eventSubmissionsOpen) {
@@ -107,7 +107,7 @@
       }
     </div>
 
-    <!-- ── Redigera utkast ────────────────────────────────────────────── -->
+    <!-- Redigera utkast -->
     @if (isDraft) {
       <section class="card">
         <h2>Arrangemagsuppgifter</h2>
@@ -128,6 +128,11 @@
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Beskrivning</mat-label>
             <textarea matInput formControlName="description" rows="4"></textarea>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Schemaönskemål</mat-label>
+            <textarea matInput formControlName="scheduleRequestText" rows="4"></textarea>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
@@ -153,7 +158,7 @@
         </form>
       </section>
     } @else {
-      <!-- ── Readonly-vy (UnderReview / Published / Cancelled) ──────────── -->
+      <!-- Readonly-vy (UnderReview / Published / Cancelled) -->
       <section class="card readonly-card">
         <h2>Arrangemagsuppgifter</h2>
         <dl>
@@ -167,75 +172,18 @@
       </section>
     }
 
-    <!-- ── Sessionönskemål ───────────────────────────────────────────── -->
-    <section class="card">
-      <h2>Sessionönskemål</h2>
+    @if (!isDraft) {
+      <!-- Schemaönskemål -->
+      <section class="card">
+        <h2>Schemaönskemål</h2>
 
-      @if (ev.sessionRequests.length > 0) {
-        <div class="request-list">
-          @for (req of ev.sessionRequests; track req.id) {
-            <div class="request-item">
-              <div class="request-info">
-                <span class="request-desc">{{ req.description || '(Ingen beskrivning)' }}</span>
-                <span class="request-meta">{{ req.durationMinutes }} min · {{ req.seats }} platser</span>
-              </div>
-              @if (isDraft) {
-                <button mat-icon-button class="remove-btn" (click)="removeSessionRequest(req.id)"
-                        title="Ta bort">✕</button>
-              }
-            </div>
-          }
-        </div>
-      } @else {
-        <p class="no-requests">Inga sessionönskemål ännu.</p>
-      }
-
-      @if (isDraft) {
-        <div class="request-form-section">
-          <h3>Lägg till sessionönskemål</h3>
-
-          @if (requestState().error) {
-            <div class="error-banner">{{ requestState().error }}</div>
-          }
-          @if (requestState().saved) {
-            <div class="success-inline">Sessionönskemål tillagt.</div>
-          }
-
-          <form [formGroup]="requestForm" (ngSubmit)="addSessionRequest()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Beskrivning</mat-label>
-              <textarea matInput formControlName="description" rows="2"></textarea>
-            </mat-form-field>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Längd (minuter)</mat-label>
-                <input matInput type="number" formControlName="durationMinutes" min="10" />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Antal platser</mat-label>
-                <input matInput type="number" formControlName="seats" min="1" />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Starttyp</mat-label>
-                <mat-select formControlName="startType">
-                  @for (t of startTypes; track t.value) {
-                    <mat-option [value]="t.value">{{ t.label }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-            </div>
-
-            <button mat-flat-button class="save-btn" type="submit"
-                    [disabled]="requestForm.invalid || requestState().adding">
-              @if (requestState().adding) { <mat-spinner diameter="18" /> } @else { Lägg till }
-            </button>
-          </form>
-        </div>
-      }
-    </section>
+        @if (ev.scheduleRequestText) {
+          <p class="request-text">{{ ev.scheduleRequestText }}</p>
+        } @else {
+          <p class="no-requests">Inga schemaönskemål ännu.</p>
+        }
+      </section>
+    }
 
   }
 

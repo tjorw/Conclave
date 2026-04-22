@@ -120,10 +120,10 @@ export class SessionsOverviewComponent {
     return options;
   });
 
-  readonly requestsForSelectedEvent = computed(() => {
+  readonly scheduleRequestForSelectedEvent = computed(() => {
     const eventId = this.formValues()?.eventId ?? '';
     const event = this.events().find(e => e.id === eventId);
-    return event?.sessionRequests ?? [];
+    return event?.scheduleRequestText?.trim() ?? '';
   });
 
   readonly sortedSessions = computed(() =>

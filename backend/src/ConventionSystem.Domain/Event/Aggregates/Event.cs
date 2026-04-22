@@ -11,7 +11,6 @@ namespace ConventionSystem.Domain.Event.Aggregates;
 
 public sealed class Event : AggregateRoot
 {
-    private readonly List<SessionRequest> _sessionRequests = [];
     private readonly List<Session> _sessions = [];
     private readonly List<CoOrganiser> _coOrganisers = [];
     private readonly List<EventComment> _comments = [];
@@ -24,10 +23,10 @@ public sealed class Event : AggregateRoot
 
     public string Title { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
+    public string? ScheduleRequestText { get; private set; }
     public RegistrationType RegistrationType { get; private set; }
     public string? DropInRules { get; private set; }
 
-    public IReadOnlyList<SessionRequest> SessionRequests => _sessionRequests.AsReadOnly();
     public IReadOnlyList<Session> Sessions => _sessions.AsReadOnly();
     public IReadOnlyList<CoOrganiser> CoOrganisers => _coOrganisers.AsReadOnly();
     public IReadOnlyList<EventComment> Comments => _comments.AsReadOnly();
@@ -80,22 +79,12 @@ public sealed class Event : AggregateRoot
         DropInRules = dropInRules;
     }
 
-    public SessionRequest AddSessionRequest(string description, int durationMinutes, int seats, StartType startType)
+    public void UpdateScheduleRequestText(string? scheduleRequestText)
     {
         EnsureNotCancelled();
-        if (durationMinutes <= 0)
-            throw new ArgumentException("Duration måste vara mer än 0 minuter.", nameof(durationMinutes));
-        var request = new SessionRequest(SessionRequestId.New(), description, durationMinutes, seats, startType);
-        _sessionRequests.Add(request);
-        return request;
-    }
-
-    public void RemoveSessionRequest(SessionRequestId requestId)
-    {
-        EnsureNotCancelled();
-        var request = _sessionRequests.FirstOrDefault(r => r.Id == requestId)
-            ?? throw new SessionRequestNotFoundException();
-        _sessionRequests.Remove(request);
+        ScheduleRequestText = string.IsNullOrWhiteSpace(scheduleRequestText)
+            ? null
+            : scheduleRequestText.Trim();
     }
 
     public void SubmitForReview()

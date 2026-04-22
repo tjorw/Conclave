@@ -334,6 +334,11 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .HasMaxLength(5000)
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ScheduleRequestText")
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("schedule_request_text");
+
                     b.Property<string>("DropInRules")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)")
@@ -517,46 +522,6 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.ToTable("sessions", (string)null);
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.SessionRequest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("RequestedDurationMinutes")
-                        .HasColumnType("int")
-                        .HasColumnName("requested_duration_minutes");
-
-                    b.Property<int>("RequestedSeats")
-                        .HasColumnType("int")
-                        .HasColumnName("requested_seats");
-
-                    b.Property<string>("StartType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("start_type");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("tenant_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId")
-                        .HasDatabaseName("IX_session_requests_event_id");
-
-                    b.HasIndex("TenantId");
-
-                    b.ToTable("session_requests", (string)null);
-                });
 
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.PromotionCode", b =>
                 {
@@ -1261,14 +1226,6 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.SessionRequest", b =>
-                {
-                    b.HasOne("ConventionSystem.Domain.Event.Aggregates.Event", null)
-                        .WithMany("SessionRequests")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
 
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.StaffApplication", b =>
                 {
@@ -1438,7 +1395,6 @@ namespace ConventionSystem.Infrastructure.Migrations
 
                     b.Navigation("Comments");
 
-                    b.Navigation("SessionRequests");
 
                     b.Navigation("Sessions");
                 });

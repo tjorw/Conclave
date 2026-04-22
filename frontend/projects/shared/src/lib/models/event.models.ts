@@ -29,20 +29,12 @@ export interface EventDto {
   status: EventStatus;
   title: string;
   description: string;
+  scheduleRequestText: string | null;
   registrationType: RegistrationType;
   dropInRules: string | null;
   coOrganiserIds: string[];
-  sessionRequests: SessionRequestDto[];
   sessions: SessionDto[];
   comments: EventCommentDto[];
-}
-
-export interface SessionRequestDto {
-  id: string;
-  description: string;
-  durationMinutes: number;
-  seats: number;
-  startType: StartType;
 }
 
 export interface SessionDto {

@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+﻿import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -25,12 +25,6 @@ type DraftState = {
   saved: boolean;
   error: string | null;
   actionError: string | null;
-};
-
-type RequestState = {
-  adding: boolean;
-  saved: boolean;
-  error: string | null;
 };
 
 type CommentState = {
@@ -68,7 +62,6 @@ export class MyEventDetailComponent implements OnInit {
   readonly loading       = signal(true);
   readonly event         = signal<EventDto | null>(null);
   readonly draftState    = signal<DraftState>({ operation: null, saved: false, error: null, actionError: null });
-  readonly requestState  = signal<RequestState>({ adding: false, saved: false, error: null });
   readonly commentState  = signal<CommentState>({ adding: false, acknowledging: false, saved: false, error: null });
 
   readonly statusLabel = EVENT_STATUS_LABEL;
@@ -82,24 +75,12 @@ export class MyEventDetailComponent implements OnInit {
     { value: 'Combined',        label: 'Kombinerat' },
   ];
 
-  readonly startTypes = [
-    { value: 'FixedTime',  label: 'Fast tid' },
-    { value: 'Rolling',    label: 'Löpande' },
-    { value: 'Tournament', label: 'Turneringsformat' },
-  ];
-
   readonly draftForm = this.fb.group({
     title:            ['', Validators.required],
     description:      ['', Validators.required],
     registrationType: ['DropIn', Validators.required],
     dropInRules:      [''],
-  });
-
-  readonly requestForm = this.fb.group({
-    description:      ['', Validators.required],
-    durationMinutes:  [60, [Validators.required, Validators.min(10)]],
-    seats:            [20, [Validators.required, Validators.min(1)]],
-    startType:        ['FixedTime', Validators.required],
+    scheduleRequestText: [''],
   });
 
   readonly commentForm = this.fb.group({
@@ -153,6 +134,7 @@ export class MyEventDetailComponent implements OnInit {
           description:      ev.description ?? '',
           registrationType: ev.registrationType ?? 'DropIn',
           dropInRules:      ev.dropInRules ?? '',
+          scheduleRequestText: ev.scheduleRequestText ?? '',
         });
         this.loading.set(false);
       },
@@ -163,9 +145,9 @@ export class MyEventDetailComponent implements OnInit {
   saveDraft(): void {
     if (this.draftForm.invalid || this.draftState().operation !== null) return;
     this.draftState.set({ operation: 'saving', saved: false, error: null, actionError: null });
-    const { title, description, registrationType, dropInRules } = this.draftForm.getRawValue();
+    const { title, description, registrationType, dropInRules, scheduleRequestText } = this.draftForm.getRawValue();
     this.eventSvc.updateDraft(
-      this.eventId, title!, description!, registrationType!, dropInRules || null
+      this.eventId, title!, description!, registrationType!, dropInRules || null, scheduleRequestText || null
     ).subscribe({
       next: () => this.draftState.update(state => ({ ...state, operation: null, saved: true })),
       error: err => {
@@ -173,40 +155,6 @@ export class MyEventDetailComponent implements OnInit {
           ...state,
           operation: null,
           error: toErrorMessage(err, 'Kunde inte spara utkastet.'),
-        }));
-      },
-    });
-  }
-
-  addSessionRequest(): void {
-    if (this.requestForm.invalid || this.requestState().adding) return;
-    this.requestState.set({ adding: true, saved: false, error: null });
-    const { description, durationMinutes, seats, startType } = this.requestForm.getRawValue();
-    this.eventSvc.addSessionRequest(
-      this.eventId, description!, durationMinutes!, seats!, startType!
-    ).subscribe({
-      next: () => {
-        this.requestState.update(state => ({ ...state, adding: false, saved: true }));
-        this.requestForm.reset({ description: '', durationMinutes: 60, seats: 20, startType: 'FixedTime' });
-        this.loadEvent();
-      },
-      error: err => {
-        this.requestState.update(state => ({
-          ...state,
-          adding: false,
-          error: toErrorMessage(err, 'Kunde inte lägga till sessionönskemål.'),
-        }));
-      },
-    });
-  }
-
-  removeSessionRequest(requestId: string): void {
-    this.eventSvc.removeSessionRequest(this.eventId, requestId).subscribe({
-      next: () => this.loadEvent(),
-      error: err => {
-        this.draftState.update(state => ({
-          ...state,
-          actionError: toErrorMessage(err, 'Kunde inte ta bort sessionönskemålet.'),
         }));
       },
     });

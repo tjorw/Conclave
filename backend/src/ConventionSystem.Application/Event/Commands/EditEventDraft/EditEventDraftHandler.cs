@@ -15,6 +15,7 @@ public sealed class EditEventDraftHandler(IEventRepository eventRepository)
         ev.EditTitle(command.Title);
         ev.EditDescription(command.Description);
         ev.SetRegistrationType(command.RegistrationType, command.DropInRules);
+        ev.UpdateScheduleRequestText(command.ScheduleRequestText);
 
         await eventRepository.SaveAsync(ct);
     }

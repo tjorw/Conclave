@@ -157,6 +157,12 @@
                 [placeholder]="PAGE.descriptionPlaceholder"></textarea>
             </mat-form-field>
 
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{ PAGE.requestsTitle }}</mat-label>
+              <textarea matInput formControlName="scheduleRequestText" rows="4"
+                [placeholder]="PAGE.requestTextPlaceholder"></textarea>
+            </mat-form-field>
+
             <div class="form-row">
               <mat-form-field appearance="outline">
                 <mat-label>{{ FIELD.registrationType }}</mat-label>
@@ -189,84 +195,18 @@
       <div [class.schema-with-timeline]="showTimeline()">
         <div class="schema-forms">
 
-      <!-- Sessionönskemål -->
+      <!-- Schemaönskemål -->
       <mat-card class="content-card tab-card">
         <mat-card-header>
           <mat-card-title>{{ PAGE.requestsTitle }}</mat-card-title>
         </mat-card-header>
-        <mat-card-content class="no-pad">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th><button type="button" class="sort-header" (click)="setRequestSort('description')">Beskrivning <mat-icon>{{ requestSortIcon('description') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setRequestSort('duration')">Längd (min) <mat-icon>{{ requestSortIcon('duration') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setRequestSort('seats')">Platser <mat-icon>{{ requestSortIcon('seats') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setRequestSort('startType')">Starttyp <mat-icon>{{ requestSortIcon('startType') }}</mat-icon></button></th>
-                <th class="actions-col"></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (req of sortedRequests(); track req.id) {
-                <tr>
-                  <td>{{ req.description || '–' }}</td>
-                  <td>{{ req.durationMinutes }}</td>
-                  <td>{{ req.seats }}</td>
-                  <td>{{ startTypeLabel(req.startType) }}</td>
-                  <td class="row-actions">
-                    <button mat-icon-button color="warn" (click)="removeSessionRequest(req.id)"
-                      matTooltip="Ta bort" [disabled]="saving()">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </td>
-                </tr>
-              } @empty {
-                @if (!showAddRequestForm()) {
-                  <tr><td colspan="5" class="empty-cell">{{ PAGE.requestsEmpty }}</td></tr>
-                }
-              }
-            </tbody>
-          </table>
-
-          @if (showAddRequestForm()) {
-            <div class="add-request-form">
-              <form [formGroup]="addRequestForm" class="form-row">
-                <mat-form-field appearance="outline" class="flex-grow">
-                  <mat-label>Beskrivning</mat-label>
-                  <input matInput formControlName="description" placeholder="Kort beskrivning av önskat sessionformat" />
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="field-sm">
-                  <mat-label>Längd (min)</mat-label>
-                  <input matInput formControlName="durationMinutes" type="number" min="1" />
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="field-sm">
-                  <mat-label>Platser</mat-label>
-                  <input matInput formControlName="seats" type="number" min="1" />
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>{{ FIELD.startType }}</mat-label>
-                  <mat-select formControlName="startType">
-                    @for (st of startTypes; track st.value) {
-                      <mat-option [value]="st.value">{{ st.label }}</mat-option>
-                    }
-                  </mat-select>
-                </mat-form-field>
-              </form>
-              <div class="add-request-actions">
-                <button mat-button (click)="toggleAddRequestForm()">Avbryt</button>
-                <button mat-flat-button color="primary" (click)="addSessionRequest()"
-                  [disabled]="addRequestForm.invalid || saving()">
-                  @if (saving()) { <mat-spinner diameter="18" /> } @else { Lägg till }
-                </button>
-              </div>
-            </div>
+        <mat-card-content>
+          @if (e.scheduleRequestText) {
+            <p class="request-text">{{ e.scheduleRequestText }}</p>
+          } @else {
+            <p class="empty-state">{{ PAGE.requestsEmpty }}</p>
           }
         </mat-card-content>
-        <mat-card-actions>
-          <button mat-stroked-button (click)="toggleAddRequestForm()" [disabled]="saving()">
-            <mat-icon>add</mat-icon>
-            {{ PAGE.addRequestAction }}
-          </button>
-        </mat-card-actions>
       </mat-card>
 
       <!-- Schemalagda sessioner -->

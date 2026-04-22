@@ -138,6 +138,13 @@
   color: var(--brand-text);
 }
 
+.request-text {
+  margin: 0;
+  white-space: pre-wrap;
+  color: var(--brand-text);
+  font-size: .95rem;
+}
+
 .request-meta {
   font-size: .8rem;
   color: var(--brand-text-muted);

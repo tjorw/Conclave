@@ -28,7 +28,6 @@ import { EVENT_DETAIL } from '../../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
 import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
 
-type RequestSortKey = 'description' | 'duration' | 'seats' | 'startType';
 type EventSessionSortKey = 'start' | 'end' | 'venue' | 'seats' | 'startType' | 'status';
 
 @Component({
@@ -86,7 +85,6 @@ export class EventDetailComponent implements OnInit {
   readonly deleting   = signal(false);
   readonly error      = signal<string | null>(null);
   readonly showRejectForm        = signal(false);
-  readonly showAddRequestForm    = signal(false);
   readonly showAddSessionForm    = signal(false);
   readonly editingSessionId      = signal<string | null>(null);
   readonly commentResponses      = signal<Record<string, string>>({});
@@ -94,7 +92,6 @@ export class EventDetailComponent implements OnInit {
   readonly editionSessions       = signal<EditionSessionDto[]>([]);
   readonly timelineLoading       = signal(false);
   private readonly timelineLoaded = signal(false);
-  readonly requestSort = signal<SortState<RequestSortKey>>({ key: 'description', direction: 'asc' });
   readonly sessionSort = signal<SortState<EventSessionSortKey>>({ key: 'start', direction: 'desc' });
 
   readonly rejectForm = this.fb.group({
@@ -106,13 +103,7 @@ export class EventDetailComponent implements OnInit {
     description:      ['', Validators.required],
     registrationType: ['DropIn', Validators.required],
     dropInRules:      [''],
-  });
-
-  readonly addRequestForm = this.fb.group({
-    description:     ['', Validators.required],
-    durationMinutes: [60, [Validators.required, Validators.min(1)]],
-    seats:           [20, [Validators.required, Validators.min(1)]],
-    startType:       ['FixedTime', Validators.required],
+    scheduleRequestText: [''],
   });
 
   readonly sessionForm = this.fb.group({
@@ -248,41 +239,15 @@ export class EventDetailComponent implements OnInit {
   saveEdit(): void {
     const ev = this.event();
     if (!ev || this.editForm.invalid || this.saving()) return;
-    const { title, description, registrationType, dropInRules } = this.editForm.getRawValue();
+    const { title, description, registrationType, dropInRules, scheduleRequestText } = this.editForm.getRawValue();
     this.saving.set(true);
-    this.svc.updateDraft(ev.id, title!, description!, registrationType!, dropInRules || null).subscribe({
+    this.svc.updateDraft(ev.id, title!, description!, registrationType!, dropInRules || null, scheduleRequestText || null).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
       error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.saveDraft)); },
     });
   }
 
   // ── Session requests ────────────────────────────────────────────────────
-
-  toggleAddRequestForm(): void {
-    this.showAddRequestForm.update(v => !v);
-    if (!this.showAddRequestForm()) this.addRequestForm.reset({ durationMinutes: 60, seats: 20, startType: 'Scheduled' });
-  }
-
-  addSessionRequest(): void {
-    const ev = this.event();
-    if (!ev || this.addRequestForm.invalid || this.saving()) return;
-    const { description, durationMinutes, seats, startType } = this.addRequestForm.getRawValue();
-    this.saving.set(true);
-    this.svc.addSessionRequest(ev.id, description!, durationMinutes!, seats!, startType!).subscribe({
-      next: () => { this.saving.set(false); this.showAddRequestForm.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.addSessionRequest)); },
-    });
-  }
-
-  removeSessionRequest(requestId: string): void {
-    const ev = this.event();
-    if (!ev || this.saving()) return;
-    this.saving.set(true);
-    this.svc.removeSessionRequest(ev.id, requestId).subscribe({
-      next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.removeSessionRequest)); },
-    });
-  }
 
   // ── Sessions ────────────────────────────────────────────────────────────
 
@@ -415,6 +380,7 @@ export class EventDetailComponent implements OnInit {
       description:      e.description ?? '',
       registrationType: e.registrationType,
       dropInRules:      e.dropInRules ?? '',
+      scheduleRequestText: e.scheduleRequestText ?? '',
     });
   }
 
@@ -466,15 +432,6 @@ export class EventDetailComponent implements OnInit {
     return SESSION_STATUS_LABEL[status] ?? status;
   }
 
-  readonly sortedRequests = computed(() =>
-    sortBy(this.event()?.sessionRequests ?? [], this.requestSort(), {
-      description: request => request.description ?? '',
-      duration: request => request.durationMinutes,
-      seats: request => request.seats,
-      startType: request => this.startTypeLabel(request.startType),
-    })
-  );
-
   readonly sortedSessions = computed(() =>
     sortBy(this.event()?.sessions ?? [], this.sessionSort(), {
       start: session => session.start,
@@ -485,14 +442,6 @@ export class EventDetailComponent implements OnInit {
       status: session => this.sessionStatusLabel(session.status),
     })
   );
-
-  setRequestSort(key: RequestSortKey): void {
-    this.requestSort.set(nextSort(this.requestSort(), key));
-  }
-
-  requestSortIcon(key: RequestSortKey): string {
-    return sortIcon(this.requestSort(), key);
-  }
 
   setSessionSort(key: EventSessionSortKey): void {
     this.sessionSort.set(nextSort(this.sessionSort(), key));

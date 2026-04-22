@@ -50,8 +50,6 @@ export const ERROR = {
   cancelEvent:          'Kunde inte ställa in evenemanget',
   deleteEvent:          'Kunde inte ta bort evenemanget',
   saveDraft:            'Kunde inte spara utkastet',
-  addSessionRequest:    'Kunde inte lägga till sessionönskemål',
-  removeSessionRequest: 'Kunde inte ta bort sessionönskemål',
   scheduleSession:      'Kunde inte schemalägga sessionen',
   saveSession:          'Kunde inte spara sessionen',
   deactivateSession:    'Kunde inte inaktivera sessionen',
