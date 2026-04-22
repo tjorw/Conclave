@@ -7,6 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { toContextErrorMessage } from 'shared';
 import { SystemTenantService, TenantListItem } from '../../services/system-tenant.service';
 
 @Component({
@@ -138,10 +139,7 @@ export class TenantsComponent implements OnInit {
   }
 
   private handleError(context: string, err: unknown, resetLoading = false): void {
-    const detail = (err as { error?: { detail?: string; title?: string } })?.error?.detail
-      ?? (err as { error?: { title?: string } })?.error?.title;
-
-    this.error.set(detail ? `${context}: ${detail}` : context);
+    this.error.set(toContextErrorMessage(err, context));
     this.saving.set(false);
     if (resetLoading) this.loading.set(false);
   }

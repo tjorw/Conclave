@@ -8,7 +8,6 @@ Spårar vad som återstår inför produktionsstart.
 
 Prioriterad lista – återstående arbete, högst prioritet överst.
 
-- [x] `R22` Centralisera JWT-konfigurationsnycklar (`Jwt:Key`, `Jwt:Issuer`, `Jwt:Audience`)
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
 - [ ] `R-HL01` Hjälpsystem – `HelpTooltip`-komponent och initiala texter för Convention/Edition (UC-HL001)
 - [ ] `R-HL02` Hjälpsystem – `HelpDrawer` + `HelpService` med route-mappning (UC-HL003, UC-HL004)
@@ -30,22 +29,11 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 ### Multitenancy
 
 **Fas 4 – Provisioning och self-service (R-MT013–R-MT017)**
-- [x] `R-MT013` `portal`-app: provisioneringsvy för systemadmin
 - [ ] `R-MT014` `portal`-app: self-service signup (publik del)
 - [ ] `R-MT015` `portal`-app: tenant-dashboard för tenant-ägare
-- [x] `R-MT016` Välkomstmail vid provisioning
 - [ ] `R-MT017` Faktureringsintegration *(utanför scope – dokumenterat för framtiden)*
 
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
-
-### Frontend-kvalitet, publik app (R-FQ)
-
-Återstår efter SCSS-pass och subscription-cleanup (april 2026).
-
-- [x] `R-FQ01` **`my-event-detail` – state-objekt** – ersätt 16+ individuella signals (`savingDraft`, `draftSaved`, `draftError`, `submitting`, `returning`, `deleting`, `addingRequest`, `requestSaved`, `requestError`, `addingComment`, `commentSaved`, `commentError`, `acknowledging` …) med tre grupperade state-objekt: `draftState`, `requestState`, `commentState`. Minskar risk för inkonsekventa mellantillstånd och gör koden läsbar. Fil: `my-event-detail.component.ts`
-- [x] `R-FQ02` **`my-ticket` – ta bort `ChangeDetectorRef`** – `cdr.detectChanges()` anropas ~6 gånger i `loadState()`. Med signals är manuell change detection onödig; roten är sannolikt att `MyVisitorRegistrationDto`/`VisitorTicketTypeDto` normaliseras via `as`-casts istället för att ha korrekta API-typer. Korrekta DTO-typer löser behovet; ta bort `ChangeDetectorRef`-beroendet. Fil: `my-ticket.component.ts`
-- [x] `R-FQ03` **`adminComment`-getter → `computed`** – `get adminComment()` i `my-event-detail.component.ts` beräknar ett värde ur ett signal men är en vanlig getter, inte reaktiv. Byt till `readonly adminComment = computed(() => ...)` för korrekt reaktivitet. Fil: `my-event-detail.component.ts`
-- [ ] `R-FQ04` **Centralisera HttpErrorResponse-hantering** – mönstret `err.error?.detail ?? err.error?.title ?? 'fallback'` upprepas i ~10 komponenter. En liten hjälpfunktion `toErrorMessage(err: HttpErrorResponse, fallback: string): string` i `shared` eliminerar dupliceringen och ger enhetliga felmeddelanden.
 
 ### Rikt innehåll (R-RC)
 

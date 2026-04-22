@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -14,6 +13,7 @@ import {
   RegistrationService,
   STAFF_APPLICATION_STATUS_LABEL,
   StationDto,
+  toErrorMessage,
 } from 'shared';
 import { EditionService } from '../../../services/edition.service';
 
@@ -150,7 +150,7 @@ export class MyStaffComponent implements OnInit {
 
       await this.loadApplicationState(editionId);
     } catch (err) {
-      this.error.set(this.toErrorMessage(err));
+      this.error.set(toErrorMessage(err, 'Kunde inte skicka ansökan just nu. Försök igen.'));
     } finally {
       this.submitting.set(false);
     }
@@ -313,14 +313,4 @@ export class MyStaffComponent implements OnInit {
     control.setValue(updated);
   }
 
-  private toErrorMessage(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      return error.error?.detail
-        ?? error.error?.title
-        ?? error.error?.message
-        ?? 'Kunde inte skicka ansökan just nu. Försök igen.';
-    }
-
-    return 'Kunde inte skicka ansökan just nu. Försök igen.';
-  }
 }

@@ -7,8 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { HttpErrorResponse } from '@angular/common/http';
-import { CategoryDto, ConventionService, EventService, AuthService } from 'shared';
+import { CategoryDto, ConventionService, EventService, AuthService, toErrorMessage } from 'shared';
 import { EditionService } from '../../../../services/edition.service';
 
 @Component({
@@ -72,9 +71,8 @@ export class CreateEventComponent implements OnInit {
 
     this.eventSvc.createEvent(editionId, categoryId!, personId).subscribe({
       next: ({ id }) => this.router.navigateByUrl(`/my-pages/events/${id}`),
-      error: (err: HttpErrorResponse) => {
-        const detail = err.error?.detail ?? err.error?.title ?? 'Kunde inte skapa arrangemanget.';
-        this.error.set(detail);
+      error: err => {
+        this.error.set(toErrorMessage(err, 'Kunde inte skapa arrangemanget.'));
         this.saving.set(false);
       },
     });

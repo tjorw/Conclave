@@ -5,8 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { HttpErrorResponse } from '@angular/common/http';
-import { AuthService } from 'shared';
+import { AuthService, toErrorMessage } from 'shared';
 
 @Component({
   selector: 'app-reset-password',
@@ -80,9 +79,8 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
         this.success.set(true);
         this.redirectTimeout = setTimeout(() => this.router.navigateByUrl('/login'), 2000);
       },
-      error: (err: HttpErrorResponse) => {
-        const detail = err.error?.detail ?? err.error?.title ?? 'Länken är ogiltig eller har gått ut.';
-        this.error.set(detail);
+      error: err => {
+        this.error.set(toErrorMessage(err, 'Länken är ogiltig eller har gått ut.'));
         this.loading.set(false);
       },
     });

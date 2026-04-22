@@ -16,6 +16,7 @@ import {
   EditionStaffMemberDto,
   EditionVisitorDto,
   PersonDto,
+  toErrorMessage,
 } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
@@ -220,7 +221,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? ERROR.createPerson);
+        this.error.set(toErrorMessage(err, ERROR.createPerson));
       },
     });
   }
@@ -252,7 +253,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? ERROR.updatePerson);
+        this.error.set(toErrorMessage(err, ERROR.updatePerson));
       },
     });
   }
@@ -267,7 +268,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? ERROR.deactivatePerson);
+        this.error.set(toErrorMessage(err, ERROR.deactivatePerson));
       },
     });
   }
@@ -282,7 +283,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? ERROR.reactivatePerson);
+        this.error.set(toErrorMessage(err, ERROR.reactivatePerson));
       },
     });
   }
@@ -297,7 +298,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? ERROR.sendResetLink);
+        this.error.set(toErrorMessage(err, ERROR.sendResetLink));
       },
     });
   }
@@ -315,7 +316,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? ERROR.setLock);
+        this.error.set(toErrorMessage(err, ERROR.setLock));
       },
     });
   }
@@ -330,7 +331,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? ERROR.setAdmin);
+        this.error.set(toErrorMessage(err, ERROR.setAdmin));
       },
     });
   }
@@ -350,7 +351,7 @@ export class PersonsComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? ERROR.setAdmin);
+        this.error.set(toErrorMessage(err, ERROR.setAdmin));
       },
     });
   }

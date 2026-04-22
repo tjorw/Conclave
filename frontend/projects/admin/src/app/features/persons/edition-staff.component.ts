@@ -6,7 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ConventionService, EditionStaffMemberDto, PersonDto, StaffService, STAFF_APPLICATION_STATUS_LABEL } from 'shared';
+import { ConventionService, EditionStaffMemberDto, PersonDto, StaffService, STAFF_APPLICATION_STATUS_LABEL, toErrorMessage } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, PLACEHOLDER, TOOLTIP } from '../../labels/ui.labels';
@@ -167,7 +167,7 @@ export class EditionStaffComponent {
       },
       error: err => {
         this.addSaving.set(false);
-        this.error.set(err?.error?.detail ?? ERROR.addStaffMember);
+        this.error.set(toErrorMessage(err, ERROR.addStaffMember));
       },
     });
   }

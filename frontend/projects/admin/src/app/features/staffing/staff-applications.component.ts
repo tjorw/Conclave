@@ -12,6 +12,7 @@ import { TOOLTIP } from '../../labels/ui.labels';
 import {
   ConventionService, EditionDto, StaffApplicationSummaryDto, StaffService,
   StationDto, STAFF_APPLICATION_STATUS_CHIP, STAFF_APPLICATION_STATUS_LABEL,
+  toErrorMessage,
 } from 'shared';
 import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
 
@@ -120,7 +121,7 @@ export class StaffApplicationsComponent {
     this.saving.set(true);
     this.svc.acceptApplication(app.id).subscribe({
       next: () => { this.saving.set(false); this.reloadApplications(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.acceptApplication); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.acceptApplication)); },
     });
   }
 
@@ -129,7 +130,7 @@ export class StaffApplicationsComponent {
     this.saving.set(true);
     this.svc.rejectApplication(app.id).subscribe({
       next: () => { this.saving.set(false); this.reloadApplications(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.rejectApplication); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.rejectApplication)); },
     });
   }
 

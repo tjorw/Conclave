@@ -8,13 +8,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { HttpErrorResponse } from '@angular/common/http';
 import {
   AuthService,
   EVENT_COMMENT_STATUS_LABEL,
   EventService, EventDto,
   EVENT_STATUS_LABEL, EVENT_STATUS_CHIP,
   REGISTRATION_KIND_LABEL,
+  toErrorMessage,
 } from 'shared';
 import { EditionService } from '../../../../services/edition.service';
 
@@ -168,11 +168,11 @@ export class MyEventDetailComponent implements OnInit {
       this.eventId, title!, description!, registrationType!, dropInRules || null
     ).subscribe({
       next: () => this.draftState.update(state => ({ ...state, operation: null, saved: true })),
-      error: (err: HttpErrorResponse) => {
+      error: err => {
         this.draftState.update(state => ({
           ...state,
           operation: null,
-          error: err.error?.detail ?? err.error?.title ?? 'Kunde inte spara utkastet.',
+          error: toErrorMessage(err, 'Kunde inte spara utkastet.'),
         }));
       },
     });
@@ -190,11 +190,11 @@ export class MyEventDetailComponent implements OnInit {
         this.requestForm.reset({ description: '', durationMinutes: 60, seats: 20, startType: 'FixedTime' });
         this.loadEvent();
       },
-      error: (err: HttpErrorResponse) => {
+      error: err => {
         this.requestState.update(state => ({
           ...state,
           adding: false,
-          error: err.error?.detail ?? err.error?.title ?? 'Kunde inte lägga till sessionönskemål.',
+          error: toErrorMessage(err, 'Kunde inte lägga till sessionönskemål.'),
         }));
       },
     });
@@ -203,10 +203,10 @@ export class MyEventDetailComponent implements OnInit {
   removeSessionRequest(requestId: string): void {
     this.eventSvc.removeSessionRequest(this.eventId, requestId).subscribe({
       next: () => this.loadEvent(),
-      error: (err: HttpErrorResponse) => {
+      error: err => {
         this.draftState.update(state => ({
           ...state,
-          actionError: err.error?.detail ?? err.error?.title ?? 'Kunde inte ta bort sessionönskemålet.',
+          actionError: toErrorMessage(err, 'Kunde inte ta bort sessionönskemålet.'),
         }));
       },
     });
@@ -220,11 +220,11 @@ export class MyEventDetailComponent implements OnInit {
         this.draftState.update(state => ({ ...state, operation: null }));
         this.loadEvent();
       },
-      error: (err: HttpErrorResponse) => {
+      error: err => {
         this.draftState.update(state => ({
           ...state,
           operation: null,
-          actionError: err.error?.detail ?? err.error?.title ?? 'Kunde inte skicka in arrangemanget.',
+          actionError: toErrorMessage(err, 'Kunde inte skicka in arrangemanget.'),
         }));
       },
     });
@@ -238,11 +238,11 @@ export class MyEventDetailComponent implements OnInit {
         this.draftState.update(state => ({ ...state, operation: null }));
         this.loadEvent();
       },
-      error: (err: HttpErrorResponse) => {
+      error: err => {
         this.draftState.update(state => ({
           ...state,
           operation: null,
-          actionError: err.error?.detail ?? err.error?.title ?? 'Kunde inte återgå till utkast.',
+          actionError: toErrorMessage(err, 'Kunde inte återgå till utkast.'),
         }));
       },
     });
@@ -253,11 +253,11 @@ export class MyEventDetailComponent implements OnInit {
     this.draftState.update(state => ({ ...state, operation: 'deleting', actionError: null }));
     this.eventSvc.deleteEvent(this.eventId).subscribe({
       next: () => this.router.navigate(['/my-pages/events']),
-      error: (err: HttpErrorResponse) => {
+      error: err => {
         this.draftState.update(state => ({
           ...state,
           operation: null,
-          actionError: err.error?.detail ?? err.error?.title ?? 'Kunde inte ta bort arrangemanget.',
+          actionError: toErrorMessage(err, 'Kunde inte ta bort arrangemanget.'),
         }));
       },
     });
@@ -274,11 +274,11 @@ export class MyEventDetailComponent implements OnInit {
         this.commentForm.reset({ text: '' });
         this.loadEvent();
       },
-      error: (err: HttpErrorResponse) => {
+      error: err => {
         this.commentState.update(state => ({
           ...state,
           adding: false,
-          error: err.error?.detail ?? err.error?.title ?? 'Kunde inte skicka ändringsförslaget.',
+          error: toErrorMessage(err, 'Kunde inte skicka ändringsförslaget.'),
         }));
       },
     });
@@ -294,10 +294,10 @@ export class MyEventDetailComponent implements OnInit {
         this.commentState.update(state => ({ ...state, acknowledging: false }));
         this.loadEvent();
       },
-      error: (err: HttpErrorResponse) => {
+      error: err => {
         this.draftState.update(state => ({
           ...state,
-          actionError: err.error?.detail ?? err.error?.title ?? 'Kunde inte kvittera kommentaren.',
+          actionError: toErrorMessage(err, 'Kunde inte kvittera kommentaren.'),
         }));
         this.commentState.update(state => ({ ...state, acknowledging: false }));
       },

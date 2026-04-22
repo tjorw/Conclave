@@ -16,6 +16,7 @@ import {
   ConventionService, DateTimeRangeComponent, EditionDto, EditionStaffMemberDto, ShiftDto, ShiftSummaryDto,
   StaffService, StaffAreaDto, StationDto,
   ASSIGNMENT_STATUS_LABEL, SHIFT_STATUS_LABEL,
+  toErrorMessage,
 } from 'shared';
 import { MatDividerModule } from '@angular/material/divider';
 import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
@@ -218,12 +219,12 @@ export class StaffAreaDetailComponent {
     if (editing) {
       this.conventionSvc.updateStation(editionId, editing.id, { name: name!, description: description || null }).subscribe({
         next: () => { this.saving.set(false); this.cancelStationForm(); this.reloadEdition(); },
-        error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.updateStation); },
+        error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.updateStation)); },
       });
     } else {
       this.conventionSvc.createStation(editionId, { name: name!, description: description || null, staffAreaId: this.areaId() }).subscribe({
         next: () => { this.saving.set(false); this.cancelStationForm(); this.reloadEdition(); },
-        error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.createStation); },
+        error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.createStation)); },
       });
     }
   }
@@ -235,7 +236,7 @@ export class StaffAreaDetailComponent {
     this.saving.set(true);
     this.conventionSvc.removeStation(editionId, station.id).subscribe({
       next: () => { this.saving.set(false); this.reloadEdition(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.removeStation); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.removeStation)); },
     });
   }
 
@@ -274,7 +275,7 @@ export class StaffAreaDetailComponent {
         const ed = this.edition();
         if (ed) this.loadShiftsForArea(ed);
       },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.createShift); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.createShift)); },
     });
   }
 
@@ -288,7 +289,7 @@ export class StaffAreaDetailComponent {
         const ed = this.edition();
         if (ed) this.loadShiftsForArea(ed);
       },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.cancelShift); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.cancelShift)); },
     });
   }
 
@@ -301,7 +302,7 @@ export class StaffAreaDetailComponent {
     this.saving.set(true);
     this.svc.assignPerson(shift.id, personId!).subscribe({
       next: () => { this.saving.set(false); this.reloadShift(shift.id); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.assignPerson); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.assignPerson)); },
     });
   }
 
@@ -311,7 +312,7 @@ export class StaffAreaDetailComponent {
     this.saving.set(true);
     this.svc.confirmAssignment(shift.id, assignmentId).subscribe({
       next: () => { this.saving.set(false); this.reloadShift(shift.id); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.confirmAssignment); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.confirmAssignment)); },
     });
   }
 
@@ -321,7 +322,7 @@ export class StaffAreaDetailComponent {
     this.saving.set(true);
     this.svc.rejectAssignment(shift.id, assignmentId).subscribe({
       next: () => { this.saving.set(false); this.reloadShift(shift.id); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.rejectAssignment); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.rejectAssignment)); },
     });
   }
 
@@ -331,7 +332,7 @@ export class StaffAreaDetailComponent {
     this.saving.set(true);
     this.svc.cancelAssignment(shift.id, assignmentId).subscribe({
       next: () => { this.saving.set(false); this.reloadShift(shift.id); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.unassignPerson); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.unassignPerson)); },
     });
   }
 

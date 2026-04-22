@@ -9,7 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { ConventionDto, ConventionService, PersonDto, EVENT_STATUS_LABEL } from 'shared';
+import { ConventionDto, ConventionService, PersonDto, EVENT_STATUS_LABEL, toErrorMessage } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, CHIP, FIELD, PLACEHOLDER } from '../../labels/ui.labels';
@@ -119,8 +119,7 @@ export class DashboardComponent implements OnInit {
         this.router.navigate(['/editions', id]);
       },
       error: err => {
-        const detail = (err as { error?: { detail?: string } })?.error?.detail;
-        this.error.set(detail ?? ERROR.createEdition);
+        this.error.set(toErrorMessage(err, ERROR.createEdition));
         this.saving.set(false);
       },
     });

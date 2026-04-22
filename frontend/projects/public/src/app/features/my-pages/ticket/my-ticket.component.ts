@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -6,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MyVisitorRegistrationDto, RegistrationService, TICKET_PAYMENT_STATUS_LABEL, VisitorTicketTypeDto } from 'shared';
+import { MyVisitorRegistrationDto, RegistrationService, TICKET_PAYMENT_STATUS_LABEL, VisitorTicketTypeDto, toErrorMessage } from 'shared';
 import { EditionService } from '../../../services/edition.service';
 
 @Component({
@@ -81,13 +80,8 @@ export class MyTicketComponent implements OnInit {
           this.submitting.set(false);
           this.loadState();
         },
-        error: (err: HttpErrorResponse) => {
-          const detail =
-            err.error?.detail ??
-            err.error?.title ??
-            err.error?.message ??
-            'Kunde inte boka biljett just nu. Försök igen.';
-          this.error.set(detail);
+        error: err => {
+          this.error.set(toErrorMessage(err, 'Kunde inte boka biljett just nu. Försök igen.'));
           this.submitting.set(false);
         },
       });
@@ -112,13 +106,8 @@ export class MyTicketComponent implements OnInit {
           this.cancellingRegistrationId.set(null);
           this.loadState();
         },
-        error: (err: HttpErrorResponse) => {
-          const detail =
-            err.error?.detail ??
-            err.error?.title ??
-            err.error?.message ??
-            'Kunde inte avboka biljetten just nu. Försök igen.';
-          this.error.set(detail);
+        error: err => {
+          this.error.set(toErrorMessage(err, 'Kunde inte avboka biljetten just nu. Försök igen.'));
           this.cancellingRegistrationId.set(null);
         },
       });
@@ -175,13 +164,8 @@ export class MyTicketComponent implements OnInit {
           this.redeemingTicketId.set(null);
           this.loadState();
         },
-        error: (err: HttpErrorResponse) => {
-          const detail =
-            err.error?.detail ??
-            err.error?.title ??
-            err.error?.message ??
-            'Kunde inte lösa in kampanjkoden just nu. Försök igen.';
-          this.error.set(detail);
+        error: err => {
+          this.error.set(toErrorMessage(err, 'Kunde inte lösa in kampanjkoden just nu. Försök igen.'));
           this.redeemingTicketId.set(null);
         },
       });

@@ -6,7 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
-import { PersonDto } from 'shared';
+import { PersonDto, toContextErrorMessage } from 'shared';
 import { SystemTenantService, TenantConvention, TenantListItem } from '../../services/system-tenant.service';
 
 @Component({
@@ -165,10 +165,7 @@ export class TenantDetailComponent implements OnInit {
     resetConventionLoading = false,
     resetPersonsLoading = false,
   ): void {
-    const detail = (err as { error?: { detail?: string; title?: string } })?.error?.detail
-      ?? (err as { error?: { title?: string } })?.error?.title;
-
-    this.error.set(detail ? `${context}: ${detail}` : context);
+    this.error.set(toContextErrorMessage(err, context));
     this.saving.set(false);
     if (resetTenantLoading) this.loadingTenant.set(false);
     if (resetConventionLoading) this.loadingConventions.set(false);

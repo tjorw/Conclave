@@ -19,6 +19,7 @@ import {
   PersonDto,
   EVENT_STATUS_LABEL,
   EVENT_STATUS_CHIP,
+  toErrorMessage,
 } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
@@ -151,7 +152,7 @@ export class EventsComponent {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? ERROR.createEvent);
+        this.error.set(toErrorMessage(err, ERROR.createEvent));
       },
     });
   }
@@ -167,7 +168,7 @@ export class EventsComponent {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? ERROR.cancelEvent);
+        this.error.set(toErrorMessage(err, ERROR.cancelEvent));
       },
     });
   }

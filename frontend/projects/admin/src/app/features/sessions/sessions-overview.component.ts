@@ -23,6 +23,7 @@ import {
   START_TYPE_LABEL,
   VenueDto,
   DateTimeRangeComponent,
+  toErrorMessage,
 } from 'shared';
 import { ERROR } from '../../labels/errors.labels';
 import { SESSIONS_OVERVIEW } from '../../labels/pages.labels';
@@ -345,8 +346,7 @@ export class SessionsOverviewComponent {
       },
       error: (err: unknown) => {
         this.saving.set(false);
-        const detail = (err as { error?: { detail?: string } })?.error?.detail;
-        this.error.set(detail ?? (sessionId ? ERROR.saveSession : ERROR.scheduleSession));
+        this.error.set(toErrorMessage(err, sessionId ? ERROR.saveSession : ERROR.scheduleSession));
       },
     });
   }
@@ -372,8 +372,7 @@ export class SessionsOverviewComponent {
         },
         error: (err: unknown) => {
           this.saving.set(false);
-          const detail = (err as { error?: { detail?: string } })?.error?.detail;
-          this.error.set(detail ?? ERROR.deactivateSession);
+          this.error.set(toErrorMessage(err, ERROR.deactivateSession));
         },
       });
     });

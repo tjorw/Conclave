@@ -18,6 +18,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   CategoryDto, ConventionService, DateTimeRangeComponent, EditionDto, EditionSessionDto, EventDto, EventService, VenueDto,
   EVENT_COMMENT_STATUS_LABEL, EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
+  toErrorMessage,
 } from 'shared';
 import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
@@ -181,7 +182,7 @@ export class EventDetailComponent implements OnInit {
       this.saving.set(true);
       this.svc.changeCategory(ev.id, newCategoryId).subscribe({
         next: () => { this.saving.set(false); this.reload(); },
-        error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.changeCategory); },
+        error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.changeCategory)); },
       });
     });
   }
@@ -194,7 +195,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.approveEvent(ev.id).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.approveEvent); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.approveEvent)); },
     });
   }
 
@@ -208,7 +209,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.rejectEvent(ev.id, comment).subscribe({
       next: () => { this.saving.set(false); this.showRejectForm.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.rejectEvent); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.rejectEvent)); },
     });
   }
 
@@ -220,7 +221,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.cancelEvent(ev.id).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.cancelEvent); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.cancelEvent)); },
     });
   }
 
@@ -237,7 +238,7 @@ export class EventDetailComponent implements OnInit {
       this.deleting.set(true);
       this.svc.deleteEvent(ev.id).subscribe({
         next: () => this.router.navigate(['/events']),
-        error: err => { this.deleting.set(false); this.error.set(err?.error?.detail ?? ERROR.deleteEvent); },
+        error: err => { this.deleting.set(false); this.error.set(toErrorMessage(err, ERROR.deleteEvent)); },
       });
     });
   }
@@ -251,7 +252,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.updateDraft(ev.id, title!, description!, registrationType!, dropInRules || null).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.saveDraft); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.saveDraft)); },
     });
   }
 
@@ -269,7 +270,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.addSessionRequest(ev.id, description!, durationMinutes!, seats!, startType!).subscribe({
       next: () => { this.saving.set(false); this.showAddRequestForm.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.addSessionRequest); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.addSessionRequest)); },
     });
   }
 
@@ -279,7 +280,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.removeSessionRequest(ev.id, requestId).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.removeSessionRequest); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.removeSessionRequest)); },
     });
   }
 
@@ -319,7 +320,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.scheduleSession(ev.id, venueId!, startTime!, endTime!, maxSeats!, startType!).subscribe({
       next: () => { this.saving.set(false); this.showAddSessionForm.set(false); this.reload(); this.refreshEditionSessions(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.scheduleSession); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.scheduleSession)); },
     });
   }
 
@@ -331,7 +332,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.updateSession(ev.id, sessionId, venueId!, startTime!, endTime!, maxSeats!, startType!).subscribe({
       next: () => { this.saving.set(false); this.editingSessionId.set(null); this.reload(); this.refreshEditionSessions(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.saveSession); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.saveSession)); },
     });
   }
 
@@ -341,7 +342,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.deactivateSession(ev.id, sessionId).subscribe({
       next: () => { this.saving.set(false); this.reload(); this.refreshEditionSessions(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.deactivateSession); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.deactivateSession)); },
     });
   }
 
@@ -353,7 +354,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.returnToDraft(ev.id).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.returnToDraft); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.returnToDraft)); },
     });
   }
 
@@ -363,7 +364,7 @@ export class EventDetailComponent implements OnInit {
     this.saving.set(true);
     this.svc.submitForReview(ev.id).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
-      error: err => { this.saving.set(false); this.error.set(err?.error?.detail ?? ERROR.submitForReview); },
+      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.submitForReview)); },
     });
   }
 
@@ -448,7 +449,7 @@ export class EventDetailComponent implements OnInit {
       },
       error: err => {
         this.saving.set(false);
-        this.error.set(err?.error?.detail ?? ERROR.respondToComment);
+        this.error.set(toErrorMessage(err, ERROR.respondToComment));
       },
     });
   }

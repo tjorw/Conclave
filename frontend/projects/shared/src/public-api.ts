@@ -20,6 +20,9 @@ export * from './lib/interceptors/tenant-dev.interceptor';
 export * from './lib/interceptors/auth.interceptor';
 export * from './lib/interceptors/auth-session.interceptor';
 
+// HTTP
+export * from './lib/http/error-message';
+
 // Services
 export * from './lib/services/auth.service';
 export * from './lib/services/session-state.service';

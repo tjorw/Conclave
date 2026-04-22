@@ -20,6 +20,7 @@ import {
   VisitorRegistrationAdminDto,
   VISITOR_REGISTRATION_STATUS_LABEL,
   VISITOR_REGISTRATION_STATUS_CHIP,
+  toContextErrorMessage,
 } from 'shared';
 import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
 
@@ -161,19 +162,12 @@ export class RegistrationsComponent {
   }
 
   private handleError(context: string, err: unknown): void {
-    const detail = this.extractErrorDetail(err);
-    this.error.set(detail ? `${context}: ${detail}` : context);
+    this.error.set(toContextErrorMessage(err, context));
     this.saving.set(false);
   }
 
   private handleLoadError(context: string, err: unknown): void {
-    const detail = this.extractErrorDetail(err);
-    this.error.set(detail ? `${context}: ${detail}` : context);
-  }
-
-  private extractErrorDetail(err: unknown): string | null {
-    const payload = (err as { error?: { detail?: string; title?: string; message?: string } })?.error;
-    return payload?.detail ?? payload?.title ?? payload?.message ?? null;
+    this.error.set(toContextErrorMessage(err, context));
   }
 
   togglePromotionCodeForm(): void {

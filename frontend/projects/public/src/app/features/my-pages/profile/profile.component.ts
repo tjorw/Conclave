@@ -6,8 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { HttpErrorResponse } from '@angular/common/http';
-import { AuthService } from 'shared';
+import { AuthService, toErrorMessage } from 'shared';
 
 @Component({
   selector: 'app-profile',
@@ -79,9 +78,8 @@ export class ProfileComponent implements OnInit {
         this.savingProfile.set(false);
         this.profileSaved.set(true);
       },
-      error: (err: HttpErrorResponse) => {
-        const detail = err.error?.detail ?? err.error?.title ?? 'Kunde inte spara profilen.';
-        this.profileError.set(detail);
+      error: err => {
+        this.profileError.set(toErrorMessage(err, 'Kunde inte spara profilen.'));
         this.savingProfile.set(false);
       },
     });
@@ -106,9 +104,8 @@ export class ProfileComponent implements OnInit {
         this.passwordSaved.set(true);
         this.passwordForm.reset();
       },
-      error: (err: HttpErrorResponse) => {
-        const detail = err.error?.detail ?? err.error?.title ?? 'Kunde inte byta lösenord.';
-        this.passwordError.set(detail);
+      error: err => {
+        this.passwordError.set(toErrorMessage(err, 'Kunde inte byta lösenord.'));
         this.savingPassword.set(false);
       },
     });

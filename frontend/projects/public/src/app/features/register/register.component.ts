@@ -5,8 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { HttpErrorResponse } from '@angular/common/http';
-import { AuthService } from 'shared';
+import { AuthService, toErrorMessage } from 'shared';
 
 @Component({
   selector: 'app-register',
@@ -45,9 +44,8 @@ export class RegisterComponent {
         this.loading.set(false);
         this.success.set(true);
       },
-      error: (err: HttpErrorResponse) => {
-        const detail = err.error?.detail ?? err.error?.title ?? 'Registreringen misslyckades. Försök igen.';
-        this.error.set(detail);
+      error: err => {
+        this.error.set(toErrorMessage(err, 'Registreringen misslyckades. Försök igen.'));
         this.loading.set(false);
       },
     });

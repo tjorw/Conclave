@@ -22,6 +22,7 @@ import {
   StaffAreaDto,
   TicketTypeAdminDto,
   VenueDto,
+  toContextErrorMessage,
 } from 'shared';
 import { ERROR } from '../../../labels/errors.labels';
 import { EDITION_DETAIL } from '../../../labels/pages.labels';
@@ -95,8 +96,7 @@ export class EditionDetailComponent implements OnInit {
   readonly ticketTypeSort = signal<SortState<TicketTypeSortKey>>({ key: 'name', direction: 'asc' });
 
   private handleError(context: string, err: unknown): void {
-    const detail = (err as { error?: { detail?: string } })?.error?.detail;
-    this.error.set(detail ? `${context}: ${detail}` : context);
+    this.error.set(toContextErrorMessage(err, context));
     this.saving.set(false);
   }
 
