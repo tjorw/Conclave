@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -17,6 +17,28 @@ import {
   REGISTRATION_KIND_LABEL,
 } from 'shared';
 import { EditionService } from '../../../../services/edition.service';
+
+type DraftOperation = 'saving' | 'submitting' | 'returning' | 'deleting';
+
+type DraftState = {
+  operation: DraftOperation | null;
+  saved: boolean;
+  error: string | null;
+  actionError: string | null;
+};
+
+type RequestState = {
+  adding: boolean;
+  saved: boolean;
+  error: string | null;
+};
+
+type CommentState = {
+  adding: boolean;
+  acknowledging: boolean;
+  saved: boolean;
+  error: string | null;
+};
 
 @Component({
   selector: 'app-my-event-detail',
@@ -45,21 +67,9 @@ export class MyEventDetailComponent implements OnInit {
 
   readonly loading       = signal(true);
   readonly event         = signal<EventDto | null>(null);
-  readonly savingDraft   = signal(false);
-  readonly draftSaved    = signal(false);
-  readonly draftError    = signal<string | null>(null);
-  readonly submitting    = signal(false);
-  readonly returning     = signal(false);
-  readonly deleting      = signal(false);
-  readonly actionError   = signal<string | null>(null);
-
-  readonly addingRequest  = signal(false);
-  readonly requestSaved   = signal(false);
-  readonly requestError   = signal<string | null>(null);
-  readonly addingComment  = signal(false);
-  readonly commentSaved   = signal(false);
-  readonly commentError   = signal<string | null>(null);
-  readonly acknowledging  = signal(false);
+  readonly draftState    = signal<DraftState>({ operation: null, saved: false, error: null, actionError: null });
+  readonly requestState  = signal<RequestState>({ adding: false, saved: false, error: null });
+  readonly commentState  = signal<CommentState>({ adding: false, acknowledging: false, saved: false, error: null });
 
   readonly statusLabel = EVENT_STATUS_LABEL;
   readonly statusChip  = EVENT_STATUS_CHIP;
@@ -104,14 +114,14 @@ export class MyEventDetailComponent implements OnInit {
     return this.event()?.status === 'Draft';
   }
 
-  get adminComment(): string | null {
+  readonly adminComment = computed(() => {
     const ev = this.event();
     if (!ev) return null;
     const adminComments = ev.comments
       .filter(c => !c.requiresHandling)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     return adminComments[0]?.text ?? null;
-  }
+  });
 
   get currentPersonId(): string | null {
     return this.authSvc.personId();
@@ -151,40 +161,41 @@ export class MyEventDetailComponent implements OnInit {
   }
 
   saveDraft(): void {
-    if (this.draftForm.invalid || this.savingDraft()) return;
-    this.savingDraft.set(true);
-    this.draftSaved.set(false);
-    this.draftError.set(null);
+    if (this.draftForm.invalid || this.draftState().operation !== null) return;
+    this.draftState.set({ operation: 'saving', saved: false, error: null, actionError: null });
     const { title, description, registrationType, dropInRules } = this.draftForm.getRawValue();
     this.eventSvc.updateDraft(
       this.eventId, title!, description!, registrationType!, dropInRules || null
     ).subscribe({
-      next: () => { this.savingDraft.set(false); this.draftSaved.set(true); },
+      next: () => this.draftState.update(state => ({ ...state, operation: null, saved: true })),
       error: (err: HttpErrorResponse) => {
-        this.draftError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte spara utkastet.');
-        this.savingDraft.set(false);
+        this.draftState.update(state => ({
+          ...state,
+          operation: null,
+          error: err.error?.detail ?? err.error?.title ?? 'Kunde inte spara utkastet.',
+        }));
       },
     });
   }
 
   addSessionRequest(): void {
-    if (this.requestForm.invalid || this.addingRequest()) return;
-    this.addingRequest.set(true);
-    this.requestSaved.set(false);
-    this.requestError.set(null);
+    if (this.requestForm.invalid || this.requestState().adding) return;
+    this.requestState.set({ adding: true, saved: false, error: null });
     const { description, durationMinutes, seats, startType } = this.requestForm.getRawValue();
     this.eventSvc.addSessionRequest(
       this.eventId, description!, durationMinutes!, seats!, startType!
     ).subscribe({
       next: () => {
-        this.addingRequest.set(false);
-        this.requestSaved.set(true);
+        this.requestState.update(state => ({ ...state, adding: false, saved: true }));
         this.requestForm.reset({ description: '', durationMinutes: 60, seats: 20, startType: 'FixedTime' });
         this.loadEvent();
       },
       error: (err: HttpErrorResponse) => {
-        this.requestError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte lägga till sessionönskemål.');
-        this.addingRequest.set(false);
+        this.requestState.update(state => ({
+          ...state,
+          adding: false,
+          error: err.error?.detail ?? err.error?.title ?? 'Kunde inte lägga till sessionönskemål.',
+        }));
       },
     });
   }
@@ -193,84 +204,102 @@ export class MyEventDetailComponent implements OnInit {
     this.eventSvc.removeSessionRequest(this.eventId, requestId).subscribe({
       next: () => this.loadEvent(),
       error: (err: HttpErrorResponse) => {
-        this.actionError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte ta bort sessionönskemålet.');
+        this.draftState.update(state => ({
+          ...state,
+          actionError: err.error?.detail ?? err.error?.title ?? 'Kunde inte ta bort sessionönskemålet.',
+        }));
       },
     });
   }
 
   submitForReview(): void {
-    if (this.submitting()) return;
-    this.submitting.set(true);
-    this.actionError.set(null);
+    if (this.draftState().operation !== null) return;
+    this.draftState.update(state => ({ ...state, operation: 'submitting', actionError: null }));
     this.eventSvc.submitForReview(this.eventId).subscribe({
-      next: () => { this.submitting.set(false); this.loadEvent(); },
+      next: () => {
+        this.draftState.update(state => ({ ...state, operation: null }));
+        this.loadEvent();
+      },
       error: (err: HttpErrorResponse) => {
-        this.actionError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte skicka in arrangemanget.');
-        this.submitting.set(false);
+        this.draftState.update(state => ({
+          ...state,
+          operation: null,
+          actionError: err.error?.detail ?? err.error?.title ?? 'Kunde inte skicka in arrangemanget.',
+        }));
       },
     });
   }
 
   returnToDraft(): void {
-    if (this.returning()) return;
-    this.returning.set(true);
-    this.actionError.set(null);
+    if (this.draftState().operation !== null) return;
+    this.draftState.update(state => ({ ...state, operation: 'returning', actionError: null }));
     this.eventSvc.returnToDraft(this.eventId).subscribe({
-      next: () => { this.returning.set(false); this.loadEvent(); },
+      next: () => {
+        this.draftState.update(state => ({ ...state, operation: null }));
+        this.loadEvent();
+      },
       error: (err: HttpErrorResponse) => {
-        this.actionError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte återgå till utkast.');
-        this.returning.set(false);
+        this.draftState.update(state => ({
+          ...state,
+          operation: null,
+          actionError: err.error?.detail ?? err.error?.title ?? 'Kunde inte återgå till utkast.',
+        }));
       },
     });
   }
 
   deleteEvent(): void {
-    if (this.deleting() || !confirm('Ta bort arrangemanget permanent?')) return;
-    this.deleting.set(true);
-    this.actionError.set(null);
+    if (this.draftState().operation !== null || !confirm('Ta bort arrangemanget permanent?')) return;
+    this.draftState.update(state => ({ ...state, operation: 'deleting', actionError: null }));
     this.eventSvc.deleteEvent(this.eventId).subscribe({
       next: () => this.router.navigate(['/my-pages/events']),
       error: (err: HttpErrorResponse) => {
-        this.actionError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte ta bort arrangemanget.');
-        this.deleting.set(false);
+        this.draftState.update(state => ({
+          ...state,
+          operation: null,
+          actionError: err.error?.detail ?? err.error?.title ?? 'Kunde inte ta bort arrangemanget.',
+        }));
       },
     });
   }
 
   addChangeComment(): void {
-    if (this.commentForm.invalid || this.addingComment()) return;
-    this.addingComment.set(true);
-    this.commentSaved.set(false);
-    this.commentError.set(null);
+    if (this.commentForm.invalid || this.commentState().adding) return;
+    this.commentState.set({ adding: true, acknowledging: false, saved: false, error: null });
 
     const text = this.commentForm.getRawValue().text!;
     this.eventSvc.addEventComment(this.eventId, text).subscribe({
       next: () => {
-        this.addingComment.set(false);
-        this.commentSaved.set(true);
+        this.commentState.update(state => ({ ...state, adding: false, saved: true }));
         this.commentForm.reset({ text: '' });
         this.loadEvent();
       },
       error: (err: HttpErrorResponse) => {
-        this.commentError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte skicka ändringsförslaget.');
-        this.addingComment.set(false);
+        this.commentState.update(state => ({
+          ...state,
+          adding: false,
+          error: err.error?.detail ?? err.error?.title ?? 'Kunde inte skicka ändringsförslaget.',
+        }));
       },
     });
   }
 
   acknowledgeComment(commentId: string): void {
-    if (this.acknowledging()) return;
-    this.acknowledging.set(true);
-    this.actionError.set(null);
+    if (this.commentState().acknowledging) return;
+    this.commentState.update(state => ({ ...state, acknowledging: true }));
+    this.draftState.update(state => ({ ...state, actionError: null }));
 
     this.eventSvc.acknowledgeEventComment(this.eventId, commentId).subscribe({
       next: () => {
-        this.acknowledging.set(false);
+        this.commentState.update(state => ({ ...state, acknowledging: false }));
         this.loadEvent();
       },
       error: (err: HttpErrorResponse) => {
-        this.actionError.set(err.error?.detail ?? err.error?.title ?? 'Kunde inte kvittera kommentaren.');
-        this.acknowledging.set(false);
+        this.draftState.update(state => ({
+          ...state,
+          actionError: err.error?.detail ?? err.error?.title ?? 'Kunde inte kvittera kommentaren.',
+        }));
+        this.commentState.update(state => ({ ...state, acknowledging: false }));
       },
     });
   }

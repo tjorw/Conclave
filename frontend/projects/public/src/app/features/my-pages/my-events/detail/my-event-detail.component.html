@@ -18,14 +18,14 @@
     </div>
 
     <!-- ── Adminkommentar ─────────────────────────────────────────────── -->
-    @if (adminComment; as comment) {
+    @if (adminComment(); as comment) {
       <div class="admin-comment-banner">
         <strong>Kommentar från administratör:</strong> {{ comment }}
       </div>
     }
 
-    @if (actionError()) {
-      <div class="error-banner">{{ actionError() }}</div>
+    @if (draftState().actionError) {
+      <div class="error-banner">{{ draftState().actionError }}</div>
     }
 
     @if (canCommentOnPublishedEvent) {
@@ -33,10 +33,10 @@
         <h2>Föreslå ändring</h2>
         <p class="help-text">Lämna en kommentar om du vill föreslå en justering av schema eller upplägg.</p>
 
-        @if (commentError()) {
-          <div class="error-banner">{{ commentError() }}</div>
+        @if (commentState().error) {
+          <div class="error-banner">{{ commentState().error }}</div>
         }
-        @if (commentSaved()) {
+        @if (commentState().saved) {
           <div class="success-inline">Ändringsförslag skickat.</div>
         }
 
@@ -47,8 +47,8 @@
           </mat-form-field>
 
           <button mat-flat-button class="save-btn" type="submit"
-                  [disabled]="commentForm.invalid || addingComment()">
-            @if (addingComment()) { <mat-spinner diameter="18" /> } @else { Skicka ändringsförslag }
+                  [disabled]="commentForm.invalid || commentState().adding">
+            @if (commentState().adding) { <mat-spinner diameter="18" /> } @else { Skicka ändringsförslag }
           </button>
         </form>
       </section>
@@ -70,7 +70,7 @@
               }
             </div>
             @if (comment.requiresHandling && comment.authorId === currentPersonId && comment.status === 'Responded') {
-              <button mat-stroked-button class="action-btn" (click)="acknowledgeComment(comment.id)" [disabled]="acknowledging()">
+              <button mat-stroked-button class="action-btn" (click)="acknowledgeComment(comment.id)" [disabled]="commentState().acknowledging">
                 Kvittera som hanterad
               </button>
             }
@@ -86,8 +86,8 @@
       @if (isDraft) {
         @if (eventSubmissionsOpen) {
           <button mat-flat-button class="action-btn primary" (click)="submitForReview()"
-                  [disabled]="submitting() || !ev.title">
-            @if (submitting()) { <mat-spinner diameter="18" /> } @else { Skicka in för granskning }
+                  [disabled]="draftState().operation !== null || !ev.title">
+            @if (draftState().operation === 'submitting') { <mat-spinner diameter="18" /> } @else { Skicka in för granskning }
           </button>
         } @else {
           <p class="submissions-closed">Arrangemangsansökan är för tillfället stängd.</p>
@@ -95,14 +95,14 @@
       }
       @if (ev.status === 'UnderReview') {
         <button mat-stroked-button class="action-btn" (click)="returnToDraft()"
-                [disabled]="returning()">
-          @if (returning()) { <mat-spinner diameter="18" /> } @else { Dra tillbaka till utkast }
+                [disabled]="draftState().operation !== null">
+          @if (draftState().operation === 'returning') { <mat-spinner diameter="18" /> } @else { Dra tillbaka till utkast }
         </button>
       }
       @if (canDelete) {
         <button mat-stroked-button color="warn" class="action-btn" (click)="deleteEvent()"
-                [disabled]="deleting()">
-          @if (deleting()) { <mat-spinner diameter="18" /> } @else { Ta bort }
+                [disabled]="draftState().operation !== null">
+          @if (draftState().operation === 'deleting') { <mat-spinner diameter="18" /> } @else { Ta bort }
         </button>
       }
     </div>
@@ -112,10 +112,10 @@
       <section class="card">
         <h2>Arrangemagsuppgifter</h2>
 
-        @if (draftError()) {
-          <div class="error-banner">{{ draftError() }}</div>
+        @if (draftState().error) {
+          <div class="error-banner">{{ draftState().error }}</div>
         }
-        @if (draftSaved()) {
+        @if (draftState().saved) {
           <div class="success-inline">Sparat.</div>
         }
 
@@ -147,8 +147,8 @@
           }
 
           <button mat-flat-button class="save-btn" type="submit"
-                  [disabled]="draftForm.invalid || savingDraft()">
-            @if (savingDraft()) { <mat-spinner diameter="18" /> } @else { Spara }
+                  [disabled]="draftForm.invalid || draftState().operation !== null">
+            @if (draftState().operation === 'saving') { <mat-spinner diameter="18" /> } @else { Spara }
           </button>
         </form>
       </section>
@@ -194,10 +194,10 @@
         <div class="request-form-section">
           <h3>Lägg till sessionönskemål</h3>
 
-          @if (requestError()) {
-            <div class="error-banner">{{ requestError() }}</div>
+          @if (requestState().error) {
+            <div class="error-banner">{{ requestState().error }}</div>
           }
-          @if (requestSaved()) {
+          @if (requestState().saved) {
             <div class="success-inline">Sessionönskemål tillagt.</div>
           }
 
@@ -229,8 +229,8 @@
             </div>
 
             <button mat-flat-button class="save-btn" type="submit"
-                    [disabled]="requestForm.invalid || addingRequest()">
-              @if (addingRequest()) { <mat-spinner diameter="18" /> } @else { Lägg till }
+                    [disabled]="requestForm.invalid || requestState().adding">
+              @if (requestState().adding) { <mat-spinner diameter="18" /> } @else { Lägg till }
             </button>
           </form>
         </div>
