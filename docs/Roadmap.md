@@ -15,6 +15,7 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-HL03` Hjälpsystem – första omgången Markdown-innehåll (6 filer: convention, event, registration, staff)
 - [ ] `R-HL04` Hjälpsystem – `HelpPanel`-komponent på listsidor (UC-HL002)
 - [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
+- [ ] `R-OB01` Outbox-mönster för extern kommunikation – `OutboxMessage`-tabell, `OutboxEmailSender` (implementerar `IEmailSender`), `OutboxProcessor` (`IHostedService`, kör var 30:e sekund), Polly-retry med exponentiell backoff. Se `docs/Outbox.md` för design.
 - [ ] `R30` schemaönskemål förenklas till ett enda fritextfält – arrangören skriver sina önskemål fritt; fältet visas i schemaläggningsvyn så att schemaläggaren ser det i sitt arbetsflöde. Strukturerade fält (tidspreferenser, konflikter m.m.) tas bort.
 
 ### Laganmälningar (R-TM)
@@ -60,12 +61,11 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 | **E2E-test för journeys** | Journey-flöden saknar UI-verifiering över hela kedjan. Lägg till browserbaserade E2E-scenarier för kritiska flöden när funktionerna stabiliserats. | Medel – planera efter implementation av 3.x-flöden |
 | `CreatePersonCommand` vs UC002 | Två vägar att skapa en person. Kan leda till inkonsekvens om e-post-uniqueness-kontrollen blockerar auth-skapande. | Medel – UC002-vägen får aldrig kollidera |
 | Idempotens i login-flödet | Race condition: två parallella första-inloggningar kan försöka skapa person simultaneously. Unikt index är sista skyddet. | Låg |
-| `ICurrentUser` i bakgrundsjobb | `ICurrentUser` läser från `HttpContext` och fungerar inte utanför HTTP-request-scopet. Bakgrundsjobb och seeders måste anropa domänmodellen direkt. | Medel – dokumentera mönstret |
 | **`Shift` saknar `EditionId`** | `Shift` har ingen direkt koppling till `EditionId`. `MyScheduleRepository` löser detta via `Edition.Stations`-navigeringen (shadow FK). Om Shift-kontexten växer bör ett direkt `EditionId` övervägas på `Shift` för att slippa join-beroendet mot Convention. | Låg – fungerar korrekt, men fragil vid schemamigration |
 | **Deduplikering i tidsschema** | Om samma session förekommer i flera kategorier (t.ex. bokad OCH arrangör) prioriteras Booked > Organiser > Watching i `MyScheduleRepository`. Prioriteringslogiken är inte testad på domännivå. Om affärsreglerna ändras (t.ex. "visa alltid arrangörsrollen oavsett bokning") behöver deduplikeringen ses över. | Låg – nuvarande beteende är rimligt |
 | **Inga `DbSet<Station>` i `ConventionDbContext`** | `Station` och `Venue` nås via `db.Set<T>()` i stället för namngivna `DbSet<T>`-properties. Inkonsekvens mot övriga entiteter. Lägg till `DbSet<Station>` och `DbSet<Venue>` i `ConventionDbContext` om fler queries börjar hämta dem direkt. | Låg |
 | **R22: Centralisera JWT-konfigurationsnycklar** | Nycklarna `Jwt:Key`, `Jwt:Issuer` och `Jwt:Audience` används duplicerat i startup och auth. Samla i konstanter/options för att minska typo-risk och förenkla ändringar. | Medel |
-| Outbox | Om en extern tjänst inte är tillgänglig så går applikationen sönder. T.ex. om SMPT inte är tillgängligt. Dessa aktiviteter behöver hanteras persistent i en outbox och ha en backgroundworker. Viktigt att den inte har koppling till http-kontextet | Hög |
+| **`ICurrentUser` i bakgrundsjobb (dokumentera)** | `ICurrentUser` läser från `HttpContext` – fungerar inte utanför HTTP-request-scopet. Bakgrundsjobb och seeders måste anropa domänmodellen direkt eller använda systemidentitet. Outbox-processorn är referensimplementation för rätt mönster (`R-OB01`). | Medel |
 ---
 
 ## Fas 4 – Demo och driftsättning
@@ -88,7 +88,7 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 ## Refine
 - Taggar för arrangemang ("Barnvänligt", "18+", "Nybörjare"). Skall även vara filter publikt.
-- Bakgrundsjobb för mail m.m.
+- Bakgrundsjobb för mail m.m. → se `R-OB01` (Outbox-mönster, design i `docs/Outbox.md`)
 - Föreslå startdatum i datum kontroller som är första dagen på konventet
 - motsvarande schemaläggning för bemanning
 - varför startar tidsschemat på 08:00
