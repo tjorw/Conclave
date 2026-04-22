@@ -38,6 +38,15 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
 
+### Frontend-kvalitet, publik app (R-FQ)
+
+Återstår efter SCSS-pass och subscription-cleanup (april 2026).
+
+- [ ] `R-FQ01` **`my-event-detail` – state-objekt** – ersätt 16+ individuella signals (`savingDraft`, `draftSaved`, `draftError`, `submitting`, `returning`, `deleting`, `addingRequest`, `requestSaved`, `requestError`, `addingComment`, `commentSaved`, `commentError`, `acknowledging` …) med tre grupperade state-objekt: `draftState`, `requestState`, `commentState`. Minskar risk för inkonsekventa mellantillstånd och gör koden läsbar. Fil: `my-event-detail.component.ts`
+- [ ] `R-FQ02` **`my-ticket` – ta bort `ChangeDetectorRef`** – `cdr.detectChanges()` anropas ~6 gånger i `loadState()`. Med signals är manuell change detection onödig; roten är sannolikt att `MyVisitorRegistrationDto`/`VisitorTicketTypeDto` normaliseras via `as`-casts istället för att ha korrekta API-typer. Korrekta DTO-typer löser behovet; ta bort `ChangeDetectorRef`-beroendet. Fil: `my-ticket.component.ts`
+- [ ] `R-FQ03` **`adminComment`-getter → `computed`** – `get adminComment()` i `my-event-detail.component.ts` beräknar ett värde ur ett signal men är en vanlig getter, inte reaktiv. Byt till `readonly adminComment = computed(() => ...)` för korrekt reaktivitet. Fil: `my-event-detail.component.ts`
+- [ ] `R-FQ04` **Centralisera HttpErrorResponse-hantering** – mönstret `err.error?.detail ?? err.error?.title ?? 'fallback'` upprepas i ~10 komponenter. En liten hjälpfunktion `toErrorMessage(err: HttpErrorResponse, fallback: string): string` i `shared` eliminerar dupliceringen och ger enhetliga felmeddelanden.
+
 ### Rikt innehåll (R-RC)
 
 - [ ] `R-RC01` Markdown-editor för eventbeskrivningar – admin kan redigera publik beskrivning med formatering; arrangör kan redigera sin del
@@ -92,7 +101,6 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - Föreslå startdatum i datum kontroller som är första dagen på konventet
 - motsvarande schemaläggning för bemanning
 - varför startar tidsschemat på 08:00
-- renodla, standardisera knappar, css mm.
 - public - funktionering skall visa funktionärsbiljetter
 - arrangör - skall visa arrangörsbiljetter
 - biljetter till arranggörer - man behöver bli tilldelad
