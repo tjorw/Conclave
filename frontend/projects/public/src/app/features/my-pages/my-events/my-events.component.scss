@@ -4,14 +4,6 @@
   max-width: 760px;
 }
 
-.back-link {
-  margin-bottom: 8px;
-  font-size: .875rem;
-
-  a { color: var(--brand-primary); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-}
-
 .page-header {
   display: flex;
   align-items: center;
@@ -20,23 +12,10 @@
   gap: 16px;
 }
 
-.page-title {
-  font-size: 1.75rem;
-  font-weight: 500;
-  color: var(--brand-primary);
-  margin: 0;
-}
-
 .new-btn {
   background-color: var(--brand-primary) !important;
   color: #fff !important;
   white-space: nowrap;
-}
-
-.loading {
-  display: flex;
-  justify-content: center;
-  padding: 48px 0;
 }
 
 .empty-state {
@@ -114,7 +93,3 @@
   font-size: .75rem;
   font-weight: 500;
 }
-
-.chip-grey   { background: #f0f0f0; color: #555; }
-.chip-orange { background: #fff3e0; color: #e65100; }
-.chip-green  { background: #e8f5e9; color: #2e7d32; }

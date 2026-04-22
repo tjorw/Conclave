@@ -4,31 +4,11 @@
   max-width: 560px;
 }
 
-.back-link {
-  margin-bottom: 8px;
-  font-size: .875rem;
-
-  a { color: var(--brand-primary); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-}
-
 .page-title {
-  font-size: 1.75rem;
-  font-weight: 500;
-  color: var(--brand-primary);
-  margin: 0 0 32px;
-}
-
-.loading {
-  display: flex;
-  justify-content: center;
-  padding: 48px 0;
+  margin-bottom: 32px;
 }
 
 .card {
-  background: var(--brand-surface);
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, .07);
   padding: 28px 32px;
 
   h2 {

@@ -4,52 +4,11 @@
   max-width: 760px;
 }
 
-.back-link {
-  margin-bottom: 8px;
-  font-size: .875rem;
-
-  a {
-    color: var(--brand-primary);
-    text-decoration: none;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-}
-
 .page-header {
   margin-bottom: 16px;
 }
 
-.page-title {
-  font-size: 1.75rem;
-  font-weight: 500;
-  color: var(--brand-primary);
-  margin: 0;
-}
-
-.loading {
-  display: flex;
-  justify-content: center;
-  padding: 48px 0;
-}
-
-.error-banner {
-  margin: 0 0 16px;
-  border-radius: 8px;
-  padding: 10px 12px;
-  background: #fdecea;
-  color: #8a1f11;
-  font-size: .9rem;
-}
-
 .card {
-  background: var(--brand-surface);
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, .07);
-  padding: 24px;
-
   h2 {
     font-size: 1.15rem;
     margin: 0 0 16px;
@@ -210,10 +169,6 @@ textarea:focus {
 }
 
 @media (max-width: 680px) {
-  .card {
-    padding: 18px;
-  }
-
   .checkbox-grid {
     grid-template-columns: 1fr;
   }
