@@ -4,7 +4,6 @@ import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTabsModule } from '@angular/material/tabs';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { EditionService } from '../../../services/edition.service';
@@ -28,10 +27,17 @@ const SCHEDULE_TYPE_LABEL: Record<string, string> = {
 
 const SESSION_REGISTRATION_STATUSES: readonly SessionRegistrationStatus[] = ['Confirmed', 'Cancelled'];
 
+interface TimelineDay {
+  key: string;
+  label: string;
+  shortLabel: string;
+  count: number;
+}
+
 @Component({
   selector: 'app-my-program',
   standalone: true,
-  imports: [RouterLink, MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatTabsModule],
+  imports: [RouterLink, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './my-program.component.html',
   styleUrl: './my-program.component.scss',
 })
@@ -49,6 +55,9 @@ export class MyProgramComponent implements OnInit {
   readonly cancellingId = signal<string | null>(null);
   readonly unwatchingSessionId = signal<string | null>(null);
   readonly showWatchedInTimeline = signal(false);
+  readonly showPastTimelineItems = signal(false);
+  readonly selectedTimelineDay = signal<string | null>(null);
+  readonly now = signal(Date.now());
 
   readonly scheduleItems = computed<MyScheduleItemDto[]>(() => {
     const booked = this.bookedSessions().map<MyScheduleItemDto>(session => ({
@@ -124,8 +133,58 @@ export class MyProgramComponent implements OnInit {
       .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
   });
 
+  readonly visibleTimelineItems = computed<MyScheduleItemDto[]>(() => {
+    const now = this.now();
+    return this.timelineItems().filter(item =>
+      this.showPastTimelineItems() || !this.itemHasPassed(item, now)
+    );
+  });
+
+  readonly hiddenPastTimelineItemCount = computed(() =>
+    this.timelineItems().filter(item => this.itemHasPassed(item, this.now())).length
+  );
+
+  readonly timelineDays = computed<TimelineDay[]>(() => {
+    const days = new Map<string, TimelineDay>();
+
+    for (const item of this.visibleTimelineItems()) {
+      const key = this.dayKey(item.start);
+      if (!key) continue;
+
+      const existing = days.get(key);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        days.set(key, {
+          key,
+          label: this.formatDay(item.start, 'long'),
+          shortLabel: this.formatDay(item.start, 'short'),
+          count: 1,
+        });
+      }
+    }
+
+    return [...days.values()];
+  });
+
+  readonly selectedTimelineDayKey = computed(() => {
+    const days = this.timelineDays();
+    const selected = this.selectedTimelineDay();
+
+    return selected && days.some(day => day.key === selected)
+      ? selected
+      : days[0]?.key ?? null;
+  });
+
+  readonly filteredTimelineItems = computed<MyScheduleItemDto[]>(() => {
+    const selectedDay = this.selectedTimelineDayKey();
+    if (!selectedDay) return [];
+
+    return this.visibleTimelineItems().filter(item => this.dayKey(item.start) === selectedDay);
+  });
+
   readonly conflictIds = computed<Set<string>>(() => {
-    const items = this.timelineItems();
+    const items = this.filteredTimelineItems();
     const ids = new Set<string>();
 
     for (let i = 0; i < items.length; i++) {
@@ -143,11 +202,21 @@ export class MyProgramComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const clock = setInterval(() => this.now.set(Date.now()), 60_000);
+    this.destroyRef.onDestroy(() => clearInterval(clock));
     this.loadAll();
   }
 
   toggleWatchedInTimeline(): void {
     this.showWatchedInTimeline.update(value => !value);
+  }
+
+  togglePastTimelineItems(): void {
+    this.showPastTimelineItems.update(value => !value);
+  }
+
+  selectTimelineDay(dayKey: string): void {
+    this.selectedTimelineDay.set(dayKey);
   }
 
   cancelSession(registrationId: string): void {
@@ -198,6 +267,10 @@ export class MyProgramComponent implements OnInit {
     return `${item.type}:${item.sessionId ?? item.shiftId ?? ''}:${item.start}:${item.end}`;
   }
 
+  isPastTimelineItem(item: MyScheduleItemDto): boolean {
+    return this.itemHasPassed(item, this.now());
+  }
+
   private toArray(value: unknown): unknown[] {
     return Array.isArray(value) ? value : [];
   }
@@ -238,6 +311,34 @@ export class MyProgramComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(value));
+  }
+
+  private formatDay(value: string | null | undefined, length: 'long' | 'short'): string {
+    if (!value || Number.isNaN(Date.parse(value))) {
+      return 'Okänd dag';
+    }
+
+    return new Intl.DateTimeFormat('sv-SE', {
+      weekday: length,
+      day: 'numeric',
+      month: length,
+    }).format(new Date(value));
+  }
+
+  private dayKey(value: string | null | undefined): string {
+    if (!value || Number.isNaN(Date.parse(value))) {
+      return '';
+    }
+
+    const date = new Date(value);
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private itemHasPassed(item: MyScheduleItemDto, now: number): boolean {
+    return Date.parse(item.end) <= now;
   }
 
   displayDate(value: string | null | undefined): string {
@@ -344,6 +445,8 @@ export class MyProgramComponent implements OnInit {
           this.organiserSessions.set(organiser);
           this.assignedShifts.set(shifts);
           this.showWatchedInTimeline.set(false);
+          this.showPastTimelineItems.set(false);
+          this.selectedTimelineDay.set(null);
         } catch {
           this.error.set('Kunde inte tolka programdata just nu. Försök igen.');
         } finally {

@@ -16,133 +16,152 @@
       <p class="error-banner">{{ error() }}</p>
     }
 
-    <mat-tab-group animationDuration="0">
+    <section class="program-section timeline-section">
+      <div class="section-header">
+        <h2 class="section-title">Tidslinje</h2>
+        <div class="timeline-toolbar">
+          <label class="timeline-filter">
+            <input
+              type="checkbox"
+              [checked]="showWatchedInTimeline()"
+              (change)="toggleWatchedInTimeline()" />
+            Visa bevakade
+          </label>
 
-      <!-- Flik 1: Anmälningar (bokade + bevakade) -->
-      <mat-tab label="Anmälningar">
-        @if (bookedSessions().length === 0 && watchedSessions().length === 0) {
-          <div class="empty-state tab-empty">
-            <p>Du har inga bokade eller bevakade sessioner ännu.</p>
-            <a mat-flat-button class="browse-btn" routerLink="/program">Bläddra i programmet</a>
-          </div>
-        } @else {
-          <div class="tab-content">
-            <section class="program-section">
-              <h2 class="section-title">Bokade</h2>
+          @if (hiddenPastTimelineItemCount() > 0) {
+            <label class="timeline-filter">
+              <input
+                type="checkbox"
+                [checked]="showPastTimelineItems()"
+                (change)="togglePastTimelineItems()" />
+              Visa passerade
+            </label>
+          }
+        </div>
+      </div>
 
-              @if (bookedSessions().length === 0) {
-                <p class="section-empty">Du har inga bokade sessioner.</p>
-              } @else {
-                <div class="session-list">
-                  @for (session of bookedSessions(); track session.id) {
-                    <article class="session-card">
-                      <div class="session-main">
-                        <h3 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h3>
-                        <p class="session-time">
-                          {{ displayDate(session.start) }}
-                          <span>– {{ displayTime(session.end) }}</span>
-                        </p>
-                        <p class="session-meta">Lokal: {{ session.venueName || 'Ej angiven' }}</p>
-                        <span class="status-chip">{{ sessionStatusLabel(session.status) }}</span>
-                      </div>
+      @if (timelineItems().length === 0) {
+        <div class="empty-state section-empty-state">
+          <p>Inga engagemang att visa ännu.</p>
+        </div>
+      } @else if (visibleTimelineItems().length === 0) {
+        <div class="empty-state section-empty-state">
+          <p>Alla engagemang har passerat.</p>
+          <button mat-stroked-button type="button" (click)="togglePastTimelineItems()">Visa passerade</button>
+        </div>
+      } @else {
+        <div class="day-filter" aria-label="Filtrera tidslinjen per dag">
+          @for (day of timelineDays(); track day.key) {
+            <button
+              type="button"
+              class="day-filter-button"
+              [class.active]="selectedTimelineDayKey() === day.key"
+              (click)="selectTimelineDay(day.key)">
+              <span>{{ day.shortLabel }}</span>
+              <small>{{ day.count }}</small>
+            </button>
+          }
+        </div>
 
-                      <button
-                        mat-stroked-button
-                        color="warn"
-                        type="button"
-                        [disabled]="cancellingId() === session.id"
-                        (click)="cancelSession(session.id)">
-                        {{ cancellingId() === session.id ? 'Avbokar...' : 'Avboka' }}
-                      </button>
-                    </article>
-                  }
-                </div>
+        <div class="timeline-list">
+          @for (item of filteredTimelineItems(); track timelineTrackId(item)) {
+            <article
+              class="timeline-card"
+              [class.primary]="item.isPrimary"
+              [class.conflict]="hasConflict(item)"
+              [class.past]="isPastTimelineItem(item)">
+              <div class="timeline-header">
+                <h3 class="timeline-title">{{ item.title || '(Namnlös)' }}</h3>
+                <span class="type-chip type-{{ item.type.toLowerCase() }}">
+                  {{ scheduleTypeLabel(item.type) }}
+                </span>
+                @if (isPastTimelineItem(item)) {
+                  <span class="type-chip type-past">Passerad</span>
+                }
+                @if (hasConflict(item)) {
+                  <mat-icon class="conflict-icon" title="Krockar med annat engagemang">warning</mat-icon>
+                }
+              </div>
+
+              <p class="timeline-time">
+                {{ displayDate(item.start) }}
+                <span>– {{ displayTime(item.end) }}</span>
+              </p>
+
+              @if (item.locationName) {
+                <p class="timeline-meta">{{ item.locationName }}</p>
               }
-            </section>
+            </article>
+          }
+        </div>
+      }
+    </section>
 
-            <section class="program-section">
-              <h2 class="section-title">Bevakade</h2>
+    <section class="program-section">
+      <h2 class="section-title">Bokade</h2>
 
-              @if (watchedSessions().length === 0) {
-                <p class="section-empty">Du bevakar inga sessioner ännu.</p>
-              } @else {
-                <div class="session-list">
-                  @for (session of watchedSessions(); track session.sessionId) {
-                    <article class="session-card watched">
-                      <div class="session-main">
-                        <h3 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h3>
-                        <p class="session-time">
-                          {{ displayDate(session.start) }}
-                          <span>– {{ displayTime(session.end) }}</span>
-                        </p>
-                        <p class="session-meta">Lokal: {{ session.venueName || 'Ej angiven' }}</p>
-                      </div>
+      @if (bookedSessions().length === 0) {
+        <p class="section-empty">Du har inga bokade sessioner.</p>
+      } @else {
+        <div class="session-list">
+          @for (session of bookedSessions(); track session.id) {
+            <article class="session-card">
+              <div class="session-main">
+                <h3 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h3>
+                <p class="session-time">
+                  {{ displayDate(session.start) }}
+                  <span>– {{ displayTime(session.end) }}</span>
+                </p>
+                <p class="session-meta">Lokal: {{ session.venueName || 'Ej angiven' }}</p>
+                <span class="status-chip">{{ sessionStatusLabel(session.status) }}</span>
+              </div>
 
-                      <button
-                        mat-stroked-button
-                        type="button"
-                        [disabled]="unwatchingSessionId() === session.sessionId"
-                        (click)="removeWatch(session.sessionId)">
-                        {{ unwatchingSessionId() === session.sessionId ? 'Tar bort...' : 'Ta bort' }}
-                      </button>
-                    </article>
-                  }
-                </div>
-              }
-            </section>
-          </div>
-        }
-      </mat-tab>
+              <button
+                mat-stroked-button
+                color="warn"
+                type="button"
+                [disabled]="cancellingId() === session.id"
+                (click)="cancelSession(session.id)">
+                {{ cancellingId() === session.id ? 'Avbokar...' : 'Avboka' }}
+              </button>
+            </article>
+          }
+        </div>
+      }
+    </section>
 
-      <!-- Flik 2: Tidslinje -->
-      <mat-tab label="Tidslinje">
-        @if (timelineItems().length === 0) {
-          <div class="empty-state tab-empty">
-            <p>Inga engagemang att visa ännu.</p>
-          </div>
-        } @else {
-          <div class="tab-content">
-            <div class="timeline-toolbar">
-              <label class="watched-filter">
-                <input
-                  type="checkbox"
-                  [checked]="showWatchedInTimeline()"
-                  (change)="toggleWatchedInTimeline()" />
-                Visa bevakade sessioner
-              </label>
-            </div>
+    <section class="program-section">
+      <h2 class="section-title">Bevakade</h2>
 
-            <div class="timeline-list">
-              @for (item of timelineItems(); track timelineTrackId(item)) {
-                <article
-                  class="timeline-card"
-                  [class.primary]="item.isPrimary"
-                  [class.conflict]="hasConflict(item)">
-                  <div class="timeline-header">
-                    <h3 class="timeline-title">{{ item.title || '(Namnlös)' }}</h3>
-                    <span class="type-chip type-{{ item.type.toLowerCase() }}">
-                      {{ scheduleTypeLabel(item.type) }}
-                    </span>
-                    @if (hasConflict(item)) {
-                      <mat-icon class="conflict-icon" title="Krockar med annat engagemang">warning</mat-icon>
-                    }
-                  </div>
+      @if (watchedSessions().length === 0) {
+        <div class="empty-state section-empty-state compact">
+          <p>Du bevakar inga sessioner ännu.</p>
+          <a mat-flat-button class="browse-btn" routerLink="/program">Bläddra i programmet</a>
+        </div>
+      } @else {
+        <div class="session-list">
+          @for (session of watchedSessions(); track session.sessionId) {
+            <article class="session-card watched">
+              <div class="session-main">
+                <h3 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h3>
+                <p class="session-time">
+                  {{ displayDate(session.start) }}
+                  <span>– {{ displayTime(session.end) }}</span>
+                </p>
+                <p class="session-meta">Lokal: {{ session.venueName || 'Ej angiven' }}</p>
+              </div>
 
-                  <p class="timeline-time">
-                    {{ displayDate(item.start) }}
-                    <span>– {{ displayTime(item.end) }}</span>
-                  </p>
-
-                  @if (item.locationName) {
-                    <p class="timeline-meta">{{ item.locationName }}</p>
-                  }
-                </article>
-              }
-            </div>
-          </div>
-        }
-      </mat-tab>
-
-    </mat-tab-group>
+              <button
+                mat-stroked-button
+                type="button"
+                [disabled]="unwatchingSessionId() === session.sessionId"
+                (click)="removeWatch(session.sessionId)">
+                {{ unwatchingSessionId() === session.sessionId ? 'Tar bort...' : 'Ta bort' }}
+              </button>
+            </article>
+          }
+        </div>
+      }
+    </section>
   }
 </div>
