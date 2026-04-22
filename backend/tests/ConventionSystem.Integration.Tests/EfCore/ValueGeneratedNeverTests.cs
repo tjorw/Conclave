@@ -2,6 +2,8 @@
 using System.Net.Http.Headers;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
+using ConventionSystem.Domain.Registration.Aggregates;
+using ConventionSystem.Domain.Registration.Ids;
 using ConventionSystem.Domain.Staff.Aggregates;
 using ConventionSystem.Domain.Staff.Ids;
 using ConventionSystem.Domain.Staff.ValueObjects;
@@ -123,6 +125,12 @@ public sealed class ValueGeneratedNeverTests(ConventionSystemFactory factory) : 
         // Skapa en andra person att tilldela (admin är redan ansvarig)
         var person = convention.CreatePerson("Testperson", $"test{Guid.NewGuid():N}@example.com");
         db.Persons.Add(person);
+
+        // Personen måste vara godkänd funktionär för att kunna tilldelas pass
+        var staffApplication = new StaffApplication(StaffApplicationId.New(), person.Id, edition.Id, "Integrationstestfunktionär");
+        staffApplication.Accept(admin.Id);
+        db.StaffApplications.Add(staffApplication);
+
         await db.SaveChangesAsync();
 
         return (shift.Id.Value, person.Id.Value);
