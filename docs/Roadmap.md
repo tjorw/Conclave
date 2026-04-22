@@ -27,6 +27,13 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
 
+### Rikt innehåll (R-RC)
+
+- [ ] `R-RC01` Markdown-editor för eventbeskrivningar – admin kan redigera publik beskrivning med formatering; arrangör kan redigera sin del
+- [ ] `R-RC02` Bilduppladdning – endpoint + lagring (lokal disk eller blob); bilder refereras via URL i Markdown-innehåll
+- [ ] `R-RC03` Redaktionella informationssidor – `Page`-entitet med `slug`, `title`, `content`; admin skapar/redigerar, publika appen renderar
+- [ ] `R-RC04` Mailmallar – Markdown-template med variabler (`{{firstName}}` m.fl.), renderas server-side till HTML vid utskick
+
 ---
 
 ## Teknisk skuld
@@ -76,7 +83,6 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - Bakgrundsjobb för mail m.m.
 - Föreslå startdatum i datum kontroller som är första dagen på konventet
 - motsvarande schemaläggning för bemanning
-- markdownbeskrivningar
 - schemaönskemål skulle kunna vara fritext
 - tidschemat skall markera alla överlapp/konflikter. inte bara det man valt nu.
 - varför startar tidsschemat på 08:00
