@@ -10,54 +10,119 @@
         <mat-icon matListItemIcon>dashboard</mat-icon>
         <span matListItemTitle>{{ NAV.dashboard }}</span>
       </a>
-      <a mat-list-item routerLink="persons" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
-        <mat-icon matListItemIcon>people</mat-icon>
-        <span matListItemTitle>{{ NAV.personRegistry }}</span>
-      </a>
-      <a mat-list-item routerLink="persons/responsibles" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>supervisor_account</mat-icon>
-        <span matListItemTitle>{{ NAV.responsibles }}</span>
-      </a>
+      @if (editionContext.activeEdition(); as activeEdition) {
+        <mat-divider />
+        <button type="button" class="nav-section-toggle" (click)="toggleNavSection('editions')"
+          [attr.aria-expanded]="!isNavSectionCollapsed('editions')"
+          [attr.aria-label]="navSectionAriaLabel(NAV.editionsSection, 'editions')">
+          <span>{{ NAV.editionsSection }}</span>
+          <mat-icon>{{ isNavSectionCollapsed('editions') ? 'expand_more' : 'expand_less' }}</mat-icon>
+        </button>
+        @if (!isNavSectionCollapsed('editions')) {
+          <a mat-list-item [routerLink]="['/editions', activeEdition.id]" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+            <mat-icon matListItemIcon>settings</mat-icon>
+            <span matListItemTitle>{{ NAV.editionBasics }}</span>
+          </a>
+          <a mat-list-item [routerLink]="['/editions', activeEdition.id, 'lifecycle']" routerLinkActive="active-link">
+            <mat-icon matListItemIcon>published_with_changes</mat-icon>
+            <span matListItemTitle>{{ NAV.editionLifecycle }}</span>
+          </a>
+          <a mat-list-item [routerLink]="['/editions', activeEdition.id, 'venues']" routerLinkActive="active-link">
+            <mat-icon matListItemIcon>location_on</mat-icon>
+            <span matListItemTitle>{{ NAV.editionVenues }}</span>
+          </a>
+          <a mat-list-item [routerLink]="['/editions', activeEdition.id, 'staff-areas']" routerLinkActive="active-link">
+            <mat-icon matListItemIcon>badge</mat-icon>
+            <span matListItemTitle>{{ NAV.staffAreas }}</span>
+          </a>
+          <a mat-list-item [routerLink]="['/editions', activeEdition.id, 'categories']" routerLinkActive="active-link">
+            <mat-icon matListItemIcon>category</mat-icon>
+            <span matListItemTitle>{{ NAV.editionCategories }}</span>
+          </a>
+          <a mat-list-item [routerLink]="['/editions', activeEdition.id, 'ticket-types']" routerLinkActive="active-link">
+            <mat-icon matListItemIcon>local_activity</mat-icon>
+            <span matListItemTitle>{{ NAV.editionTicketTypes }}</span>
+          </a>
+        }
+      }
+      <mat-divider />
+      <button type="button" class="nav-section-toggle" (click)="toggleNavSection('persons')"
+        [attr.aria-expanded]="!isNavSectionCollapsed('persons')"
+        [attr.aria-label]="navSectionAriaLabel(NAV.personsSection, 'persons')">
+        <span>{{ NAV.personsSection }}</span>
+        <mat-icon>{{ isNavSectionCollapsed('persons') ? 'expand_more' : 'expand_less' }}</mat-icon>
+      </button>
+      @if (!isNavSectionCollapsed('persons')) {
+        <a mat-list-item routerLink="persons" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+          <mat-icon matListItemIcon>people</mat-icon>
+          <span matListItemTitle>{{ NAV.personRegistry }}</span>
+        </a>
+        <a mat-list-item routerLink="persons/responsibles" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>supervisor_account</mat-icon>
+          <span matListItemTitle>{{ NAV.responsibles }}</span>
+        </a>
+      }
       
       <mat-divider />
-      <span class="nav-section-label">{{ NAV.eventsSection }}</span>
-      <a mat-list-item routerLink="persons/organisers" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>theater_comedy</mat-icon>
-        <span matListItemTitle>{{ NAV.organisers }}</span>
-      </a>
-      <a mat-list-item routerLink="events" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>event</mat-icon>
-        <span matListItemTitle>{{ NAV.events }}</span>
-      </a>
-      <a mat-list-item routerLink="sessions" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>schedule</mat-icon>
-        <span matListItemTitle>{{ NAV.sessions }}</span>
-      </a>
+      <button type="button" class="nav-section-toggle" (click)="toggleNavSection('events')"
+        [attr.aria-expanded]="!isNavSectionCollapsed('events')"
+        [attr.aria-label]="navSectionAriaLabel(NAV.eventsSection, 'events')">
+        <span>{{ NAV.eventsSection }}</span>
+        <mat-icon>{{ isNavSectionCollapsed('events') ? 'expand_more' : 'expand_less' }}</mat-icon>
+      </button>
+      @if (!isNavSectionCollapsed('events')) {
+        <a mat-list-item routerLink="persons/organisers" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>theater_comedy</mat-icon>
+          <span matListItemTitle>{{ NAV.organisers }}</span>
+        </a>
+        <a mat-list-item routerLink="events" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>event</mat-icon>
+          <span matListItemTitle>{{ NAV.events }}</span>
+        </a>
+        <a mat-list-item routerLink="sessions" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>schedule</mat-icon>
+          <span matListItemTitle>{{ NAV.sessions }}</span>
+        </a>
+      }
       <mat-divider />
-      <span class="nav-section-label">{{ NAV.staffingSection }}</span>      
-      <a mat-list-item routerLink="persons/staff" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>construction</mat-icon>
-        <span matListItemTitle>{{ NAV.staff }}</span>
-      </a>
-      <a mat-list-item routerLink="staff-areas" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>badge</mat-icon>
-        <span matListItemTitle>{{ NAV.staffAreas }}</span>
-      </a>
-      <a mat-list-item routerLink="staff-applications" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>assignment</mat-icon>
-        <span matListItemTitle>{{ NAV.staffApplications }}</span>
-      </a>
+      <button type="button" class="nav-section-toggle" (click)="toggleNavSection('staffing')"
+        [attr.aria-expanded]="!isNavSectionCollapsed('staffing')"
+        [attr.aria-label]="navSectionAriaLabel(NAV.staffingSection, 'staffing')">
+        <span>{{ NAV.staffingSection }}</span>
+        <mat-icon>{{ isNavSectionCollapsed('staffing') ? 'expand_more' : 'expand_less' }}</mat-icon>
+      </button>
+      @if (!isNavSectionCollapsed('staffing')) {
+        <a mat-list-item routerLink="persons/staff" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>construction</mat-icon>
+          <span matListItemTitle>{{ NAV.staff }}</span>
+        </a>
+        <a mat-list-item routerLink="staff-areas" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>badge</mat-icon>
+          <span matListItemTitle>{{ NAV.staffAreas }}</span>
+        </a>
+        <a mat-list-item routerLink="staff-applications" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>assignment</mat-icon>
+          <span matListItemTitle>{{ NAV.staffApplications }}</span>
+        </a>
+      }
       <mat-divider />
-      <span class="nav-section-label">{{ NAV.visitorsSection }}</span>
-      <a mat-list-item routerLink="persons/visitors" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>emoji_people</mat-icon>
-        <span matListItemTitle>{{ NAV.visitors }}</span>
-      </a>
-      
-      <a mat-list-item routerLink="registrations" routerLinkActive="active-link">
-        <mat-icon matListItemIcon>confirmation_number</mat-icon>
-        <span matListItemTitle>{{ NAV.registrations }}</span>
-      </a>
+      <button type="button" class="nav-section-toggle" (click)="toggleNavSection('visitors')"
+        [attr.aria-expanded]="!isNavSectionCollapsed('visitors')"
+        [attr.aria-label]="navSectionAriaLabel(NAV.visitorsSection, 'visitors')">
+        <span>{{ NAV.visitorsSection }}</span>
+        <mat-icon>{{ isNavSectionCollapsed('visitors') ? 'expand_more' : 'expand_less' }}</mat-icon>
+      </button>
+      @if (!isNavSectionCollapsed('visitors')) {
+        <a mat-list-item routerLink="persons/visitors" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>emoji_people</mat-icon>
+          <span matListItemTitle>{{ NAV.visitors }}</span>
+        </a>
+        
+        <a mat-list-item routerLink="registrations" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>confirmation_number</mat-icon>
+          <span matListItemTitle>{{ NAV.registrations }}</span>
+        </a>
+      }
       <mat-divider />      
       <a mat-list-item routerLink="feeds" routerLinkActive="active-link">
         <mat-icon matListItemIcon>rss_feed</mat-icon>

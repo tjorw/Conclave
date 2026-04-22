@@ -40,6 +40,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'editions/:id/:section',
+        loadComponent: () =>
+          import('./features/editions/edition-detail/edition-detail.component').then(
+            m => m.EditionDetailComponent
+          ),
+      },
+      {
         path: 'persons',
         loadComponent: () =>
           import('./features/persons/persons.component').then(m => m.PersonsComponent),

@@ -38,101 +38,124 @@
     </div>
   </div>
 
-  <!-- ── Tabbar ── -->
-  <mat-tab-group animationDuration="150ms">
+  @switch (section()) {
+    @case ('lifecycle') {
+      <div class="section-content">
+        <div class="lifecycle-header">
+          <div>
+            <h2>{{ PAGE.stateCardTitle }}</h2>
+            <p>{{ PAGE.stateCardHint }}</p>
+          </div>
+        </div>
 
-    <!-- Läge -->
-    <mat-tab>
-      <ng-template mat-tab-label>
-        {{ PAGE.lifecycleTab }}
-      </ng-template>
+        <div class="lifecycle-overview" aria-label="Livscykelstatus">
+          <div class="lifecycle-stat">
+            <mat-icon [class.is-positive]="isPublished()">published_with_changes</mat-icon>
+            <span>{{ PAGE.publishTitle }}</span>
+            <strong>{{ isPublished() ? PAGE.statusPublished : PAGE.statusDraft }}</strong>
+          </div>
+          <div class="lifecycle-stat">
+            <mat-icon [class.is-positive]="isActiveEdition()">public</mat-icon>
+            <span>{{ PAGE.activeEditionTitle }}</span>
+            <strong>{{ isActiveEdition() ? PAGE.statusActive : PAGE.statusNotActive }}</strong>
+          </div>
+          <div class="lifecycle-stat">
+            <mat-icon [class.is-positive]="openRegistrationCount() > 0">how_to_reg</mat-icon>
+            <span>{{ PAGE.registrationsTitle }}</span>
+            <strong>{{ openRegistrationCount() }} / {{ registrationTypes.length }} {{ PAGE.statusOpen.toLowerCase() }}</strong>
+          </div>
+        </div>
 
-      <div class="tab-content">
-        <mat-card class="state-card">
-          <mat-card-header>
-            <mat-card-title>{{ PAGE.stateCardTitle }}</mat-card-title>
-            <mat-card-subtitle>{{ PAGE.stateCardHint }}</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content class="state-content">
-            <section class="state-section">
-              <div class="state-section-header">
+        <div class="lifecycle-grid">
+          <section class="lifecycle-panel lifecycle-panel--primary">
+            <div class="lifecycle-panel-main">
+              <mat-icon class="panel-icon">published_with_changes</mat-icon>
+              <div class="panel-copy">
                 <h3>{{ PAGE.publishTitle }}</h3>
                 <p>{{ PAGE.publishHint }}</p>
               </div>
-              <div class="state-row">
-                <mat-chip [color]="isPublished() ? 'primary' : 'default'" highlighted>
-                  {{ isPublished() ? PAGE.statusPublished : PAGE.statusDraft }}
-                </mat-chip>
-                @if (isDraft()) {
-                  <button mat-flat-button color="primary" [disabled]="saving()" (click)="publish()">
-                    <mat-icon>publish</mat-icon> {{ PAGE.publishAction }}
-                  </button>
-                } @else {
-                  <button mat-stroked-button color="warn" [disabled]="saving()" (click)="unpublish()">
-                    <mat-icon>undo</mat-icon> {{ PAGE.unpublishAction }}
-                  </button>
-                }
-              </div>
-            </section>
+            </div>
+            <div class="lifecycle-panel-action">
+              <mat-chip [color]="isPublished() ? 'primary' : 'default'" highlighted>
+                {{ isPublished() ? PAGE.statusPublished : PAGE.statusDraft }}
+              </mat-chip>
+              @if (isDraft()) {
+                <button mat-flat-button color="primary" [disabled]="saving()" (click)="publish()">
+                  <mat-icon>publish</mat-icon> {{ PAGE.publishAction }}
+                </button>
+              } @else {
+                <button mat-stroked-button color="warn" [disabled]="saving()" (click)="unpublish()">
+                  <mat-icon>undo</mat-icon> {{ PAGE.unpublishAction }}
+                </button>
+              }
+            </div>
+          </section>
 
-            <section class="state-section">
-              <div class="state-section-header">
+          <section class="lifecycle-panel">
+            <div class="lifecycle-panel-main">
+              <mat-icon class="panel-icon">public</mat-icon>
+              <div class="panel-copy">
                 <h3>{{ PAGE.activeEditionTitle }}</h3>
                 <p>{{ PAGE.activeEditionHint }}</p>
               </div>
-              <div class="state-row">
-                <mat-chip [color]="isActiveEdition() ? 'primary' : 'default'" highlighted>
-                  {{ isActiveEdition() ? PAGE.statusActive : PAGE.statusNotActive }}
-                </mat-chip>
-                <button
-                  mat-stroked-button
-                  color="primary"
-                  [disabled]="saving() || isActiveEdition()"
-                  (click)="setActive()">
-                  <mat-icon>public</mat-icon> {{ PAGE.setActiveAction }}
-                </button>
-              </div>
-            </section>
+            </div>
+            <div class="lifecycle-panel-action">
+              <mat-chip [color]="isActiveEdition() ? 'primary' : 'default'" highlighted>
+                {{ isActiveEdition() ? PAGE.statusActive : PAGE.statusNotActive }}
+              </mat-chip>
+              <button
+                mat-stroked-button
+                color="primary"
+                [disabled]="saving() || isActiveEdition()"
+                (click)="setActive()">
+                <mat-icon>public</mat-icon> {{ PAGE.setActiveAction }}
+              </button>
+            </div>
+          </section>
+        </div>
 
-            <section class="state-section">
-              <div class="state-section-header">
-                <h3>{{ PAGE.registrationsTitle }}</h3>
-                <p>{{ PAGE.registrationsHint }}</p>
-              </div>
-              @if (isPublished()) {
-                <div class="registration-list">
-                  @for (type of registrationTypes; track type.type) {
-                    <div class="registration-row">
-                      <span class="status-label">{{ registrationTypeLabels[type.type] }}</span>
-                      <mat-chip [color]="registrationOpen(type.type) ? 'primary' : 'default'" highlighted>
-                        {{ registrationOpen(type.type) ? PAGE.statusOpen : PAGE.statusClosed }}
-                      </mat-chip>
-                      <button
-                        mat-stroked-button
-                        [color]="registrationOpen(type.type) ? 'warn' : 'primary'"
-                        [disabled]="saving()"
-                        (click)="toggleRegistration(type.type)">
-                        {{ registrationOpen(type.type) ? ACTION.close : ACTION.open }}
-                      </button>
-                    </div>
-                  }
+        <section class="registration-panel">
+          <div class="registration-panel-header">
+            <div>
+              <h3>{{ PAGE.registrationsTitle }}</h3>
+              <p>{{ PAGE.registrationsHint }}</p>
+            </div>
+            <span class="registration-count">{{ openRegistrationCount() }} / {{ registrationTypes.length }} {{ PAGE.statusOpen.toLowerCase() }}</span>
+          </div>
+
+          @if (isPublished()) {
+            <div class="registration-list">
+              @for (type of registrationTypes; track type.type) {
+                <div class="registration-row" [class.registration-row--open]="registrationOpen(type.type)">
+                  <div class="registration-name">
+                    <mat-icon>{{ registrationStatusIcon(type.type) }}</mat-icon>
+                    <span>{{ registrationTypeLabels[type.type] }}</span>
+                  </div>
+                  <mat-chip [color]="registrationOpen(type.type) ? 'primary' : 'default'" highlighted>
+                    {{ registrationOpen(type.type) ? PAGE.statusOpen : PAGE.statusClosed }}
+                  </mat-chip>
+                  <button
+                    mat-stroked-button
+                    [color]="registrationOpen(type.type) ? 'warn' : 'primary'"
+                    [disabled]="saving()"
+                    (click)="toggleRegistration(type.type)">
+                    {{ registrationOpen(type.type) ? ACTION.close : ACTION.open }}
+                  </button>
                 </div>
-              } @else {
-                <p class="state-help">{{ PAGE.requiresPublished }}</p>
               }
-            </section>
-          </mat-card-content>
-        </mat-card>
+            </div>
+          } @else {
+            <div class="registration-disabled">
+              <mat-icon>info</mat-icon>
+              <span>{{ PAGE.requiresPublished }}</span>
+            </div>
+          }
+        </section>
       </div>
-    </mat-tab>
+    }
 
-    <!-- Grunduppgifter -->
-    <mat-tab>
-      <ng-template mat-tab-label>
-        Grunduppgifter
-      </ng-template>
-
-      <div class="tab-content">
+    @case ('basics') {
+      <div class="section-content">
         <mat-card class="edit-card">
           <mat-card-header><mat-card-title>{{ PAGE.editTitle }}</mat-card-title></mat-card-header>
           <mat-card-content>
@@ -176,15 +199,10 @@
           </mat-card-content>
         </mat-card>
       </div>
-    </mat-tab>
+    }
 
-    <!-- Lokaler -->
-    <mat-tab>
-      <ng-template mat-tab-label>
-        Lokaler <span class="tab-count">{{ e.venues.length }}</span>
-      </ng-template>
-
-      <div class="tab-content">
+    @case ('venues') {
+      <div class="section-content">
         @if (e.venues.length > 0) {
           <table class="data-table">
             <thead>
@@ -248,15 +266,10 @@
           </form>
         }
       </div>
-    </mat-tab>
+    }
 
-    <!-- Funktionsområden -->
-    <mat-tab>
-      <ng-template mat-tab-label>
-        Funktionsområden <span class="tab-count">{{ e.staffAreas.length }}</span>
-      </ng-template>
-
-      <div class="tab-content">
+    @case ('staff-areas') {
+      <div class="section-content">
         @if (e.staffAreas.length > 0) {
           <table class="data-table">
             <thead>
@@ -341,15 +354,10 @@
           </form>
         }
       </div>
-    </mat-tab>
+    }
 
-    <!-- Kategorier -->
-    <mat-tab>
-      <ng-template mat-tab-label>
-        Kategorier <span class="tab-count">{{ e.categories.length }}</span>
-      </ng-template>
-
-      <div class="tab-content">
+    @case ('categories') {
+      <div class="section-content">
         @if (e.categories.length > 0) {
           <table class="data-table">
             <thead>
@@ -423,15 +431,10 @@
           </form>
         }
       </div>
-    </mat-tab>
+    }
 
-    <!-- Biljettyper -->
-    <mat-tab>
-      <ng-template mat-tab-label>
-        Biljettyper <span class="tab-count">{{ ticketTypes().length }}</span>
-      </ng-template>
-
-      <div class="tab-content">
+    @case ('ticket-types') {
+      <div class="section-content">
         @if (ticketTypes().length > 0) {
           <table class="data-table">
             <thead>
@@ -545,7 +548,6 @@
           </form>
         }
       </div>
-    </mat-tab>
-
-  </mat-tab-group>
+    }
+  }
 }

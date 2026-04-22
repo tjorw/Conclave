@@ -13,6 +13,8 @@ import { EditionContextService } from '../services/edition-context.service';
 import { NAV } from '../labels/nav.labels';
 import { ACTION } from '../labels/ui.labels';
 
+type NavSection = 'editions' | 'persons' | 'events' | 'staffing' | 'visitors';
+
 @Component({
   selector: 'app-shell',
   standalone: true,
@@ -42,6 +44,13 @@ export class ShellComponent implements OnInit {
 
   readonly NAV    = NAV;
   readonly ACTION = ACTION;
+  readonly collapsedNavSections: Record<NavSection, boolean> = {
+    editions: false,
+    persons: false,
+    events: false,
+    staffing: false,
+    visitors: false,
+  };
 
   ngOnInit(): void {
     this.editionContext.load();
@@ -49,6 +58,19 @@ export class ShellComponent implements OnInit {
 
   onEditionChange(editionId: string): void {
     this.editionContext.setActive(editionId);
+  }
+
+  isNavSectionCollapsed(section: NavSection): boolean {
+    return this.collapsedNavSections[section];
+  }
+
+  toggleNavSection(section: NavSection): void {
+    this.collapsedNavSections[section] = !this.collapsedNavSections[section];
+  }
+
+  navSectionAriaLabel(sectionLabel: string, section: NavSection): string {
+    const action = this.isNavSectionCollapsed(section) ? this.NAV.showSection : this.NAV.hideSection;
+    return `${action}: ${sectionLabel}`;
   }
 
   logout(): void {

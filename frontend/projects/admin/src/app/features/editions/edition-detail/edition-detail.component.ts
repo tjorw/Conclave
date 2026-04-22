@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { map } from 'rxjs';
+import { distinctUntilChanged, map } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,7 +11,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   CategoryDto,
@@ -35,6 +34,16 @@ type VenueSortKey = 'name' | 'building' | 'description';
 type StaffAreaSortKey = 'name' | 'description' | 'responsible' | 'stations';
 type CategorySortKey = 'name' | 'description' | 'responsible';
 type TicketTypeSortKey = 'name' | 'category' | 'validDays' | 'allowedCategories' | 'price';
+type EditionDetailSection = 'basics' | 'lifecycle' | 'venues' | 'staff-areas' | 'categories' | 'ticket-types';
+
+const EDITION_DETAIL_SECTIONS: EditionDetailSection[] = [
+  'basics',
+  'lifecycle',
+  'venues',
+  'staff-areas',
+  'categories',
+  'ticket-types',
+];
 
 @Component({
   selector: 'app-edition-detail',
@@ -50,7 +59,6 @@ type TicketTypeSortKey = 'name' | 'category' | 'validDays' | 'allowedCategories'
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
-    MatTabsModule,
     MatTooltipModule,
   ],
   templateUrl: './edition-detail.component.html',
@@ -77,6 +85,7 @@ export class EditionDetailComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
+  readonly section = signal<EditionDetailSection>('basics');
   readonly showAddVenueForm = signal(false);
   readonly showAddStaffAreaForm = signal(false);
   readonly showAddCategoryForm = signal(false);
@@ -113,6 +122,9 @@ export class EditionDetailComponent implements OnInit {
     const activeEditionId = this.activeEdition()?.id;
     return !!currentEditionId && currentEditionId === activeEditionId;
   });
+  readonly openRegistrationCount = computed(() =>
+    this.registrationTypes.filter(type => this.registrationOpen(type.type)).length
+  );
   readonly editionDayOptions = computed(() => {
     const edition = this.edition();
     if (!edition) {
@@ -235,9 +247,29 @@ export class EditionDetailComponent implements OnInit {
   // ── Lifecycle ────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id')!;
     this.editionContext.load();
-    this.loadData(id);
+    this.route.paramMap
+      .pipe(
+        map(params => {
+          const id = params.get('id')!;
+          const sectionParam = params.get('section');
+          const section = this.normalizeSection(sectionParam);
+          if (sectionParam && !section) {
+            void this.router.navigate(['/editions', id], { replaceUrl: true });
+          }
+          this.section.set(section ?? 'basics');
+          return id;
+        }),
+        distinctUntilChanged()
+      )
+      .subscribe(id => this.loadData(id));
+  }
+
+  private normalizeSection(section: string | null): EditionDetailSection | null {
+    if (!section) return 'basics';
+    return EDITION_DETAIL_SECTIONS.includes(section as EditionDetailSection)
+      ? section as EditionDetailSection
+      : null;
   }
 
   private loadData(editionId: string): void {
@@ -402,6 +434,10 @@ export class EditionDetailComponent implements OnInit {
     const e = this.edition();
     if (!e) return false;
     return { organiser: e.organiserRegistrationOpen, staff: e.staffRegistrationOpen, visitor: e.visitorRegistrationOpen }[type];
+  }
+
+  registrationStatusIcon(type: 'organiser' | 'staff' | 'visitor'): string {
+    return this.registrationOpen(type) ? 'lock_open' : 'lock';
   }
 
   toggleRegistration(type: 'organiser' | 'staff' | 'visitor'): void {
