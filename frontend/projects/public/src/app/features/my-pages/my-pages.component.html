@@ -38,21 +38,23 @@
       </a>
 
       <!-- Mina arrangemang -->
-      <a routerLink="/my-pages/events" class="status-card">
-        <div class="card-icon">🎲</div>
-        <div class="card-body">
-          <h2 class="card-title">Mina arrangemang</h2>
-          @if (myEvents().length > 0) {
-            <p class="card-summary">{{ myEvents().length }} arrangemang</p>
-            @if (pendingCommentCount > 0) {
-              <span class="tag-orange">{{ pendingCommentCount }} obehandlad{{ pendingCommentCount > 1 ? 'e' : '' }} kommentar</span>
+      @if (showMyEventsCard()) {
+        <a routerLink="/my-pages/events" class="status-card">
+          <div class="card-icon">🎲</div>
+          <div class="card-body">
+            <h2 class="card-title">Mina arrangemang</h2>
+            @if (activeMyEvents().length > 0) {
+              <p class="card-summary">{{ activeMyEvents().length }} arrangemang</p>
+              @if (pendingCommentCount > 0) {
+                <span class="tag-orange">{{ pendingCommentCount }} obehandlad{{ pendingCommentCount > 1 ? 'e' : '' }} kommentar</span>
+              }
+            } @else {
+              <p class="card-empty">Inga arrangemang ännu</p>
+              <span class="card-cta">Skapa arrangemang →</span>
             }
-          } @else {
-            <p class="card-empty">Inga arrangemang ännu</p>
-            <span class="card-cta">Skapa arrangemang →</span>
-          }
-        </div>
-      </a>
+          </div>
+        </a>
+      }
 
       <!-- Mitt program -->
       <a routerLink="/my-pages/program" class="status-card">
@@ -72,24 +74,26 @@
       </a>
 
       <!-- Min bemanning -->
-      <a routerLink="/my-pages/staff" class="status-card">
-        <div class="card-icon">🙋</div>
-        <div class="card-body">
-          <h2 class="card-title">Min bemanning</h2>
-          @if (myApplication()) {
-            <p class="card-summary">
-              Ansökan inskickad ·
-              <span [class]="myApplication()!.status === 'Confirmed' || myApplication()!.status === 'Assigned' ? 'tag-green' : 'tag-orange'">
-                {{ myApplication()!.status === 'Confirmed' ? 'Godkänd' :
-                   myApplication()!.status === 'Assigned' ? 'Tilldelad' : 'Under behandling' }}
-              </span>
-            </p>
-          } @else {
-            <p class="card-empty">Ingen ansökan</p>
-            <span class="card-cta">Ansök som funktionär →</span>
-          }
-        </div>
-      </a>
+      @if (showMyStaffCard()) {
+        <a routerLink="/my-pages/staff" class="status-card">
+          <div class="card-icon">🙋</div>
+          <div class="card-body">
+            <h2 class="card-title">Min bemanning</h2>
+            @if (activeMyApplication(); as application) {
+              <p class="card-summary">
+                Ansökan inskickad ·
+                <span [class]="application.status === 'Confirmed' || application.status === 'Assigned' ? 'tag-green' : 'tag-orange'">
+                  {{ application.status === 'Confirmed' ? 'Godkänd' :
+                     application.status === 'Assigned' ? 'Tilldelad' : 'Under behandling' }}
+                </span>
+              </p>
+            } @else {
+              <p class="card-empty">Ingen ansökan</p>
+              <span class="card-cta">Ansök som funktionär →</span>
+            }
+          </div>
+        </a>
+      }
 
       <!-- Min profil -->
       <a routerLink="/my-pages/profile" class="status-card">

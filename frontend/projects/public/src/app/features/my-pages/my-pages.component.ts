@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -37,6 +37,26 @@ export class MyPagesComponent implements OnInit {
   readonly mySessions    = signal<MySessionRegistrationSummaryDto[]>([]);
   readonly myApplication = signal<MyStaffApplicationDto | null>(null);
 
+  readonly eventSubmissionsOpen = computed(
+    () => this.editionSvc.edition()?.organiserRegistrationOpen ?? false
+  );
+  readonly staffRegistrationOpen = computed(
+    () => this.editionSvc.edition()?.staffRegistrationOpen ?? false
+  );
+  readonly activeMyEvents = computed(
+    () => this.myEvents().filter(event => event.status !== 'Cancelled')
+  );
+  readonly activeMyApplication = computed(() => {
+    const application = this.myApplication();
+    return application?.status === 'Rejected' ? null : application;
+  });
+  readonly showMyEventsCard = computed(
+    () => this.eventSubmissionsOpen() || this.activeMyEvents().length > 0
+  );
+  readonly showMyStaffCard = computed(
+    () => this.staffRegistrationOpen() || this.activeMyApplication() !== null
+  );
+
   ngOnInit(): void {
     const editionId = this.editionSvc.editionId();
     if (!editionId) {
@@ -63,7 +83,7 @@ export class MyPagesComponent implements OnInit {
   }
 
   get pendingCommentCount(): number {
-    return this.myEvents().reduce((sum, e) => sum + (e.pendingCommentCount ?? 0), 0);
+    return this.activeMyEvents().reduce((sum, e) => sum + (e.pendingCommentCount ?? 0), 0);
   }
 
   latestTicketPriceLabel(): string {
