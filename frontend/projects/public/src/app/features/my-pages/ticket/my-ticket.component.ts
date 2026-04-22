@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -7,22 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MyVisitorRegistrationDto, RegistrationService, TICKET_PAYMENT_STATUS_LABEL, VisitorTicketTypeDto } from 'shared';
-import { catchError, of } from 'rxjs';
 import { EditionService } from '../../../services/edition.service';
-
-type TicketTypeApiShape = VisitorTicketTypeDto & {
-  Id?: string;
-  Name?: string;
-  Price?: number;
-};
-
-type VisitorRegistrationApiShape = MyVisitorRegistrationDto & {
-  Id?: string;
-  Status?: string;
-  TicketTypeName?: string | null;
-  TicketId?: string;
-  TicketPrice?: number | null;
-};
 
 @Component({
   selector: 'app-my-ticket',
@@ -41,7 +26,6 @@ export class MyTicketComponent implements OnInit {
   private readonly editionSvc = inject(EditionService);
   private readonly regSvc     = inject(RegistrationService);
   private readonly fb         = inject(FormBuilder);
-  private readonly cdr        = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly loadingRegistration = signal(true);
@@ -136,7 +120,6 @@ export class MyTicketComponent implements OnInit {
             'Kunde inte avboka biljetten just nu. Försök igen.';
           this.error.set(detail);
           this.cancellingRegistrationId.set(null);
-          this.cdr.detectChanges();
         },
       });
   }
@@ -200,7 +183,6 @@ export class MyTicketComponent implements OnInit {
             'Kunde inte lösa in kampanjkoden just nu. Försök igen.';
           this.error.set(detail);
           this.redeemingTicketId.set(null);
-          this.cdr.detectChanges();
         },
       });
   }
@@ -267,64 +249,39 @@ export class MyTicketComponent implements OnInit {
     this.redeemResultMessage.set(null);
 
     this.regSvc.getMyVisitorRegistration(editionId)
-      .pipe(catchError(() => of([] as MyVisitorRegistrationDto[])), takeUntilDestroyed(this.destroyRef))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: registrations => {
-          const normalizedRegistrations = registrations.map(registration => {
-            const typed = registration as VisitorRegistrationApiShape;
-            return {
-              id: typed.id ?? typed.Id ?? '',
-              status: typed.status ?? typed.Status ?? 'PendingPayment',
-              ticketTypeName: typed.ticketTypeName ?? typed.TicketTypeName ?? null,
-              ticketId: typed.ticketId ?? typed.TicketId ?? '',
-              ticketPrice: typed.ticketPrice ?? typed.TicketPrice ?? null,
-            } satisfies MyVisitorRegistrationDto;
-          }).filter(registration => registration.status !== 'Cancelled');
+          const activeRegistrations = registrations.filter(registration => registration.status !== 'Cancelled');
 
-          this.registrations.set(normalizedRegistrations);
+          this.registrations.set(activeRegistrations);
           this.loadingRegistration.set(false);
-          this.cdr.detectChanges();
         },
         error: () => {
           this.error.set('Kunde inte läsa biljettinformation just nu.');
           this.loadingRegistration.set(false);
-          this.cdr.detectChanges();
         },
       });
 
     this.regSvc.getAvailableTicketTypes(editionId)
-      .pipe(catchError(() => of([] as VisitorTicketTypeDto[])), takeUntilDestroyed(this.destroyRef))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ticketTypes => {
           if (!this.visitorRegistrationOpen()) {
             this.ticketTypes.set([]);
             this.loadingTicketTypes.set(false);
-            this.cdr.detectChanges();
             return;
           }
 
-          const normalizedTicketTypes = ticketTypes.map((ticketType, index) => {
-            const typed = ticketType as TicketTypeApiShape;
-            const resolvedName = (typed.name ?? typed.Name ?? '').trim();
-            const resolvedId = typed.id ?? typed.Id ?? `ticket-option-${index}`;
-            return {
-              id: resolvedId,
-              name: resolvedName.length > 0 ? resolvedName : 'Biljett',
-              price: typed.price ?? typed.Price ?? 0,
-            } satisfies VisitorTicketTypeDto;
-          });
-
-          this.ticketTypes.set(normalizedTicketTypes);
-          if (this.registrations().length === 0 && normalizedTicketTypes.length > 0) {
-            this.registrationForm.patchValue({ ticketTypeId: normalizedTicketTypes[0].id });
+          this.ticketTypes.set(ticketTypes);
+          if (this.registrations().length === 0 && ticketTypes.length > 0) {
+            this.registrationForm.patchValue({ ticketTypeId: ticketTypes[0].id });
           }
           this.loadingTicketTypes.set(false);
-          this.cdr.detectChanges();
         },
         error: () => {
           this.error.set('Kunde inte läsa biljettinformation just nu.');
           this.loadingTicketTypes.set(false);
-          this.cdr.detectChanges();
         },
       });
   }
