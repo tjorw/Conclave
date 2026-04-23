@@ -1827,7 +1827,7 @@ Arrangör (autentiserad)
 
 ## Flöde
 1. Arrangören öppnar formuläret för att anmäla ett arrangemang
-2. Systemet hämtar alla `TicketType` för upplagan där `IsOrganizerTicket = true`
+2. Systemet hämtar alla `TicketType` för upplagan där `TicketTypeCategory = Organiser`
 3. Systemet returnerar listan tillsammans med övrig evenemangsdata
 4. Arrangören ser vilka arrangörsbiljetter som finns tillgängliga som informationstext
 
@@ -1861,7 +1861,7 @@ Kategoriansvarig eller evenemangskoordinator (admin)
 
 ## Flöde
 1. Administratören öppnar publiceringsvyn för arrangemanget
-2. Systemet visar tillgängliga `TicketType` där `IsOrganizerTicket = true`
+2. Systemet visar tillgängliga `TicketType` där `TicketTypeCategory = Organiser`
 3. Systemet visar nuvarande tilldelning per arrangör, inklusive co-organisers om sådana finns
 4. För varje arrangör kan administratören välja en biljetttyp eller alternativet "Ingen biljett"
 5. Administratören justerar tilldelningarna vid behov
@@ -1877,7 +1877,7 @@ Kategoriansvarig eller evenemangskoordinator (admin)
 - Byte av biljett är atomärt: revoke och ny biljett sker i samma transaktion
 - Det är valfritt att tilldela biljett; publicering kan ske utan tilldelning
 - Co-organisers och huvudarrangör behandlas lika
-- Om inga `IsOrganizerTicket`-typer finns visas inte biljettsektionen
+- Om inga `TicketTypeCategory = Organiser`-typer finns visas inte biljettsektionen
 
 ## Domänhändelser
 - `EventPublished { eventId, responsibleId, occurredAt }`
@@ -1887,7 +1887,7 @@ Kategoriansvarig eller evenemangskoordinator (admin)
 - [ ] Publiceringsvyn visar tillgängliga arrangörsbiljetter och nuvarande tilldelning
 - [ ] Systemet sparar korrekt med revoke + ny biljett vid byte
 - [ ] Publicering och biljetttilldelning sker i samma anrop och transaktion
-- [ ] Om inga `IsOrganizerTicket`-typer finns visas inte biljettsektionen
+- [ ] Om inga `TicketTypeCategory = Organiser`-typer finns visas inte biljettsektionen
 
 ---
 
@@ -1906,7 +1906,7 @@ Konventionsadministratör
 
 ## Flöde – Tilldela eller byt
 1. Administratören öppnar arrangörens registreringssida eller evenemangets admin-vy
-2. Administratören väljer arrangör och en `TicketType` där `IsOrganizerTicket = true`
+2. Administratören väljer arrangör och en `TicketType` där `TicketTypeCategory = Organiser`
 3. Systemet kontrollerar om arrangören redan har en arrangörsbiljett för upplagan
 4. Om ja: systemet sätter befintlig biljett till `Revoked` och skapar en ny med status `Reserved`
 5. Om nej: systemet skapar en ny biljett med status `Reserved`
@@ -1948,7 +1948,7 @@ Arrangör (autentiserad)
 ## Flöde
 1. Arrangören öppnar "Mina biljetter" i publika appen
 2. Systemet hämtar alla `Ticket` kopplade till arrangörens `PersonId` för aktuell upplaga
-3. Biljetter vars `TicketType` har `IsOrganizerTicket = true` visas i listan tillsammans med övriga biljetter
+3. Biljetter vars `TicketType` har `TicketTypeCategory = Organiser` visas i listan tillsammans med övriga biljetter
 4. Avboka-knappen visas inte för arrangörsbiljetter
 
 ## Affärsregler
@@ -1969,7 +1969,6 @@ Arrangör (autentiserad)
 ## Domänförändringar för arrangörsbiljetter
 
 ### TicketType (Registration BC)
-- Ny property: `bool IsOrganizerTicket` (default `false`)
 - Ingår i `allowedCategories`-logiken som vanligt, men tilldelas aldrig via självregistrering
 
 ### Ticket (Registration BC)
@@ -1989,8 +1988,6 @@ Arrangör (autentiserad)
 - Vid `EventCancelled` ska arrangörsbiljetten automatiskt revokeras om arrangören inte längre har några andra publicerade arrangemang i samma upplaga. Om arrangören fortfarande har andra publicerade arrangemang ska processen kräva ett explicit val för hur arrangörsbiljetten ska hanteras.
 - Medarrangörer ska ha samma regler för arrangörsbiljetter som huvudarrangören.
 
-## Öppna designfrågor
-- Ska `IsOrganizerTicket` dölja biljettypen från vanlig självregistrering helt? Förslaget är ja: arrangörsbiljetter ska bara synas i publiceringsvyn, admin-vyer och som information i arrangörsflödet.
 
 ---
 
