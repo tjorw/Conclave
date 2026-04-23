@@ -4,11 +4,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { EditionService } from '../../services/edition.service';
 import { CategoryFeedDto, EventSummaryFeedDto } from 'shared';
+import { StripMarkdownPipe } from '../../pipes/strip-markdown.pipe';
 
 @Component({
   selector: 'app-program',
   standalone: true,
-  imports: [RouterLink, MatButtonModule, MatIconModule],
+  imports: [RouterLink, MatButtonModule, MatIconModule, StripMarkdownPipe],
   templateUrl: './program.component.html',
   styleUrl: './program.component.scss',
 })

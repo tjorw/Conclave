@@ -37,7 +37,9 @@
       <!-- Vänsterkol: beskrivning + sessioner -->
       <div class="event-main">
 
-        <p class="event-description">{{ ev.description }}</p>
+        <div class="event-description">
+          <markdown [data]="ev.description" />
+        </div>
 
         @if (ev.dropInRules) {
           <div class="drop-in-info">

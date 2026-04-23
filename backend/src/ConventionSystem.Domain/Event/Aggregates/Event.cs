@@ -63,6 +63,8 @@ public sealed class Event : AggregateRoot
         EnsureNotCancelled();
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Beskrivning får inte vara tom.", nameof(description));
+        if (description.Length > 10_000)
+            throw new ArgumentException("Beskrivning får inte vara längre än 10 000 tecken.", nameof(description));
         Description = description;
     }
 

@@ -2,6 +2,7 @@ import { APP_INITIALIZER, ApplicationConfig, provideBrowserGlobalErrorListeners 
 import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideMarkdown } from 'ngx-markdown';
 
 import { routes } from './app.routes';
 import { ConventionContextService, ENVIRONMENT, tenantDevInterceptor, conventionInterceptor, authInterceptor, authSessionInterceptor } from 'shared';
@@ -28,5 +29,6 @@ export const appConfig: ApplicationConfig = {
       deps: [ConventionContextService, EditionService],
       multi: true,
     },
+    provideMarkdown(),
   ],
 };

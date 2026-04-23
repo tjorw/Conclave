@@ -125,10 +125,7 @@
             <input matInput formControlName="title" />
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Beskrivning</mat-label>
-            <textarea matInput formControlName="description" rows="4"></textarea>
-          </mat-form-field>
+          <lib-markdown-editor formControlName="description" label="Beskrivning" [rows]="8" />
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Schemaönskemål</mat-label>
@@ -166,7 +163,10 @@
           <dt>Kategori</dt>     <dd>{{ ev.categoryName || '—' }}</dd>
           <dt>Registrering</dt> <dd>{{ regKindLabel[ev.registrationType] || ev.registrationType }}</dd>
           @if (ev.description) {
-            <dt>Beskrivning</dt>  <dd class="description">{{ ev.description }}</dd>
+            <div class="description-row">
+              <dt>Beskrivning</dt>
+              <dd><markdown [data]="ev.description" /></dd>
+            </div>
           }
         </dl>
       </section>

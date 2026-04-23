@@ -92,12 +92,16 @@
     margin: 0;
     font-size: .95rem;
     color: var(--brand-text);
+  }
 
-    &.description {
-      white-space: pre-wrap;
-    }
+  .description-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    gap: 0 16px;
   }
 }
+
 
 .save-btn {
   background-color: var(--brand-primary) !important;

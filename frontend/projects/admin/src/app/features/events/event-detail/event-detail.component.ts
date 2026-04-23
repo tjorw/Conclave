@@ -18,6 +18,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   CategoryDto, ConventionService, DateTimeRangeComponent, EditionDto, EditionSessionDto, EventDto, EventService, VenueDto,
   EVENT_COMMENT_STATUS_LABEL, EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
+  MarkdownEditorComponent,
   toErrorMessage,
 } from 'shared';
 import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
@@ -49,6 +50,7 @@ type EventSessionSortKey = 'start' | 'end' | 'venue' | 'seats' | 'startType' | '
     DateTimeRangeComponent,
     MatTabsModule,
     MatTooltipModule,
+    MarkdownEditorComponent,
     SessionTimelineComponent,
   ],
   templateUrl: './event-detail.component.html',

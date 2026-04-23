@@ -41,7 +41,7 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
             .IsRequired(false);
 
         builder.Property(e => e.Description)
-            .HasMaxLength(5000)
+            .HasMaxLength(10000)
             .IsRequired(false);
 
         builder.Property(e => e.ScheduleRequestText)

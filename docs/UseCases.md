@@ -2707,3 +2707,228 @@ Evenemangsarrangör eller konventionsadministratör
 - [ ] Tilldelning utan bekräftad anmälan returnerar valideringsfel
 - [ ] Dubbeltilldelning returnerar valideringsfel
 - [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-RC001 – Redigera eventbeskrivning med markdown
+
+## Sammanfattning
+Admin eller evenemangsarrangör redigerar ett evenemangs publika beskrivning i markdown-format. Den publika appen renderar texten som formaterad HTML.
+
+## Aktör
+Konventionsadministratör eller evenemangsarrangör (LeadOrganiser/CoOrganiser)
+
+## Förutsättningar
+- Evenemanget finns
+- Utföraren är admin eller arrangör för det aktuella evenemanget
+
+## Flöde
+1. Aktören öppnar redigeringsformuläret för evenemanget
+2. Systemet visar nuvarande beskrivning i en textarea med en live-förhandsvisning bredvid
+3. Aktören redigerar texten i markdown-format
+4. Aktören sparar formuläret
+5. Systemet lagrar råtexten; publika appen renderar den som HTML vid visning
+
+## Affärsregler
+- Beskrivningen lagras alltid som råmarkdown, aldrig som HTML
+- Max 10 000 tecken
+- Rå HTML-taggar i beskrivningen ska inte renderas (saniteras vid visning)
+- Arrangör kan bara redigera sin egen events beskrivning; admin kan redigera alla
+
+## Domänhändelser
+- Inga nya (använder befintlig `EditDescription`-metod)
+
+## Acceptanskriterier
+- [ ] Markdown renderas korrekt i publika appen (rubriker, fetstil, listor, länkar)
+- [ ] Rå HTML-taggar saniteras och renderas inte
+- [ ] Text över 10 000 tecken returnerar valideringsfel
+- [ ] Arrangör kan inte redigera ett evenemang de inte tillhör
+- [ ] Befintlig testtäckning för `EditDescription` validerar gränsvärden
+
+---
+
+# UC-RC002 – Ladda upp bild
+
+## Sammanfattning
+Admin eller evenemangsarrangör laddar upp en bildfil och får tillbaka en publik URL som kan bäddas in i markdown-innehåll.
+
+## Aktör
+Konventionsadministratör eller evenemangsarrangör
+
+## Förutsättningar
+- Utföraren är autentiserad
+
+## Flöde
+1. Aktören klickar "Ladda upp bild" i markdown-editorn
+2. Aktören väljer en bildfil (JPEG, PNG, GIF, WebP)
+3. Systemet validerar filtyp och storlek
+4. Systemet sparar filen i tenant-scopad lagring
+5. Systemet returnerar en publik URL
+6. Editorn infogar `![bild](url)` vid markörpositionen i textytan
+
+## Affärsregler
+- Tillåtna format: JPEG, PNG, GIF, WebP
+- Max filstorlek: konfigurerbar, standard 5 MB
+- Filer sparas tenant-scopade; en tenants filer kan aldrig skrivas över av en annan
+- URL:en är publik och tillgänglig utan autentisering
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Uppladdad bild är åtkomlig via returnerad URL utan autentisering
+- [ ] Bilder från ett tenant kan inte skrivas över av ett annat (filsökvägen inkluderar tenantId)
+- [ ] Ogiltig filtyp returnerar valideringsfel
+- [ ] Fil över maxstorlek returnerar valideringsfel
+- [ ] Markdown-syntaxen infogas korrekt vid markörpositionen i textarea
+
+---
+
+# UC-RC003 – Hantera informationssida
+
+## Sammanfattning
+En administratör skapar, redigerar, publicerar och tar bort redaktionella informationssidor. Sidor kan vara kopplade till hela konventionen eller till en specifik upplaga.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Utföraren är administratör
+
+## Flöde – Skapa
+1. Administratören anger titel, slug, scope (Konvention eller Upplaga), valfritt EditionId, och innehåll (markdown)
+2. Systemet validerar att slug är unik inom valt scope
+3. Systemet skapar sidan som opublicerad
+
+## Flöde – Uppdatera
+1. Administratören öppnar sidan och ändrar titel, slug eller innehåll
+2. Systemet validerar slug-unikhet om slug ändrats
+3. Systemet sparar uppdateringen
+
+## Flöde – Publicera / Avpublicera
+1. Administratören växlar publiceringsstatus
+2. Systemet uppdaterar `IsPublished`
+
+## Flöde – Radera
+1. Administratören raderar sidan
+2. Systemet tar bort posten permanent
+
+## Affärsregler
+- Slug måste vara unik per scope (Convention-scope eller Edition-scope)
+- Slug får bara innehålla gemener, siffror och bindestreck
+- Opublicerade sidor returnerar 404 i publika API:et
+- En konventionsscopead sida (`EditionId = null`) är åtkomlig oavsett aktiv upplaga
+- En upplagescopead sida är bara åtkomlig i kontexten av sin upplaga
+
+## Domänhändelser
+- `PagePublished { pageId, slug, occurredAt }`
+- `PageUnpublished { pageId, slug, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Sida sparas med giltigt PageId
+- [ ] Slug-kollision inom samma scope returnerar valideringsfel
+- [ ] Ogiltigt slug-format returnerar valideringsfel
+- [ ] Opublicerad sida returnerar 404 i publika API:et
+- [ ] Konventionsscopead sida är åtkomlig utan EditionId
+- [ ] Upplagescopead sida kräver att rätt edition är aktiv i kontexten
+- [ ] Kommandohanterarna har tillhörande enhetstester
+
+---
+
+# UC-RC004 – Visa informationssida (publik)
+
+## Sammanfattning
+En besökare navigerar till en informationssida via slug. Systemet returnerar den publicerade sidan och frontenden renderar markdown-innehållet som HTML.
+
+## Aktör
+Besökare (anonym eller inloggad)
+
+## Förutsättningar
+- Sidan finns och är publicerad
+
+## Flöde
+1. Besökaren navigerar till `/pages/:slug`
+2. Systemet söker efter publicerad sida med angiven slug
+3. Systemet prövar upplagescopead sida för aktiv edition; om ej funnen prövas konventionsscopead sida med samma slug
+4. Systemet returnerar sidans titel och markdown-innehåll
+5. Frontenden renderar markdown som HTML
+
+## Affärsregler
+- Upplagescopead sida prioriteras om slug matchar i båda scopen
+- Opublicerad eller saknad sida returnerar 404
+- Ingen autentisering krävs
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Publicerad sida returneras korrekt med titel och innehåll
+- [ ] Opublicerad sida returnerar 404
+- [ ] Edition-scopad sida prioriteras framför konventionsscopead vid slug-kollision
+- [ ] Konventionsscopead sida är åtkomlig utan aktiv edition
+
+---
+
+# UC-RC005 – Redigera mailmall
+
+## Sammanfattning
+En administratör anpassar ämnesrad och brödtext för en specifik typ av systemmail. Anpassad mall används vid nästa utskick av den typen. En standardmall i källkoden finns alltid att återgå till.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Utföraren är administratör
+
+## Flöde
+1. Administratören öppnar malllistan och väljer en malltyp att redigera
+2. Systemet visar nuvarande ämnesrad och brödtext (markdown med variabelplatshållare, t.ex. `{{firstName}}`)
+3. Administratören redigerar ämne och/eller brödtext
+4. Systemet sparar mallen och markerar den som anpassad (`IsCustomized = true`)
+
+## Affärsregler
+- Varje malltyp har en hårdkodad standardmall i källkoden
+- En anpassad mall ersätter standardmallen vid utskick
+- Variabelplatshållare har formen `{{variabelnamn}}`
+- Okända variabelnamn ger inget fel – de ersätts med tom sträng vid rendering
+- Brödtext lagras som rawmarkdown; systemet renderar till HTML vid utskick
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Ämne och brödtext sparas per malltyp
+- [ ] `IsCustomized` sätts till `true` vid sparad anpassning
+- [ ] Anpassad mall används vid nästa utskick av rätt typ
+- [ ] Variabelsubstitution fungerar korrekt (`{{firstName}}` → personens förnamn)
+- [ ] Okänd variabel ersätts med tom sträng (inget undantag kastas)
+
+---
+
+# UC-RC006 – Återställ mailmall till standard
+
+## Sammanfattning
+En administratör återställer en anpassad mailmall till sin hårdkodade standardtext.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Malltypen finns och har `IsCustomized = true`
+
+## Flöde
+1. Administratören klickar "Återställ till standard" för en malltyp
+2. Systemet ersätter lagrad mall med hårdkodad standardmall
+3. Systemet markerar mallen som ej anpassad (`IsCustomized = false`)
+
+## Affärsregler
+- Standardmallarna är hårdkodade i källkoden och kan inte ändras utan redeploy
+- Återställning kan inte ångras
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] `IsCustomized` sätts till `false`
+- [ ] Nästa utskick av aktuell typ använder standardtextens ämne och brödtext
+- [ ] Kommandohanteraren har ett tillhörande enhetstest

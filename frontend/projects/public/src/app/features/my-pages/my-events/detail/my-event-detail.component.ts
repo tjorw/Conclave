@@ -13,9 +13,11 @@ import {
   EVENT_COMMENT_STATUS_LABEL,
   EventService, EventDto,
   EVENT_STATUS_LABEL, EVENT_STATUS_CHIP,
+  MarkdownEditorComponent,
   REGISTRATION_KIND_LABEL,
   toErrorMessage,
 } from 'shared';
+import { MarkdownComponent } from 'ngx-markdown';
 import { EditionService } from '../../../../services/edition.service';
 
 type DraftOperation = 'saving' | 'submitting' | 'returning' | 'deleting';
@@ -46,6 +48,8 @@ type CommentState = {
     MatInputModule,
     MatSelectModule,
     MatProgressSpinnerModule,
+    MarkdownComponent,
+    MarkdownEditorComponent,
   ],
   templateUrl: './my-event-detail.component.html',
   styleUrl: './my-event-detail.component.scss',

@@ -36,10 +36,14 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 
 ### Rikt innehåll (R-RC)
 
-- [ ] `R-RC01` Markdown-editor för eventbeskrivningar – admin kan redigera publik beskrivning med formatering; arrangör kan redigera sin del
-- [ ] `R-RC02` Bilduppladdning – endpoint + lagring (lokal disk eller blob); bilder refereras via URL i Markdown-innehåll
-- [ ] `R-RC03` Redaktionella informationssidor – `Page`-entitet med `slug`, `title`, `content`; admin skapar/redigerar, publika appen renderar
-- [ ] `R-RC04` Mailmallar – Markdown-template med variabler (`{{firstName}}` m.fl.), renderas server-side till HTML vid utskick
+Se `docs/RichContent.md` för arkitektur och designbeslut. Use cases: UC-RC001–UC-RC006 i `docs/UseCases.md`.
+
+Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
+
+- [ ] `R-RC01` Markdown i eventbeskrivningar – `Description`-fältet (max 10 000 tecken) stödjer markdown; live preview i admin-editorn; publik vy renderar med `ngx-markdown` (UC-RC001)
+- [ ] `R-RC02` Bilduppladdning – `IFileStorage`-abstraktion; `LocalDiskFileStorage` (MVP) + `BlobFileStorage` (stub); endpoint `POST /api/uploads`; bilder refereras via URL i markdown (UC-RC002)
+- [ ] `R-RC03` Redaktionella informationssidor – `Page`-aggregat i nytt `Content` bounded context; konventions- eller upplagescopead; `IsPublished`-flagga; admin CRUD + publik `GET /api/pages/{slug}` (UC-RC003, UC-RC004)
+- [ ] `R-RC04` Mailmallar – adminredigerbara mallar i databas; standardmall per typ i kod (restore-funktion); `TemplateRenderer` med Markdig + variabelsubstitution; oberoende av R-OB01, kopplas in när Outbox är klart (UC-RC005, UC-RC006)
 
 ### Programtaggar (R-TAG)
 
