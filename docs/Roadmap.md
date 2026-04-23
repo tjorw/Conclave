@@ -42,6 +42,13 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-RC03` Redaktionella informationssidor – `Page`-entitet med `slug`, `title`, `content`; admin skapar/redigerar, publika appen renderar
 - [ ] `R-RC04` Mailmallar – Markdown-template med variabler (`{{firstName}}` m.fl.), renderas server-side till HTML vid utskick
 
+### Programtaggar (R-TAG)
+
+- [ ] `R-TAG01` Taggdefinitioner på `Edition` – `Edition` äger en uppsättning taggdefinitioner som value objects, t.ex. `Barnvänligt`, `18+`, `Nybörjare`. Taggar är upplagespecifika och ska kunna administreras tillsammans med övrig edition-struktur.
+- [ ] `R-TAG02` Tillämpa taggar på `Event` – evenemang refererar endast till taggar som finns definierade på samma `Edition`. Validering ska hindra okända taggar och taggar från annan upplaga.
+- [ ] `R-TAG03` Publik exponering och filtrering – event-feed och programdetalj visar taggar; publika programvyn erbjuder taggfilter utöver dag och kategori.
+- [ ] `R-TAG04` Kopiering av struktur – `CopyStructure` bör kopiera editionens taggdefinitioner på samma sätt som lokaler, funktionsområden och stationer när det är relevant för ny upplaga.
+
 ---
 
 ## Teknisk skuld
@@ -80,7 +87,6 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 
 ## Refine
-- Taggar för arrangemang ("Barnvänligt", "18+", "Nybörjare"). Skall även vara filter publikt.
 - Bakgrundsjobb för mail m.m. → se `R-OB01` (Outbox-mönster, design i `docs/Outbox.md`)
 - Föreslå startdatum i datum kontroller som är första dagen på konventet
 - motsvarande schemaläggning för bemanning
