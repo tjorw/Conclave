@@ -17,6 +17,37 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-OB01` Outbox-mönster för extern kommunikation – `OutboxMessage`-tabell, `OutboxEmailSender` (implementerar `IEmailSender`), `OutboxProcessor` (`IHostedService`, kör var 30:e sekund), Polly-retry med exponentiell backoff. Se `docs/Outbox.md` för design.
 - [x] `R30` schemaönskemål förenklas till ett enda fritextfält – arrangören skriver sina önskemål fritt; fältet visas i schemaläggningsvyn så att schemaläggaren ser det i sitt arbetsflöde. Strukturerade fält (tidspreferenser, konflikter m.m.) tas bort.
 
+### Bemanningsschemaläggning (R-ST-SCH)
+
+Målet är en motsvarande schemaläggningsupplevelse för bemanning som den som finns för programpass: koordinatorn ska kunna se konventets bemanningsbehov över tid, upptäcka underbemanning och skapa eller justera pass utan att hoppa mellan stationstabeller.
+
+**Resonemang:**
+- Domänen har redan kärnan: `Shift`, `StaffAssignment`, min/max-bemanning, ansvarig person och livscykel för tilldelningar. Det behövs därför inte ett nytt planeringsaggregat.
+- Nuvarande adminvy är station-för-station med tabeller och inline-detaljer. Den fungerar för administration men ger svag överblick över tid, parallella stationer och bemanningsluckor.
+- Sessionsschemaläggningen har redan ett etablerat UI-mönster med tidslinje, daggränser från `Edition.ScheduleDays`, konfliktindikering och tabellalternativ. Bemanning bör återanvända samma tänk så att koordinatorer känner igen arbetsflödet.
+- Bemanning skiljer sig från programpass genom att överlapp för person är en varning, inte ett stopp. Vyn ska därför visa risker och luckor tydligt utan att ändra domänregeln att koordinatorn har sista ordet.
+- Backend listar i dag pass per station. En hel bemanningsvy skulle annars kräva många frontend-anrop. En edition- eller staff-area-scopad query-projektion bör införas först.
+
+**Lösningsförslag:**
+- Lägg till en query-projektion för bemanningsschema, t.ex. `GET /editions/{editionId}/staff-schedule` eller `GET /staff-areas/{staffAreaId}/schedule`.
+- Returnera rader som `StaffArea -> Station` och pass som block med `shiftId`, station, ansvarig, start/slut, min/max, antal aktiva tilldelningar, antal bekräftade tilldelningar och status.
+- Bygg en `StaffTimelineComponent` i admin som återanvänder principerna från `SessionTimelineComponent`: daghuvud, timmarkörer, horisontell scroll och block per station.
+- Färgkoda block efter bemanningsläge: obemannad, under min, inom krav, full, över max om sådan data någonsin kan uppstå, samt inställd.
+- Behåll tabellvyn som kompletterande arbetsyta för sortering, tilldelningsstatus och exakta detaljer.
+- Visa tillgänglig personal i sidopanel eller detaljpanel med indikatorer för stationsönskemål, registrerad tillgänglighet och överlappande pass. Detta är beslutsstöd, inte automatisk optimering.
+- Lägg till redigering av pass först när översiktsvyn finns: ändra tid, station, ansvarig och bemanningskrav via ett nytt `UpdateShiftCommand`.
+
+**Utvecklingssteg:**
+- [ ] `R-ST-SCH01` Backend-query för bemanningsschema per upplaga eller funktionsområde. Inkludera stationer, pass, bemanningsgrad, ansvarig och status i en samlad DTO.
+- [ ] `R-ST-SCH02` Frontend-service och modeller för staff-schedule-projektionen i `shared`.
+- [ ] `R-ST-SCH03` `StaffTimelineComponent` med rader per station, tidslinje per `Edition.ScheduleDays`, block för pass och visuella lägen för underbemanning/fullbemanning/inställt.
+- [ ] `R-ST-SCH04` Integrera tidslinjen i adminens bemanningsvy med växling mellan tidslinje och tabell samt filter på dag, funktionsområde, station och bemanningsstatus.
+- [ ] `R-ST-SCH05` Skapa pass direkt från schemavyn med förifylld station och tid. Återanvänd befintligt `CreateShiftCommand`.
+- [ ] `R-ST-SCH06` Detaljpanel för pass: tilldelningar, bekräfta/neka/avboka, och tilldela person med varningar för otillgänglighet och överlapp.
+- [ ] `R-ST-SCH07` `UpdateShiftCommand` och endpoint för att ändra tid, station, ansvarig och bemanningskrav på planerade pass.
+- [ ] `R-ST-SCH08` Tester: application-querytester för projektionen, commandtester för uppdatering av pass och fokuserade frontendtester för filter/visuella bemanningslägen.
+- [ ] `R-ST-SCH09` Dokumentera och städa regelkonflikten mellan use case-texten som säger att vilken person som helst kan tilldelas och implementationen/README som kräver godkänd staffansökan.
+
 ### Laganmälningar (R-TM)
 
 - [ ] `R-TM01` `Event.RegistrationMode: Individual | Team` – konfiguration per evenemang (nytt fält på Event-aggregatet)
@@ -89,7 +120,6 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 ## Refine
 - Bakgrundsjobb för mail m.m. → se `R-OB01` (Outbox-mönster, design i `docs/Outbox.md`)
 - Föreslå startdatum i datum kontroller som är första dagen på konventet
-- motsvarande schemaläggning för bemanning
 - public - funktionering skall visa funktionärsbiljetter
 - arrangör - skall visa arrangörsbiljetter
 - biljetter till arranggörer - man behöver bli tilldelad
