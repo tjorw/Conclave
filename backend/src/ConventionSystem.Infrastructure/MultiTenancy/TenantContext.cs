@@ -14,6 +14,7 @@ public sealed class DefaultTenantContext(
     IOptions<MultitenancyOptions> options) : ITenantContext
 {
     private const string SystemPathPrefix = "/system";
+    private const string TenantIdClaimType = "tenant_id";
 
     public Guid TenantId
     {
@@ -35,7 +36,13 @@ public sealed class DefaultTenantContext(
                 return Guid.Empty;
 
             if (!options.Value.Enabled)
+            {
+                var tenantClaim = httpContext.User.FindFirst(TenantIdClaimType);
+                if (tenantClaim is not null && Guid.TryParse(tenantClaim.Value, out var claimTenantId))
+                    return claimTenantId;
+
                 return Guid.Empty;
+            }
 
             throw new InvalidOperationException(
                 "Tenant-ID saknas i förfrågan. TenantResolutionMiddleware har inte körts.");
