@@ -29,10 +29,17 @@ export interface EditionDto {
   visitorRegistrationOpen: boolean;
   staffCoordinatorId: string | null;
   eventCoordinatorId: string | null;
+  scheduleDays: EditionScheduleDayDto[];
   venues: VenueDto[];
   staffAreas: StaffAreaDto[];
   stations: StationDto[];
   categories: CategoryDto[];
+}
+
+export interface EditionScheduleDayDto {
+  date: string;
+  startTime: string | null;
+  endTime: string | null;
 }
 
 export interface VenueDto {

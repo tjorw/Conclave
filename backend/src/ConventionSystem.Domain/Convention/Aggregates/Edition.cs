@@ -14,6 +14,7 @@ public sealed class Edition : AggregateRoot
     private readonly List<StaffArea> _staffAreas = [];
     private readonly List<Station> _stations = [];
     private readonly List<Category> _categories = [];
+    private readonly List<EditionScheduleDay> _scheduleDays = [];
 
     public EditionId Id { get; private set; }
     public ConventionId ConventionId { get; private set; }
@@ -30,6 +31,7 @@ public sealed class Edition : AggregateRoot
     public IReadOnlyList<StaffArea> StaffAreas => _staffAreas.AsReadOnly();
     public IReadOnlyList<Station> Stations => _stations.AsReadOnly();
     public IReadOnlyList<Category> Categories => _categories.AsReadOnly();
+    public IReadOnlyList<EditionScheduleDay> ScheduleDays => _scheduleDays.AsReadOnly();
 
     private Edition() { }
 
@@ -46,6 +48,7 @@ public sealed class Edition : AggregateRoot
         StaffCoordinatorId = staffCoordinatorId;
         EventCoordinatorId = eventCoordinatorId;
         Status = EditionStatus.Draft;
+        SetScheduleDays(CreateDefaultScheduleDays(period));
     }
 
     public void Publish(PersonId performedById)
@@ -170,6 +173,10 @@ public sealed class Edition : AggregateRoot
     }
 
     public void UpdateDetails(string name, DatePeriod period, PersonId staffCoordinatorId, PersonId eventCoordinatorId)
+        => UpdateDetails(name, period, staffCoordinatorId, eventCoordinatorId, CreateDefaultScheduleDays(period));
+
+    public void UpdateDetails(string name, DatePeriod period, PersonId staffCoordinatorId, PersonId eventCoordinatorId,
+        IReadOnlyList<EditionScheduleDay> scheduleDays)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Namn får inte vara tomt.", nameof(name));
@@ -177,6 +184,7 @@ public sealed class Edition : AggregateRoot
         Period = period;
         StaffCoordinatorId = staffCoordinatorId;
         EventCoordinatorId = eventCoordinatorId;
+        SetScheduleDays(scheduleDays);
     }
 
     public void UpdateVenue(VenueId venueId, string name, string building, string? description)
@@ -287,5 +295,34 @@ public sealed class Edition : AggregateRoot
     {
         if (Status != EditionStatus.Published)
             throw new EditionMustBePublishedException();
+    }
+
+    private void SetScheduleDays(IReadOnlyList<EditionScheduleDay> scheduleDays)
+    {
+        var byDate = scheduleDays.ToDictionary(d => d.Date);
+        _scheduleDays.Clear();
+
+        foreach (var date in DatesInPeriod(Period))
+        {
+            if (byDate.TryGetValue(date, out var day))
+            {
+                _scheduleDays.Add(new EditionScheduleDay(Guid.NewGuid(), date, day.StartTime, day.EndTime));
+            }
+            else
+            {
+                _scheduleDays.Add(new EditionScheduleDay(Guid.NewGuid(), date, null, null));
+            }
+        }
+    }
+
+    private static IReadOnlyList<EditionScheduleDay> CreateDefaultScheduleDays(DatePeriod period)
+        => DatesInPeriod(period)
+            .Select(date => new EditionScheduleDay(Guid.NewGuid(), date, null, null))
+            .ToList();
+
+    private static IEnumerable<DateOnly> DatesInPeriod(DatePeriod period)
+    {
+        for (var date = period.StartDate; date <= period.EndDate; date = date.AddDays(1))
+            yield return date;
     }
 }

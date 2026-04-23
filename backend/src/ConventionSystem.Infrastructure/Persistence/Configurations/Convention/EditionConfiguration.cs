@@ -50,13 +50,41 @@ public sealed class EditionConfiguration : IEntityTypeConfiguration<Edition>
         builder.HasMany(e => e.StaffAreas).WithOne().HasForeignKey("EditionId").IsRequired();
         builder.HasMany(e => e.Stations).WithOne().HasForeignKey("EditionId").IsRequired();
         builder.HasMany(e => e.Categories).WithOne().HasForeignKey("EditionId").IsRequired();
+        builder.HasMany(e => e.ScheduleDays).WithOne().HasForeignKey("EditionId").IsRequired();
 
         builder.Navigation(e => e.Venues).HasField("_venues");
         builder.Navigation(e => e.StaffAreas).HasField("_staffAreas");
         builder.Navigation(e => e.Stations).HasField("_stations");
         builder.Navigation(e => e.Categories).HasField("_categories");
+        builder.Navigation(e => e.ScheduleDays).HasField("_scheduleDays");
 
         builder.HasIndex(e => e.ConventionId).HasDatabaseName("IX_editions_convention_id");
+    }
+}
+
+public sealed class EditionScheduleDayConfiguration : IEntityTypeConfiguration<EditionScheduleDay>
+{
+    public void Configure(EntityTypeBuilder<EditionScheduleDay> builder)
+    {
+        builder.ToTable("edition_schedule_days");
+
+        builder.HasKey(d => d.Id);
+        builder.Property(d => d.Id)
+            .ValueGeneratedNever();
+
+        builder.Property(d => d.Date)
+            .HasColumnName("date")
+            .IsRequired();
+
+        builder.Property(d => d.StartTime)
+            .HasColumnName("start_time");
+
+        builder.Property(d => d.EndTime)
+            .HasColumnName("end_time");
+
+        builder.HasIndex("EditionId", nameof(EditionScheduleDay.Date))
+            .IsUnique()
+            .HasDatabaseName("IX_edition_schedule_days_edition_id_date");
     }
 }
 

@@ -1,5 +1,6 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 
@@ -21,22 +22,33 @@ public sealed class CreateEditionHandler(
 
         var performedById = currentUser.PersonId;
         if (!convention.IsAdministrator(performedById))
-            throw new InvalidOperationException("Utföraren är inte administratör för denna konvention.");
+            throw new InvalidOperationException("Utforaren ar inte administrator for denna konvention.");
 
         var staffCoordinatorId = new PersonId(command.StaffCoordinatorId);
         var staffCoordinator = await personRepository.GetByIdAsync(staffCoordinatorId, ct)
             ?? throw new InvalidOperationException($"Bemanningskoordinator '{command.StaffCoordinatorId}' hittades inte.");
         if (staffCoordinator.ConventionId != conventionId)
-            throw new InvalidOperationException("Bemanningskoordinatorn tillhör inte denna konvention.");
+            throw new InvalidOperationException("Bemanningskoordinatorn tillhor inte denna konvention.");
 
         var eventCoordinatorId = new PersonId(command.EventCoordinatorId);
         var eventCoordinator = await personRepository.GetByIdAsync(eventCoordinatorId, ct)
             ?? throw new InvalidOperationException($"Evenemangskoordinator '{command.EventCoordinatorId}' hittades inte.");
         if (eventCoordinator.ConventionId != conventionId)
-            throw new InvalidOperationException("Evenemangskoordinatorn tillhör inte denna konvention.");
+            throw new InvalidOperationException("Evenemangskoordinatorn tillhor inte denna konvention.");
 
         var period = new DatePeriod(command.StartDate, command.EndDate);
         var edition = convention.CreateEdition(command.Name, period, staffCoordinatorId, eventCoordinatorId);
+        if (command.ScheduleDays is not null)
+        {
+            edition.UpdateDetails(
+                command.Name,
+                period,
+                staffCoordinatorId,
+                eventCoordinatorId,
+                command.ScheduleDays
+                    .Select(d => new EditionScheduleDay(Guid.NewGuid(), d.Date, d.StartTime, d.EndTime))
+                    .ToList());
+        }
 
         await editionRepository.AddAndSaveAsync(edition, ct);
         return edition.Id.Value;

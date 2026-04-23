@@ -271,8 +271,8 @@ export class MyStaffComponent implements OnInit {
       .filter(date => availableDates.has(date))
       .sort()
       .map(date => ({
-        from: `${date}T08:00:00`,
-        to: `${date}T23:00:00`,
+        from: `${date}T00:00:00`,
+        to: `${date}T23:59:00`,
       }));
   }
 

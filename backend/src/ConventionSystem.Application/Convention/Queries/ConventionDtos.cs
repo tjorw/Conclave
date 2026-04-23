@@ -4,6 +4,8 @@ public record ConventionDto(Guid Id, string Name, string Slug);
 
 public record EditionSummaryDto(Guid Id, string Name, DateOnly Start, DateOnly End, string Status);
 
+public record EditionScheduleDayDto(DateOnly Date, TimeOnly? StartTime, TimeOnly? EndTime);
+
 public record EditionDto(
     Guid Id,
     Guid ConventionId,
@@ -16,6 +18,7 @@ public record EditionDto(
     bool VisitorRegistrationOpen,
     Guid? StaffCoordinatorId,
     Guid? EventCoordinatorId,
+    IReadOnlyList<EditionScheduleDayDto> ScheduleDays,
     IReadOnlyList<VenueDto> Venues,
     IReadOnlyList<StaffAreaDto> StaffAreas,
     IReadOnlyList<StationDto> Stations,

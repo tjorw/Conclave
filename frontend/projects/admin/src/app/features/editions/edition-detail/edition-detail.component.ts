@@ -86,6 +86,7 @@ export class EditionDetailComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
   readonly section = signal<EditionDetailSection>('basics');
+  readonly scheduleDayTimes = signal<Record<string, { startTime: string | null; endTime: string | null }>>({});
   readonly showAddVenueForm = signal(false);
   readonly showAddStaffAreaForm = signal(false);
   readonly showAddCategoryForm = signal(false);
@@ -309,6 +310,15 @@ export class EditionDetailComponent implements OnInit {
       staffCoordinatorId: edition.staffCoordinatorId ?? '',
       eventCoordinatorId: edition.eventCoordinatorId ?? '',
     });
+    this.scheduleDayTimes.set(Object.fromEntries(
+      (edition.scheduleDays ?? []).map(day => [
+        day.date.substring(0, 10),
+        {
+          startTime: this.toTimeInput(day.startTime),
+          endTime: this.toTimeInput(day.endTime),
+        },
+      ])
+    ));
   }
 
   personName(id: string): string {
@@ -469,6 +479,11 @@ export class EditionDetailComponent implements OnInit {
       endDate: v.endDate!,
       staffCoordinatorId: v.staffCoordinatorId!,
       eventCoordinatorId: v.eventCoordinatorId!,
+      scheduleDays: this.editionDayOptions().map(day => ({
+        date: day.value,
+        startTime: this.toApiTime(this.scheduleDayTimes()[day.value]?.startTime),
+        endTime: this.toApiTime(this.scheduleDayTimes()[day.value]?.endTime),
+      })),
     }).subscribe({
       next: () => { this.reload(); this.saving.set(false); },
       error: (err) => this.handleError(ERROR.updateEdition, err),
@@ -754,6 +769,37 @@ export class EditionDetailComponent implements OnInit {
 
   toDateInput(isoDate: string): string {
     return isoDate.substring(0, 10);
+  }
+
+  scheduleStartTime(date: string): string {
+    return this.scheduleDayTimes()[date]?.startTime ?? '';
+  }
+
+  scheduleEndTime(date: string): string {
+    return this.scheduleDayTimes()[date]?.endTime ?? '';
+  }
+
+  setScheduleStartTime(date: string, startTime: string): void {
+    this.scheduleDayTimes.update(days => ({
+      ...days,
+      [date]: { startTime: startTime || null, endTime: days[date]?.endTime ?? null },
+    }));
+  }
+
+  setScheduleEndTime(date: string, endTime: string): void {
+    this.scheduleDayTimes.update(days => ({
+      ...days,
+      [date]: { startTime: days[date]?.startTime ?? null, endTime: endTime || null },
+    }));
+  }
+
+  private toTimeInput(value: string | null): string | null {
+    return value?.substring(0, 5) ?? null;
+  }
+
+  private toApiTime(value: string | null | undefined): string | null {
+    if (!value) return null;
+    return value.length === 5 ? `${value}:00` : value;
   }
 
   private normalizeAllowedCategories(value: string[] | null | undefined): string[] | null {

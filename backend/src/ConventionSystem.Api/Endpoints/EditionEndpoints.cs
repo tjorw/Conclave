@@ -42,7 +42,11 @@ public static class EditionEndpoints
                     request.StartDate,
                     request.EndDate,
                     request.StaffCoordinatorId,
-                    request.EventCoordinatorId), ct);
+                    request.EventCoordinatorId,
+                    request.ScheduleDays?
+                        .Select(d => new ConventionSystem.Application.Convention.Commands.CreateEdition.EditionScheduleDayCommand(
+                            d.Date, d.StartTime, d.EndTime))
+                        .ToList()), ct);
                 return Results.Created($"/editions/{id}", new { id });
             });
 
@@ -57,7 +61,11 @@ public static class EditionEndpoints
                     request.StartDate,
                     request.EndDate,
                     request.StaffCoordinatorId,
-                    request.EventCoordinatorId), ct);
+                    request.EventCoordinatorId,
+                    request.ScheduleDays?
+                        .Select(d => new ConventionSystem.Application.Convention.Commands.UpdateEdition.EditionScheduleDayCommand(
+                            d.Date, d.StartTime, d.EndTime))
+                        .ToList()), ct);
                 return Results.NoContent();
             });
 
@@ -268,11 +276,15 @@ public record CreateEditionRequest(
     DateOnly StartDate,
     DateOnly EndDate,
     Guid StaffCoordinatorId,
-    Guid EventCoordinatorId);
+    Guid EventCoordinatorId,
+    IReadOnlyList<EditionScheduleDayRequest>? ScheduleDays = null);
 
 public record UpdateEditionRequest(
     string Name,
     DateOnly StartDate,
     DateOnly EndDate,
     Guid StaffCoordinatorId,
-    Guid EventCoordinatorId);
+    Guid EventCoordinatorId,
+    IReadOnlyList<EditionScheduleDayRequest>? ScheduleDays = null);
+
+public record EditionScheduleDayRequest(DateOnly Date, TimeOnly? StartTime, TimeOnly? EndTime);

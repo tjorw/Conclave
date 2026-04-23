@@ -16,13 +16,16 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
     }
 
     public Task<Edition?> GetByIdAsync(EditionId id, CancellationToken ct = default)
-        => db.Editions.FirstOrDefaultAsync(e => e.Id == id, ct);
+        => db.Editions
+            .Include(e => e.ScheduleDays)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public Task<Edition?> GetByIdWithStructureAsync(EditionId id, CancellationToken ct = default)
         => db.Editions
             .Include(e => e.Venues)
             .Include(e => e.StaffAreas)
             .Include(e => e.Stations)
+            .Include(e => e.ScheduleDays)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public Task<Edition?> GetByIdWithStaffAreasAsync(EditionId id, CancellationToken ct = default)
@@ -66,6 +69,7 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
             .Include(e => e.StaffAreas)
             .Include(e => e.Stations)
             .Include(e => e.Categories)
+            .Include(e => e.ScheduleDays)
             .Where(e => e.Id == id)
             .Select(e => new EditionDto(
                 e.Id.Value,
@@ -79,6 +83,7 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
                 e.VisitorRegistrationOpen,
                 e.StaffCoordinatorId == null ? null : e.StaffCoordinatorId.Value.Value,
                 e.EventCoordinatorId == null ? null : e.EventCoordinatorId.Value.Value,
+                e.ScheduleDays.OrderBy(d => d.Date).Select(d => new EditionScheduleDayDto(d.Date, d.StartTime, d.EndTime)).ToList(),
                 e.Venues.Select(v => new VenueDto(v.Id.Value, v.Name, v.Building, v.Description)).ToList(),
                 e.StaffAreas.Select(sa => new StaffAreaDto(sa.Id.Value, sa.Name, sa.Description, sa.ResponsibleId.Value)).ToList(),
                 e.Stations.Select(s => new StationDto(s.Id.Value, s.StaffAreaId.Value, s.Name, s.Description)).ToList(),

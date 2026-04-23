@@ -23,6 +23,13 @@ export interface CreateEditionRequest {
   endDate: string;
   staffCoordinatorId: string;
   eventCoordinatorId: string;
+  scheduleDays?: EditionScheduleDayRequest[] | null;
+}
+
+export interface EditionScheduleDayRequest {
+  date: string;
+  startTime: string | null;
+  endTime: string | null;
 }
 
 export interface CreateVenueRequest {
@@ -60,6 +67,7 @@ export interface UpdateEditionRequest {
   endDate: string;
   staffCoordinatorId: string;
   eventCoordinatorId: string;
+  scheduleDays?: EditionScheduleDayRequest[] | null;
 }
 
 export interface UpdateVenueRequest {

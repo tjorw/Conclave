@@ -7,4 +7,7 @@ public sealed record UpdateEditionCommand(
     DateOnly StartDate,
     DateOnly EndDate,
     Guid StaffCoordinatorId,
-    Guid EventCoordinatorId) : ICommand;
+    Guid EventCoordinatorId,
+    IReadOnlyList<EditionScheduleDayCommand>? ScheduleDays = null) : ICommand;
+
+public sealed record EditionScheduleDayCommand(DateOnly Date, TimeOnly? StartTime, TimeOnly? EndTime);

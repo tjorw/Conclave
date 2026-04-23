@@ -368,7 +368,8 @@
                   [venues]="venues()"
                   [draft]="timelineDraft()"
                   [editionStart]="edition()?.start ?? null"
-                  [editionEnd]="edition()?.end ?? null" />
+                  [editionEnd]="edition()?.end ?? null"
+                  [scheduleDays]="edition()?.scheduleDays ?? []" />
               }
             </mat-card-content>
           </mat-card>

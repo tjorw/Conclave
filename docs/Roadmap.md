@@ -48,7 +48,7 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 
 | Post | Beskrivning | Prioritet |
 |------|-------------|-----------|
-| **Cache stampede i `CachingTenantResolver`** | Mönstret `TryGetValue → miss → DB → Set` utan lås ger N parallella DB-träffar vid burst mot okänd tenant. `GetOrCreateAsync` eller en `SemaphoreSlim` per nyckel eliminerar problemet. Låg risk vid nuvarande skala. | Låg |
+| **Cache stampede i `CachingTenantResolver`** | Mönstret `TryGetValue → miss → DB → Set` utan per-nyckel-samordning kan ge N parallella DB-träffar vid burst mot samma tenant efter TTL/invalidering. Okända tenants cachas inte alls, så upprepade requests mot okänd subdomain fortsätter slå DB. Lös med per-key `SemaphoreSlim`/single-flight och överväg kort negativ cache för okända subdomains. Låg risk vid nuvarande skala. | Låg |
 | `appsettings` hemligheter | `Jwt:Key` ligger i `appsettings.Development.json`. Produktionsmiljö behöver Azure Key Vault, miljövariabler eller liknande | Hög inför produktion |
 | Social inloggning (OAuth) | ASP.NET Identity stöder det men inte implementerat | Låg |
 | **Feed-cachning och API-nyckel** | Feed-endpointsen är öppna och läser från databasen vid varje anrop. Vid hög trafik bör svaren cachas (HTTP-headers `Cache-Control`/`ETag`, CDN-lager eller Redis). Vid behov av skyddade feeds kan en API-nyckel läggas till utan att ändra URL-strukturen. | Medel – utvärdera inför produktion |
@@ -84,7 +84,6 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - Bakgrundsjobb för mail m.m. → se `R-OB01` (Outbox-mönster, design i `docs/Outbox.md`)
 - Föreslå startdatum i datum kontroller som är första dagen på konventet
 - motsvarande schemaläggning för bemanning
-- varför startar tidsschemat på 08:00
 - public - funktionering skall visa funktionärsbiljetter
 - arrangör - skall visa arrangörsbiljetter
 - biljetter till arranggörer - man behöver bli tilldelad

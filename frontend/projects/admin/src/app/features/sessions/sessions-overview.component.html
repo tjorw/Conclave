@@ -87,6 +87,7 @@
             [draft]="timelineDraft()"
             [editionStart]="day()"
             [editionEnd]="day()"
+            [scheduleDays]="edition()?.scheduleDays ?? []"
             [showAllVenues]="true"
             (sessionSelected)="onTimelineSessionSelected($event)" />
           }
@@ -100,6 +101,7 @@
             [draft]="timelineDraft()"
             [editionStart]="day()"
             [editionEnd]="day()"
+            [scheduleDays]="edition()?.scheduleDays ?? []"
             (sessionSelected)="onTimelineSessionSelected($event)" />
           }
         </mat-card-content>

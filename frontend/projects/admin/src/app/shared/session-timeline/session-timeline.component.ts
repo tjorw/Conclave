@@ -1,6 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { EditionSessionDto, VenueDto } from 'shared';
+import { EditionScheduleDayDto, EditionSessionDto, VenueDto } from 'shared';
 import { SESSION_TIMELINE } from '../../labels/pages.labels';
 
 export interface DraftBlock {
@@ -29,8 +29,8 @@ interface DraftVisualBlock {
 }
 
 const PX_PER_MIN        = 2;
-const DAY_START_HOUR    = 8;
-const DAY_END_HOUR      = 23;
+const DEFAULT_DAY_START = '00:00';
+const DEFAULT_DAY_END   = '23:59';
 const VENUE_LABEL_WIDTH = 140;
 const ROW_HEIGHT        = 40;
 
@@ -49,6 +49,7 @@ export class SessionTimelineComponent {
   readonly draft          = input<DraftBlock | null>(null);
   readonly editionStart   = input<string | null>(null);
   readonly editionEnd     = input<string | null>(null);
+  readonly scheduleDays   = input<EditionScheduleDayDto[]>([]);
   readonly showAllVenues  = input(false);
   readonly sessionSelected = output<string>();
 
@@ -100,10 +101,8 @@ export class SessionTimelineComponent {
   private readonly timeRange = computed(() => {
     const start = this.editionStart();
     const end   = this.editionEnd();
-    const from = start ? this.parseDateLocal(start) : new Date();
-    const to   = end   ? this.parseDateLocal(end)   : new Date(from.getTime() + 86400000 * 2);
-    from.setHours(DAY_START_HOUR, 0, 0, 0);
-    to.setHours(DAY_END_HOUR, 0, 0, 0);
+    const from = start ? this.dateTimeForScheduleBoundary(start, 'start') : new Date();
+    const to   = end   ? this.dateTimeForScheduleBoundary(end, 'end')   : new Date(from.getTime() + 86400000 * 2);
     return { from, to };
   });
 
@@ -270,5 +269,17 @@ export class SessionTimelineComponent {
   private parseDateLocal(s: string): Date {
     const parts = s.split('T')[0].split('-').map(Number);
     return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+
+  private dateTimeForScheduleBoundary(value: string, boundary: 'start' | 'end'): Date {
+    const datePart = value.split('T')[0];
+    const date = this.parseDateLocal(datePart);
+    const scheduleDay = this.scheduleDays().find(d => d.date.startsWith(datePart));
+    const time = boundary === 'start'
+      ? scheduleDay?.startTime ?? DEFAULT_DAY_START
+      : scheduleDay?.endTime ?? DEFAULT_DAY_END;
+    const [hours, minutes] = time.split(':').map(Number);
+    date.setHours(hours, minutes ?? 0, 0, 0);
+    return date;
   }
 }

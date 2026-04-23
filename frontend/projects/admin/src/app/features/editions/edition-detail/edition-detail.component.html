@@ -192,6 +192,37 @@
                   </mat-select>
                 </mat-form-field>
               </div>
+              <div class="schedule-days-list">
+                <div class="schedule-days-header">
+                  <span>Dag</span>
+                  <span>Start</span>
+                  <span>Slut</span>
+                </div>
+                @for (day of editionDayOptions(); track day.value) {
+                  <div class="schedule-day-row">
+                    <div class="schedule-day-label">
+                      <mat-icon>today</mat-icon>
+                      <span>{{ day.label }}</span>
+                    </div>
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>Start</mat-label>
+                      <input
+                        matInput
+                        type="time"
+                        [value]="scheduleStartTime(day.value)"
+                        (input)="setScheduleStartTime(day.value, $any($event.target).value)" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>Slut</mat-label>
+                      <input
+                        matInput
+                        type="time"
+                        [value]="scheduleEndTime(day.value)"
+                        (input)="setScheduleEndTime(day.value, $any($event.target).value)" />
+                    </mat-form-field>
+                  </div>
+                }
+              </div>
               <div class="form-actions">
                 <button mat-flat-button color="primary" type="submit" [disabled]="editEditionForm.invalid || saving()">Spara</button>
               </div>
