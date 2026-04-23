@@ -46,3 +46,8 @@ public sealed class RejectedAssignmentCannotBeCancelledException()
     : DomainRuleViolationException(
         "En avvisad tilldelning kan inte avbokas.",
         "rejected_assignment_cannot_be_cancelled");
+
+public sealed class ShiftCanOnlyBeUpdatedWhenPlannedException()
+    : DomainRuleViolationException(
+        "Bara planerade pass kan uppdateras.",
+        "shift_can_only_be_updated_when_planned");

@@ -82,6 +82,17 @@ public sealed class Shift : AggregateRoot
         RaiseDomainEvent(new ShiftCancelled(Id, StationId, performedById, DateTimeOffset.UtcNow));
     }
 
+    public void Update(StationId stationId, PersonId responsibleId, TimeSlot timeSlot, StaffingRequirement staffingRequirement)
+    {
+        if (Status != ShiftStatus.Planned)
+            throw new ShiftCanOnlyBeUpdatedWhenPlannedException();
+
+        StationId = stationId;
+        ResponsibleId = responsibleId;
+        TimeSlot = timeSlot;
+        StaffingRequirement = staffingRequirement;
+    }
+
     private StaffAssignment GetAssignment(StaffAssignmentId assignmentId) =>
         _assignments.FirstOrDefault(a => a.Id == assignmentId)
             ?? throw new StaffAssignmentNotFoundException();

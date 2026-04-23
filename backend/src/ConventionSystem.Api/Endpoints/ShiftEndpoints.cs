@@ -4,6 +4,7 @@ using ConventionSystem.Application.Staff.Commands.CancelShift;
 using ConventionSystem.Application.Staff.Commands.ConfirmAssignment;
 using ConventionSystem.Application.Staff.Commands.CreateShift;
 using ConventionSystem.Application.Staff.Commands.RejectAssignment;
+using ConventionSystem.Application.Staff.Commands.UpdateShift;
 using ConventionSystem.Application.Staff.Queries.GetShift;
 using ConventionSystem.Application.Staff.Queries.ListShifts;
 using ConventionSystem.Application.Common;
@@ -69,10 +70,32 @@ public static class ShiftEndpoints
                 await sender.Send(new CancelShiftCommand(shiftId), ct);
                 return Results.NoContent();
             });
+
+        shifts.MapPut("/",
+            async (Guid shiftId, UpdateShiftRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateShiftCommand(
+                    shiftId,
+                    request.StationId,
+                    request.ResponsibleId,
+                    request.StartTime,
+                    request.EndTime,
+                    request.MinPersons,
+                    request.MaxPersons), ct);
+                return Results.NoContent();
+            });
     }
 }
 
 public record CreateShiftRequest(
+    Guid ResponsibleId,
+    DateTime StartTime,
+    DateTime EndTime,
+    int MinPersons,
+    int MaxPersons);
+
+public record UpdateShiftRequest(
+    Guid StationId,
     Guid ResponsibleId,
     DateTime StartTime,
     DateTime EndTime,

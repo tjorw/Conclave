@@ -1,3 +1,5 @@
+using ConventionSystem.Application.Convention.Queries;
+
 namespace ConventionSystem.Application.Staff.Queries;
 
 public record ShiftSummaryDto(
@@ -49,3 +51,37 @@ public record StaffApplicationSummaryDto(
     DateTimeOffset CreatedAt,
     IReadOnlyList<Guid> StationPreferenceIds,
     IReadOnlyList<StaffApplicationAvailabilityDto> Availabilities);
+
+public record StaffScheduleDto(
+    Guid EditionId,
+    Guid? StaffAreaFilterId,
+    IReadOnlyList<EditionScheduleDayDto> ScheduleDays,
+    IReadOnlyList<StaffScheduleAreaDto> StaffAreas);
+
+public record StaffScheduleAreaDto(
+    Guid StaffAreaId,
+    string Name,
+    string? Description,
+    Guid ResponsibleId,
+    string? ResponsibleName,
+    IReadOnlyList<StaffScheduleStationDto> Stations);
+
+public record StaffScheduleStationDto(
+    Guid StationId,
+    string Name,
+    string? Description,
+    IReadOnlyList<StaffScheduleShiftDto> Shifts);
+
+public record StaffScheduleShiftDto(
+    Guid ShiftId,
+    Guid StationId,
+    Guid ResponsibleId,
+    string? ResponsibleName,
+    DateTime Start,
+    DateTime End,
+    int MinPersons,
+    int MaxPersons,
+    int ActiveAssignmentCount,
+    int ConfirmedAssignmentCount,
+    string Status,
+    string StaffingStatus);

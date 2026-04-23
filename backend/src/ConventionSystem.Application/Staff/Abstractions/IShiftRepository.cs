@@ -12,5 +12,6 @@ public interface IShiftRepository
     Task<Shift?> GetByIdWithAssignmentsAsync(ShiftId id, CancellationToken ct = default);
     Task<IReadOnlyList<ShiftSummaryDto>> ListByStationIdAsync(StationId id, CancellationToken ct = default);
     Task<ShiftDto?> GetProjectedByIdAsync(ShiftId id, CancellationToken ct = default);
+    Task<StaffScheduleDto> GetStaffScheduleAsync(EditionId editionId, StaffAreaId? staffAreaId = null, CancellationToken ct = default);
     Task SaveAsync(CancellationToken ct = default);
 }

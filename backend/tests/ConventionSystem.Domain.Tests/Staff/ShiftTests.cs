@@ -141,6 +141,39 @@ public class ShiftTests
     }
 
     [Fact]
+    public void Update_PlannedShift_UpdatesDetails()
+    {
+        var shift = CreateShift();
+        var stationId = StationId.New();
+        var responsibleId = PersonId.New();
+        var timeSlot = new TimeSlot(new DateTime(2027, 3, 1, 12, 0, 0), new DateTime(2027, 3, 1, 16, 0, 0));
+        var requirement = new StaffingRequirement(2, 5);
+
+        shift.Update(stationId, responsibleId, timeSlot, requirement);
+
+        Assert.Equal(stationId, shift.StationId);
+        Assert.Equal(responsibleId, shift.ResponsibleId);
+        Assert.Equal(timeSlot.Start, shift.TimeSlot.Start);
+        Assert.Equal(timeSlot.End, shift.TimeSlot.End);
+        Assert.Equal(requirement.MinPersons, shift.StaffingRequirement.MinPersons);
+        Assert.Equal(requirement.MaxPersons, shift.StaffingRequirement.MaxPersons);
+    }
+
+    [Fact]
+    public void Update_CancelledShift_Throws()
+    {
+        var shift = CreateShift();
+        shift.Cancel(PersonId.New());
+
+        Assert.Throws<ShiftCanOnlyBeUpdatedWhenPlannedException>(() =>
+            shift.Update(
+                StationId.New(),
+                PersonId.New(),
+                new TimeSlot(new DateTime(2027, 3, 1, 12, 0, 0), new DateTime(2027, 3, 1, 16, 0, 0)),
+                new StaffingRequirement(2, 4)));
+    }
+
+    [Fact]
     public void AssignPerson_AfterCancelAndRejected_AllowsReassign()
     {
         var shift = CreateShift();

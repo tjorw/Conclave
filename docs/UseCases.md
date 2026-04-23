@@ -500,6 +500,7 @@ Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
 ## Förutsättningar
 - Stationen finns och tillhör upplagan
 - Passansvarig person finns och tillhör konventionen
+- Passansvarig person har en godkänd staffansökan för upplagan
 - Utföraren är administratör, bemanningskoordinator eller ansvarig för stationens funktionsområde
 
 ## Flöde
@@ -512,7 +513,7 @@ Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
 - Sluttid måste vara efter starttid
 - MaxPersons måste vara >= MinPersons
 - MinPersons måste vara >= 0
-- Passansvarig kan vara vilken person som helst som tillhör konventionen
+- Passansvarig måste ha en godkänd staffansökan för upplagan
 - Pass skapas med status Planerat
 
 ## Domänhändelser
@@ -529,7 +530,7 @@ Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
 # UC-ST002 – Tilldela person till pass
 
 ## Sammanfattning
-En bemanningskoordinator eller funktionsområdesansvarig tilldelar en person till ett pass. Det primära scenariot är att tilldela personer som skickat in en staffansökan, men vilken person som helst i konventionen kan tilldelas.
+En bemanningskoordinator eller funktionsområdesansvarig tilldelar en person till ett pass. Personen måste tillhöra konventionen och ha en godkänd staffansökan för upplagan.
 
 ## Aktör
 Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
@@ -537,6 +538,7 @@ Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
 ## Förutsättningar
 - Passet finns med status Planerat
 - Personen finns och tillhör konventionen
+- Personen har en godkänd staffansökan för upplagan
 
 ## Flöde
 1. Aktören anger ShiftId och PersonId
@@ -550,7 +552,7 @@ Konventionsadministratör, bemanningskoordinator eller funktionsområdesansvarig
 - Maxkapaciteten får inte överskridas
 - En person kan inte tilldelas samma pass två gånger
 - Tidsöverlapp med andra pass är en varning, inte ett hårt stopp
-- Vilken person som helst i konventionen kan tilldelas (inte begränsat till staffsökande)
+- Personen måste ha en godkänd staffansökan för upplagan innan tilldelning kan göras
 
 ## Domänhändelser
 - `PersonAssignedToShift { assignmentId, shiftId, personId, assignedById, occurredAt }`

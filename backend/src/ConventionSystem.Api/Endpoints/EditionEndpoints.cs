@@ -26,6 +26,7 @@ using ConventionSystem.Application.Convention.Commands.UpdateStaffArea;
 using ConventionSystem.Application.Convention.Commands.UpdateVenue;
 using ConventionSystem.Domain.Convention.Enums;
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Staff.Queries.GetStaffSchedule;
 
 namespace ConventionSystem.Api.Endpoints;
 
@@ -257,6 +258,10 @@ public static class EditionEndpoints
         editions.MapGet("/sessions",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new GetEditionSessionsQuery(editionId), ct)));
+
+        groups.Authenticated.MapGet("/editions/{editionId:guid}/staff-schedule",
+            async (Guid editionId, Guid? staffAreaId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetStaffScheduleQuery(editionId, staffAreaId), ct)));
     }
 }
 

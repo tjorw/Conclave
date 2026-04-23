@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ENVIRONMENT } from '../environment/environment.token';
-import { ShiftSummaryDto, ShiftDto, StaffApplicationSummaryDto } from '../models/staff.models';
+import { ShiftSummaryDto, ShiftDto, StaffApplicationSummaryDto, StaffScheduleDto } from '../models/staff.models';
 
 @Injectable({ providedIn: 'root' })
 export class StaffService {
@@ -27,6 +27,13 @@ export class StaffService {
 
   cancelShift(shiftId: string) {
     return this.http.post<void>(`${this.env.apiBaseUrl}/shifts/${shiftId}/cancel`, {});
+  }
+
+  updateShift(shiftId: string, stationId: string, responsibleId: string, startTime: string, endTime: string, minPersons: number, maxPersons: number) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/shifts/${shiftId}`,
+      { stationId, responsibleId, startTime, endTime, minPersons, maxPersons }
+    );
   }
 
   assignPerson(shiftId: string, personId: string) {
@@ -59,6 +66,15 @@ export class StaffService {
   listStaffApplications(editionId: string) {
     return this.http.get<StaffApplicationSummaryDto[]>(
       `${this.env.apiBaseUrl}/editions/${editionId}/staff-applications`
+    );
+  }
+
+  getStaffSchedule(editionId: string, staffAreaId?: string | null) {
+    return this.http.get<StaffScheduleDto>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/staff-schedule`,
+      {
+        params: staffAreaId ? { staffAreaId } : {},
+      }
     );
   }
 

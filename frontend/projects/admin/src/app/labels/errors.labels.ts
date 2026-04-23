@@ -68,6 +68,7 @@ export const ERROR = {
   acceptApplication:      'Kunde inte acceptera ansökan',
   rejectApplication:      'Kunde inte avslå ansökan',
   createShift:            'Kunde inte skapa pass',
+  saveShift:              'Kunde inte uppdatera passet',
   cancelShift:            'Kunde inte ställa in passet',
   assignPerson:           'Kunde inte tilldela person',
   confirmAssignment:      'Kunde inte bekräfta tilldelning',

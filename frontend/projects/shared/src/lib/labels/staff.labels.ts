@@ -26,3 +26,11 @@ export const SHIFT_STATUS_LABEL: Record<string, string> = {
   Full:      'Fullt',
   Cancelled: 'Inställt',
 };
+export const STAFFING_STATUS_LABEL: Record<string, string> = {
+  Cancelled:         'Inställt',
+  Unstaffed:         'Obemannat',
+  UnderMin:          'Under min',
+  OverMax:           'Över max',
+  Full:              'Fullbemannat',
+  WithinRequirement: 'Inom behov',
+};

@@ -1,8 +1,8 @@
 <div class="page-header">
-  <h1 class="page-title">Funktionsområden</h1>
+  <h1 class="page-title">{{ PAGE.title }}</h1>
   <p class="page-subtitle">
     @if (editionCtx.activeEdition(); as edition) {
-      Funktionsområden och stationer för <strong>{{ edition.name }}</strong>
+      {{ PAGE.subtitle }} <strong>{{ edition.name }}</strong>
     } @else {
       Välj en upplaga i verktygsfältet
     }
@@ -12,34 +12,386 @@
 @if (loading()) {
   <div class="spinner-center"><mat-spinner diameter="48" /></div>
 } @else if (!editionCtx.activeEdition()) {
-  <p class="muted-info">Välj en upplaga i verktygsfältet för att se funktionsområden.</p>
+  <p class="muted-info">Välj en upplaga i verktygsfältet för att se bemanningsschemat.</p>
 } @else {
-  @if (error()) { <div class="error-banner">{{ error() }}</div> }
+  @if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  }
 
-  <mat-card class="content-card">
-    <mat-card-content class="no-pad">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th><button type="button" class="sort-header" (click)="setStaffAreaSort('name')">Funktionsområde <mat-icon>{{ staffAreaSortIcon('name') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setStaffAreaSort('stations')">Stationer <mat-icon>{{ staffAreaSortIcon('stations') }}</mat-icon></button></th>
-            <th class="actions-col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (area of sortedStaffAreas(); track area.id) {
-            <tr class="navigable-row" (click)="navigateToArea(area.id)">
-              <td>{{ area.name }}</td>
-              <td>{{ stationCount(area.id) }}</td>
-              <td class="row-actions">
-                <mat-icon class="row-indicator">chevron_right</mat-icon>
-              </td>
-            </tr>
-          } @empty {
-            <tr><td colspan="3" class="empty-cell">Inga funktionsområden finns för denna upplaga.</td></tr>
+  <mat-card class="overview-controls-card">
+    <mat-card-content>
+      <div class="toolbar-row">
+        <mat-button-toggle-group [value]="selectedDay()" (change)="onDayChange($event.value)">
+          @for (day of dayOptions(); track day) {
+            <mat-button-toggle [value]="day">{{ day | date:'EEE d MMM' }}</mat-button-toggle>
           }
-        </tbody>
-      </table>
+        </mat-button-toggle-group>
+
+        <mat-button-toggle-group [value]="viewMode()" (change)="setViewMode($event.value)">
+          <mat-button-toggle value="timeline">{{ PAGE.timelineView }}</mat-button-toggle>
+          <mat-button-toggle value="table">{{ PAGE.tableView }}</mat-button-toggle>
+        </mat-button-toggle-group>
+
+        <button mat-flat-button color="primary" (click)="openCreateShift()" [disabled]="!canCreateShift() || saving()">
+          <mat-icon>add</mat-icon> {{ PAGE.createShiftAction }}
+        </button>
+      </div>
+
+      <div class="toolbar-row filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>{{ PAGE.areaFilter }}</mat-label>
+          <mat-select [value]="areaFilter()" (selectionChange)="onAreaFilterChange($event.value)">
+            <mat-option value="all">{{ PAGE.allOption }}</mat-option>
+            @for (area of areaOptions(); track area.id) {
+              <mat-option [value]="area.id">{{ area.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>{{ PAGE.stationFilter }}</mat-label>
+          <mat-select [value]="stationFilter()" (selectionChange)="onStationFilterChange($event.value)">
+            <mat-option value="all">{{ PAGE.allOption }}</mat-option>
+            @for (station of stationOptions(); track station.id) {
+              <mat-option [value]="station.id">{{ station.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>{{ PAGE.statusFilter }}</mat-label>
+          <mat-select [value]="staffingFilter()" (selectionChange)="onStaffingFilterChange($event.value)">
+            <mat-option value="all">{{ PAGE.allOption }}</mat-option>
+            @for (status of staffingOptions(); track status.id) {
+              <mat-option [value]="status.id">{{ status.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
     </mat-card-content>
   </mat-card>
+
+  @if (creatingShift()) {
+    <mat-card class="create-shift-card">
+      <mat-card-content>
+        <div class="create-shift-header">
+          <div>
+            <p class="create-shift-title">{{ PAGE.createShiftTitle }}</p>
+            <p class="create-shift-hint">{{ PAGE.createShiftHint }}</p>
+          </div>
+        </div>
+
+        <form [formGroup]="createShiftForm" class="create-shift-form">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>{{ PAGE.stationFilter }}</mat-label>
+            <mat-select formControlName="stationId">
+              @for (station of stationOptions(); track station.id) {
+                <mat-option [value]="station.id">{{ station.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>{{ PAGE.responsibleField }}</mat-label>
+            <mat-select formControlName="responsibleId">
+              @for (person of staff(); track person.personId) {
+                <mat-option [value]="person.personId">{{ person.personName }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <app-date-time-range
+            [group]="createShiftForm"
+            [defaultDurationMinutes]="60"
+            [min]="shiftMin"
+            [max]="shiftMax" />
+
+          <mat-form-field appearance="outline" class="field-sm">
+            <mat-label>Min</mat-label>
+            <input matInput type="number" min="1" formControlName="minPersons" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="field-sm">
+            <mat-label>Max</mat-label>
+            <input matInput type="number" min="1" formControlName="maxPersons" />
+          </mat-form-field>
+        </form>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-button (click)="cancelCreateShift()" [disabled]="saving()">{{ PAGE.cancelAction }}</button>
+        <button mat-flat-button color="primary" (click)="submitCreateShift()" [disabled]="createShiftForm.invalid || saving()">
+          @if (saving()) { <mat-spinner diameter="18" /> } @else { <span>{{ PAGE.createShiftAction }}</span> }
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  }
+
+  @if ((filteredSchedule()?.staffAreas?.length ?? 0) === 0) {
+    <p class="muted-info">{{ PAGE.noShifts }}</p>
+  } @else {
+    @if (viewMode() === 'timeline') {
+      <mat-card class="content-card">
+        <mat-card-header>
+          <mat-card-title>{{ PAGE.timelineTitle }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <app-staff-timeline
+            [schedule]="filteredSchedule()"
+            [editionStart]="selectedDay()"
+            [editionEnd]="selectedDay()"
+            [selectedShiftId]="selectedShiftId()"
+            (shiftSelected)="selectShift($event)" />
+        </mat-card-content>
+      </mat-card>
+    }
+
+    @if (viewMode() === 'table') {
+      <mat-card class="content-card">
+        <mat-card-header>
+          <mat-card-title>{{ PAGE.tableTitle }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="no-pad">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th><button type="button" class="sort-header" (click)="setSort('area')">{{ PAGE.areaColumn }} <mat-icon>{{ sortIconFor('area') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setSort('station')">{{ PAGE.stationColumn }} <mat-icon>{{ sortIconFor('station') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setSort('start')">{{ PAGE.startColumn }} <mat-icon>{{ sortIconFor('start') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setSort('end')">{{ PAGE.endColumn }} <mat-icon>{{ sortIconFor('end') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setSort('responsible')">{{ PAGE.responsibleColumn }} <mat-icon>{{ sortIconFor('responsible') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setSort('staffing')">{{ PAGE.staffingColumn }} <mat-icon>{{ sortIconFor('staffing') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setSort('status')">{{ PAGE.statusColumn }} <mat-icon>{{ sortIconFor('status') }}</mat-icon></button></th>
+                <th class="actions-col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of tableRows(); track row.shift.shiftId) {
+                <tr [class.selected-row]="selectedShiftId() === row.shift.shiftId" (click)="selectShift(row.shift.shiftId)">
+                  <td>{{ row.areaName }}</td>
+                  <td>{{ row.stationName }}</td>
+                  <td>{{ row.shift.start | date:'yyyy-MM-dd HH:mm' }}</td>
+                  <td>{{ row.shift.end | date:'HH:mm' }}</td>
+                  <td>{{ row.shift.responsibleName ?? row.shift.responsibleId }}</td>
+                  <td>{{ staffingSummary(row.shift) }}</td>
+                  <td><span class="chip chip-grey">{{ staffingStatusLabel(row.shift.staffingStatus) }}</span></td>
+                  <td class="row-actions" (click)="$event.stopPropagation()">
+                    <button mat-stroked-button (click)="navigateToArea(row.areaId)">
+                      {{ PAGE.openAreaAction }}
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="8" class="empty-cell">{{ PAGE.noShifts }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    @if (selectedShift(); as selected) {
+      <mat-card class="selected-shift-card">
+        <mat-card-content>
+          <div class="selected-shift-header">
+            <div>
+              <div class="selected-shift-title">{{ PAGE.selectedShift }}</div>
+              <div class="selected-shift-meta">
+                <strong>{{ selected.stationName }}</strong> · {{ selected.shift.start | date:'yyyy-MM-dd HH:mm' }}-{{ selected.shift.end | date:'HH:mm' }}
+              </div>
+              <div class="selected-shift-meta">
+                {{ selected.shift.responsibleName ?? selected.shift.responsibleId }} · {{ PAGE.staffingColumn }} {{ staffingSummary(selected.shift) }} · {{ staffingStatusLabel(selected.shift.staffingStatus) }}
+              </div>
+              <div class="selected-shift-meta">
+                {{ PAGE.statusColumn }} {{ shiftStatusLabel(selected.shift.status) }}
+              </div>
+            </div>
+            <div class="selected-shift-actions">
+              <button type="button" mat-stroked-button (click)="openEditShift()" [disabled]="saving() || !canEditSelectedShift()">
+                <mat-icon>edit</mat-icon> {{ PAGE.editShiftAction }}
+              </button>
+              <button mat-stroked-button color="warn" (click)="cancelShift()" [disabled]="saving() || selected.shift.status === 'Cancelled'">
+                <mat-icon>cancel</mat-icon> {{ PAGE.cancelShiftAction }}
+              </button>
+              <button mat-flat-button color="primary" (click)="navigateToArea(selected.areaId)">
+                {{ PAGE.openAreaAction }}
+              </button>
+            </div>
+          </div>
+
+          @if (shiftLoading() && !selectedShiftDetail()) {
+            <div class="detail-spinner"><mat-spinner diameter="32" /></div>
+          } @else if (selectedShiftDetail(); as detail) {
+            @if (editingShift()) {
+              <section class="detail-section edit-shift-section">
+                <div class="detail-section-title">{{ PAGE.updateShiftTitle }}</div>
+                <p class="detail-hint">{{ PAGE.updateShiftHint }}</p>
+
+                <form [formGroup]="editShiftForm" class="create-shift-form">
+                  <mat-form-field appearance="outline" class="filter-field">
+                    <mat-label>{{ PAGE.stationFilter }}</mat-label>
+                    <mat-select formControlName="stationId">
+                      @for (station of allStationOptions(); track station.id) {
+                        <mat-option [value]="station.id">{{ station.name }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="filter-field">
+                    <mat-label>{{ PAGE.responsibleField }}</mat-label>
+                    <mat-select formControlName="responsibleId">
+                      @for (person of staff(); track person.personId) {
+                        <mat-option [value]="person.personId">{{ person.personName }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <app-date-time-range
+                    [group]="editShiftForm"
+                    [defaultDurationMinutes]="60"
+                    [min]="editShiftMin"
+                    [max]="editShiftMax" />
+
+                  <mat-form-field appearance="outline" class="field-sm">
+                    <mat-label>Min</mat-label>
+                    <input matInput type="number" min="1" formControlName="minPersons" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="field-sm">
+                    <mat-label>Max</mat-label>
+                    <input matInput type="number" min="1" formControlName="maxPersons" />
+                  </mat-form-field>
+                </form>
+
+                <div class="panel-inline-actions">
+                  <button type="button" mat-button (click)="cancelEditShift()" [disabled]="saving()">{{ PAGE.cancelAction }}</button>
+                  <button type="button" mat-flat-button color="primary" (click)="submitEditShift()" [disabled]="editShiftForm.invalid || saving()">
+                    {{ PAGE.updateShiftAction }}
+                  </button>
+                </div>
+              </section>
+            } @else if (!canEditSelectedShift()) {
+              <section class="detail-section edit-shift-section">
+                <div class="detail-hint">{{ PAGE.plannedOnlyEditHint }}</div>
+              </section>
+            }
+
+            <div class="detail-grid">
+              <section class="detail-section">
+                <div class="detail-section-title">{{ PAGE.assignmentsTitle }}</div>
+                <table class="data-table inner-table">
+                  <thead>
+                    <tr>
+                      <th>{{ PAGE.assignmentPersonColumn }}</th>
+                      <th>{{ PAGE.assignmentStatusColumn }}</th>
+                      <th>{{ PAGE.assignmentAssignedColumn }}</th>
+                      <th>{{ PAGE.assignmentWarningsColumn }}</th>
+                      <th class="actions-col"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of assignmentRows(); track row.assignment.id) {
+                      <tr>
+                        <td>{{ row.assignment.personName ?? row.assignment.personId }}</td>
+                        <td><span class="chip chip-grey">{{ assignmentStatusLabel(row.assignment.status) }}</span></td>
+                        <td>{{ row.assignment.assignedAt | date:'yyyy-MM-dd HH:mm' }}</td>
+                        <td>
+                          <div class="warning-list compact">
+                            @for (warning of row.warnings; track warning) {
+                              <span class="warning-chip">{{ warning }}</span>
+                            } @empty {
+                              <span class="ok-chip">{{ PAGE.noWarnings }}</span>
+                            }
+                          </div>
+                        </td>
+                        <td class="row-actions">
+                          @if (row.assignment.status === 'Assigned') {
+                            <button mat-icon-button color="primary" (click)="confirmAssignment(row.assignment.id)" [disabled]="saving()" [matTooltip]="PAGE.confirmAssignmentAction">
+                              <mat-icon>check</mat-icon>
+                            </button>
+                            <button mat-icon-button color="warn" (click)="rejectAssignment(row.assignment.id)" [disabled]="saving()" [matTooltip]="PAGE.rejectAssignmentAction">
+                              <mat-icon>close</mat-icon>
+                            </button>
+                          }
+                          @if (row.assignment.status === 'Confirmed') {
+                            <button mat-icon-button color="warn" (click)="cancelAssignment(row.assignment.id)" [disabled]="saving()" [matTooltip]="PAGE.cancelAssignmentAction">
+                              <mat-icon>person_remove</mat-icon>
+                            </button>
+                          }
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr><td colspan="5" class="empty-cell">{{ PAGE.noAssignments }}</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </section>
+
+              @if (detail.status !== 'Cancelled') {
+                <section class="detail-section">
+                  <div class="detail-section-title">{{ PAGE.assignPersonTitle }}</div>
+                  <p class="detail-hint">{{ PAGE.assignPersonHint }}</p>
+
+                  <form [formGroup]="assignForm" class="assign-form">
+                    <mat-form-field appearance="outline" class="assign-field">
+                      <mat-label>{{ PAGE.assignmentPersonColumn }}</mat-label>
+                      <mat-select formControlName="personId">
+                        @for (candidate of assignCandidates(); track candidate.personId) {
+                          <mat-option [value]="candidate.personId" [disabled]="!candidate.canAssign">
+                            {{ candidate.personName }}
+                            @if (candidate.warnings.length > 0) {
+                              ({{ candidate.warnings.length }} {{ PAGE.warningCountLabel }})
+                            }
+                          </mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+
+                    <button type="button" mat-flat-button color="primary" (click)="assignPerson()" [disabled]="assignForm.invalid || saving()">
+                      {{ PAGE.assignPersonAction }}
+                    </button>
+                  </form>
+
+                  @if (selectedCandidate(); as candidate) {
+                    <div class="selected-candidate-card">
+                      <div class="selected-candidate-title">{{ candidate.personName }}</div>
+                      <div class="selected-candidate-meta">{{ PAGE.applicationStatusLabel }} {{ applicationStatusLabel(candidate.applicationStatus) }}</div>
+                      <div class="warning-list">
+                        @for (warning of candidate.warnings; track warning) {
+                          <span class="warning-chip">{{ warning }}</span>
+                        } @empty {
+                          <span class="ok-chip">{{ PAGE.noWarnings }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <div class="candidate-list">
+                    @for (candidate of assignCandidates(); track candidate.personId) {
+                      <div class="candidate-row" [class.candidate-row-disabled]="!candidate.canAssign">
+                        <div>
+                          <div class="candidate-name">{{ candidate.personName }}</div>
+                          <div class="candidate-meta">{{ PAGE.applicationStatusLabel }} {{ applicationStatusLabel(candidate.applicationStatus) }}</div>
+                          <div class="warning-list compact">
+                            @for (warning of candidate.warnings; track warning) {
+                              <span class="warning-chip">{{ warning }}</span>
+                            } @empty {
+                              <span class="ok-chip">{{ PAGE.noWarnings }}</span>
+                            }
+                          </div>
+                        </div>
+                        <button type="button" mat-stroked-button (click)="chooseCandidate(candidate.personId)" [disabled]="!candidate.canAssign">
+                          {{ PAGE.selectCandidateAction }}
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </section>
+              }
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+  }
 }
