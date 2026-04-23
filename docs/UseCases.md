@@ -1812,6 +1812,188 @@ Arrangör, kategoriansvarig eller konventionsadministratör
 
 ---
 
+# UC-EV013 – Visa arrangörsbiljetter vid anmälan av arrangemang
+
+## Sammanfattning
+När arrangören öppnar formuläret för att anmäla ett arrangemang visar systemet vilka arrangörsbiljetter som finns för upplagan. Informationen är endast informativ och kan inte väljas i detta steg.
+
+## Aktör
+Arrangör (autentiserad)
+
+## Förutsättningar
+- Upplagan finns
+- Arrangören är autentiserad
+- Formuläret för att anmäla arrangemang kan öppnas
+
+## Flöde
+1. Arrangören öppnar formuläret för att anmäla ett arrangemang
+2. Systemet hämtar alla `TicketType` för upplagan där `IsOrganizerTicket = true`
+3. Systemet returnerar listan tillsammans med övrig evenemangsdata
+4. Arrangören ser vilka arrangörsbiljetter som finns tillgängliga som informationstext
+
+## Affärsregler
+- Arrangörsbiljetter visas endast informativt i detta flöde
+- Arrangören kan inte välja eller ansöka om en arrangörsbiljett här
+- Om inga arrangörsbiljetter finns ska sektionen inte visas
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Arrangörsbiljetter visas i anmälningsformuläret i publika appen
+- [ ] Om inga arrangörsbiljetter finns visas inte sektionen
+- [ ] Arrangören kan inte välja eller ansöka om biljett i detta steg
+
+---
+
+# UC-EV014 – Tilldela arrangörsbiljett vid publicering av arrangemang
+
+## Sammanfattning
+När en administratör publicerar ett arrangemang kan arrangörsbiljetter tilldelas samtidigt till huvudarrangör och eventuella medarrangörer.
+
+## Aktör
+Kategoriansvarig eller evenemangskoordinator (admin)
+
+## Förutsättningar
+- Upplagan är Published
+- Arrangemanget finns och har status UnderReview
+- Utföraren har behörighet att publicera arrangemanget
+
+## Flöde
+1. Administratören öppnar publiceringsvyn för arrangemanget
+2. Systemet visar tillgängliga `TicketType` där `IsOrganizerTicket = true`
+3. Systemet visar nuvarande tilldelning per arrangör, inklusive co-organisers om sådana finns
+4. För varje arrangör kan administratören välja en biljetttyp eller alternativet "Ingen biljett"
+5. Administratören justerar tilldelningarna vid behov
+6. Administratören bekräftar publicering
+7. Systemet publicerar arrangemanget och skickar `EventPublished`
+8. För varje arrangör som tilldelats biljett:
+9. Om arrangören redan har en arrangörsbiljett för upplagan sätter systemet den gamla till `Revoked` och skapar en ny biljett
+10. Om arrangören inte redan har en arrangörsbiljett skapar systemet en ny biljett med status `Reserved`
+11. Systemet sparar allt i samma transaktion och returnerar bekräftelse
+
+## Affärsregler
+- En arrangör kan ha högst en arrangörsbiljett per upplaga åt gången
+- Byte av biljett är atomärt: revoke och ny biljett sker i samma transaktion
+- Det är valfritt att tilldela biljett; publicering kan ske utan tilldelning
+- Co-organisers och huvudarrangör behandlas lika
+- Om inga `IsOrganizerTicket`-typer finns visas inte biljettsektionen
+
+## Domänhändelser
+- `EventPublished { eventId, responsibleId, occurredAt }`
+- `OrganizerTicketsAssigned { eventId, editionId, assignments, occurredAt }`
+
+## Acceptanskriterier
+- [ ] Publiceringsvyn visar tillgängliga arrangörsbiljetter och nuvarande tilldelning
+- [ ] Systemet sparar korrekt med revoke + ny biljett vid byte
+- [ ] Publicering och biljetttilldelning sker i samma anrop och transaktion
+- [ ] Om inga `IsOrganizerTicket`-typer finns visas inte biljettsektionen
+
+---
+
+# UC-EV015 – Hantera arrangörsbiljett manuellt
+
+## Sammanfattning
+En konventionsadministratör kan manuellt tilldela, byta eller ta bort arrangörsbiljett för en arrangör utan att gå via publiceringsflödet.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Upplagan finns
+- Utföraren är konventionsadministratör
+- Arrangören finns i konventionen
+
+## Flöde – Tilldela eller byt
+1. Administratören öppnar arrangörens registreringssida eller evenemangets admin-vy
+2. Administratören väljer arrangör och en `TicketType` där `IsOrganizerTicket = true`
+3. Systemet kontrollerar om arrangören redan har en arrangörsbiljett för upplagan
+4. Om ja: systemet sätter befintlig biljett till `Revoked` och skapar en ny med status `Reserved`
+5. Om nej: systemet skapar en ny biljett med status `Reserved`
+6. Systemet sparar och bekräftar
+
+## Flöde – Ta bort
+1. Administratören väljer att ta bort arrangörsbiljetten
+2. Systemet sätter biljettens status till `Revoked`
+3. Systemet sparar och bekräftar
+
+## Affärsregler
+- Samma regel gäller som i UC-EV014: en arrangör kan bara ha en aktiv arrangörsbiljett per upplaga
+- Manuell tilldelning kräver inte att arrangemanget är Published
+- Revoked-biljetter visas inte för arrangören
+- Historik bevaras genom att revokerade biljetter inte tas bort ur databasen
+
+## Domänhändelser
+- Inga nya krav utöver ordinarie biljett- och historikhändelser
+
+## Acceptanskriterier
+- [ ] Admin kan tilldela, byta och ta bort arrangörsbiljett fristående från publiceringsflödet
+- [ ] Byte är atomärt
+- [ ] Logg och historik bevaras genom att revokerad biljett inte tas bort ur databasen
+
+---
+
+# UC-EV016 – Arrangör ser sin arrangörsbiljett
+
+## Sammanfattning
+En arrangör ser sin arrangörsbiljett i "Mina biljetter" tillsammans med övriga biljetter, men kan inte själv avboka den.
+
+## Aktör
+Arrangör (autentiserad)
+
+## Förutsättningar
+- Arrangören är autentiserad
+- Arrangören har biljetter kopplade till sitt `PersonId` för aktuell upplaga
+
+## Flöde
+1. Arrangören öppnar "Mina biljetter" i publika appen
+2. Systemet hämtar alla `Ticket` kopplade till arrangörens `PersonId` för aktuell upplaga
+3. Biljetter vars `TicketType` har `IsOrganizerTicket = true` visas i listan tillsammans med övriga biljetter
+4. Avboka-knappen visas inte för arrangörsbiljetter
+
+## Affärsregler
+- Arrangören kan inte själv avboka en arrangörsbiljett
+- Revoked arrangörsbiljetter visas inte
+- Rätt biljetttypsinformation ska visas, till exempel namn, giltiga dagar och förmåner
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Arrangörsbiljetten syns i biljettvyn tillsammans med övriga biljetter
+- [ ] Ingen avboka-åtgärd finns tillgänglig på arrangörsbiljetter
+- [ ] Rätt biljetttypsinformation visas
+
+---
+
+## Domänförändringar för arrangörsbiljetter
+
+### TicketType (Registration BC)
+- Ny property: `bool IsOrganizerTicket` (default `false`)
+- Ingår i `allowedCategories`-logiken som vanligt, men tilldelas aldrig via självregistrering
+
+### Ticket (Registration BC)
+- Ny property: `Guid? EventId` för spårbarhet till vilket arrangemang biljetten tilldelades från
+- Ny metod: `static Ticket CreateOrganizerTicket(TicketTypeId, PersonId, EventId, EditionId)`
+- Ny domänmetod på aggregatroten: `AssignOrganizerTicket(PersonId, TicketTypeId)` och `RevokeOrganizerTicket(PersonId)`
+
+### Event (Event BC)
+- `Publish()` tar en optional parameter `IReadOnlyList<OrganizerTicketAssignment>`
+- Nytt value object: `record OrganizerTicketAssignment(PersonId PersonId, TicketTypeId TicketTypeId)`
+- Skickar `OrganizerTicketsAssigned` som domain event som Registration BC lyssnar på
+
+### Kommunikation mellan BC
+- `Event` ──`OrganizerTicketsAssigned`──▶ `Registration` för att skapa, byta eller revoka arrangörsbiljetter
+
+## Beslutade regler
+- Vid `EventCancelled` ska arrangörsbiljetten automatiskt revokeras om arrangören inte längre har några andra publicerade arrangemang i samma upplaga. Om arrangören fortfarande har andra publicerade arrangemang ska processen kräva ett explicit val för hur arrangörsbiljetten ska hanteras.
+- Medarrangörer ska ha samma regler för arrangörsbiljetter som huvudarrangören.
+
+## Öppna designfrågor
+- Ska `IsOrganizerTicket` dölja biljettypen från vanlig självregistrering helt? Förslaget är ja: arrangörsbiljetter ska bara synas i publiceringsvyn, admin-vyer och som information i arrangörsflödet.
+
+---
+
 # Promotionkoder (Registration-kontexten)
 
 ---
