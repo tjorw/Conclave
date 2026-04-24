@@ -33,7 +33,7 @@ public class GetStaffScheduleHandlerTests
     public async Task Handle_AllowsEditionScopeForStaffCoordinator()
     {
         var convention = CreateConventionWithAdmin(out _);
-        var edition = CreateEdition(convention.Id, out var staffCoordinatorId, out _);
+        var edition = CreateEdition(convention, out var staffCoordinatorId, out _);
         var dto = new StaffScheduleDto(edition.Id.Value, null, [], []);
 
         _currentUser.PersonId.Returns(staffCoordinatorId);
@@ -51,7 +51,7 @@ public class GetStaffScheduleHandlerTests
     public async Task Handle_AllowsStaffAreaResponsibleForOwnArea()
     {
         var convention = CreateConventionWithAdmin(out _);
-        var edition = CreateEdition(convention.Id, out _, out var areaResponsibleId);
+        var edition = CreateEdition(convention, out _, out var areaResponsibleId);
         var staffAreaId = edition.StaffAreas.Single().Id;
         var dto = new StaffScheduleDto(edition.Id.Value, staffAreaId.Value, [], []);
 
@@ -70,7 +70,7 @@ public class GetStaffScheduleHandlerTests
     public async Task Handle_AllowsConventionAdminToFilterSpecificStaffArea()
     {
         var convention = CreateConventionWithAdmin(out var adminId);
-        var edition = CreateEdition(convention.Id, out _, out _);
+        var edition = CreateEdition(convention, out _, out _);
         var staffAreaId = edition.StaffAreas.Single().Id;
         var dto = new StaffScheduleDto(edition.Id.Value, staffAreaId.Value, [], []);
 
@@ -89,7 +89,7 @@ public class GetStaffScheduleHandlerTests
     public async Task Handle_RejectsEditionScopeForStaffAreaResponsible()
     {
         var convention = CreateConventionWithAdmin(out _);
-        var edition = CreateEdition(convention.Id, out _, out var areaResponsibleId);
+        var edition = CreateEdition(convention, out _, out var areaResponsibleId);
 
         _currentUser.PersonId.Returns(areaResponsibleId);
         _editionRepository.GetByIdWithStructureAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
@@ -103,7 +103,7 @@ public class GetStaffScheduleHandlerTests
     public async Task Handle_RejectsUnknownStaffAreaFilter()
     {
         var convention = CreateConventionWithAdmin(out var adminId);
-        var edition = CreateEdition(convention.Id, out _, out _);
+        var edition = CreateEdition(convention, out _, out _);
         var unknownStaffAreaId = Guid.NewGuid();
 
         _currentUser.PersonId.Returns(adminId);
@@ -120,7 +120,7 @@ public class GetStaffScheduleHandlerTests
     public async Task Handle_RejectsStaffAreaResponsibleForOtherArea()
     {
         var convention = CreateConventionWithAdmin(out _);
-        var edition = CreateEditionWithTwoAreas(convention.Id, out _, out var firstResponsibleId, out var secondStaffAreaId);
+        var edition = CreateEditionWithTwoAreas(convention, out _, out var firstResponsibleId, out var secondStaffAreaId);
 
         _currentUser.PersonId.Returns(firstResponsibleId);
         _editionRepository.GetByIdWithStructureAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
@@ -138,45 +138,45 @@ public class GetStaffScheduleHandlerTests
         return convention;
     }
 
-    private static Edition CreateEdition(ConventionId conventionId, out PersonId staffCoordinatorId, out PersonId areaResponsibleId)
+    private static Edition CreateEdition(ConventionEntity convention, out PersonId staffCoordinatorId, out PersonId areaResponsibleId)
     {
-        staffCoordinatorId = PersonId.New();
-        var eventCoordinatorId = PersonId.New();
-        areaResponsibleId = PersonId.New();
+        var staffCoordinator = convention.CreatePerson("Staff Coordinator", "staff@example.com");
+        var eventCoordinator = convention.CreatePerson("Event Coordinator", "event@example.com");
+        var areaResponsible = convention.CreatePerson("Area Responsible", "area@example.com");
+        staffCoordinatorId = staffCoordinator.Id;
+        areaResponsibleId = areaResponsible.Id;
 
-        var edition = new Edition(
-            EditionId.New(),
-            conventionId,
+        var edition = convention.CreateEdition(
             "Edition",
             new DatePeriod(new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 3)),
-            staffCoordinatorId,
-            eventCoordinatorId);
+            staffCoordinator.Id,
+            eventCoordinator.Id);
 
         edition.CreateStaffArea("Reception", areaResponsibleId, null);
         return edition;
     }
 
     private static Edition CreateEditionWithTwoAreas(
-        ConventionId conventionId,
+        ConventionEntity convention,
         out PersonId staffCoordinatorId,
         out PersonId firstAreaResponsibleId,
         out StaffAreaId secondStaffAreaId)
     {
-        staffCoordinatorId = PersonId.New();
-        var eventCoordinatorId = PersonId.New();
-        firstAreaResponsibleId = PersonId.New();
-        var secondAreaResponsibleId = PersonId.New();
+        var staffCoordinator = convention.CreatePerson("Staff Coordinator", "staff@example.com");
+        var eventCoordinator = convention.CreatePerson("Event Coordinator", "event@example.com");
+        var firstAreaResponsible = convention.CreatePerson("First Area Responsible", "first-area@example.com");
+        var secondAreaResponsible = convention.CreatePerson("Second Area Responsible", "second-area@example.com");
+        staffCoordinatorId = staffCoordinator.Id;
+        firstAreaResponsibleId = firstAreaResponsible.Id;
 
-        var edition = new Edition(
-            EditionId.New(),
-            conventionId,
+        var edition = convention.CreateEdition(
             "Edition",
             new DatePeriod(new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 3)),
-            staffCoordinatorId,
-            eventCoordinatorId);
+            staffCoordinator.Id,
+            eventCoordinator.Id);
 
         edition.CreateStaffArea("Reception", firstAreaResponsibleId, null);
-        secondStaffAreaId = edition.CreateStaffArea("Info", secondAreaResponsibleId, null).Id;
+        secondStaffAreaId = edition.CreateStaffArea("Info", secondAreaResponsible.Id, null).Id;
         return edition;
     }
 }
