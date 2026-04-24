@@ -1,75 +1,62 @@
-@if (loading()) {
-  <div class="spinner-wrapper"><mat-spinner diameter="48" /></div>
-} @else if (error()) {
-  <p class="error-message">{{ error() }}</p>
-} @else if (edition(); as e) {
-  <div class="page-header">
-    <div class="header-row">
-      <h1 class="page-title">Funktionsområden</h1>
-      <button mat-flat-button color="primary" (click)="openNew()" [disabled]="saving()">
-        <mat-icon>add</mat-icon>
-        Lägg till funktionsområde
-      </button>
-    </div>
-    <p class="page-subtitle">{{ e.name }}</p>
-  </div>
+<div class="page-header">
+  <h1 class="page-title">Funktionsområden</h1>
+  <p class="page-subtitle">{{ edition()?.name }}</p>
+</div>
 
-  @if (e.staffAreas.length > 0) {
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>
-            <button type="button" class="sort-header" (click)="setSort('name')">
-              Namn <mat-icon>{{ sortIcon('name') }}</mat-icon>
-            </button>
-          </th>
-          <th>
-            <button type="button" class="sort-header" (click)="setSort('description')">
-              Beskrivning <mat-icon>{{ sortIcon('description') }}</mat-icon>
-            </button>
-          </th>
-          <th>
-            <button type="button" class="sort-header" (click)="setSort('responsible')">
-              Ansvarig <mat-icon>{{ sortIcon('responsible') }}</mat-icon>
-            </button>
-          </th>
-          <th>
-            <button type="button" class="sort-header" (click)="setSort('stations')">
-              Stationer <mat-icon>{{ sortIcon('stations') }}</mat-icon>
-            </button>
-          </th>
-          <th class="actions-col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (area of sortedAreas(e.staffAreas); track area.id) {
-          <tr class="navigable-row" (click)="openDetail(area.id)">
-            <td>{{ area.name }}</td>
-            <td class="muted">{{ area.description || '–' }}</td>
-            <td>{{ personName(area.responsibleId) }}</td>
-            <td>
-              <div class="station-list">
-                @for (s of stationsForArea(area); track s.id) {
-                  <span class="station-chip">{{ s.name }}</span>
-                }
-                @if (stationsForArea(area).length === 0) {
-                  <span class="muted">–</span>
-                }
-              </div>
-            </td>
-            <td class="row-actions" (click)="$event.stopPropagation()">
-              <button mat-icon-button (click)="openDetail(area.id)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button color="warn" (click)="delete(area)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td>
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+<div class="action-bar">
+  <span class="spacer"></span>
+  <button mat-flat-button color="primary" (click)="openNew()" [disabled]="saving()">
+    <mat-icon>add</mat-icon>
+    Lägg till funktionsområde
+  </button>
+</div>
+
+@if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else {
+  <mat-card>
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th><button type="button" class="sort-header" (click)="setSort('name')">Namn <mat-icon>{{ sortIcon('name') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('description')">Beskrivning <mat-icon>{{ sortIcon('description') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('responsible')">Ansvarig <mat-icon>{{ sortIcon('responsible') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('stations')">Stationer <mat-icon>{{ sortIcon('stations') }}</mat-icon></button></th>
+            <th class="actions-col"></th>
           </tr>
-        }
-      </tbody>
-    </table>
-  } @else {
-    <p class="empty-hint">Inga funktionsområden tillagda.</p>
-  }
+        </thead>
+        <tbody>
+          @for (area of sortedAreas(edition()?.staffAreas ?? []); track area.id) {
+            <tr class="navigable-row" (click)="openDetail(area.id)">
+              <td>{{ area.name }}</td>
+              <td class="muted">{{ area.description || '–' }}</td>
+              <td>{{ personName(area.responsibleId) }}</td>
+              <td>
+                <div class="station-list">
+                  @for (s of stationsForArea(area); track s.id) {
+                    <span class="station-chip">{{ s.name }}</span>
+                  } @empty {
+                    <span class="muted">–</span>
+                  }
+                </div>
+              </td>
+              <td class="row-actions" (click)="$event.stopPropagation()">
+                <button mat-icon-button color="warn" (click)="delete(area)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
+                  <mat-icon>delete</mat-icon>
+                </button>
+                <mat-icon class="row-indicator">chevron_right</mat-icon>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="empty-cell">Inga funktionsområden tillagda.</td></tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
 }

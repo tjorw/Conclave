@@ -1,60 +1,52 @@
-@if (loading()) {
-  <div class="spinner-wrapper"><mat-spinner diameter="48" /></div>
-} @else if (error()) {
-  <p class="error-message">{{ error() }}</p>
-} @else if (edition(); as e) {
-  <div class="page-header">
-    <div class="header-row">
-      <h1 class="page-title">Kategorier</h1>
-      <button mat-flat-button color="primary" (click)="openNew()" [disabled]="saving()">
-        <mat-icon>add</mat-icon>
-        Lägg till kategori
-      </button>
-    </div>
-    <p class="page-subtitle">{{ e.name }}</p>
-  </div>
+<div class="page-header">
+  <h1 class="page-title">Kategorier</h1>
+  <p class="page-subtitle">{{ edition()?.name }}</p>
+</div>
 
-  @if (e.categories.length > 0) {
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>
-            <button type="button" class="sort-header" (click)="setSort('name')">
-              Namn <mat-icon>{{ sortIcon('name') }}</mat-icon>
-            </button>
-          </th>
-          <th>
-            <button type="button" class="sort-header" (click)="setSort('description')">
-              Beskrivning <mat-icon>{{ sortIcon('description') }}</mat-icon>
-            </button>
-          </th>
-          <th>
-            <button type="button" class="sort-header" (click)="setSort('responsible')">
-              Ansvarig <mat-icon>{{ sortIcon('responsible') }}</mat-icon>
-            </button>
-          </th>
-          <th class="actions-col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (c of sortedCategories(e.categories); track c.id) {
-          <tr class="navigable-row" (click)="openDetail(c.id)">
-            <td>{{ c.name }}</td>
-            <td class="muted">{{ c.description || '–' }}</td>
-            <td>{{ personName(c.responsibleId) }}</td>
-            <td class="row-actions" (click)="$event.stopPropagation()">
-              <button mat-icon-button (click)="openDetail(c.id)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button color="warn" (click)="delete(c)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td>
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+<div class="action-bar">
+  <span class="spacer"></span>
+  <button mat-flat-button color="primary" (click)="openNew()" [disabled]="saving()">
+    <mat-icon>add</mat-icon>
+    Lägg till kategori
+  </button>
+</div>
+
+@if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else {
+  <mat-card>
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th><button type="button" class="sort-header" (click)="setSort('name')">Namn <mat-icon>{{ sortIcon('name') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('description')">Beskrivning <mat-icon>{{ sortIcon('description') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('responsible')">Ansvarig <mat-icon>{{ sortIcon('responsible') }}</mat-icon></button></th>
+            <th class="actions-col"></th>
           </tr>
-        }
-      </tbody>
-    </table>
-  } @else {
-    <p class="empty-hint">Inga kategorier tillagda.</p>
-  }
+        </thead>
+        <tbody>
+          @for (c of sortedCategories(edition()?.categories ?? []); track c.id) {
+            <tr class="navigable-row" (click)="openDetail(c.id)">
+              <td>{{ c.name }}</td>
+              <td class="muted">{{ c.description || '–' }}</td>
+              <td>{{ personName(c.responsibleId) }}</td>
+              <td class="row-actions" (click)="$event.stopPropagation()">
+                <button mat-icon-button color="warn" (click)="delete(c)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
+                  <mat-icon>delete</mat-icon>
+                </button>
+                <mat-icon class="row-indicator">chevron_right</mat-icon>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="empty-cell">Inga kategorier tillagda.</td></tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
 }

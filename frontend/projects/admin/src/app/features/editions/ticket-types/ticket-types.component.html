@@ -1,72 +1,56 @@
-@if (loading()) {
-  <div class="spinner-wrapper"><mat-spinner diameter="48" /></div>
-} @else if (error()) {
-  <p class="error-message">{{ error() }}</p>
-} @else if (edition(); as e) {
-  <div class="page-header">
-    <div class="header-row">
-      <h1 class="page-title">Biljettyper</h1>
-      <button mat-flat-button color="primary" (click)="openNew()" [disabled]="saving()">
-        <mat-icon>add</mat-icon>
-        Lägg till biljetttyp
-      </button>
-    </div>
-    <p class="page-subtitle">{{ e.name }}</p>
-  </div>
+<div class="page-header">
+  <h1 class="page-title">Biljettyper</h1>
+  <p class="page-subtitle">{{ edition()?.name }}</p>
+</div>
 
-  @if (ticketTypes().length > 0) {
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>
-            <button type="button" class="sort-header" (click)="setSort('name')">
-              Namn <mat-icon>{{ sortIcon('name') }}</mat-icon>
-            </button>
-          </th>
-          <th>
-            <button type="button" class="sort-header" (click)="setSort('category')">
-              Kategori <mat-icon>{{ sortIcon('category') }}</mat-icon>
-            </button>
-          </th>
-          <th>
-            <button type="button" class="sort-header" (click)="setSort('validDays')">
-              Giltiga dagar <mat-icon>{{ sortIcon('validDays') }}</mat-icon>
-            </button>
-          </th>
-          <th>
-            <button type="button" class="sort-header" (click)="setSort('allowedCategories')">
-              Tillåtna kategorier <mat-icon>{{ sortIcon('allowedCategories') }}</mat-icon>
-            </button>
-          </th>
-          <th class="align-right">
-            <button type="button" class="sort-header" (click)="setSort('price')">
-              Pris <mat-icon>{{ sortIcon('price') }}</mat-icon>
-            </button>
-          </th>
-          <th class="actions-col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (tt of sortedTicketTypes(); track tt.id) {
-          <tr class="navigable-row" (click)="openDetail(tt.id)">
-            <td>{{ tt.name }}</td>
-            <td>{{ categoryLabel(tt.category) }}</td>
-            <td class="muted">{{ validDaysLabel(tt.validDays) }}</td>
-            <td class="muted">{{ allowedCategoriesLabel(tt.allowedCategories) }}</td>
-            <td class="align-right">{{ formatPrice(tt.price) }}</td>
-            <td class="row-actions" (click)="$event.stopPropagation()">
-              <button mat-icon-button (click)="openDetail(tt.id)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button color="warn" (click)="delete(tt)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td>
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+<div class="action-bar">
+  <span class="spacer"></span>
+  <button mat-flat-button color="primary" (click)="openNew()" [disabled]="saving()">
+    <mat-icon>add</mat-icon>
+    Lägg till biljetttyp
+  </button>
+</div>
+
+@if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else {
+  <mat-card>
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th><button type="button" class="sort-header" (click)="setSort('name')">Namn <mat-icon>{{ sortIcon('name') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('category')">Kategori <mat-icon>{{ sortIcon('category') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('validDays')">Giltiga dagar <mat-icon>{{ sortIcon('validDays') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('allowedCategories')">Tillåtna kategorier <mat-icon>{{ sortIcon('allowedCategories') }}</mat-icon></button></th>
+            <th class="align-right"><button type="button" class="sort-header" (click)="setSort('price')">Pris <mat-icon>{{ sortIcon('price') }}</mat-icon></button></th>
+            <th class="actions-col"></th>
           </tr>
-        }
-      </tbody>
-    </table>
-  } @else {
-    <p class="empty-hint">Inga biljettyper tillagda.</p>
-  }
+        </thead>
+        <tbody>
+          @for (tt of sortedTicketTypes(); track tt.id) {
+            <tr class="navigable-row" (click)="openDetail(tt.id)">
+              <td>{{ tt.name }}</td>
+              <td>{{ categoryLabel(tt.category) }}</td>
+              <td class="muted">{{ validDaysLabel(tt.validDays) }}</td>
+              <td class="muted">{{ allowedCategoriesLabel(tt.allowedCategories) }}</td>
+              <td class="align-right">{{ formatPrice(tt.price) }}</td>
+              <td class="row-actions" (click)="$event.stopPropagation()">
+                <button mat-icon-button color="warn" (click)="delete(tt)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
+                  <mat-icon>delete</mat-icon>
+                </button>
+                <mat-icon class="row-indicator">chevron_right</mat-icon>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="empty-cell">Inga biljettyper tillagda.</td></tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
 }
