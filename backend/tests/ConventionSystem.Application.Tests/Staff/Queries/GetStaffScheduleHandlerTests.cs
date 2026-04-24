@@ -4,6 +4,7 @@ using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Staff.Queries;
 using ConventionSystem.Application.Staff.Queries.GetStaffSchedule;
+using ConventionEntity = ConventionSystem.Domain.Convention.Aggregates.Convention;
 using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
@@ -129,9 +130,9 @@ public class GetStaffScheduleHandlerTests
             _handler.Handle(new GetStaffScheduleQuery(edition.Id.Value, secondStaffAreaId.Value), default));
     }
 
-    private static Convention CreateConventionWithAdmin(out PersonId adminId)
+    private static ConventionEntity CreateConventionWithAdmin(out PersonId adminId)
     {
-        var convention = new Convention(ConventionId.New(), "Konvent", "konvent");
+        var convention = new ConventionEntity(ConventionId.New(), "Konvent", "konvent");
         adminId = PersonId.New();
         convention.AddAdministrator(adminId, adminId);
         return convention;
