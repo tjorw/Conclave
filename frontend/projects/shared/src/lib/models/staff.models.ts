@@ -52,7 +52,7 @@ export interface StaffApplicationSummaryDto {
   interestDescription: string;
   status: StaffApplicationStatus;
   createdAt: string;
-  stationPreferenceIds: string[];
+  staffAreaPreferenceIds: string[];
   availabilities: StaffApplicationAvailabilityDto[];
 }
 

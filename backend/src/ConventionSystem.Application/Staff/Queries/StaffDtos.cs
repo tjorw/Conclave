@@ -49,7 +49,7 @@ public record StaffApplicationSummaryDto(
     string InterestDescription,
     string Status,
     DateTimeOffset CreatedAt,
-    IReadOnlyList<Guid> StationPreferenceIds,
+    IReadOnlyList<Guid> StaffAreaPreferenceIds,
     IReadOnlyList<StaffApplicationAvailabilityDto> Availabilities);
 
 public record StaffScheduleDto(

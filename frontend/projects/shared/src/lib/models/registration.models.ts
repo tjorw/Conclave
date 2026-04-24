@@ -76,7 +76,7 @@ export interface StaffApplicationDto {
   status: StaffApplicationStatus;
   appliedAt: string;
   availabilities: AvailabilityDto[];
-  stationPreferences: StationPreferenceDto[];
+  staffAreaPreferences: StaffAreaPreferenceDto[];
 }
 
 export interface AvailabilityDto {
@@ -85,8 +85,8 @@ export interface AvailabilityDto {
   end: string;
 }
 
-export interface StationPreferenceDto {
-  stationId: string;
+export interface StaffAreaPreferenceDto {
+  staffAreaId: string;
   rank: number;
 }
 

@@ -815,7 +815,7 @@ export class StaffAreasComponent {
         warnings.push(this.PAGE.applicationNotApprovedWarning(this.applicationStatusLabel(application.status).toLowerCase()));
       }
 
-      if (application.stationPreferenceIds.length > 0 && !application.stationPreferenceIds.includes(selected.stationId)) {
+      if (application.staffAreaPreferenceIds.length > 0 && !application.staffAreaPreferenceIds.includes(selected.areaId)) {
         warnings.push(this.PAGE.stationPreferenceWarning);
       }
 

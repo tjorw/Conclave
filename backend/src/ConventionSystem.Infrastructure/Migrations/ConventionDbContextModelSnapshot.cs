@@ -1359,7 +1359,7 @@ namespace ConventionSystem.Infrastructure.Migrations
 
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.StaffApplication", b =>
                 {
-                    b.OwnsMany("ConventionSystem.Domain.Registration.Entities.StationPreference", "StationPreferences", b1 =>
+                    b.OwnsMany("ConventionSystem.Domain.Registration.Entities.StaffAreaPreference", "StaffAreaPreferences", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
@@ -1369,9 +1369,9 @@ namespace ConventionSystem.Infrastructure.Migrations
                             b1.Property<Guid>("StaffApplicationId")
                                 .HasColumnType("uniqueidentifier");
 
-                            b1.Property<Guid>("StationId")
+                            b1.Property<Guid>("StaffAreaId")
                                 .HasColumnType("uniqueidentifier")
-                                .HasColumnName("station_id");
+                                .HasColumnName("staff_area_id");
 
                             b1.Property<Guid>("TenantId")
                                 .HasColumnType("uniqueidentifier")
@@ -1383,13 +1383,13 @@ namespace ConventionSystem.Infrastructure.Migrations
 
                             b1.HasIndex("TenantId");
 
-                            b1.ToTable("staff_application_stations", (string)null);
+                            b1.ToTable("staff_application_staff_areas", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("StaffApplicationId");
                         });
 
-                    b.Navigation("StationPreferences");
+                    b.Navigation("StaffAreaPreferences");
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Entities.Availability", b =>

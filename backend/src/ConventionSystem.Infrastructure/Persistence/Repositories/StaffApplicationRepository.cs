@@ -44,7 +44,7 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
     public async Task<IReadOnlyList<StaffApplicationSummaryDto>> ListByEditionIdAsync(EditionId editionId, CancellationToken ct = default)
     {
         var applications = await db.StaffApplications
-            .Include(a => a.StationPreferences)
+            .Include(a => a.StaffAreaPreferences)
             .Include(a => a.Availabilities)
             .Where(a => a.EditionId == editionId)
             .OrderBy(a => a.CreatedAt)
@@ -62,7 +62,7 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
             a.InterestDescription,
             a.Status.ToString(),
             a.CreatedAt,
-            a.StationPreferences.Select(p => p.StationId.Value).ToList(),
+            a.StaffAreaPreferences.Select(p => p.StaffAreaId.Value).ToList(),
             a.Availabilities.OrderBy(av => av.TimeSlot.Start)
                             .Select(av => new StaffApplicationAvailabilityDto(av.TimeSlot.Start, av.TimeSlot.End))
                             .ToList()

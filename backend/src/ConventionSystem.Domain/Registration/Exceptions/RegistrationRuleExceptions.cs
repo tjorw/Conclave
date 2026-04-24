@@ -22,15 +22,15 @@ public sealed class AvailabilityNotFoundException()
         "Tillgängligheten hittades inte.",
         "availability_not_found");
 
-public sealed class DuplicateStationPreferenceException()
+public sealed class DuplicateStaffAreaPreferenceException()
     : DomainRuleViolationException(
-        "Stationsönskemål för denna station finns redan.",
-        "duplicate_station_preference");
+        "Staffområdesönskemål för detta staffområde finns redan.",
+        "duplicate_staff_area_preference");
 
-public sealed class StationPreferenceNotFoundException()
+public sealed class StaffAreaPreferenceNotFoundException()
     : DomainRuleViolationException(
-        "Stationsönskemålet hittades inte.",
-        "station_preference_not_found");
+        "Staffområdesönskemålet hittades inte.",
+        "staff_area_preference_not_found");
 
 public sealed class StaffApplicationCannotBeAcceptedInCurrentStateException()
     : DomainRuleViolationException(

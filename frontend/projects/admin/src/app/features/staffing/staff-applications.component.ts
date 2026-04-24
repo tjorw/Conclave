@@ -11,13 +11,13 @@ import { ERROR } from '../../labels/errors.labels';
 import { TOOLTIP } from '../../labels/ui.labels';
 import {
   ConventionService, EditionDto, StaffApplicationSummaryDto, StaffService,
-  StationDto, STAFF_APPLICATION_STATUS_CHIP, STAFF_APPLICATION_STATUS_LABEL,
+  StaffAreaDto, STAFF_APPLICATION_STATUS_CHIP, STAFF_APPLICATION_STATUS_LABEL,
   toErrorMessage,
 } from 'shared';
 import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
 
 type StatusFilter = 'all' | 'pending' | 'accepted' | 'rejected';
-type StaffApplicationSortKey = 'person' | 'interest' | 'stations' | 'availability' | 'created' | 'status';
+type StaffApplicationSortKey = 'person' | 'interest' | 'staffAreas' | 'availability' | 'created' | 'status';
 
 @Component({
   selector: 'app-staff-applications',
@@ -65,7 +65,7 @@ export class StaffApplicationsComponent {
     sortBy(this.filteredApplications(), this.applicationSort(), {
       person: app => app.personName ?? app.personId,
       interest: app => app.interestDescription,
-      stations: app => app.stationPreferenceIds.map(id => this.stationName(id)).join(', '),
+      staffAreas: app => app.staffAreaPreferenceIds.map(id => this.staffAreaName(id)).join(', '),
       availability: app => app.availabilities.map(av => `${av.start}-${av.end}`).join(', '),
       created: app => app.createdAt,
       status: app => this.applicationStatusLabel(app.status),
@@ -146,8 +146,8 @@ export class StaffApplicationsComponent {
     return STAFF_APPLICATION_STATUS_CHIP[status] ?? 'chip chip-grey';
   }
 
-  stationName(stationId: string): string {
-    return this.edition()?.stations?.find((s: StationDto) => s.id === stationId)?.name ?? stationId;
+  staffAreaName(staffAreaId: string): string {
+    return this.edition()?.staffAreas?.find((s: StaffAreaDto) => s.id === staffAreaId)?.name ?? staffAreaId;
   }
 
   formatAvailability(start: string, end: string): string {

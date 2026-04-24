@@ -12,7 +12,7 @@ namespace ConventionSystem.Domain.Registration.Aggregates;
 public sealed class StaffApplication : AggregateRoot
 {
     private readonly List<Availability> _availabilities = [];
-    private readonly List<StationPreference> _stationPreferences = [];
+    private readonly List<StaffAreaPreference> _staffAreaPreferences = [];
 
     public StaffApplicationId Id { get; private set; }
     public PersonId PersonId { get; private set; }
@@ -22,7 +22,7 @@ public sealed class StaffApplication : AggregateRoot
     public DateTimeOffset CreatedAt { get; private set; }
 
     public IReadOnlyList<Availability> Availabilities => _availabilities.AsReadOnly();
-    public IReadOnlyList<StationPreference> StationPreferences => _stationPreferences.AsReadOnly();
+    public IReadOnlyList<StaffAreaPreference> StaffAreaPreferences => _staffAreaPreferences.AsReadOnly();
 
     private StaffApplication() { }
 
@@ -55,21 +55,21 @@ public sealed class StaffApplication : AggregateRoot
         _availabilities.Remove(availability);
     }
 
-    public StationPreference AddStationPreference(StationId stationId)
+    public StaffAreaPreference AddStaffAreaPreference(StaffAreaId staffAreaId)
     {
-        if (_stationPreferences.Any(s => s.StationId == stationId))
-            throw new DuplicateStationPreferenceException();
+        if (_staffAreaPreferences.Any(s => s.StaffAreaId == staffAreaId))
+            throw new DuplicateStaffAreaPreferenceException();
 
-        var preference = new StationPreference(stationId);
-        _stationPreferences.Add(preference);
+        var preference = new StaffAreaPreference(staffAreaId);
+        _staffAreaPreferences.Add(preference);
         return preference;
     }
 
-    public void RemoveStationPreference(StationId stationId)
+    public void RemoveStaffAreaPreference(StaffAreaId staffAreaId)
     {
-        var preference = _stationPreferences.FirstOrDefault(s => s.StationId == stationId)
-            ?? throw new StationPreferenceNotFoundException();
-        _stationPreferences.Remove(preference);
+        var preference = _staffAreaPreferences.FirstOrDefault(s => s.StaffAreaId == staffAreaId)
+            ?? throw new StaffAreaPreferenceNotFoundException();
+        _staffAreaPreferences.Remove(preference);
     }
 
     public void Accept(PersonId performedById)

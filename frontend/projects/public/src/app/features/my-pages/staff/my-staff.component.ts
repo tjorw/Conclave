@@ -12,7 +12,7 @@ import {
   MyStaffApplicationDto,
   RegistrationService,
   STAFF_APPLICATION_STATUS_LABEL,
-  StationDto,
+  StaffAreaDto,
   toErrorMessage,
 } from 'shared';
 import { EditionService } from '../../../services/edition.service';
@@ -44,7 +44,7 @@ export class MyStaffComponent implements OnInit {
   readonly loading = signal(true);
   readonly submitting = signal(false);
   readonly error = signal<string | null>(null);
-  readonly stations = signal<StationDto[]>([]);
+  readonly staffAreas = signal<StaffAreaDto[]>([]);
   readonly application = signal<MyStaffApplicationDto | null>(null);
   readonly assignedShifts = signal<MyAssignedShiftSummaryDto[]>([]);
   readonly editionDateRange = signal<EditionDateRange | null>(null);
@@ -61,7 +61,7 @@ export class MyStaffComponent implements OnInit {
   readonly applicationForm = this.fb.group({
     interestDescription: this.fb.control('', { validators: Validators.required, nonNullable: true }),
     availabilityDates: this.fb.control<string[]>([], { nonNullable: true }),
-    stationIds: this.fb.control<string[]>([], { nonNullable: true }),
+    staffAreaIds: this.fb.control<string[]>([], { nonNullable: true }),
   });
 
   ngOnInit(): void {
@@ -78,12 +78,12 @@ export class MyStaffComponent implements OnInit {
     return 'status-chip orange';
   }
 
-  isStationSelected(stationId: string): boolean {
-    return this.applicationForm.controls.stationIds.value.includes(stationId);
+  isStaffAreaSelected(staffAreaId: string): boolean {
+    return this.applicationForm.controls.staffAreaIds.value.includes(staffAreaId);
   }
 
-  toggleStation(stationId: string, checked: boolean): void {
-    this.updateStringSelection(this.applicationForm.controls.stationIds, stationId, checked);
+  toggleStaffArea(staffAreaId: string, checked: boolean): void {
+    this.updateStringSelection(this.applicationForm.controls.staffAreaIds, staffAreaId, checked);
   }
 
   isAvailabilityDateSelected(date: string): boolean {
@@ -114,9 +114,9 @@ export class MyStaffComponent implements OnInit {
       return;
     }
 
-    const selectedStationIds = this.applicationForm.controls.stationIds.value;
-    if (selectedStationIds.length === 0) {
-      this.error.set('Välj minst en stationspreferens.');
+    const selectedStaffAreaIds = this.applicationForm.controls.staffAreaIds.value;
+    if (selectedStaffAreaIds.length === 0) {
+      this.error.set('Välj minst ett staffområde.');
       return;
     }
 
@@ -144,8 +144,8 @@ export class MyStaffComponent implements OnInit {
         await firstValueFrom(this.regSvc.addStaffAvailability(submitResult.id, range.from, range.to));
       }
 
-      for (const stationId of selectedStationIds) {
-        await firstValueFrom(this.regSvc.addStaffStationPreference(submitResult.id, stationId));
+      for (const staffAreaId of selectedStaffAreaIds) {
+        await firstValueFrom(this.regSvc.addStaffAreaPreference(submitResult.id, staffAreaId));
       }
 
       await this.loadApplicationState(editionId);
@@ -198,7 +198,7 @@ export class MyStaffComponent implements OnInit {
       shifts: this.regSvc.getMyAssignedShifts(editionId).pipe(catchError(() => of([] as MyAssignedShiftSummaryDto[]))),
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: result => {
-        this.stations.set(result.edition?.stations ?? []);
+        this.staffAreas.set(result.edition?.staffAreas ?? []);
         this.application.set(result.application);
         this.editionDateRange.set(
           result.edition
@@ -301,7 +301,7 @@ export class MyStaffComponent implements OnInit {
   }
 
   private updateStringSelection(
-    control: typeof this.applicationForm.controls.stationIds,
+    control: typeof this.applicationForm.controls.staffAreaIds,
     value: string,
     checked: boolean
   ): void {

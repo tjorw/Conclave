@@ -1,7 +1,7 @@
 using ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
 using ConventionSystem.Application.Registration.Commands.AddAvailability;
 using ConventionSystem.Application.Registration.Commands.AddStaffMember;
-using ConventionSystem.Application.Registration.Commands.AddStationPreference;
+using ConventionSystem.Application.Registration.Commands.AddStaffAreaPreference;
 using ConventionSystem.Application.Registration.Commands.CancelSessionRegistration;
 using ConventionSystem.Application.Registration.Commands.CancelOwnTicket;
 using ConventionSystem.Application.Registration.Commands.CancelVisitorRegistration;
@@ -18,7 +18,7 @@ using ConventionSystem.Application.Registration.Commands.RegisterForSession;
 using ConventionSystem.Application.Registration.Commands.RegisterManualTicketPayment;
 using ConventionSystem.Application.Registration.Commands.RejectStaffApplication;
 using ConventionSystem.Application.Registration.Commands.RemoveAvailability;
-using ConventionSystem.Application.Registration.Commands.RemoveStationPreference;
+using ConventionSystem.Application.Registration.Commands.RemoveStaffAreaPreference;
 using ConventionSystem.Application.Registration.Commands.RevokeTicket;
 using ConventionSystem.Application.Registration.Commands.SubmitStaffApplication;
 using ConventionSystem.Application.Registration.Commands.SubmitVisitorRegistration;
@@ -153,18 +153,18 @@ public static class RegistrationEndpoints
             });
 
         // UC-SA004: Lägg till stationsönskemål
-        staffApps.MapPost("/station-preferences",
-            async (Guid applicationId, StationPreferenceRequest request, ISender sender, CancellationToken ct) =>
+        staffApps.MapPost("/staff-area-preferences",
+            async (Guid applicationId, StaffAreaPreferenceRequest request, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new AddStationPreferenceCommand(applicationId, request.StationId), ct);
+                await sender.Send(new AddStaffAreaPreferenceCommand(applicationId, request.StaffAreaId), ct);
                 return Results.NoContent();
             });
 
         // UC-SA005: Ta bort stationsönskemål
-        staffApps.MapDelete("/station-preferences/{stationId:guid}",
-            async (Guid applicationId, Guid stationId, ISender sender, CancellationToken ct) =>
+        staffApps.MapDelete("/staff-area-preferences/{staffAreaId:guid}",
+            async (Guid applicationId, Guid staffAreaId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new RemoveStationPreferenceCommand(applicationId, stationId), ct);
+                await sender.Send(new RemoveStaffAreaPreferenceCommand(applicationId, staffAreaId), ct);
                 return Results.NoContent();
             });
 
@@ -365,6 +365,6 @@ public record RedeemPromotionCodeRequest(string Code);
 public record IssueTicketRequest(Guid PersonId, Guid TicketTypeId);
 public record SubmitStaffApplicationRequest(string InterestDescription);
 public record AddAvailabilityRequest(DateTime From, DateTime To);
-public record StationPreferenceRequest(Guid StationId);
+public record StaffAreaPreferenceRequest(Guid StaffAreaId);
 public record RegisterForSessionRequest(Guid TicketId);
 public record AddStaffMemberRequest(string Name, string Email, string? Phone, string? Note);

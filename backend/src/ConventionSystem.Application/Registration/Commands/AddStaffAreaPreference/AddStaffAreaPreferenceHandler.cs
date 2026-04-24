@@ -6,18 +6,18 @@ using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Ids;
 
-namespace ConventionSystem.Application.Registration.Commands.AddStationPreference;
+namespace ConventionSystem.Application.Registration.Commands.AddStaffAreaPreference;
 
-public sealed class AddStationPreferenceHandler(
+public sealed class AddStaffAreaPreferenceHandler(
     IStaffApplicationRepository staffApplicationRepository,
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository)
-    : CommandHandler<AddStationPreferenceCommand>
+    : CommandHandler<AddStaffAreaPreferenceCommand>
 {
-    protected override async Task ExecuteAsync(AddStationPreferenceCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(AddStaffAreaPreferenceCommand command, CancellationToken ct)
     {
         var applicationId = new StaffApplicationId(command.StaffApplicationId);
-        var stationId = new StationId(command.StationId);
+        var staffAreaId = new StaffAreaId(command.StaffAreaId);
 
         var context = await StaffApplicationContextLoader.LoadWithDetailsAsync(
             staffApplicationRepository,
@@ -29,10 +29,10 @@ public sealed class AddStationPreferenceHandler(
         var edition = await editionRepository.GetByIdWithStructureAsync(context.Application.EditionId, ct)
             ?? throw new ResourceNotFoundException("Upplaga", context.Application.EditionId.Value.ToString());
 
-        if (!edition.Stations.Any(s => s.Id == stationId))
-            throw new DomainRuleViolationException("Stationen hittades inte på denna upplaga.");
+        if (!edition.StaffAreas.Any(s => s.Id == staffAreaId))
+            throw new DomainRuleViolationException("Staffomradet hittades inte pa denna upplaga.");
 
-        context.Application.AddStationPreference(stationId);
+        context.Application.AddStaffAreaPreference(staffAreaId);
         await staffApplicationRepository.SaveAsync(ct);
     }
 }

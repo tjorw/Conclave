@@ -62,16 +62,16 @@ public sealed class StaffApplicationConfiguration : IEntityTypeConfiguration<Sta
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.OwnsMany(a => a.StationPreferences, sp =>
+        builder.OwnsMany(a => a.StaffAreaPreferences, sp =>
         {
-            sp.ToTable("staff_application_stations");
+            sp.ToTable("staff_application_staff_areas");
             sp.WithOwner().HasForeignKey("StaffApplicationId");
             sp.Property<Guid>("Id").HasDefaultValueSql("newsequentialid()");
             sp.HasKey("Id");
             sp.Property<Guid>("TenantId").HasColumnName("tenant_id");
-            sp.Property(p => p.StationId)
-                .HasConversion(id => id.Value, value => new StationId(value))
-                .HasColumnName("station_id");
+            sp.Property(p => p.StaffAreaId)
+                .HasConversion(id => id.Value, value => new StaffAreaId(value))
+                .HasColumnName("staff_area_id");
 
             sp.HasIndex("TenantId");
         });

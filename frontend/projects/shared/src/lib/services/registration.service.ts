@@ -130,16 +130,16 @@ export class RegistrationService {
     );
   }
 
-  addStaffStationPreference(applicationId: string, stationId: string) {
+  addStaffAreaPreference(applicationId: string, staffAreaId: string) {
     return this.http.post<void>(
-      `${this.env.apiBaseUrl}/staff-applications/${applicationId}/station-preferences`,
-      { stationId }
+      `${this.env.apiBaseUrl}/staff-applications/${applicationId}/staff-area-preferences`,
+      { staffAreaId }
     );
   }
 
-  removeStaffStationPreference(applicationId: string, stationId: string) {
+  removeStaffAreaPreference(applicationId: string, staffAreaId: string) {
     return this.http.delete<void>(
-      `${this.env.apiBaseUrl}/staff-applications/${applicationId}/station-preferences/${stationId}`
+      `${this.env.apiBaseUrl}/staff-applications/${applicationId}/staff-area-preferences/${staffAreaId}`
     );
   }
 

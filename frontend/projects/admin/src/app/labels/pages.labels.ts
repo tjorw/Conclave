@@ -210,7 +210,7 @@ export const STAFFING_OVERVIEW = {
   cancelAssignmentAction: 'Avboka tilldelning',
   missingApplicationWarning: 'Saknar funktionärsansökan.',
   applicationNotApprovedWarning: (status: string) => `Ansökan är ${status}.`,
-  stationPreferenceWarning: 'Stationen finns inte bland personens önskemål.',
+  stationPreferenceWarning: 'Staffområdet finns inte bland personens önskemål.',
   noAvailabilityWarning: 'Ingen registrerad tillgänglighet finns.',
   unavailableWarning: 'Passet ligger utanför registrerad tillgänglighet.',
   overlapWarning: (count: number) => count === 1

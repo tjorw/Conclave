@@ -1,8 +1,7 @@
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
-using ConventionSystem.Application.Registration.Commands.AddStationPreference;
-using ConventionSystem.Domain.Common;
+using ConventionSystem.Application.Registration.Commands.RemoveStaffAreaPreference;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Registration.Aggregates;
@@ -11,20 +10,19 @@ using NSubstitute;
 
 namespace ConventionSystem.Application.Tests.Registration.Commands;
 
-public class AddStationPreferenceHandlerTests
+public class RemoveStaffAreaPreferenceHandlerTests
 {
     private readonly IStaffApplicationRepository _applicationRepo = Substitute.For<IStaffApplicationRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
-    private readonly AddStationPreferenceHandler _handler;
+    private readonly RemoveStaffAreaPreferenceHandler _handler;
 
-    public AddStationPreferenceHandlerTests()
+    public RemoveStaffAreaPreferenceHandlerTests()
     {
-        _handler = new AddStationPreferenceHandler(_applicationRepo, _editionRepo, _conventionRepo);
+        _handler = new RemoveStaffAreaPreferenceHandler(_applicationRepo, _editionRepo, _conventionRepo);
     }
 
-    private (StaffApplication application, Domain.Convention.Aggregates.Edition edition, Domain.Convention.Ids.StationId stationId, Domain.Convention.Aggregates.Convention convention)
-        Setup()
+    private (StaffApplication application, StaffAreaId staffAreaId) SetupWithPreference()
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
         var admin = convention.RegisterPerson("Admin", "admin@example.com");
@@ -33,40 +31,29 @@ public class AddStationPreferenceHandlerTests
         var evt = convention.CreatePerson("Event", "event@example.com");
         var period = new DatePeriod(new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3));
         var edition = convention.CreateEdition("Konvent 2027", period, staffCoord.Id, evt.Id);
-
         var staffArea = edition.CreateStaffArea("Reception", admin.Id);
-        var station = edition.CreateStation("Info-disk", staffArea.Id);
+        edition.CreateStation("Info-disk", staffArea.Id);
 
-        var applicant = convention.CreatePerson("Sokande", "applicant@example.com");
+        var applicant = convention.CreatePerson("Sökande", "applicant@example.com");
         var application = new StaffApplication(StaffApplicationId.New(), applicant.Id, edition.Id, "Intresserad");
+        application.AddStaffAreaPreference(staffArea.Id);
 
         _applicationRepo.GetByIdWithDetailsAsync(application.Id, Arg.Any<CancellationToken>()).Returns(application);
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
-        _editionRepo.GetByIdWithStructureAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
 
-        return (application, edition, station.Id, convention);
+        return (application, staffArea.Id);
     }
 
     [Fact]
-    public async Task Handle_ValidCommand_AddsPreferenceAndSaves()
+    public async Task Handle_ValidCommand_RemovesPreferenceAndSaves()
     {
-        var (application, _, stationId, _) = Setup();
+        var (application, staffAreaId) = SetupWithPreference();
 
-        await _handler.Handle(new AddStationPreferenceCommand(application.Id.Value, stationId.Value), default);
+        await _handler.Handle(new RemoveStaffAreaPreferenceCommand(application.Id.Value, staffAreaId.Value), default);
 
-        Assert.Single(application.StationPreferences);
+        Assert.Empty(application.StaffAreaPreferences);
         await _applicationRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task Handle_StationNotOnEdition_Throws()
-    {
-        var (application, _, _, _) = Setup();
-        var unknownStationId = StationId.New();
-
-        await Assert.ThrowsAsync<DomainRuleViolationException>(
-            () => _handler.Handle(new AddStationPreferenceCommand(application.Id.Value, unknownStationId.Value), default));
     }
 
     [Fact]
@@ -76,6 +63,6 @@ public class AddStationPreferenceHandlerTests
             .Returns((StaffApplication?)null);
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(
-            () => _handler.Handle(new AddStationPreferenceCommand(Guid.NewGuid(), Guid.NewGuid()), default));
+            () => _handler.Handle(new RemoveStaffAreaPreferenceCommand(Guid.NewGuid(), Guid.NewGuid()), default));
     }
 }

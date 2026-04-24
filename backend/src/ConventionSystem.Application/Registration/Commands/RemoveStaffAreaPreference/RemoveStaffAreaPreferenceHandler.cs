@@ -4,18 +4,18 @@ using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Ids;
 
-namespace ConventionSystem.Application.Registration.Commands.RemoveStationPreference;
+namespace ConventionSystem.Application.Registration.Commands.RemoveStaffAreaPreference;
 
-public sealed class RemoveStationPreferenceHandler(
+public sealed class RemoveStaffAreaPreferenceHandler(
     IStaffApplicationRepository staffApplicationRepository,
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository)
-    : CommandHandler<RemoveStationPreferenceCommand>
+    : CommandHandler<RemoveStaffAreaPreferenceCommand>
 {
-    protected override async Task ExecuteAsync(RemoveStationPreferenceCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(RemoveStaffAreaPreferenceCommand command, CancellationToken ct)
     {
         var applicationId = new StaffApplicationId(command.StaffApplicationId);
-        var stationId = new StationId(command.StationId);
+        var staffAreaId = new StaffAreaId(command.StaffAreaId);
 
         var context = await StaffApplicationContextLoader.LoadWithDetailsAsync(
             staffApplicationRepository,
@@ -24,7 +24,7 @@ public sealed class RemoveStationPreferenceHandler(
             applicationId,
             ct);
 
-        context.Application.RemoveStationPreference(stationId);
+        context.Application.RemoveStaffAreaPreference(staffAreaId);
         await staffApplicationRepository.SaveAsync(ct);
     }
 }

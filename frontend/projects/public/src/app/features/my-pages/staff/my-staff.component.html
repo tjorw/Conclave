@@ -63,19 +63,19 @@
           </div>
 
           <div class="field-group">
-            <p class="group-label">Stationspreferenser</p>
-            @if (stations().length === 0) {
-              <p class="empty-text">Inga stationer är upplagda ännu.</p>
+            <p class="group-label">Staffområden</p>
+            @if (staffAreas().length === 0) {
+              <p class="empty-text">Inga staffområden är upplagda ännu.</p>
             } @else {
               <div class="checkbox-grid">
-                @for (station of stations(); track station.id) {
+                @for (area of staffAreas(); track area.id) {
                   <label class="checkbox-card">
                     <input
                       type="checkbox"
-                      [checked]="isStationSelected(station.id)"
-                      (change)="toggleStation(station.id, $any($event.target).checked)"
+                      [checked]="isStaffAreaSelected(area.id)"
+                      (change)="toggleStaffArea(area.id, $any($event.target).checked)"
                     />
-                    <span>{{ station.name }}</span>
+                    <span>{{ area.name }}</span>
                   </label>
                 }
               </div>

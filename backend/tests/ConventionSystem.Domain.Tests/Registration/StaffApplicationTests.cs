@@ -1,4 +1,4 @@
-﻿using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Enums;
 using ConventionSystem.Domain.Registration.Exceptions;
@@ -97,23 +97,23 @@ public class StaffApplicationTests
     }
 
     [Fact]
-    public void AddStationPreference_AddsToList()
+    public void AddStaffAreaPreference_AddsToList()
     {
         var application = CreateApplication();
-        var stationId = StationId.New();
+        var staffAreaId = StaffAreaId.New();
 
-        application.AddStationPreference(stationId);
+        application.AddStaffAreaPreference(staffAreaId);
 
-        Assert.Single(application.StationPreferences);
+        Assert.Single(application.StaffAreaPreferences);
     }
 
     [Fact]
-    public void AddStationPreference_Duplicate_Throws()
+    public void AddStaffAreaPreference_Duplicate_Throws()
     {
         var application = CreateApplication();
-        var stationId = StationId.New();
-        application.AddStationPreference(stationId);
+        var staffAreaId = StaffAreaId.New();
+        application.AddStaffAreaPreference(staffAreaId);
 
-        Assert.Throws<DuplicateStationPreferenceException>(() => application.AddStationPreference(stationId));
+        Assert.Throws<DuplicateStaffAreaPreferenceException>(() => application.AddStaffAreaPreference(staffAreaId));
     }
 }

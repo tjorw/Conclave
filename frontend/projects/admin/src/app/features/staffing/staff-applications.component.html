@@ -34,7 +34,7 @@
           <tr>
             <th><button type="button" class="sort-header" (click)="setApplicationSort('person')">Person <mat-icon>{{ applicationSortIcon('person') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="setApplicationSort('interest')">Intressebeskrivning <mat-icon>{{ applicationSortIcon('interest') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setApplicationSort('stations')">Stationsönskemål <mat-icon>{{ applicationSortIcon('stations') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('staffAreas')">Staffomraden <mat-icon>{{ applicationSortIcon('staffAreas') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="setApplicationSort('availability')">Tillgänglighet <mat-icon>{{ applicationSortIcon('availability') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="setApplicationSort('created')">Inskickad <mat-icon>{{ applicationSortIcon('created') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="setApplicationSort('status')">Status <mat-icon>{{ applicationSortIcon('status') }}</mat-icon></button></th>
@@ -47,10 +47,10 @@
               <td><strong>{{ app.personName ?? app.personId }}</strong></td>
               <td class="description-cell">{{ app.interestDescription }}</td>
               <td>
-                @for (sid of app.stationPreferenceIds; track sid) {
-                  <span class="chip chip-grey station-chip">{{ stationName(sid) }}</span>
+                @for (areaId of app.staffAreaPreferenceIds; track areaId) {
+                  <span class="chip chip-grey station-chip">{{ staffAreaName(areaId) }}</span>
                 }
-                @if (app.stationPreferenceIds.length === 0) {
+                @if (app.staffAreaPreferenceIds.length === 0) {
                   <span class="muted-text">-</span>
                 }
               </td>
