@@ -1,0 +1,60 @@
+@if (loading()) {
+  <div class="spinner-wrapper"><mat-spinner diameter="48" /></div>
+} @else if (error()) {
+  <p class="error-message">{{ error() }}</p>
+} @else if (edition(); as e) {
+  <div class="page-header">
+    <div class="header-row">
+      <h1 class="page-title">Lokaler</h1>
+      <button mat-flat-button color="primary" (click)="openNew()" [disabled]="saving()">
+        <mat-icon>add</mat-icon>
+        Lägg till lokal
+      </button>
+    </div>
+    <p class="page-subtitle">{{ e.name }}</p>
+  </div>
+
+  @if (e.venues.length > 0) {
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>
+            <button type="button" class="sort-header" (click)="setSort('name')">
+              Namn <mat-icon>{{ sortIcon('name') }}</mat-icon>
+            </button>
+          </th>
+          <th>
+            <button type="button" class="sort-header" (click)="setSort('building')">
+              Byggnad <mat-icon>{{ sortIcon('building') }}</mat-icon>
+            </button>
+          </th>
+          <th>
+            <button type="button" class="sort-header" (click)="setSort('description')">
+              Beskrivning <mat-icon>{{ sortIcon('description') }}</mat-icon>
+            </button>
+          </th>
+          <th class="actions-col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (v of sortedVenues(e.venues); track v.id) {
+          <tr class="navigable-row" (click)="openDetail(v.id)">
+            <td>{{ v.name }}</td>
+            <td>{{ v.building }}</td>
+            <td class="muted">{{ v.description || '–' }}</td>
+            <td class="row-actions" (click)="$event.stopPropagation()">
+              <button mat-icon-button (click)="openDetail(v.id)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="delete(v)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <p class="empty-hint">Inga lokaler tillagda.</p>
+  }
+}

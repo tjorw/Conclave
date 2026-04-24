@@ -19,7 +19,7 @@
           <mat-icon>{{ isNavSectionCollapsed('editions') ? 'expand_more' : 'expand_less' }}</mat-icon>
         </button>
         @if (!isNavSectionCollapsed('editions')) {
-          <a mat-list-item [routerLink]="['/editions', activeEdition.id]" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+          <a mat-list-item [routerLink]="['/editions', activeEdition.id, 'basics']" routerLinkActive="active-link">
             <mat-icon matListItemIcon>settings</mat-icon>
             <span matListItemTitle>{{ NAV.editionBasics }}</span>
           </a>

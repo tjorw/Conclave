@@ -1,0 +1,45 @@
+@if (loading()) {
+  <div class="spinner-wrapper"><mat-spinner diameter="48" /></div>
+} @else if (error()) {
+  <div class="page-header">
+    <a class="back-link" (click)="navigateBack()" style="cursor:pointer">
+      <mat-icon>arrow_back</mat-icon> Kategorier
+    </a>
+  </div>
+  <p class="error-message">{{ error() }}</p>
+} @else if (edition(); as e) {
+  <div class="page-header">
+    <a class="back-link" (click)="navigateBack()" style="cursor:pointer">
+      <mat-icon>arrow_back</mat-icon> Kategorier
+    </a>
+    <h1 class="page-title">{{ isNew() ? 'Lägg till kategori' : 'Redigera kategori' }}</h1>
+    <p class="page-subtitle">{{ e.name }}</p>
+  </div>
+
+  <div class="detail-card">
+    <form [formGroup]="form" (ngSubmit)="save()" class="detail-form">
+      <mat-form-field>
+        <mat-label>Namn</mat-label>
+        <input matInput formControlName="name" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Beskrivning</mat-label>
+        <input matInput formControlName="description" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Ansvarig</mat-label>
+        <mat-select formControlName="responsibleId">
+          @for (p of persons(); track p.id) {
+            <mat-option [value]="p.id">{{ p.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <div class="form-actions">
+        <button mat-stroked-button type="button" (click)="navigateBack()">Avbryt</button>
+        <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+          {{ isNew() ? 'Lägg till' : 'Spara' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}

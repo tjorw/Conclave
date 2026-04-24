@@ -1,0 +1,61 @@
+@if (loading()) {
+  <div class="spinner-wrapper"><mat-spinner diameter="48" /></div>
+} @else if (error()) {
+  <div class="page-header">
+    <a class="back-link" (click)="navigateBack()" style="cursor:pointer">
+      <mat-icon>arrow_back</mat-icon> Biljettyper
+    </a>
+  </div>
+  <p class="error-message">{{ error() }}</p>
+} @else if (edition(); as e) {
+  <div class="page-header">
+    <a class="back-link" (click)="navigateBack()" style="cursor:pointer">
+      <mat-icon>arrow_back</mat-icon> Biljettyper
+    </a>
+    <h1 class="page-title">{{ isNew() ? 'Lägg till biljetttyp' : 'Redigera biljetttyp' }}</h1>
+    <p class="page-subtitle">{{ e.name }}</p>
+  </div>
+
+  <div class="detail-card">
+    <form [formGroup]="form" (ngSubmit)="save()" class="detail-form">
+      <mat-form-field>
+        <mat-label>{{ FIELD.name }}</mat-label>
+        <input matInput formControlName="name" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ PAGE.fieldPrice }}</mat-label>
+        <input matInput type="number" formControlName="price" min="0" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ FIELD.category }}</mat-label>
+        <mat-select formControlName="category">
+          @for (cat of ticketTypeCategories; track cat.value) {
+            <mat-option [value]="cat.value">{{ cat.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Giltiga dagar</mat-label>
+        <mat-select formControlName="validDays" multiple>
+          @for (day of editionDayOptions(); track day.value) {
+            <mat-option [value]="day.value">{{ day.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Tillåtna kategorier</mat-label>
+        <mat-select formControlName="allowedCategories" multiple>
+          @for (c of e.categories; track c.id) {
+            <mat-option [value]="c.id">{{ c.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <div class="form-actions">
+        <button mat-stroked-button type="button" (click)="navigateBack()">Avbryt</button>
+        <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+          {{ isNew() ? 'Lägg till' : 'Spara' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}
