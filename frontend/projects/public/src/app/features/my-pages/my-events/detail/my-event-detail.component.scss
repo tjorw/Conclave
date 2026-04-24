@@ -37,6 +37,18 @@
   flex-wrap: wrap;
 }
 
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+
+  .save-btn {
+    margin-top: 0;
+  }
+}
+
 .action-btn {
   height: 40px;
 

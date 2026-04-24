@@ -28,6 +28,100 @@
       <div class="error-banner">{{ draftState().actionError }}</div>
     }
 
+    @if (ev.status === 'UnderReview') {
+      <!-- Åtgärdsknappar -->
+      <div class="actions">
+        <button mat-stroked-button class="action-btn" (click)="returnToDraft()"
+                [disabled]="draftState().operation !== null">
+          @if (draftState().operation === 'returning') { <mat-spinner diameter="18" /> } @else { Dra tillbaka till utkast }
+        </button>
+      </div>
+    }
+
+    <!-- Redigera utkast -->
+    @if (isDraft) {
+      <section class="card">
+        <h2>Arrangemagsuppgifter</h2>
+
+        @if (draftState().error) {
+          <div class="error-banner">{{ draftState().error }}</div>
+        }
+        @if (draftState().saved) {
+          <div class="success-inline">Sparat.</div>
+        }
+
+        <form [formGroup]="draftForm" (ngSubmit)="saveDraft()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Titel</mat-label>
+            <input matInput formControlName="title" />
+          </mat-form-field>
+
+          <lib-markdown-editor formControlName="description" label="Beskrivning" [rows]="8" />
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Schemaönskemål</mat-label>
+            <textarea matInput formControlName="scheduleRequestText" rows="4"></textarea>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Registreringstyp</mat-label>
+            <mat-select formControlName="registrationType">
+              @for (t of registrationTypes; track t.value) {
+                <mat-option [value]="t.value">{{ t.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          @if (draftForm.value.registrationType === 'DropIn' || draftForm.value.registrationType === 'Combined') {
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Drop-in-regler (valfritt)</mat-label>
+              <textarea matInput formControlName="dropInRules" rows="2"></textarea>
+            </mat-form-field>
+          }
+
+          <div class="form-actions">
+            <button mat-flat-button class="save-btn" type="submit"
+                    [disabled]="draftForm.invalid || draftState().operation !== null">
+              @if (draftState().operation === 'saving') { <mat-spinner diameter="18" /> } @else { Spara utkast }
+            </button>
+
+            @if (eventSubmissionsOpen) {
+              <button mat-flat-button class="action-btn primary" type="button" (click)="submitForReview()"
+                      [disabled]="draftForm.invalid || draftState().operation !== null">
+                @if (draftState().operation === 'submitting') { <mat-spinner diameter="18" /> } @else { Skicka in för granskning }
+              </button>
+            } @else {
+              <p class="submissions-closed">Arrangemangsansökan är för tillfället stängd.</p>
+            }
+
+            @if (canDelete) {
+              <button mat-stroked-button color="warn" class="action-btn" type="button" (click)="deleteEvent()"
+                      [disabled]="draftState().operation !== null">
+                @if (draftState().operation === 'deleting') { <mat-spinner diameter="18" /> } @else { Ta bort }
+              </button>
+            }
+          </div>
+        </form>
+      </section>
+    } @else {
+      <!-- Readonly-vy (UnderReview / Published / Cancelled) -->
+      <section class="card readonly-card">
+        <h2>Arrangemagsuppgifter</h2>
+        <dl>
+          <dt>Titel</dt>        <dd>{{ ev.title || '—' }}</dd>
+          <dt>Kategori</dt>     <dd>{{ ev.categoryName || '—' }}</dd>
+          <dt>Registrering</dt> <dd>{{ regKindLabel[ev.registrationType] || ev.registrationType }}</dd>
+          <dt>Schemaönskemål</dt><dd>{{ ev.scheduleRequestText || 'Inga schemaönskemål ännu.' }}</dd>
+          @if (ev.description) {
+            <div class="description-row">
+              <dt>Beskrivning</dt>
+              <dd><markdown [data]="ev.description" /></dd>
+            </div>
+          }
+        </dl>
+      </section>
+    }
+
     <section class="card">
       <h2>Medarrangörer</h2>
 
@@ -115,136 +209,32 @@
         </form>
       </section>
 
-      <section class="card">
-        <h2>Kommentarer</h2>
+      @if ((event()?.comments?.length ?? 0) > 0) {
+        <section class="card">
+          <h2>Kommentarer</h2>
 
-        @for (comment of event()?.comments ?? []; track comment.id) {
-          <div class="request-item">
-            <div class="request-info">
-              <span class="request-desc">{{ comment.text }}</span>
-              <span class="request-meta">
-                {{ comment.authorName || comment.authorId }} ·
-                {{ comment.createdAt | date:'yyyy-MM-dd HH:mm' }} ·
-                {{ commentStatusLabel[comment.status] || comment.status }}
-              </span>
-              @if (comment.handlingComment) {
-                <div class="admin-comment-banner"><strong>Admins svar:</strong> {{ comment.handlingComment }}</div>
+          @for (comment of event()?.comments ?? []; track comment.id) {
+            <div class="request-item">
+              <div class="request-info">
+                <span class="request-desc">{{ comment.text }}</span>
+                <span class="request-meta">
+                  {{ comment.authorName || comment.authorId }} ·
+                  {{ comment.createdAt | date:'yyyy-MM-dd HH:mm' }} ·
+                  {{ commentStatusLabel[comment.status] || comment.status }}
+                </span>
+                @if (comment.handlingComment) {
+                  <div class="admin-comment-banner"><strong>Admins svar:</strong> {{ comment.handlingComment }}</div>
+                }
+              </div>
+              @if (comment.requiresHandling && comment.authorId === currentPersonId && comment.status === 'Responded') {
+                <button mat-stroked-button class="action-btn" (click)="acknowledgeComment(comment.id)" [disabled]="commentState().acknowledging">
+                  Kvittera som hanterad
+                </button>
               }
             </div>
-            @if (comment.requiresHandling && comment.authorId === currentPersonId && comment.status === 'Responded') {
-              <button mat-stroked-button class="action-btn" (click)="acknowledgeComment(comment.id)" [disabled]="commentState().acknowledging">
-                Kvittera som hanterad
-              </button>
-            }
-          </div>
-        } @empty {
-          <p class="no-requests">Inga kommentarer ännu.</p>
-        }
-      </section>
-    }
-
-    <!-- Åtgärdsknappar -->
-    <div class="actions">
-      @if (isDraft) {
-        @if (eventSubmissionsOpen) {
-          <button mat-flat-button class="action-btn primary" (click)="submitForReview()"
-                  [disabled]="draftState().operation !== null || !ev.title">
-            @if (draftState().operation === 'submitting') { <mat-spinner diameter="18" /> } @else { Skicka in för granskning }
-          </button>
-        } @else {
-          <p class="submissions-closed">Arrangemangsansökan är för tillfället stängd.</p>
-        }
-      }
-      @if (ev.status === 'UnderReview') {
-        <button mat-stroked-button class="action-btn" (click)="returnToDraft()"
-                [disabled]="draftState().operation !== null">
-          @if (draftState().operation === 'returning') { <mat-spinner diameter="18" /> } @else { Dra tillbaka till utkast }
-        </button>
-      }
-      @if (canDelete) {
-        <button mat-stroked-button color="warn" class="action-btn" (click)="deleteEvent()"
-                [disabled]="draftState().operation !== null">
-          @if (draftState().operation === 'deleting') { <mat-spinner diameter="18" /> } @else { Ta bort }
-        </button>
-      }
-    </div>
-
-    <!-- Redigera utkast -->
-    @if (isDraft) {
-      <section class="card">
-        <h2>Arrangemagsuppgifter</h2>
-
-        @if (draftState().error) {
-          <div class="error-banner">{{ draftState().error }}</div>
-        }
-        @if (draftState().saved) {
-          <div class="success-inline">Sparat.</div>
-        }
-
-        <form [formGroup]="draftForm" (ngSubmit)="saveDraft()">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Titel</mat-label>
-            <input matInput formControlName="title" />
-          </mat-form-field>
-
-          <lib-markdown-editor formControlName="description" label="Beskrivning" [rows]="8" />
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Schemaönskemål</mat-label>
-            <textarea matInput formControlName="scheduleRequestText" rows="4"></textarea>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Registreringstyp</mat-label>
-            <mat-select formControlName="registrationType">
-              @for (t of registrationTypes; track t.value) {
-                <mat-option [value]="t.value">{{ t.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-
-          @if (draftForm.value.registrationType === 'DropIn' || draftForm.value.registrationType === 'Combined') {
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Drop-in-regler (valfritt)</mat-label>
-              <textarea matInput formControlName="dropInRules" rows="2"></textarea>
-            </mat-form-field>
           }
-
-          <button mat-flat-button class="save-btn" type="submit"
-                  [disabled]="draftForm.invalid || draftState().operation !== null">
-            @if (draftState().operation === 'saving') { <mat-spinner diameter="18" /> } @else { Spara }
-          </button>
-        </form>
-      </section>
-    } @else {
-      <!-- Readonly-vy (UnderReview / Published / Cancelled) -->
-      <section class="card readonly-card">
-        <h2>Arrangemagsuppgifter</h2>
-        <dl>
-          <dt>Titel</dt>        <dd>{{ ev.title || '—' }}</dd>
-          <dt>Kategori</dt>     <dd>{{ ev.categoryName || '—' }}</dd>
-          <dt>Registrering</dt> <dd>{{ regKindLabel[ev.registrationType] || ev.registrationType }}</dd>
-          @if (ev.description) {
-            <div class="description-row">
-              <dt>Beskrivning</dt>
-              <dd><markdown [data]="ev.description" /></dd>
-            </div>
-          }
-        </dl>
-      </section>
-    }
-
-    @if (!isDraft) {
-      <!-- Schemaönskemål -->
-      <section class="card">
-        <h2>Schemaönskemål</h2>
-
-        @if (ev.scheduleRequestText) {
-          <p class="request-text">{{ ev.scheduleRequestText }}</p>
-        } @else {
-          <p class="no-requests">Inga schemaönskemål ännu.</p>
-        }
-      </section>
+        </section>
+      }
     }
 
   }

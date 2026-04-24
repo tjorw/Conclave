@@ -18,6 +18,7 @@ import {
   toErrorMessage,
 } from 'shared';
 import { MarkdownComponent } from 'ngx-markdown';
+import { switchMap } from 'rxjs';
 import { EditionService } from '../../../../services/edition.service';
 
 type DraftOperation = 'saving' | 'submitting' | 'returning' | 'deleting';
@@ -178,10 +179,7 @@ export class MyEventDetailComponent implements OnInit {
   saveDraft(): void {
     if (this.draftForm.invalid || this.draftState().operation !== null) return;
     this.draftState.set({ operation: 'saving', saved: false, error: null, actionError: null });
-    const { title, description, registrationType, dropInRules, scheduleRequestText } = this.draftForm.getRawValue();
-    this.eventSvc.updateDraft(
-      this.eventId, title!, description!, registrationType!, dropInRules || null, scheduleRequestText || null
-    ).subscribe({
+    this.updateDraftFromForm().subscribe({
       next: () => this.draftState.update(state => ({ ...state, operation: null, saved: true })),
       error: err => {
         this.draftState.update(state => ({
@@ -194,9 +192,11 @@ export class MyEventDetailComponent implements OnInit {
   }
 
   submitForReview(): void {
-    if (this.draftState().operation !== null) return;
-    this.draftState.update(state => ({ ...state, operation: 'submitting', actionError: null }));
-    this.eventSvc.submitForReview(this.eventId).subscribe({
+    if (this.draftForm.invalid || this.draftState().operation !== null) return;
+    this.draftState.update(state => ({ ...state, operation: 'submitting', saved: false, error: null, actionError: null }));
+    this.updateDraftFromForm().pipe(
+      switchMap(() => this.eventSvc.submitForReview(this.eventId))
+    ).subscribe({
       next: () => {
         this.draftState.update(state => ({ ...state, operation: null }));
         this.loadEvent();
@@ -209,6 +209,13 @@ export class MyEventDetailComponent implements OnInit {
         }));
       },
     });
+  }
+
+  private updateDraftFromForm() {
+    const { title, description, registrationType, dropInRules, scheduleRequestText } = this.draftForm.getRawValue();
+    return this.eventSvc.updateDraft(
+      this.eventId, title!, description!, registrationType!, dropInRules || null, scheduleRequestText || null
+    );
   }
 
   returnToDraft(): void {
