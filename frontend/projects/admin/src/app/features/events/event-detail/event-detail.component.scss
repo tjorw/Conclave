@@ -54,6 +54,32 @@
   margin-bottom: 16px;
 }
 
+.co-organiser-item {
+  border-bottom: 1px solid #eee;
+  padding: 12px 0;
+
+  &:last-child { border-bottom: 0; }
+}
+
+.co-organiser-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.co-organiser-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 220px;
+  }
+}
+
 .content-tabs {
   margin-top: 4px;
 }

@@ -98,6 +98,59 @@
     </mat-card>
   }
 
+  <mat-card class="content-card">
+    <mat-card-header>
+      <mat-card-title>Medarrangörer</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @for (application of coOrganiserApplications(); track application.id) {
+        <div class="co-organiser-item">
+          <div class="co-organiser-info">
+            <div class="comment-meta">
+              <span class="chip"
+                [class.chip-orange]="application.status === 'Pending'"
+                [class.chip-green]="application.status === 'Approved'"
+                [class.chip-grey]="application.status !== 'Pending' && application.status !== 'Approved'">
+                {{ coOrganiserStatusLabel(application.status) }}
+              </span>
+              <strong>{{ application.name || application.email }}</strong>
+              <span>{{ application.requestedAt | date:'yyyy-MM-dd HH:mm' }}</span>
+            </div>
+            <p class="comment-text">{{ application.email }}</p>
+            @if (application.message) {
+              <p class="muted">{{ application.message }}</p>
+            }
+            @if (application.reviewComment) {
+              <p class="muted">{{ application.reviewComment }}</p>
+            }
+          </div>
+
+          @if (application.status === 'Pending') {
+            <div class="co-organiser-actions">
+              <mat-form-field appearance="outline">
+                <mat-label>Kommentar</mat-label>
+                <input
+                  matInput
+                  [value]="coOrganiserReviewComment(application.id)"
+                  (input)="setCoOrganiserReviewComment(application.id, $any($event.target).value)" />
+              </mat-form-field>
+              <button mat-flat-button color="primary" (click)="approveCoOrganiserApplication(application.id)" [disabled]="saving()">
+                <mat-icon>check</mat-icon>
+                Godkänn
+              </button>
+              <button mat-stroked-button color="warn" (click)="rejectCoOrganiserApplication(application.id)" [disabled]="saving()">
+                <mat-icon>close</mat-icon>
+                Avslå
+              </button>
+            </div>
+          }
+        </div>
+      } @empty {
+        <p class="empty-state">Inga medarrangörer har föreslagits.</p>
+      }
+    </mat-card-content>
+  </mat-card>
+
   @if (e.status === 'Published') {
     <mat-card class="content-card">
       <mat-card-header>

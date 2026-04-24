@@ -97,6 +97,38 @@ export class EventService {
     );
   }
 
+  addCoOrganiserApplication(eventId: string, email: string, name: string | null, message: string | null) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/co-organisers`,
+      {
+        email,
+        name,
+        message,
+        conventionId: this.conventionContext.requireConventionId(),
+      }
+    );
+  }
+
+  approveCoOrganiserApplication(eventId: string, applicationId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/co-organiser-applications/${applicationId}/approve`,
+      {}
+    );
+  }
+
+  rejectCoOrganiserApplication(eventId: string, applicationId: string, comment: string | null) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/co-organiser-applications/${applicationId}/reject`,
+      { comment }
+    );
+  }
+
+  cancelCoOrganiserApplication(eventId: string, applicationId: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/co-organiser-applications/${applicationId}`
+    );
+  }
+
   addEventComment(eventId: string, comment: string) {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/events/${eventId}/comments`,

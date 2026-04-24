@@ -20,6 +20,7 @@ public record EventSummaryDto(
     string? Title,
     int SessionCount,
     int PendingCommentCount,
+    int PendingCoOrganiserApplicationCount,
     string Description,
     IReadOnlyList<SessionSummaryDto> Sessions);
 
@@ -48,8 +49,22 @@ public record EventDto(
     string RegistrationType,
     string? DropInRules,
     IReadOnlyList<Guid> CoOrganiserIds,
+    IReadOnlyList<CoOrganiserApplicationDto> CoOrganiserApplications,
     IReadOnlyList<SessionDto> Sessions,
     IReadOnlyList<EventCommentDto> Comments);
+
+public record CoOrganiserApplicationDto(
+    Guid Id,
+    string Email,
+    string? Name,
+    string? Message,
+    string Status,
+    Guid RequestedById,
+    DateTimeOffset RequestedAt,
+    Guid? ReviewedById,
+    DateTimeOffset? ReviewedAt,
+    string? ReviewComment,
+    Guid? ApprovedPersonId);
 
 public record SessionDto(
     Guid Id,

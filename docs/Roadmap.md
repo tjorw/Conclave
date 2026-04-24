@@ -16,6 +16,17 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
 - [ ] `R-OB01` Outbox-mönster för extern kommunikation – `OutboxMessage`-tabell, `OutboxEmailSender` (implementerar `IEmailSender`), `OutboxProcessor` (`IHostedService`, kör var 30:e sekund), Polly-retry med exponentiell backoff. Se `docs/Outbox.md` för design.
 
+### Medarrangörer (R-CO)
+
+Mål: huvudarrangören ska kunna föreslå medarrangörer med e-postadress, men de ska inte få arrangörsbehörighet, synas som medarrangörer eller räknas för arrangörsbiljetter förrän admin har godkänt ansökan.
+
+- [x] `R-CO01` Domänmodell: ersätt direkt tillägg av `CoOrganiser` med `CoOrganiserApplication`/`CoOrganiserInvite` på `Event` med status `Pending | Approved | Rejected | Cancelled`, e-post, valfritt namn, requestedById, reviewedById/reviewedAt och kommentar.
+- [x] `R-CO02` Publik arrangörsvy: huvudarrangör kan lägga till medarrangör genom e-postadress; listan visar väntar på godkännande/godkänd/avslagen och tillåter återkallande innan godkännande.
+- [x] `R-CO03` Admin-vy: kategoriansvarig eller konventionsadmin granskar medarrangörsansökningar per evenemang/upplaga och kan godkänna eller avslå.
+- [x] `R-CO04` Godkännande: systemet matchar e-post mot befintlig `Person` i konventionen eller skapar en inaktiv/grundläggande personpost enligt UC002, lägger först då till aktiv `CoOrganiser`, och hindrar dubletter mot både lead organiser, aktiva medarrangörer och väntande ansökningar.
+- [x] `R-CO05` Behörighet och projektioner: endast godkända medarrangörer räknas i `IsOrganiser`, `ListMyEvents`, arrangörsschema, publik eventdetalj och arrangörsbiljettsflöden.
+- [ ] `R-CO06` Notiser: skicka e-post vid nominering och granskningsbeslut via `R-OB01`; tills Outbox finns loggas domänhändelser utan extern leverans.
+
 ### Laganmälningar (R-TM)
 
 - [ ] `R-TM01` `Event.RegistrationMode: Individual | Team` – konfiguration per evenemang (nytt fält på Event-aggregatet)

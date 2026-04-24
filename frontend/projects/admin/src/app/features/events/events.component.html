@@ -18,6 +18,9 @@
     <mat-button-toggle value="PendingComments">
       Obehandlade kommentarer <span class="count-badge">{{ counts().pendingComments }}</span>
     </mat-button-toggle>
+    <mat-button-toggle value="PendingCoOrganisers">
+      Medarrangörer <span class="count-badge">{{ counts().pendingCoOrganisers }}</span>
+    </mat-button-toggle>
     <mat-button-toggle value="Draft">
       Utkast <span class="count-badge">{{ counts().draft }}</span>
     </mat-button-toggle>
@@ -83,6 +86,7 @@
             <th><button type="button" class="sort-header" (click)="setSort('organiser')">Arrangör <mat-icon>{{ sortIcon('organiser') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="setSort('sessions')">Sessioner <mat-icon>{{ sortIcon('sessions') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="setSort('comments')">Kommentarer <mat-icon>{{ sortIcon('comments') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('coOrganisers')">Medarrangörer <mat-icon>{{ sortIcon('coOrganisers') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="setSort('status')">Status <mat-icon>{{ sortIcon('status') }}</mat-icon></button></th>
             <th class="actions-col"></th>
           </tr>
@@ -102,6 +106,13 @@
                 }
               </td>
               <td>
+                @if (event.pendingCoOrganiserApplicationCount > 0) {
+                  <span class="chip chip-orange">{{ event.pendingCoOrganiserApplicationCount }} väntar</span>
+                } @else {
+                  <span class="chip chip-grey">Inga</span>
+                }
+              </td>
+              <td>
                 <span class="chip {{ statusChipClass(event.status) }}">
                   {{ statusLabel(event.status) }}
                 </span>
@@ -112,7 +123,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" class="empty-cell">Inga evenemang i denna kategori.</td>
+              <td colspan="8" class="empty-cell">Inga evenemang i denna kategori.</td>
             </tr>
           }
         </tbody>

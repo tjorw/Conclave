@@ -1522,36 +1522,91 @@ Huvudarrangör eller medarrangör
 
 ---
 
-# UC-EV005 – Lägg till medarrangör
+# UC-EV005 – Ansök om medarrangör via e-post
 
 ## Sammanfattning
-Huvudarrangören lägger till en annan person som medarrangör för evenemanget.
+Huvudarrangören föreslår en eller flera medarrangörer genom att ange e-postadress. Förslaget blir en väntande ansökan och ger inga arrangörsrättigheter förrän en behörig admin har godkänt den.
 
 ## Aktör
 Huvudarrangör
 
 ## Förutsättningar
 - Evenemanget finns
-- Personen finns och tillhör konventionen
 - Utföraren är huvudarrangör
+- Arrangörsregistreringen är öppen eller evenemanget är fortfarande redigerbart för arrangören
 
 ## Flöde
-1. Huvudarrangören anger EventId och PersonId för medarrangören
-2. Systemet lägger till personen som CoOrganiser
-3. Systemet sparar ändringen
+1. Huvudarrangören anger EventId, e-postadress och valfritt namn/meddelande för medarrangören
+2. Systemet normaliserar e-postadressen och kontrollerar att personen inte redan är huvudarrangör, aktiv medarrangör eller har en väntande ansökan för samma evenemang
+3. Systemet skapar en `CoOrganiserApplication` med status `Pending`
+4. Systemet sparar ansökan
+5. Systemet gör ansökan synlig för admin/kategoriansvarig i granskningsvyn
 
 ## Affärsregler
-- Samma person kan inte läggas till som medarrangör två gånger
-- Personen måste tillhöra konventionen
+- En väntande ansökan räknas inte som medarrangör
+- Endast godkända medarrangörer får redigera evenemanget, skicka in det, synas publikt, få arrangörsschema eller ingå i arrangörsbiljettsflöden
+- Samma e-postadress kan bara ha en aktiv eller väntande medarrangörskoppling per evenemang
+- Huvudarrangörens e-postadress kan inte läggas till som medarrangör
+- E-postadressen matchas mot person först vid godkännande, så arrangören behöver inte känna till ett `PersonId`
 
 ## Domänhändelser
-- Inga
+- `CoOrganiserApplicationSubmitted { applicationId, eventId, email, requestedById, occurredAt }`
 
 ## Acceptanskriterier
-- [x] CoOrganiser sparas på evenemanget
-- [x] Dublettillägg returnerar ett valideringsfel
-- [x] Tillägg av person från annan konvention returnerar ett valideringsfel
-- [x] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Huvudarrangör kan skapa en väntande medarrangörsansökan med e-postadress
+- [x] Väntande ansökan ger inte arrangörsbehörighet och visas inte som aktiv medarrangör
+- [x] Dublett mot aktiv medarrangör eller väntande ansökan returnerar ett valideringsfel
+- [x] Huvudarrangörens egen e-postadress kan inte nomineras
+- [x] Huvudarrangör kan återkalla en väntande ansökan innan den granskats
+- [x] Kommandohanteraren har tillhörande enhetstester
+
+---
+
+# UC-EV005b – Godkänn eller avslå medarrangör
+
+## Sammanfattning
+Admin eller kategoriansvarig granskar en väntande medarrangörsansökan. Först vid godkännande blir personen aktiv medarrangör och räknas i övriga arrangörsflöden.
+
+## Aktör
+Konventionsadministratör eller kategoriansvarig för evenemangets kategori
+
+## Förutsättningar
+- Evenemanget finns
+- Medarrangörsansökan finns och har status `Pending`
+- Utföraren har behörighet att granska evenemang i kategorin
+
+## Flöde – godkänn
+1. Admin väljer en väntande ansökan
+2. Systemet matchar normaliserad e-post mot befintlig `Person` i samma konvention
+3. Om personen saknas skapar systemet en personpost enligt UC002 utan att kräva att personen redan har loggat in
+4. Systemet kontrollerar att personen inte är huvudarrangör eller redan aktiv medarrangör
+5. Systemet markerar ansökan som `Approved`
+6. Systemet lägger till personen som aktiv `CoOrganiser`
+7. Systemet sparar ändringen
+
+## Flöde – avslå
+1. Admin väljer en väntande ansökan och anger valfri kommentar
+2. Systemet markerar ansökan som `Rejected`
+3. Systemet sparar ändringen utan att lägga till någon `CoOrganiser`
+
+## Affärsregler
+- Bara `Approved`-ansökningar får skapa aktiva `CoOrganiser`-poster
+- Avslagna ansökningar kan inte godkännas senare; huvudarrangören får skapa en ny ansökan vid behov
+- Godkännande är idempotent mot redan aktiv medarrangör: systemet ska inte skapa dubletter
+- En godkänd medarrangör får samma arrangörsrättigheter som huvudarrangören där befintliga use cases säger "huvudarrangör eller medarrangör"
+- Om en personpost skapas från e-post ska den tillhöra samma konvention och följa befintliga regler för e-post-unikhet
+
+## Domänhändelser
+- `CoOrganiserApplicationApproved { applicationId, eventId, personId, reviewedById, occurredAt }`
+- `CoOrganiserApplicationRejected { applicationId, eventId, reviewedById, comment, occurredAt }`
+
+## Acceptanskriterier
+- [x] Admin/kategoriansvarig kan godkänna en väntande ansökan
+- [x] Godkännande skapar eller återanvänder person och lägger till aktiv `CoOrganiser`
+- [x] Avslag aktiverar inte medarrangören
+- [x] Väntande och avslagna ansökningar räknas inte i `IsOrganiser`, `ListMyEvents`, arrangörsschema eller arrangörsbiljetter
+- [x] Beslutsfattare och beslutstid sparas
+- [x] Kommandohanterarna har tillhörande enhetstester
 
 ---
 

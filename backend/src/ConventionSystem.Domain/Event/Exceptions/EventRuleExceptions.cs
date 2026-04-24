@@ -57,6 +57,31 @@ public sealed class CoOrganiserAlreadyAddedException()
         "Personen är redan medarrangör för detta evenemang.",
         "coorganiser_already_added");
 
+public sealed class CoOrganiserApplicationAlreadyPendingException()
+    : DomainRuleViolationException(
+        "Det finns redan en väntande medarrangörsansökan för denna e-postadress.",
+        "coorganiser_application_already_pending");
+
+public sealed class CoOrganiserApplicationNotFoundException()
+    : DomainRuleViolationException(
+        "Medarrangörsansökan hittades inte.",
+        "coorganiser_application_not_found");
+
+public sealed class CoOrganiserApplicationAlreadyReviewedException()
+    : DomainRuleViolationException(
+        "Medarrangörsansökan har redan granskats.",
+        "coorganiser_application_already_reviewed");
+
+public sealed class LeadOrganiserCannotBeCoOrganiserException()
+    : DomainRuleViolationException(
+        "Huvudarrangören kan inte läggas till som medarrangör.",
+        "lead_organiser_cannot_be_coorganiser");
+
+public sealed class CoOrganiserEmailRequiredException()
+    : DomainRuleViolationException(
+        "E-postadress för medarrangör måste anges.",
+        "coorganiser_email_required");
+
 public sealed class SessionInactiveCannotEditException()
     : DomainRuleViolationException(
         "Kan inte redigera en inaktiv session.",
