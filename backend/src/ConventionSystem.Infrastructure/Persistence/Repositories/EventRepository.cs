@@ -101,7 +101,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
 
         var category = await db.Categories
             .Where(c => c.Id == ev.CategoryId)
-            .Select(c => new { c.Name, c.ResponsibleId })
+            .Select(c => new { c.Name, c.ResponsibleId, c.OrganizerInstructions })
             .FirstOrDefaultAsync(ct);
 
         var personIds = new List<PersonId> { ev.LeadOrganiserId };
@@ -128,6 +128,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             category?.Name,
             category is not null ? category.ResponsibleId.Value : (Guid?)null,
             responsibleName,
+            category?.OrganizerInstructions,
             ev.LeadOrganiserId.Value,
             organiserName,
             ev.Status.ToString(),

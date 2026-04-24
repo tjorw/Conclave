@@ -35,7 +35,7 @@ public sealed class CreateCategoryHandler(
         if (responsible.ConventionId != context.Edition.ConventionId)
             throw new InvalidOperationException("Ansvarig person tillhör inte denna konvention.");
 
-        var category = context.Edition.CreateCategory(command.Name, responsibleId, command.Description);
+        var category = context.Edition.CreateCategory(command.Name, responsibleId, command.OrganizerInstructions, command.PublicDescription);
         await editionRepository.SaveAsync(ct);
 
         return category.Id.Value;

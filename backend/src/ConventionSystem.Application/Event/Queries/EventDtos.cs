@@ -40,6 +40,7 @@ public record EventDto(
     string? CategoryName,
     Guid? CategoryResponsibleId,
     string? CategoryResponsibleName,
+    string? CategoryOrganizerInstructions,
     Guid LeadOrganiserId,
     string? LeadOrganiserName,
     string Status,

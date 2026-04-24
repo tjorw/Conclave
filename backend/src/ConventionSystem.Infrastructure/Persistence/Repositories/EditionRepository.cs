@@ -87,7 +87,7 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
                 e.Venues.Select(v => new VenueDto(v.Id.Value, v.Name, v.Building, v.Description)).ToList(),
                 e.StaffAreas.Select(sa => new StaffAreaDto(sa.Id.Value, sa.Name, sa.Description, sa.ResponsibleId.Value)).ToList(),
                 e.Stations.Select(s => new StationDto(s.Id.Value, s.StaffAreaId.Value, s.Name, s.Description)).ToList(),
-                e.Categories.Select(c => new CategoryDto(c.Id.Value, c.Name, c.Description, c.ResponsibleId.Value)).ToList()))
+                e.Categories.Select(c => new CategoryDto(c.Id.Value, c.Name, c.OrganizerInstructions, c.PublicDescription, c.ResponsibleId.Value)).ToList()))
             .FirstOrDefaultAsync(ct);
 
     public async Task<IReadOnlyList<EditionResponsibleDto>> GetResponsiblesByEditionIdAsync(EditionId id, CancellationToken ct = default)

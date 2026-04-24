@@ -47,10 +47,11 @@ public class UpdateCategoryHandlerTests
         _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new UpdateCategoryCommand(
-            edition.Id.Value, category.Id.Value, "Rollspel", "Ny beskrivning", newResponsible.Id.Value), default);
+            edition.Id.Value, category.Id.Value, "Rollspel", "## Instruktioner", "Publik text", newResponsible.Id.Value), default);
 
         Assert.Equal("Rollspel", category.Name);
-        Assert.Equal("Ny beskrivning", category.Description);
+        Assert.Equal("## Instruktioner", category.OrganizerInstructions);
+        Assert.Equal("Publik text", category.PublicDescription);
         Assert.Equal(newResponsible.Id, category.ResponsibleId);
     }
 
@@ -59,11 +60,11 @@ public class UpdateCategoryHandlerTests
     {
         var (convention, admin, edition) = Setup();
         var responsible = convention.CreatePerson("Ansvarig", "a@example.com");
-        var category = edition.CreateCategory("Brädspel", responsible.Id, null);
+        var category = edition.CreateCategory("Brädspel", responsible.Id, null, null);
         _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new UpdateCategoryCommand(
-            edition.Id.Value, category.Id.Value, "Brädspel", null, responsible.Id.Value), default);
+            edition.Id.Value, category.Id.Value, "Brädspel", null, null, responsible.Id.Value), default);
 
         await _editionRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -76,7 +77,7 @@ public class UpdateCategoryHandlerTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new UpdateCategoryCommand(
-                Guid.NewGuid(), Guid.NewGuid(), "Namn", null, Guid.NewGuid()), default));
+                Guid.NewGuid(), Guid.NewGuid(), "Namn", null, null, Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -88,6 +89,6 @@ public class UpdateCategoryHandlerTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => _handler.Handle(new UpdateCategoryCommand(
-                edition.Id.Value, Guid.NewGuid(), "Namn", null, Guid.NewGuid()), default));
+                edition.Id.Value, Guid.NewGuid(), "Namn", null, null, Guid.NewGuid()), default));
     }
 }

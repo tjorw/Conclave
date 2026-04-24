@@ -21,7 +21,7 @@ export interface VenueFeedDto {
 export interface CategoryFeedDto {
   id: string;
   name: string;
-  description: string | null;
+  publicDescription: string | null;
 }
 
 export interface EventSummaryFeedDto {

@@ -16,6 +16,7 @@ import {
   CategoryDto,
   ConventionService,
   EditionDto,
+  MarkdownEditorComponent,
   PersonDto,
   RegistrationService,
   StaffAreaDto,
@@ -32,7 +33,7 @@ import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-util
 
 type VenueSortKey = 'name' | 'building' | 'description';
 type StaffAreaSortKey = 'name' | 'description' | 'responsible' | 'stations';
-type CategorySortKey = 'name' | 'description' | 'responsible';
+type CategorySortKey = 'name' | 'organizerInstructions' | 'publicDescription' | 'responsible';
 type TicketTypeSortKey = 'name' | 'category' | 'validDays' | 'allowedCategories' | 'price';
 type EditionDetailSection = 'basics' | 'lifecycle' | 'venues' | 'staff-areas' | 'categories' | 'ticket-types';
 
@@ -60,6 +61,7 @@ const EDITION_DETAIL_SECTIONS: EditionDetailSection[] = [
     MatProgressSpinnerModule,
     MatSelectModule,
     MatTooltipModule,
+    MarkdownEditorComponent,
   ],
   templateUrl: './edition-detail.component.html',
   styleUrl: './edition-detail.component.scss',
@@ -186,7 +188,8 @@ export class EditionDetailComponent implements OnInit {
 
   readonly categoryForm = this.fb.group({
     name: ['', Validators.required],
-    description: [''],
+    organizerInstructions: [''],
+    publicDescription: [''],
     responsibleId: ['', Validators.required],
   });
 
@@ -214,7 +217,8 @@ export class EditionDetailComponent implements OnInit {
 
   readonly editCategoryForm = this.fb.group({
     name: ['', Validators.required],
-    description: [''],
+    organizerInstructions: [''],
+    publicDescription: [''],
     responsibleId: ['', Validators.required],
   });
 
@@ -365,7 +369,8 @@ export class EditionDetailComponent implements OnInit {
   sortedCategories(categories: CategoryDto[]): CategoryDto[] {
     return sortBy(categories, this.categorySort(), {
       name: category => category.name,
-      description: category => category.description ?? '',
+      organizerInstructions: category => category.organizerInstructions ?? '',
+      publicDescription: category => category.publicDescription ?? '',
       responsible: category => this.personName(category.responsibleId),
     });
   }
@@ -615,7 +620,10 @@ export class EditionDetailComponent implements OnInit {
     const v = this.categoryForm.value;
     this.saving.set(true);
     this.svc.createCategory(this.edition()!.id, {
-      name: v.name!, description: v.description || null, responsibleId: v.responsibleId!,
+      name: v.name!,
+      organizerInstructions: v.organizerInstructions || null,
+      publicDescription: v.publicDescription || null,
+      responsibleId: v.responsibleId!,
     }).subscribe({
       next: () => { this.reload(); this.cancelAddCategoryForm(); this.saving.set(false); },
       error: (err) => this.handleError(ERROR.createCategory, err),
@@ -623,7 +631,12 @@ export class EditionDetailComponent implements OnInit {
   }
 
   startEditCategory(category: CategoryDto): void {
-    this.editCategoryForm.setValue({ name: category.name, description: category.description ?? '', responsibleId: category.responsibleId });
+    this.editCategoryForm.setValue({
+      name: category.name,
+      organizerInstructions: category.organizerInstructions ?? '',
+      publicDescription: category.publicDescription ?? '',
+      responsibleId: category.responsibleId,
+    });
     this.editingCategory.set(category);
   }
 
@@ -633,7 +646,10 @@ export class EditionDetailComponent implements OnInit {
     const v = this.editCategoryForm.value;
     this.saving.set(true);
     this.svc.updateCategory(this.edition()!.id, target.id, {
-      name: v.name!, description: v.description || null, responsibleId: v.responsibleId!,
+      name: v.name!,
+      organizerInstructions: v.organizerInstructions || null,
+      publicDescription: v.publicDescription || null,
+      responsibleId: v.responsibleId!,
     }).subscribe({
       next: () => { this.reload(); this.editingCategory.set(null); this.saving.set(false); },
       error: (err) => this.handleError(ERROR.updateCategory, err),

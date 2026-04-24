@@ -65,7 +65,7 @@ public sealed class GetEditionFeedHandler(
             edition.StaffRegistrationOpen,
             edition.VisitorRegistrationOpen,
             edition.Venues.Select(v => new VenueFeedDto(v.Id, v.Name, v.Building, v.Description)).ToList(),
-            edition.Categories.Select(c => new CategoryFeedDto(c.Id, c.Name, c.Description)).ToList(),
+            edition.Categories.Select(c => new CategoryFeedDto(c.Id, c.Name, c.PublicDescription)).ToList(),
             publishedEvents);
     }
 }

@@ -4,5 +4,6 @@ namespace ConventionSystem.Application.Convention.Commands.CreateCategory;
 public sealed record CreateCategoryCommand(
     Guid EditionId,
     string Name,
-    string? Description,
+    string? OrganizerInstructions,
+    string? PublicDescription,
     Guid ResponsibleId) : ICommand<Guid>;

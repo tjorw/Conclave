@@ -214,14 +214,14 @@ public static class EditionEndpoints
             async (Guid editionId, CreateCategoryRequest request, ISender sender, CancellationToken ct) =>
             {
                 var id = await sender.Send(new CreateCategoryCommand(
-                    editionId, request.Name, request.Description, request.ResponsibleId), ct);
+                    editionId, request.Name, request.OrganizerInstructions, request.PublicDescription, request.ResponsibleId), ct);
                 return Results.Created($"/categories/{id}", new { id });
             });
 
         editions.MapPut("/categories/{categoryId:guid}",
             async (Guid editionId, Guid categoryId, UpdateCategoryRequest request, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new UpdateCategoryCommand(editionId, categoryId, request.Name, request.Description, request.ResponsibleId), ct);
+                await sender.Send(new UpdateCategoryCommand(editionId, categoryId, request.Name, request.OrganizerInstructions, request.PublicDescription, request.ResponsibleId), ct);
                 return Results.NoContent();
             });
 
@@ -272,8 +272,8 @@ public record CreateStaffAreaRequest(string Name, string? Description, Guid Resp
 public record UpdateStaffAreaRequest(string Name, string? Description, Guid ResponsibleId);
 public record CreateStationRequest(string Name, string? Description, Guid StaffAreaId);
 public record UpdateStationRequest(string Name, string? Description);
-public record CreateCategoryRequest(string Name, string? Description, Guid ResponsibleId);
-public record UpdateCategoryRequest(string Name, string? Description, Guid ResponsibleId);
+public record CreateCategoryRequest(string Name, string? OrganizerInstructions, string? PublicDescription, Guid ResponsibleId);
+public record UpdateCategoryRequest(string Name, string? OrganizerInstructions, string? PublicDescription, Guid ResponsibleId);
 public record ChangeCategoryResponsibleRequest(Guid NewResponsibleId);
 
 public record CreateEditionRequest(

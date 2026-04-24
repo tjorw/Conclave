@@ -5,5 +5,6 @@ public sealed record UpdateCategoryCommand(
     Guid EditionId,
     Guid CategoryId,
     string Name,
-    string? Description,
+    string? OrganizerInstructions,
+    string? PublicDescription,
     Guid ResponsibleId) : ICommand;

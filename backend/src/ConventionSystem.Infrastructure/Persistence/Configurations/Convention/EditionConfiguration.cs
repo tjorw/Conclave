@@ -166,6 +166,7 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasColumnName("responsible_id");
 
         builder.Property(c => c.Name).HasMaxLength(200).IsRequired();
-        builder.Property(c => c.Description).HasMaxLength(1000);
+        builder.Property(c => c.OrganizerInstructions).HasColumnName("organizer_instructions").HasMaxLength(4000);
+        builder.Property(c => c.PublicDescription).HasColumnName("public_description").HasMaxLength(4000);
     }
 }

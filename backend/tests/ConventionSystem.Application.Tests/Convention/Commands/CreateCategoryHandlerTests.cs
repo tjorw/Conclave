@@ -48,7 +48,7 @@ public class CreateCategoryHandlerTests
         var (_, admin, responsible, edition) = Setup();
         _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Brädspel", null, responsible.Id.Value), default);
+        await _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Brädspel", null, null, responsible.Id.Value), default);
 
         Assert.Single(edition.Categories);
         Assert.Equal("Brädspel", edition.Categories[0].Name);
@@ -60,7 +60,7 @@ public class CreateCategoryHandlerTests
         var (_, admin, responsible, edition) = Setup();
         _currentUser.PersonId.Returns(admin.Id);
 
-        var id = await _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Brädspel", null, responsible.Id.Value), default);
+        var id = await _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Brädspel", null, null, responsible.Id.Value), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -71,7 +71,7 @@ public class CreateCategoryHandlerTests
         var (_, admin, responsible, edition) = Setup();
         _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Brädspel", null, responsible.Id.Value), default);
+        await _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Brädspel", null, null, responsible.Id.Value), default);
 
         await _editionRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -83,7 +83,7 @@ public class CreateCategoryHandlerTests
             .Returns((Domain.Convention.Aggregates.Edition?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateCategoryCommand(Guid.NewGuid(), "Kategori", null, Guid.NewGuid()), default));
+            () => _handler.Handle(new CreateCategoryCommand(Guid.NewGuid(), "Kategori", null, null, Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public class CreateCategoryHandlerTests
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Kategori", null, responsible.Id.Value), default));
+            () => _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Kategori", null, null, responsible.Id.Value), default));
     }
 
     [Fact]
@@ -107,6 +107,6 @@ public class CreateCategoryHandlerTests
         _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Kategori", null, outsider.Id.Value), default));
+            () => _handler.Handle(new CreateCategoryCommand(edition.Id.Value, "Kategori", null, null, outsider.Id.Value), default));
     }
 }

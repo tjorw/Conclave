@@ -32,6 +32,6 @@ public record StaffAreaDto(Guid Id, string Name, string? Description, Guid Respo
 
 public record StationDto(Guid Id, Guid StaffAreaId, string Name, string? Description);
 
-public record CategoryDto(Guid Id, string Name, string? Description, Guid ResponsibleId);
+public record CategoryDto(Guid Id, string Name, string? OrganizerInstructions, string? PublicDescription, Guid ResponsibleId);
 
 public record EditionResponsibleDto(string Position, Guid? PersonId, string? PersonName, string? Email);

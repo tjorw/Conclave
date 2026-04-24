@@ -165,9 +165,10 @@ public sealed class Edition : AggregateRoot
         return station;
     }
 
-    public Category CreateCategory(string name, PersonId responsibleId, string? description = null)
+    public Category CreateCategory(string name, PersonId responsibleId,
+        string? organizerInstructions = null, string? publicDescription = null)
     {
-        var category = new Category(CategoryId.New(), responsibleId, name, description);
+        var category = new Category(CategoryId.New(), responsibleId, name, organizerInstructions, publicDescription);
         _categories.Add(category);
         return category;
     }
@@ -219,11 +220,12 @@ public sealed class Edition : AggregateRoot
         return (area, stations);
     }
 
-    public void UpdateCategory(CategoryId categoryId, string name, string? description, PersonId responsibleId)
+    public void UpdateCategory(CategoryId categoryId, string name,
+        string? organizerInstructions, string? publicDescription, PersonId responsibleId)
     {
         var category = _categories.FirstOrDefault(c => c.Id == categoryId)
             ?? throw new CategoryNotFoundInEditionException();
-        category.Update(name, description, responsibleId);
+        category.Update(name, organizerInstructions, publicDescription, responsibleId);
     }
 
     public Category RemoveCategory(CategoryId categoryId)

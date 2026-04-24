@@ -193,10 +193,11 @@ public class EditionStructureManagementTests
         var category = edition.CreateCategory("Brädspel", responsible.Id, null);
         var newResponsible = convention.CreatePerson("Ny ansvarig", "b@example.com");
 
-        edition.UpdateCategory(category.Id, "Rollspel", "Uppdaterad", newResponsible.Id);
+        edition.UpdateCategory(category.Id, "Rollspel", "## Instruktioner", "Publik text", newResponsible.Id);
 
         Assert.Equal("Rollspel", category.Name);
-        Assert.Equal("Uppdaterad", category.Description);
+        Assert.Equal("## Instruktioner", category.OrganizerInstructions);
+        Assert.Equal("Publik text", category.PublicDescription);
         Assert.Equal(newResponsible.Id, category.ResponsibleId);
     }
 
@@ -206,7 +207,7 @@ public class EditionStructureManagementTests
         var (_, _, edition) = CreateEdition();
 
         Assert.Throws<CategoryNotFoundInEditionException>(() =>
-            edition.UpdateCategory(CategoryId.New(), "Namn", null, PersonId.New()));
+            edition.UpdateCategory(CategoryId.New(), "Namn", null, null, PersonId.New()));
     }
 
     // ── RemoveCategory ──────────────────────────────────────────────────────

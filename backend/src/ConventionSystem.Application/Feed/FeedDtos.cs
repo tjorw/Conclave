@@ -14,7 +14,7 @@ public record EditionFeedDto(
 
 public record VenueFeedDto(Guid Id, string Name, string Building, string? Description);
 
-public record CategoryFeedDto(Guid Id, string Name, string? Description);
+public record CategoryFeedDto(Guid Id, string Name, string? PublicDescription);
 
 public record EventSummaryFeedDto(
     Guid Id,

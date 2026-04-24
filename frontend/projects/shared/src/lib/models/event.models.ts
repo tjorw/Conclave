@@ -26,6 +26,7 @@ export interface EventDto {
   categoryName: string | null;
   categoryResponsibleId: string | null;
   categoryResponsibleName: string | null;
+  categoryOrganizerInstructions: string | null;
   leadOrganiserId: string;
   leadOrganiserName: string | null;
   status: EventStatus;

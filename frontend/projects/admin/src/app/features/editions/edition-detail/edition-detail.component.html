@@ -394,7 +394,8 @@
             <thead>
               <tr>
                 <th><button type="button" class="sort-header" (click)="setCategorySort('name')">Namn <mat-icon>{{ categorySortIcon('name') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setCategorySort('description')">Beskrivning <mat-icon>{{ categorySortIcon('description') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setCategorySort('organizerInstructions')">Arrangörsinstruktioner <mat-icon>{{ categorySortIcon('organizerInstructions') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="setCategorySort('publicDescription')">Publik beskrivning <mat-icon>{{ categorySortIcon('publicDescription') }}</mat-icon></button></th>
                 <th><button type="button" class="sort-header" (click)="setCategorySort('responsible')">Ansvarig <mat-icon>{{ categorySortIcon('responsible') }}</mat-icon></button></th>
                 <th class="actions-col"></th>
               </tr>
@@ -403,7 +404,8 @@
               @for (c of sortedCategories(e.categories); track c.id) {
                 <tr>
                   <td>{{ c.name }}</td>
-                  <td class="muted">{{ c.description || '–' }}</td>
+                  <td class="muted">{{ c.organizerInstructions || '–' }}</td>
+                  <td class="muted">{{ c.publicDescription || '–' }}</td>
                   <td>{{ personName(c.responsibleId) }}</td>
                   <td class="row-actions">
                     <button mat-icon-button (click)="startEditCategory(c)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
@@ -426,13 +428,16 @@
             <h4 class="form-title">Redigera: {{ ec.name }}</h4>
             <div class="form-row">
               <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
-              <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
               <mat-form-field>
                 <mat-label>Ansvarig</mat-label>
                 <mat-select formControlName="responsibleId">
                   @for (p of persons(); track p.id) { <mat-option [value]="p.id">{{ p.name }}</mat-option> }
                 </mat-select>
               </mat-form-field>
+            </div>
+            <lib-markdown-editor formControlName="organizerInstructions" label="Instruktioner till arrangören" [rows]="6" />
+            <lib-markdown-editor formControlName="publicDescription" label="Publik beskrivning" [rows]="6" />
+            <div class="form-row">
               <button mat-button type="button" (click)="editingCategory.set(null)">Avbryt</button>
               <button mat-flat-button color="primary" type="submit" [disabled]="editCategoryForm.invalid || saving()">Spara</button>
             </div>
@@ -449,13 +454,16 @@
             <h4 class="form-title">Lägg till kategori</h4>
             <div class="form-row">
               <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
-              <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
               <mat-form-field>
                 <mat-label>Ansvarig</mat-label>
                 <mat-select formControlName="responsibleId">
                   @for (p of persons(); track p.id) { <mat-option [value]="p.id">{{ p.name }}</mat-option> }
                 </mat-select>
               </mat-form-field>
+            </div>
+            <lib-markdown-editor formControlName="organizerInstructions" label="Instruktioner till arrangören" [rows]="6" />
+            <lib-markdown-editor formControlName="publicDescription" label="Publik beskrivning" [rows]="6" />
+            <div class="form-row">
               <button mat-button type="button" (click)="cancelAddCategoryForm()" [disabled]="saving()">Avbryt</button>
               <button mat-flat-button color="primary" type="submit" [disabled]="categoryForm.invalid || saving()">Lägg till</button>
             </div>

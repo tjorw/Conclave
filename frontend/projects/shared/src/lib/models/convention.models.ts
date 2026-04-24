@@ -66,7 +66,8 @@ export interface StationDto {
 export interface CategoryDto {
   id: string;
   name: string;
-  description: string | null;
+  organizerInstructions: string | null;
+  publicDescription: string | null;
   responsibleId: string;
 }
 

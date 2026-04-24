@@ -31,7 +31,8 @@ public sealed class UpdateCategoryHandler(
         context.Edition.UpdateCategory(
             new CategoryId(command.CategoryId),
             command.Name,
-            command.Description,
+            command.OrganizerInstructions,
+            command.PublicDescription,
             new PersonId(command.ResponsibleId));
 
         await editionRepository.SaveAsync(ct);

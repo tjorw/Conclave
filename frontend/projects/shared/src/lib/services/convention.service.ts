@@ -57,7 +57,8 @@ export interface UpdateStationRequest {
 
 export interface CreateCategoryRequest {
   name: string;
-  description?: string | null;
+  organizerInstructions?: string | null;
+  publicDescription?: string | null;
   responsibleId: string;
 }
 
@@ -84,7 +85,8 @@ export interface UpdateStaffAreaRequest {
 
 export interface UpdateCategoryRequest {
   name: string;
-  description?: string | null;
+  organizerInstructions?: string | null;
+  publicDescription?: string | null;
   responsibleId: string;
 }
 

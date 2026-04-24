@@ -43,6 +43,12 @@
       <section class="card">
         <h2>Arrangemagsuppgifter</h2>
 
+        @if (ev.categoryOrganizerInstructions) {
+          <div class="organizer-instructions">
+            <markdown [data]="ev.categoryOrganizerInstructions" />
+          </div>
+        }
+
         @if (draftState().error) {
           <div class="error-banner">{{ draftState().error }}</div>
         }
@@ -107,6 +113,11 @@
       <!-- Readonly-vy (UnderReview / Published / Cancelled) -->
       <section class="card readonly-card">
         <h2>Arrangemagsuppgifter</h2>
+        @if (ev.categoryOrganizerInstructions) {
+          <div class="organizer-instructions">
+            <markdown [data]="ev.categoryOrganizerInstructions" />
+          </div>
+        }
         <dl>
           <dt>Titel</dt>        <dd>{{ ev.title || '—' }}</dd>
           <dt>Kategori</dt>     <dd>{{ ev.categoryName || '—' }}</dd>
