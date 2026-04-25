@@ -9,22 +9,26 @@ Spårar vad som återstår inför produktionsstart.
 Prioriterad lista – återstående arbete, högst prioritet överst.
 
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
+- [ ] `R-OB01` Outbox-mönster för extern kommunikation – `OutboxMessage`-tabell, `OutboxEmailSender` (implementerar `IEmailSender`), `OutboxProcessor` (`IHostedService`, kör var 30:e sekund), Polly-retry med exponentiell backoff. Se `docs/Outbox.md` för design.
 - [ ] `R-HL01` Hjälpsystem – `HelpTooltip`-komponent och initiala texter för Convention/Edition (UC-HL001)
 - [ ] `R-HL02` Hjälpsystem – `HelpDrawer` + `HelpService` med route-mappning (UC-HL003, UC-HL004)
 - [ ] `R-HL03` Hjälpsystem – första omgången Markdown-innehåll (6 filer: convention, event, registration, staff)
 - [ ] `R-HL04` Hjälpsystem – `HelpPanel`-komponent på listsidor (UC-HL002)
 - [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
-- [ ] `R-OB01` Outbox-mönster för extern kommunikation – `OutboxMessage`-tabell, `OutboxEmailSender` (implementerar `IEmailSender`), `OutboxProcessor` (`IHostedService`, kör var 30:e sekund), Polly-retry med exponentiell backoff. Se `docs/Outbox.md` för design.
+- [ ] `R-AT01` Arrangörsbiljetter – visa tillgängliga arrangörsbiljetter informativt vid arrangemangsanmälan (UC-EV013)
+- [ ] `R-AT02` Arrangörsbiljetter – tilldela/byta arrangörsbiljett vid publicering, inklusive medarrangörer och atomär revoke + ny biljett (UC-EV014)
+- [ ] `R-AT03` Arrangörsbiljetter – manuell adminhantering av arrangörsbiljett fristående från publiceringsflödet (UC-EV015)
+- [ ] `R-AT04` Arrangörsbiljetter – arrangör ser sin tilldelade biljett i "Mina biljetter" utan egen avbokningsåtgärd (UC-EV016)
+- [ ] `R-ST01` Funktionärsbiljetter – publik vy visar tilldelade funktionärsbiljetter tillsammans med övriga biljetter, med samma skydd mot egen avbokning som andra tilldelade biljetter
+- [ ] `R-BK01` Bokningskö – första bokningsförsök hamnar i väntlista när arrangemanget kräver tilldelning i stället för direkt bekräftelse
+- [ ] `R-BK02` Bokningstilldelning – stöd strategi per arrangemang: först till kvarn, lottning eller manuell tilldelning
+- [ ] `R-I18N01` Språkstyrning – samla kvarvarande hårdkodade UI-texter bakom labels/översättningslager och förbered engelsk version
+- [ ] `R-SCH03` Datumkontroller i boknings-, pass- och sessionsflöden föreslår första konventsdagen och dagens standardtider där det passar användarflödet.
 
 ### Medarrangörer (R-CO)
 
 Mål: huvudarrangören ska kunna föreslå medarrangörer med e-postadress, men de ska inte få arrangörsbehörighet, synas som medarrangörer eller räknas för arrangörsbiljetter förrän admin har godkänt ansökan.
 
-- [x] `R-CO01` Domänmodell: ersätt direkt tillägg av `CoOrganiser` med `CoOrganiserApplication`/`CoOrganiserInvite` på `Event` med status `Pending | Approved | Rejected | Cancelled`, e-post, valfritt namn, requestedById, reviewedById/reviewedAt och kommentar.
-- [x] `R-CO02` Publik arrangörsvy: huvudarrangör kan lägga till medarrangör genom e-postadress; listan visar väntar på godkännande/godkänd/avslagen och tillåter återkallande innan godkännande.
-- [x] `R-CO03` Admin-vy: kategoriansvarig eller konventionsadmin granskar medarrangörsansökningar per evenemang/upplaga och kan godkänna eller avslå.
-- [x] `R-CO04` Godkännande: systemet matchar e-post mot befintlig `Person` i konventionen eller skapar en inaktiv/grundläggande personpost enligt UC002, lägger först då till aktiv `CoOrganiser`, och hindrar dubletter mot både lead organiser, aktiva medarrangörer och väntande ansökningar.
-- [x] `R-CO05` Behörighet och projektioner: endast godkända medarrangörer räknas i `IsOrganiser`, `ListMyEvents`, arrangörsschema, publik eventdetalj och arrangörsbiljettsflöden.
 - [ ] `R-CO06` Notiser: skicka e-post vid nominering och granskningsbeslut via `R-OB01`; tills Outbox finns loggas domänhändelser utan extern leverans.
 
 ### Laganmälningar (R-TM)
@@ -63,6 +67,8 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 - [ ] `R-TAG03` Publik exponering och filtrering – event-feed och programdetalj visar taggar; publika programvyn erbjuder taggfilter utöver dag och kategori.
 - [ ] `R-TAG04` Kopiering av struktur – `CopyStructure` bör kopiera editionens taggdefinitioner på samma sätt som lokaler, funktionsområden och stationer när det är relevant för ny upplaga.
 
+
+
 ---
 
 ## Teknisk skuld
@@ -80,6 +86,7 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 | **Deduplikering i tidsschema** | Om samma session förekommer i flera kategorier (t.ex. bokad OCH arrangör) prioriteras Booked > Organiser > Watching i `MyScheduleRepository`. Prioriteringslogiken är inte testad på domännivå. Om affärsreglerna ändras (t.ex. "visa alltid arrangörsrollen oavsett bokning") behöver deduplikeringen ses över. | Låg – nuvarande beteende är rimligt |
 | **Inga `DbSet<Station>` i `ConventionDbContext`** | `Station` och `Venue` nås via `db.Set<T>()` i stället för namngivna `DbSet<T>`-properties. Inkonsekvens mot övriga entiteter. Lägg till `DbSet<Station>` och `DbSet<Venue>` i `ConventionDbContext` om fler queries börjar hämta dem direkt. | Låg |
 | **`ICurrentUser` i bakgrundsjobb (dokumentera)** | `ICurrentUser` läser från `HttpContext` – fungerar inte utanför HTTP-request-scopet. Bakgrundsjobb och seeders måste anropa domänmodellen direkt eller använda systemidentitet. Outbox-processorn är referensimplementation för rätt mönster (`R-OB01`). | Medel |
+
 ---
 
 ## Fas 4 – Demo och driftsättning
@@ -98,19 +105,3 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - `environment.ts` konfigureras med rätt `conventionId` och `apiBaseUrl`
 - Admin-konto skapas via `CreateConventionCommand` + `UserManager`
 - Välkomstmejl med inloggningsuppgifter för konventets admin
-
-
-## Refine
-- Bakgrundsjobb för mail m.m. → se `R-OB01` (Outbox-mönster, design i `docs/Outbox.md`)
-- Föreslå startdatum i datum kontroller som är första dagen på konventet
-- public - funktionering skall visa funktionärsbiljetter
-- arrangör - skall visa arrangörsbiljetter
-- biljetter till arranggörer - man behöver bli tilldelad
-- bokningar väntlista - man hamnar där först
-- bokningar i arrangmang (tilldelning)
--- först går först
--- lottning
--- manuell
-- språkstyrning
--- engelsk version
-- default start och sluttid på evenemanget, men sätt per dag
