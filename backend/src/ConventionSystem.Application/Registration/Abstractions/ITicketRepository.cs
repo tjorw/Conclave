@@ -1,4 +1,5 @@
 using ConventionSystem.Domain.Registration.Aggregates;
+using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Ids;
 
 namespace ConventionSystem.Application.Registration.Abstractions;
@@ -6,6 +7,7 @@ namespace ConventionSystem.Application.Registration.Abstractions;
 public interface ITicketRepository
 {
     Task<Ticket?> GetByIdAsync(TicketId id, CancellationToken ct = default);
+    Task<IReadOnlyList<Ticket>> ListActiveOrganiserTicketsAsync(EditionId editionId, IReadOnlyCollection<PersonId> personIds, CancellationToken ct = default);
     Task<bool> ExistsByTypeAsync(TicketTypeId ticketTypeId, CancellationToken ct = default);
     Task AddAsync(Ticket ticket, CancellationToken ct = default);
     Task AddAndSaveAsync(Ticket ticket, CancellationToken ct = default);

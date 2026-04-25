@@ -35,9 +35,15 @@ export interface EventDto {
   registrationType: RegistrationType;
   dropInRules: string | null;
   coOrganiserIds: string[];
+  coOrganisers: CoOrganiserDto[];
   coOrganiserApplications: CoOrganiserApplicationDto[];
   sessions: SessionDto[];
   comments: EventCommentDto[];
+}
+
+export interface CoOrganiserDto {
+  personId: string;
+  personName: string | null;
 }
 
 export interface CoOrganiserApplicationDto {

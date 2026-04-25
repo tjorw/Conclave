@@ -51,6 +51,39 @@
   margin-bottom: 16px;
 }
 
+.organiser-ticket-list {
+  display: grid;
+  gap: 12px;
+}
+
+.organiser-ticket-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: 16px;
+  align-items: start;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.organiser-ticket-person {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  span,
+  small {
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
 .co-organiser-item {
   border-bottom: 1px solid #eee;
   padding: 12px 0;
@@ -198,4 +231,10 @@
 mat-card-header {
   display: flex;
   align-items: center;
+}
+
+@media (max-width: 720px) {
+  .organiser-ticket-row {
+    grid-template-columns: 1fr;
+  }
 }

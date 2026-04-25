@@ -110,9 +110,12 @@ public static class EventEndpoints
 
         // UC-EV007 – Godkänn evenemangsversion
         events.MapPost("/approve",
-            async (Guid eventId, ISender sender, CancellationToken ct) =>
+            async (Guid eventId, ApproveVersionRequest request, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new ApproveVersionCommand(eventId), ct);
+                var assignments = request.OrganizerTicketAssignments ?? [];
+                await sender.Send(new ApproveVersionCommand(
+                    eventId,
+                    assignments.Select(a => new ApproveOrganizerTicketAssignment(a.PersonId, a.TicketTypeId)).ToList()), ct);
                 return Results.NoContent();
             });
 
@@ -216,6 +219,8 @@ public static class EventEndpoints
 }
 
 public record CreateEventRequest(Guid CategoryId, Guid LeadOrganiserId, Guid ConventionId);
+public record ApproveVersionRequest(IReadOnlyList<ApproveOrganizerTicketAssignmentRequest>? OrganizerTicketAssignments = null);
+public record ApproveOrganizerTicketAssignmentRequest(Guid PersonId, Guid? TicketTypeId);
 public record ChangeCategoryRequest(Guid CategoryId);
 public record EditEventDraftRequest(string Title, string Description, RegistrationType RegistrationType, string? DropInRules, string? ScheduleRequestText);
 public record AddCoOrganiserRequest(string Email, string? Name, string? Message, Guid ConventionId);

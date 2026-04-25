@@ -22,6 +22,21 @@ export interface VisitorTicketTypeDto {
   description: string | null;
 }
 
+export interface OrganiserTicketTypeDto {
+  id: string;
+  name: string;
+  price: number;
+  description: string | null;
+}
+
+export interface OrganiserTicketAssignmentDto {
+  personId: string;
+  ticketId: string | null;
+  ticketTypeId: string | null;
+  ticketTypeName: string | null;
+  status: TicketStatus | null;
+}
+
 export interface PromotionCodeAdminDto {
   id: string;
   code: string;

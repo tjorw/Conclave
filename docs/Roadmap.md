@@ -15,8 +15,8 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-HL03` Hjälpsystem – första omgången Markdown-innehåll (6 filer: convention, event, registration, staff)
 - [ ] `R-HL04` Hjälpsystem – `HelpPanel`-komponent på listsidor (UC-HL002)
 - [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
-- [ ] `R-AT01` Arrangörsbiljetter – visa tillgängliga arrangörsbiljetter informativt vid arrangemangsanmälan (UC-EV013)
-- [ ] `R-AT02` Arrangörsbiljetter – tilldela/byta arrangörsbiljett vid publicering, inklusive medarrangörer och atomär revoke + ny biljett (UC-EV014)
+- [x] `R-AT01` Arrangörsbiljetter – visa tillgängliga arrangörsbiljetter informativt vid arrangemangsanmälan (UC-EV013)
+- [x] `R-AT02` Arrangörsbiljetter – tilldela/byta arrangörsbiljett vid publicering, inklusive medarrangörer och atomär revoke + ny biljett (UC-EV014)
 - [ ] `R-AT03` Arrangörsbiljetter – manuell adminhantering av arrangörsbiljett fristående från publiceringsflödet (UC-EV015)
 - [ ] `R-AT04` Arrangörsbiljetter – arrangör ser sin tilldelade biljett i "Mina biljetter" utan egen avbokningsåtgärd (UC-EV016)
 - [ ] `R-ST01` Funktionärsbiljetter – publik vy visar tilldelade funktionärsbiljetter tillsammans med övriga biljetter, med samma skydd mot egen avbokning som andra tilldelade biljetter

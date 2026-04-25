@@ -1897,9 +1897,9 @@ Arrangör (autentiserad)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Arrangörsbiljetter visas i anmälningsformuläret i publika appen
-- [ ] Om inga arrangörsbiljetter finns visas inte sektionen
-- [ ] Arrangören kan inte välja eller ansöka om biljett i detta steg
+- [x] Arrangörsbiljetter visas i anmälningsformuläret i publika appen
+- [x] Om inga arrangörsbiljetter finns visas inte sektionen
+- [x] Arrangören kan inte välja eller ansöka om biljett i detta steg
 
 ---
 
@@ -1941,10 +1941,10 @@ Kategoriansvarig eller evenemangskoordinator (admin)
 - `OrganizerTicketsAssigned { eventId, editionId, assignments, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Publiceringsvyn visar tillgängliga arrangörsbiljetter och nuvarande tilldelning
-- [ ] Systemet sparar korrekt med revoke + ny biljett vid byte
-- [ ] Publicering och biljetttilldelning sker i samma anrop och transaktion
-- [ ] Om inga `TicketTypeCategory = Organiser`-typer finns visas inte biljettsektionen
+- [x] Publiceringsvyn visar tillgängliga arrangörsbiljetter och nuvarande tilldelning
+- [x] Systemet sparar korrekt med revoke + ny biljett vid byte
+- [x] Publicering och biljetttilldelning sker i samma anrop och transaktion
+- [x] Om inga `TicketTypeCategory = Organiser`-typer finns visas inte biljettsektionen
 
 ---
 
@@ -2029,13 +2029,13 @@ Arrangör (autentiserad)
 - Ingår i `allowedCategories`-logiken som vanligt, men tilldelas aldrig via självregistrering
 
 ### Ticket (Registration BC)
-- Ny property: `Guid? EventId` för spårbarhet till vilket arrangemang biljetten tilldelades från
-- Ny metod: `static Ticket CreateOrganizerTicket(TicketTypeId, PersonId, EventId, EditionId)`
+- Arrangörsbiljetter är upplage-/personbaserade och har ingen koppling till ett enskilt arrangemang
+- Ny metod: `static Ticket CreateOrganizerTicket(TicketTypeId, PersonId, EditionId)`
 - Ny domänmetod på aggregatroten: `AssignOrganizerTicket(PersonId, TicketTypeId)` och `RevokeOrganizerTicket(PersonId)`
 
 ### Event (Event BC)
 - `Publish()` tar en optional parameter `IReadOnlyList<OrganizerTicketAssignment>`
-- Nytt value object: `record OrganizerTicketAssignment(PersonId PersonId, TicketTypeId TicketTypeId)`
+- Nytt value object: `record OrganizerTicketAssignment(PersonId PersonId, TicketTypeId? TicketTypeId)`
 - Skickar `OrganizerTicketsAssigned` som domain event som Registration BC lyssnar på
 
 ### Kommunikation mellan BC

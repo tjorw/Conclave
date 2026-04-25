@@ -4,7 +4,10 @@ using ConventionSystem.Application.Common.Contexts;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
+using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Ids;
+using ConventionSystem.Domain.Event.ValueObjects;
+using ConventionSystem.Domain.Registration.Ids;
 
 namespace ConventionSystem.Application.Event.Commands.ApproveVersion;
 
@@ -19,7 +22,7 @@ public sealed class ApproveVersionHandler(
     {
         var performedById = currentUser.PersonId;
 
-        var ev = await eventRepository.GetByIdAsync(new EventId(command.EventId), ct)
+        var ev = await eventRepository.GetByIdWithCoOrganisersAsync(new EventId(command.EventId), ct)
             ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());
 
         var context = await EditionContextLoader.LoadWithCategoriesAsync(
@@ -35,7 +38,13 @@ public sealed class ApproveVersionHandler(
             performedById,
             "Utföraren har inte behörighet att godkänna evenemang i denna kategori.");
 
-        ev.Approve(performedById);
+        var organizerTicketAssignments = (command.OrganizerTicketAssignments ?? [])
+            .Select(a => new OrganizerTicketAssignment(
+                new PersonId(a.PersonId),
+                a.TicketTypeId is null ? null : new TicketTypeId(a.TicketTypeId.Value)))
+            .ToList();
+
+        ev.Approve(performedById, organizerTicketAssignments);
         await eventRepository.SaveAsync(ct);
     }
 }

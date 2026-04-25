@@ -31,7 +31,9 @@ using ConventionSystem.Application.Registration.Queries.GetMyVisitorRegistration
 using ConventionSystem.Application.Registration.Queries.GetMyAssignedShifts;
 using ConventionSystem.Application.Registration.Queries.GetMyOrganiserSessions;
 using ConventionSystem.Application.Registration.Queries.GetMyWatchedSessions;
+using ConventionSystem.Application.Registration.Queries.GetEventOrganiserTicketAssignments;
 using ConventionSystem.Application.Registration.Queries.ListAvailableTicketTypes;
+using ConventionSystem.Application.Registration.Queries.ListOrganiserTicketTypes;
 using ConventionSystem.Application.Registration.Queries.ListPromotionCodeRedemptions;
 using ConventionSystem.Application.Registration.Queries.ListPromotionCodes;
 using ConventionSystem.Application.Registration.Queries.ListTicketTypes;
@@ -224,6 +226,16 @@ public static class RegistrationEndpoints
         groups.Authenticated.MapGet("/editions/{editionId:guid}/available-ticket-types",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListAvailableTicketTypesQuery(editionId), ct)));
+
+        // UC-EV013: Informativa arrangörsbiljetter vid arrangemangsanmälan
+        groups.Authenticated.MapGet("/editions/{editionId:guid}/organiser-ticket-types",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListOrganiserTicketTypesQuery(editionId), ct)));
+
+        // UC-EV014: Nuvarande arrangörsbiljetter för publiceringsvyn
+        groups.Authenticated.MapGet("/events/{eventId:guid}/organiser-ticket-assignments",
+            async (Guid eventId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetEventOrganiserTicketAssignmentsQuery(eventId), ct)));
 
         // 3.2.4 – Mina sessionsregistreringar
         groups.Authenticated.MapGet("/editions/{editionId:guid}/my-session-registrations",

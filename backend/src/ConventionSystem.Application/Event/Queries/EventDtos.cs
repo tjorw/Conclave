@@ -49,9 +49,14 @@ public record EventDto(
     string RegistrationType,
     string? DropInRules,
     IReadOnlyList<Guid> CoOrganiserIds,
+    IReadOnlyList<CoOrganiserDto> CoOrganisers,
     IReadOnlyList<CoOrganiserApplicationDto> CoOrganiserApplications,
     IReadOnlyList<SessionDto> Sessions,
     IReadOnlyList<EventCommentDto> Comments);
+
+public record CoOrganiserDto(
+    Guid PersonId,
+    string? PersonName);
 
 public record CoOrganiserApplicationDto(
     Guid Id,

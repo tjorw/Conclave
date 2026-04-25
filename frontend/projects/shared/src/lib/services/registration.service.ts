@@ -8,6 +8,8 @@ import {
   MyOrganiserSessionSummaryDto,
   MyAssignedShiftSummaryDto,
   MyStaffApplicationDto,
+  OrganiserTicketAssignmentDto,
+  OrganiserTicketTypeDto,
   TicketTypeAdminDto,
   VisitorTicketTypeDto,
   VisitorRegistrationAdminDto,
@@ -31,6 +33,18 @@ export class RegistrationService {
   getAvailableTicketTypes(editionId: string) {
     return this.http.get<VisitorTicketTypeDto[]>(
       `${this.env.apiBaseUrl}/editions/${editionId}/available-ticket-types`
+    );
+  }
+
+  getOrganiserTicketTypes(editionId: string) {
+    return this.http.get<OrganiserTicketTypeDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/organiser-ticket-types`
+    );
+  }
+
+  getEventOrganiserTicketAssignments(eventId: string) {
+    return this.http.get<OrganiserTicketAssignmentDto[]>(
+      `${this.env.apiBaseUrl}/events/${eventId}/organiser-ticket-assignments`
     );
   }
 

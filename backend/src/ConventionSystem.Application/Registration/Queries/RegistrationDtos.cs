@@ -21,6 +21,19 @@ public record VisitorTicketTypeDto(
     int Price,
     string? Description);
 
+public record OrganiserTicketTypeDto(
+    Guid Id,
+    string Name,
+    int Price,
+    string? Description);
+
+public record OrganiserTicketAssignmentDto(
+    Guid PersonId,
+    Guid? TicketId,
+    Guid? TicketTypeId,
+    string? TicketTypeName,
+    string? Status);
+
 public record VisitorRegistrationAdminDto(
     Guid Id,
     Guid PersonId,

@@ -34,6 +34,13 @@ public sealed class Ticket : AggregateRoot
         CreatedAt = DateTimeOffset.UtcNow;
     }
 
+    public static Ticket CreateOrganizerTicket(
+        TicketTypeId ticketTypeId,
+        PersonId personId,
+        EditionId editionId,
+        PersonId assignedById)
+        => new(TicketId.New(), ticketTypeId, personId, editionId, assignedById);
+
     public void ConfirmPayment()
     {
         if (Status == TicketStatus.Paid)
