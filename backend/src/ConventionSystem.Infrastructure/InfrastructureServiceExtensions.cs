@@ -54,22 +54,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<SendGridEmailService>();
         services.AddScoped<OutboxEmailService>();
 
-        services.AddScoped<IEmailService>(provider =>
-        {
-            var options = provider.GetRequiredService<IOptions<EmailOptions>>().Value;
-
-            if (string.Equals(options.Provider, "smtp", StringComparison.OrdinalIgnoreCase))
-                return provider.GetRequiredService<SmtpEmailService>();
-            if (string.Equals(options.Provider, "sendgrid", StringComparison.OrdinalIgnoreCase))
-                return provider.GetRequiredService<SendGridEmailService>();
-            if (string.Equals(options.Provider, "logging", StringComparison.OrdinalIgnoreCase))
-                return provider.GetRequiredService<LoggingEmailService>();
-            if (string.Equals(options.Provider, "outbox", StringComparison.OrdinalIgnoreCase))
-                return provider.GetRequiredService<OutboxEmailService>();
-
-            throw new InvalidOperationException(
-                $"Ogiltig e-postprovider '{options.Provider}'. Tillatna varden ar 'Logging', 'Smtp', 'SendGrid' och 'Outbox'.");
-        });
+        services.AddScoped<IEmailService>(provider => provider.GetRequiredService<OutboxEmailService>());
 
         services.AddScoped<IDirectEmailSender>(provider =>
         {
@@ -85,7 +70,11 @@ public static class InfrastructureServiceExtensions
             if (string.Equals(backend, "sendgrid", StringComparison.OrdinalIgnoreCase))
                 return provider.GetRequiredService<SendGridEmailService>();
 
-            return provider.GetRequiredService<LoggingEmailService>();
+            if (string.Equals(backend, "logging", StringComparison.OrdinalIgnoreCase))
+                return provider.GetRequiredService<LoggingEmailService>();
+
+            throw new InvalidOperationException(
+                $"Ogiltig e-postprovider '{backend}'. Tillatna varden ar 'Logging', 'Smtp', 'SendGrid' och 'Outbox'.");
         });
 
         services.AddHostedService<OutboxProcessor>();
