@@ -29,8 +29,8 @@ export class EditionExportComponent implements OnInit {
   readonly exporting = signal(false);
   readonly error = signal<string | null>(null);
   readonly copied = signal(false);
-  readonly includeEvents = signal(false);
-  readonly includeTicketTypes = signal(false);
+  readonly includeEvents = signal(true);
+  readonly includeTicketTypes = signal(true);
 
   readonly canUseJson = computed(() => this.json().length > 0 && !this.exporting());
 
