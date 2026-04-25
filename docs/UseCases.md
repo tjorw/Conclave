@@ -2987,3 +2987,129 @@ Konventionsadministratör
 - [ ] `IsCustomized` sätts till `false`
 - [ ] Nästa utskick av aktuell typ använder standardtextens ämne och brödtext
 - [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EX001 – Exportera upplaga som JSON
+
+## Sammanfattning
+En administratör exporterar en upplaga som ett fristående JSON-dokument som kan användas för att skapa en ny upplaga med samma struktur.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Upplagan finns
+- Utföraren är administratör för konventionen
+
+## Flöde
+1. Administratören navigerar till exportsidan i admin-appen
+2. Administratören väljer vilka valbara block som skall ingå: evenemang och/eller biljetttyper
+3. Administratören klickar "Exportera"
+4. Systemet hämtar upplagan med vald data och producerar ett `EditionExportDocument`
+5. Systemet levererar dokumentet som en nedladdningsbar JSON-fil
+
+## Valbara block
+- **Evenemang** – titel, beskrivning, kategorinamn, registreringstyp, inpläggningsregler, sessioner (lokal via namn, dag (relativt), klockslag, max-platser, starttyp)
+- **Biljetttyper** – namn, pris, typ (Visitor/Organiser/Staff), beskrivning, giltiga dagar (relativt), tillåtna kategorier via namn
+
+## Datumrepresentation
+Alla datum uttrycks relativt till upplagets startdatum. Dag 1 = första dagen. Klockslag är lokaltid som `HH:mm`.
+
+## Vad som aldrig exporteras
+- Interna ID:n (inga `Guid`-värden i dokumentet)
+- Transaktionsdata: biljetter, registreringar, staffansökningar, kommentarer, medarrangörsstatus
+- Upplagens status, öppna registreringar eller koordinatorer
+- Identiteter (person-ID:n) – person-referenser uttrycks som e-postadresser
+
+## Affärsregler
+- Dokumentet är versions­märkt med `schemaVersion` för framtida kompabilitet
+- Venues, staffområden, stationer och kategorier exporteras alltid som en del av upplagestrukturen
+- Stationer placeras hierarkiskt under sitt staffområde i dokumentet
+- Sessionens dag beräknas som `(sessionDatum - upplagets startdatum).TotalDays + 1`
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Exportdokumentet innehåller inga interna ID:n
+- [ ] Datum är relativa (dag-nummer, inte datum)
+- [ ] Valfria block inkluderas respektive utelämnas korrekt baserat på administratörens val
+- [ ] Filen laddas ner med `Content-Disposition: attachment` och ett meningsfullt filnamn
+- [ ] Person-referenser exporteras som e-postadresser
+
+---
+
+# UC-EX002 – Importera upplaga från JSON
+
+## Sammanfattning
+En administratör skapar en ny upplaga genom att klistra in ett exportdokument och ange namn och startdatum för den nya upplagan. Systemet tolkar dokumentet, skapar strukturen och rapporterar eventuella avvikelser.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Konventionen finns
+- Utföraren är administratör för konventionen
+- Administratören har ett giltigt `EditionExportDocument` som JSON
+
+## Flöde
+1. Administratören klickar "Skapa ny upplaga" på dashboard
+2. Administratören väljer alternativet "Importera från JSON"
+3. Administratören klistrar in JSON-dokumentet i textfältet
+4. Admin-appen tolkar dokumentet och visar en förhandsgranskning (antal venues, kategorier, evenemang m.m.)
+5. Administratören anger namn och startdatum för den nya upplagan
+6. Administratören klickar "Skapa från import"
+7. Systemet skapar upplagan och all inkluderad struktur med nya interna ID:n
+8. Systemet returnerar den nya `EditionId` och en lista med importvarningar
+9. Admin-appen navigerar till den nya upplagan och visar varningarna
+
+## Importlogik
+Systemet utför skapandet i följande ordning:
+1. Skapa upplagan med angivet namn och period (startdatum + `durationDays`)
+2. Skapa schemaläggningsdagar (relativt till startdatum)
+3. Skapa venues – bygg `namn → VenueId`-karta
+4. Skapa staffområden – slå upp ansvarig via e-post; fallback till importerande person
+5. Skapa stationer – slå upp staffområde via namnet
+6. Skapa kategorier – slå upp ansvarig via e-post; fallback till importerande person
+7. Skapa biljetttyper (om inkluderade) – slå upp `allowedCategoryNames` mot nya CategoryId:n
+8. Skapa evenemang (om inkluderade):
+   - Slå upp kategori via namn; evenemang utan matchande kategori hoppas över med varning
+   - Skapas med status `Draft`, `LeadOrganiserId` = importerande person
+   - Sessioner: slå upp lokal via namn; session utan matchande lokal hoppas över med varning
+
+## Datumrekonstruktion
+- Upplagets period: `startDate` till `startDate + (durationDays - 1) dagar`
+- Schemaläggningsdagar: `startDate + (day - 1) dagar`
+- Sessionstidpunkter: `startDate + (day - 1) dagar` kombinerat med `startTime`/`endTime`
+
+## Importvarningar
+Systemet samlar alla avvikelser och returnerar dem efter att upplagan skapats. Importen avbryts inte av mjuka fel.
+
+| Varningskod | Beskrivning |
+|---|---|
+| `PersonNotFound` | E-post finns inte bland konventionens members – ersatt av importerande person |
+| `CategoryNotFound` | Evenemang refererade kategorinamn som inte matchade – evenemang hoppades över |
+| `VenueNotFound` | Session refererade lokal­namn som inte matchade – session hoppades över |
+| `EventSkipped` | Evenemang kunde inte skapas av annat skäl |
+
+## Affärsregler
+- Importen skapar alltid en ny upplaga – befintliga upplagor uppdateras aldrig
+- Alla interna ID:n genereras på nytt
+- Dokumentets `schemaVersion` valideras; okänd version avvisas med fel
+- `durationDays` i dokumentet avgör upplagets längd; det angivna startdatumet styr förskjutningen
+- Upplagan skapas alltid i status `Draft` oavsett källupplagets status
+
+## Domänhändelser
+- `EditionCreated` (för den nya upplagan)
+- Domänhändelser per skapat barn (venues, kategorier etc.) om de höjs av respektive metod
+
+## Acceptanskriterier
+- [ ] Ny upplaga skapas med korrekt namn, period och alla strukturella element
+- [ ] Datum rekonstrueras korrekt från relativa dag-nummer och angivet startdatum
+- [ ] Person-referenser löses upp via e-post; fallback till importerande person loggas som varning
+- [ ] Evenemang utan matchande kategori hoppas över och loggas som varning
+- [ ] Sessioner utan matchande lokal hoppas över och loggas som varning
+- [ ] Varningslistan visas för administratören efter avslutad import
+- [ ] Upplagan skapas med status `Draft`
+- [ ] Kommandohanteraren har tillhörande enhetstester
