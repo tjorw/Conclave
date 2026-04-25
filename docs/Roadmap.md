@@ -9,7 +9,7 @@ Spårar vad som återstår inför produktionsstart.
 Prioriterad lista – återstående arbete, högst prioritet överst.
 
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
-- [x] `R-OB01` Outbox-mönster för extern kommunikation – `OutboxMessage`-tabell, `OutboxEmailSender` (implementerar `IEmailSender`), `OutboxProcessor` (`IHostedService`, kör var 30:e sekund), Polly-retry med exponentiell backoff. Se `docs/Outbox.md` för design.
+- [x] ` ` Outbox-mönster för extern kommunikation – `OutboxMessage`-tabell, `OutboxEmailSender` (implementerar `IEmailSender`), `OutboxProcessor` (`IHostedService`, kör var 30:e sekund), Polly-retry med exponentiell backoff. Se `docs/Outbox.md` för design.
 - [ ] `R-HL01` Hjälpsystem – `HelpTooltip`-komponent och initiala texter för Convention/Edition (UC-HL001)
 - [ ] `R-HL02` Hjälpsystem – `HelpDrawer` + `HelpService` med route-mappning (UC-HL003, UC-HL004)
 - [ ] `R-HL03` Hjälpsystem – första omgången Markdown-innehåll (6 filer: convention, event, registration, staff)
@@ -29,7 +29,7 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 
 Mål: huvudarrangören ska kunna föreslå medarrangörer med e-postadress, men de ska inte få arrangörsbehörighet, synas som medarrangörer eller räknas för arrangörsbiljetter förrän admin har godkänt ansökan.
 
-- [ ] `R-CO06` Notiser: skicka e-post vid nominering och granskningsbeslut via `R-OB01`; tills Outbox finns loggas domänhändelser utan extern leverans.
+- [x] `R-CO06` Notiser: skicka e-post vid nominering och granskningsbeslut via `R-OB01`; tills Outbox finns loggas domänhändelser utan extern leverans.
 
 ### Laganmälningar (R-TM)
 

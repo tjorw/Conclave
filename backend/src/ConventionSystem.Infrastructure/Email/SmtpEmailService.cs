@@ -105,6 +105,24 @@ internal sealed class SmtpEmailService(IOptions<EmailOptions> options) : IEmailS
         return SendAsync(toEmail, toName, subject, body, ct);
     }
 
+    public Task SendCoOrganiserApplicationReceivedAsync(string toEmail, string eventTitle, CancellationToken ct = default)
+    {
+        var (subject, body) = EmailTemplates.CoOrganiserApplicationReceived(eventTitle);
+        return SendAsync(toEmail, toEmail, subject, body, ct);
+    }
+
+    public Task SendCoOrganiserApplicationApprovedAsync(string toEmail, string toName, string eventTitle, CancellationToken ct = default)
+    {
+        var (subject, body) = EmailTemplates.CoOrganiserApplicationApproved(eventTitle);
+        return SendAsync(toEmail, toName, subject, body, ct);
+    }
+
+    public Task SendCoOrganiserApplicationRejectedAsync(string toEmail, string toName, string eventTitle, string? comment, CancellationToken ct = default)
+    {
+        var (subject, body) = EmailTemplates.CoOrganiserApplicationRejected(eventTitle, comment);
+        return SendAsync(toEmail, toName, subject, body, ct);
+    }
+
     public Task SendAsync(EmailPayload payload, CancellationToken ct = default)
         => SendAsync(payload.To, payload.ToName, payload.Subject, payload.Body, ct);
 

@@ -89,6 +89,24 @@ internal sealed class LoggingEmailService(ILogger<LoggingEmailService> logger) :
             confirmLink);
         return Task.CompletedTask;
     }
+    public Task SendCoOrganiserApplicationReceivedAsync(string toEmail, string eventTitle, CancellationToken ct = default)
+    {
+        logger.LogInformation("[EMAIL] Co-organiser application received -> <{Email}>, event: {Title}", toEmail, eventTitle);
+        return Task.CompletedTask;
+    }
+
+    public Task SendCoOrganiserApplicationApprovedAsync(string toEmail, string toName, string eventTitle, CancellationToken ct = default)
+    {
+        logger.LogInformation("[EMAIL] Co-organiser application approved -> {Name} <{Email}>, event: {Title}", toName, toEmail, eventTitle);
+        return Task.CompletedTask;
+    }
+
+    public Task SendCoOrganiserApplicationRejectedAsync(string toEmail, string toName, string eventTitle, string? comment, CancellationToken ct = default)
+    {
+        logger.LogInformation("[EMAIL] Co-organiser application rejected -> {Name} <{Email}>, event: {Title}, comment: {Comment}", toName, toEmail, eventTitle, comment);
+        return Task.CompletedTask;
+    }
+
     public Task SendAsync(EmailPayload payload, CancellationToken ct = default)
     {
         logger.LogInformation("[EMAIL] {Subject} -> {Name} <{Email}>", payload.Subject, payload.ToName, payload.To);
