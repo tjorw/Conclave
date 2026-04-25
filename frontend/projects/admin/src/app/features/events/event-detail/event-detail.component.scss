@@ -18,7 +18,11 @@
   font-size: 0.875rem;
   opacity: 0.7;
 
-  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .meta-edit-btn {
@@ -27,15 +31,6 @@
   font-size: 0.75rem;
   padding: 0 8px;
   min-width: 0;
-}
-
-.action-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 16px 0;
-
-  .spacer { flex: 1; }
 }
 
 .reject-card {
@@ -47,7 +42,9 @@
     margin-bottom: 12px;
   }
 
-  .full-width { width: 100%; }
+  .full-width {
+    width: 100%;
+  }
 }
 
 .content-card {
@@ -58,7 +55,9 @@
   border-bottom: 1px solid #eee;
   padding: 12px 0;
 
-  &:last-child { border-bottom: 0; }
+  &:last-child {
+    border-bottom: 0;
+  }
 }
 
 .co-organiser-info {
@@ -96,16 +95,23 @@
   gap: 4px;
 }
 
-
 .form-row {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   align-items: flex-start;
 
-  mat-form-field { flex: 1; min-width: 180px; }
-  .flex-grow { flex: 2; }
-  .field-sm { flex: 0 0 100px; min-width: 80px; }
+  mat-form-field {
+    flex: 1;
+    min-width: 180px;
+  }
+  .flex-grow {
+    flex: 2;
+  }
+  .field-sm {
+    flex: 0 0 100px;
+    min-width: 80px;
+  }
 }
 
 .add-request-form {
@@ -130,15 +136,22 @@
   white-space: pre-wrap;
 }
 
-.muted { opacity: 0.6; font-size: 0.875rem; }
-.full-width { width: 100%; }
+.muted {
+  opacity: 0.6;
+  font-size: 0.875rem;
+}
+.full-width {
+  width: 100%;
+}
 
 .action-cell {
   width: 80px;
   white-space: nowrap;
 }
 
-.editing-row td { background: #f9f9f9; }
+.editing-row td {
+  background: #f9f9f9;
+}
 
 .inline-form-cell {
   padding: 8px 16px 12px !important;
@@ -155,7 +168,10 @@
   gap: 12px;
   align-items: flex-start;
 
-  mat-form-field { flex: 1; min-width: 160px; }
+  mat-form-field {
+    flex: 1;
+    min-width: 160px;
+  }
 }
 
 .inline-form-actions {

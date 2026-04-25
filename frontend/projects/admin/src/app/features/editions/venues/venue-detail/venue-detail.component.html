@@ -2,40 +2,60 @@
   <div class="spinner-wrapper"><mat-spinner diameter="48" /></div>
 } @else if (error()) {
   <div class="page-header">
-    <a class="back-link" (click)="navigateBack()" style="cursor:pointer">
+    <a class="back-link" (click)="navigateBack()" style="cursor: pointer">
       <mat-icon>arrow_back</mat-icon> Lokaler
     </a>
   </div>
   <p class="error-message">{{ error() }}</p>
 } @else if (edition(); as e) {
   <div class="page-header">
-    <a class="back-link" (click)="navigateBack()" style="cursor:pointer">
+    <a class="back-link" (click)="navigateBack()" style="cursor: pointer">
       <mat-icon>arrow_back</mat-icon> Lokaler
     </a>
     <h1 class="page-title">{{ isNew() ? 'Lägg till lokal' : 'Redigera lokal' }}</h1>
     <p class="page-subtitle">{{ e.name }}</p>
   </div>
 
-  <div class="detail-card">
-    <form [formGroup]="form" (ngSubmit)="save()" class="detail-form">
-      <mat-form-field>
-        <mat-label>Namn</mat-label>
-        <input matInput formControlName="name" />
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Byggnad</mat-label>
-        <input matInput formControlName="building" />
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Beskrivning</mat-label>
-        <input matInput formControlName="description" />
-      </mat-form-field>
-      <div class="form-actions">
-        <button mat-stroked-button type="button" (click)="navigateBack()">Avbryt</button>
-        <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
-          {{ isNew() ? 'Lägg till' : 'Spara' }}
-        </button>
-      </div>
-    </form>
-  </div>
+  <mat-card class="detail-card">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="save()" class="detail-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Namn</mat-label>
+          <input matInput formControlName="name" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Byggnad</mat-label>
+          <input matInput formControlName="building" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Beskrivning</mat-label>
+          <input matInput formControlName="description" />
+        </mat-form-field>
+        <div class="form-actions">
+          @if (!isNew()) {
+            <button
+              mat-stroked-button
+              color="warn"
+              class="danger-action"
+              type="button"
+              (click)="delete()"
+              [disabled]="saving()"
+            >
+              <mat-icon>delete</mat-icon>
+              Ta bort
+            </button>
+          }
+          <button mat-button type="button" (click)="navigateBack()">Avbryt</button>
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="form.invalid || saving()"
+          >
+            {{ isNew() ? 'Lägg till' : 'Spara' }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
 }

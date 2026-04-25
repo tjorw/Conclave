@@ -23,9 +23,21 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th><button type="button" class="sort-header" (click)="setSort('name')">Namn <mat-icon>{{ sortIcon('name') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('description')">Beskrivning <mat-icon>{{ sortIcon('description') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('responsible')">Ansvarig <mat-icon>{{ sortIcon('responsible') }}</mat-icon></button></th>
+            <th>
+              <button type="button" class="sort-header" (click)="setSort('name')">
+                Namn <mat-icon>{{ sortIcon('name') }}</mat-icon>
+              </button>
+            </th>
+            <th>
+              <button type="button" class="sort-header" (click)="setSort('description')">
+                Beskrivning <mat-icon>{{ sortIcon('description') }}</mat-icon>
+              </button>
+            </th>
+            <th>
+              <button type="button" class="sort-header" (click)="setSort('responsible')">
+                Ansvarig <mat-icon>{{ sortIcon('responsible') }}</mat-icon>
+              </button>
+            </th>
             <th class="actions-col"></th>
           </tr>
         </thead>
@@ -35,15 +47,14 @@
               <td>{{ c.name }}</td>
               <td class="muted">{{ c.description || '–' }}</td>
               <td>{{ personName(c.responsibleId) }}</td>
-              <td class="row-actions" (click)="$event.stopPropagation()">
-                <button mat-icon-button color="warn" (click)="delete(c)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
-                  <mat-icon>delete</mat-icon>
-                </button>
+              <td class="row-actions">
                 <mat-icon class="row-indicator">chevron_right</mat-icon>
               </td>
             </tr>
           } @empty {
-            <tr><td colspan="4" class="empty-cell">Inga kategorier tillagda.</td></tr>
+            <tr>
+              <td colspan="4" class="empty-cell">Inga kategorier tillagda.</td>
+            </tr>
           }
         </tbody>
       </table>

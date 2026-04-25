@@ -23,11 +23,31 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th><button type="button" class="sort-header" (click)="setSort('name')">Namn <mat-icon>{{ sortIcon('name') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('category')">Kategori <mat-icon>{{ sortIcon('category') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('validDays')">Giltiga dagar <mat-icon>{{ sortIcon('validDays') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('allowedCategories')">Tillåtna kategorier <mat-icon>{{ sortIcon('allowedCategories') }}</mat-icon></button></th>
-            <th class="align-right"><button type="button" class="sort-header" (click)="setSort('price')">Pris <mat-icon>{{ sortIcon('price') }}</mat-icon></button></th>
+            <th>
+              <button type="button" class="sort-header" (click)="setSort('name')">
+                Namn <mat-icon>{{ sortIcon('name') }}</mat-icon>
+              </button>
+            </th>
+            <th>
+              <button type="button" class="sort-header" (click)="setSort('category')">
+                Kategori <mat-icon>{{ sortIcon('category') }}</mat-icon>
+              </button>
+            </th>
+            <th>
+              <button type="button" class="sort-header" (click)="setSort('validDays')">
+                Giltiga dagar <mat-icon>{{ sortIcon('validDays') }}</mat-icon>
+              </button>
+            </th>
+            <th>
+              <button type="button" class="sort-header" (click)="setSort('allowedCategories')">
+                Tillåtna kategorier <mat-icon>{{ sortIcon('allowedCategories') }}</mat-icon>
+              </button>
+            </th>
+            <th class="align-right">
+              <button type="button" class="sort-header" (click)="setSort('price')">
+                Pris <mat-icon>{{ sortIcon('price') }}</mat-icon>
+              </button>
+            </th>
             <th class="actions-col"></th>
           </tr>
         </thead>
@@ -39,15 +59,14 @@
               <td class="muted">{{ validDaysLabel(tt.validDays) }}</td>
               <td class="muted">{{ allowedCategoriesLabel(tt.allowedCategories) }}</td>
               <td class="align-right">{{ formatPrice(tt.price) }}</td>
-              <td class="row-actions" (click)="$event.stopPropagation()">
-                <button mat-icon-button color="warn" (click)="delete(tt)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
-                  <mat-icon>delete</mat-icon>
-                </button>
+              <td class="row-actions">
                 <mat-icon class="row-indicator">chevron_right</mat-icon>
               </td>
             </tr>
           } @empty {
-            <tr><td colspan="6" class="empty-cell">Inga biljettyper tillagda.</td></tr>
+            <tr>
+              <td colspan="6" class="empty-cell">Inga biljettyper tillagda.</td>
+            </tr>
           }
         </tbody>
       </table>
