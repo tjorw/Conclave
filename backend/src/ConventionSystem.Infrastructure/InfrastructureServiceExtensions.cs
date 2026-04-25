@@ -2,6 +2,7 @@ using ConventionSystem.Application.Abstractions;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
+using ConventionSystem.Application.Export.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Tenancy.Abstractions;
@@ -33,6 +34,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IEditionRepository, EditionRepository>();
         services.AddScoped<IShiftRepository, ShiftRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IEditionExportReadService, EditionExportReadService>();
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<ISystemTenantReadService, SystemTenantReadService>();
 

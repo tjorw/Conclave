@@ -8,11 +8,11 @@ Spårar vad som återstår inför produktionsstart.
 
 Prioriterad lista – återstående arbete, högst prioritet överst.
 
-- [ ] `R-EX01` Export – `EditionExportDocument` + DTOs (contracts-lager); ingen backend-logik ännu
-- [ ] `R-EX02` Export – `ExportEditionCommand` + handler + endpoint (`GET .../export?includeEvents&includeTicketTypes`); returnerar JSON-fil som nedladdning
-- [ ] `R-EX03` Export – exportsida i admin-appen: checkboxar för valbara block, nedladdningsknapp (UC-EX001)
-- [ ] `R-EX04` Import – `ImportEditionCommand` + handler + endpoint; skapar upplaga från `EditionExportDocument`, returnerar `ImportResult` med varningar (UC-EX002)
-- [ ] `R-EX05` Import – importpanel i "Skapa ny upplaga"-flödet: textarea för JSON, förhandsgranskning, varningsdialog efter skapande (UC-EX002)
+- [x] `R-EX01` Export – `EditionExportDocument` + DTOs (contracts-lager); ingen backend-logik ännu
+- [x] `R-EX02` Export – `ExportEditionCommand` + handler + endpoint (`GET .../export?includeEvents&includeTicketTypes`); returnerar JSON-fil som nedladdning
+- [x] `R-EX03` Export – exportsida i admin-appen: checkboxar för valbara block, inline JSON för kopiering och nedladdningsknapp (UC-EX001)
+- [x] `R-EX04` Import – `ImportEditionCommand` + handler + endpoint; skapar upplaga från `EditionExportDocument`, returnerar `ImportResult` med varningar (UC-EX002)
+- [x] `R-EX05` Import – importpanel i "Skapa ny upplaga"-flödet: textarea för JSON, förhandsgranskning, varningsdialog efter skapande (UC-EX002)
 
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
 - [ ] `R-DM01` Dataunderhall och retention - implementera stadjobb for skickade outbox-meddelanden och gammal domain event-logg. Se `docs/DataMaintenance.md` for regler.

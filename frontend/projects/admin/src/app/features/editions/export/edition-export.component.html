@@ -1,0 +1,47 @@
+@if (loading()) {
+  <div class="spinner-wrapper"><mat-spinner diameter="48" /></div>
+} @else if (edition(); as e) {
+  <div class="page-header">
+    <h1 class="page-title">{{ e.name }}</h1>
+    <p class="page-subtitle">Export</p>
+  </div>
+
+  @if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  }
+
+  <section class="export-options">
+    <div class="option-group">
+      <mat-checkbox [checked]="includeEvents()" (change)="onIncludeEventsChange($event)">
+        Evenemang
+      </mat-checkbox>
+      <mat-checkbox [checked]="includeTicketTypes()" (change)="onIncludeTicketTypesChange($event)">
+        Biljettyper
+      </mat-checkbox>
+    </div>
+
+    <div class="export-actions">
+      <button mat-stroked-button type="button" [disabled]="!canUseJson()" (click)="copyJson()">
+        <mat-icon>{{ copied() ? 'done' : 'content_copy' }}</mat-icon>
+        {{ copied() ? 'Kopierat' : 'Kopiera' }}
+      </button>
+      <button mat-flat-button color="primary" type="button" [disabled]="!canUseJson()" (click)="downloadJson()">
+        <mat-icon>download</mat-icon>
+        Ladda ner
+      </button>
+    </div>
+  </section>
+
+  <section class="json-panel" aria-label="Export JSON">
+    <div class="json-toolbar">
+      <span>edition-export.json</span>
+      @if (exporting()) {
+        <span class="json-status">
+          <mat-spinner diameter="16" />
+          Skapar JSON
+        </span>
+      }
+    </div>
+    <textarea class="json-viewer" readonly [value]="json()" spellcheck="false"></textarea>
+  </section>
+}

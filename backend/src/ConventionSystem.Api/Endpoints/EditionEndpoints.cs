@@ -14,6 +14,7 @@ using ConventionSystem.Application.Convention.Commands.CreateVenue;
 using ConventionSystem.Application.Convention.Commands.CloseRegistration;
 using ConventionSystem.Application.Convention.Commands.OpenRegistration;
 using ConventionSystem.Application.Convention.Commands.PublishEdition;
+using ConventionSystem.Application.Convention.Commands.RemoveEdition;
 using ConventionSystem.Application.Convention.Commands.UnpublishEdition;
 using ConventionSystem.Application.Convention.Commands.RemoveCategory;
 using ConventionSystem.Application.Convention.Commands.RemoveStaffArea;
@@ -24,9 +25,14 @@ using ConventionSystem.Application.Convention.Commands.UpdateCategory;
 using ConventionSystem.Application.Convention.Commands.UpdateEdition;
 using ConventionSystem.Application.Convention.Commands.UpdateStaffArea;
 using ConventionSystem.Application.Convention.Commands.UpdateVenue;
+using ConventionSystem.Application.Export.Commands.ExportEdition;
+using ConventionSystem.Application.Export.Commands.ImportEdition;
+using ConventionSystem.Application.Export.Contracts;
 using ConventionSystem.Domain.Convention.Enums;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Staff.Queries.GetStaffSchedule;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ConventionSystem.Api.Endpoints;
 
@@ -51,6 +57,18 @@ public static class EditionEndpoints
                 return Results.Created($"/editions/{id}", new { id });
             });
 
+        groups.Admin.MapPost("/conventions/{conventionId:guid}/editions/import",
+            async (Guid conventionId, ImportEditionRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var result = await sender.Send(new ImportEditionCommand(
+                    conventionId,
+                    request.Name,
+                    request.StartDate,
+                    request.Document), ct);
+
+                return Results.Ok(result);
+            });
+
         var editions = groups.Admin.MapGroup("/editions/{editionId:guid}");
 
         editions.MapPut("/",
@@ -67,6 +85,13 @@ public static class EditionEndpoints
                         .Select(d => new ConventionSystem.Application.Convention.Commands.UpdateEdition.EditionScheduleDayCommand(
                             d.Date, d.StartTime, d.EndTime))
                         .ToList()), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapDelete("/",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveEditionCommand(editionId), ct);
                 return Results.NoContent();
             });
 
@@ -259,13 +284,32 @@ public static class EditionEndpoints
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new GetEditionSessionsQuery(editionId), ct)));
 
+        editions.MapGet("/export",
+            async (Guid editionId, bool? includeEvents, bool? includeTicketTypes, ISender sender, CancellationToken ct) =>
+            {
+                var export = await sender.Send(new ExportEditionCommand(
+                    editionId,
+                    includeEvents ?? false,
+                    includeTicketTypes ?? false), ct);
+
+                var bytes = JsonSerializer.SerializeToUtf8Bytes(export.Document, ExportJsonOptions);
+                return Results.File(bytes, "application/json", export.FileName);
+            });
+
         groups.Authenticated.MapGet("/editions/{editionId:guid}/staff-schedule",
             async (Guid editionId, Guid? staffAreaId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new GetStaffScheduleQuery(editionId, staffAreaId), ct)));
     }
+
+    private static readonly JsonSerializerOptions ExportJsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 }
 
 public record CopyEditionStructureRequest(Guid SourceEditionId);
+public record ImportEditionRequest(string Name, DateOnly StartDate, EditionExportDocument Document);
 public record CreateVenueRequest(string Name, string Building, string? Description);
 public record UpdateVenueRequest(string Name, string Building, string? Description);
 public record CreateStaffAreaRequest(string Name, string? Description, Guid ResponsibleId);

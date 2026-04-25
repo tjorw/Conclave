@@ -3005,13 +3005,14 @@ Konventionsadministratör
 ## Flöde
 1. Administratören navigerar till exportsidan i admin-appen
 2. Administratören väljer vilka valbara block som skall ingå: evenemang och/eller biljetttyper
-3. Administratören klickar "Exportera"
-4. Systemet hämtar upplagan med vald data och producerar ett `EditionExportDocument`
-5. Systemet levererar dokumentet som en nedladdningsbar JSON-fil
+3. Admin-appen hämtar upplagan med vald data och producerar ett `EditionExportDocument`
+4. Admin-appen visar dokumentet som formaterad JSON inline så att administratören kan kopiera innehållet
+5. Administratören kan även ladda ner samma JSON som fil
 
 ## Valbara block
 - **Evenemang** – titel, beskrivning, kategorinamn, registreringstyp, inpläggningsregler, sessioner (lokal via namn, dag (relativt), klockslag, max-platser, starttyp)
 - **Biljetttyper** – namn, pris, typ (Visitor/Organiser/Staff), beskrivning, giltiga dagar (relativt), tillåtna kategorier via namn
+- **Bemanningspass** – exporteras alltid under respektive station: dag (relativt), klockslag, min/max bemanning och passansvarig via e-post
 
 ## Datumrepresentation
 Alla datum uttrycks relativt till upplagets startdatum. Dag 1 = första dagen. Klockslag är lokaltid som `HH:mm`.
@@ -3024,19 +3025,28 @@ Alla datum uttrycks relativt till upplagets startdatum. Dag 1 = första dagen. K
 
 ## Affärsregler
 - Dokumentet är versions­märkt med `schemaVersion` för framtida kompabilitet
-- Venues, staffområden, stationer och kategorier exporteras alltid som en del av upplagestrukturen
+- Venues, staffområden, stationer, bemanningspass och kategorier exporteras alltid som en del av upplagestrukturen
 - Stationer placeras hierarkiskt under sitt staffområde i dokumentet
+- Bemanningspass placeras hierarkiskt under sin station i dokumentet
 - Sessionens dag beräknas som `(sessionDatum - upplagets startdatum).TotalDays + 1`
+
+## Implementationssteg
+- [x] `R-EX01` Kontrakt: `EditionExportDocument` och DTO:er finns i application-lagret utan exportlogik
+- [x] `R-EX02` Backend: kommando/handler/endpoint skapar och returnerar JSON-fil
+- [x] `R-EX03` Admin-UI: exportsida med valbara block, inline JSON, kopiera och nedladdningsknapp
 
 ## Domänhändelser
 - Inga
 
 ## Acceptanskriterier
-- [ ] Exportdokumentet innehåller inga interna ID:n
-- [ ] Datum är relativa (dag-nummer, inte datum)
-- [ ] Valfria block inkluderas respektive utelämnas korrekt baserat på administratörens val
-- [ ] Filen laddas ner med `Content-Disposition: attachment` och ett meningsfullt filnamn
-- [ ] Person-referenser exporteras som e-postadresser
+- [x] Exportdokumentet innehåller inga interna ID:n
+- [x] Datum är relativa (dag-nummer, inte datum)
+- [x] Valfria block inkluderas respektive utelämnas korrekt baserat på administratörens val
+- [x] Filen laddas ner med `Content-Disposition: attachment` och ett meningsfullt filnamn
+- [x] Person-referenser exporteras som e-postadresser
+- [x] Admin-appen visar JSON inline för kopiering
+- [x] Admin-appen erbjuder nedladdning av samma JSON
+- [x] Stationer och bemanningspass exporteras utan interna ID:n
 
 ---
 
@@ -3071,9 +3081,10 @@ Systemet utför skapandet i följande ordning:
 3. Skapa venues – bygg `namn → VenueId`-karta
 4. Skapa staffområden – slå upp ansvarig via e-post; fallback till importerande person
 5. Skapa stationer – slå upp staffområde via namnet
-6. Skapa kategorier – slå upp ansvarig via e-post; fallback till importerande person
-7. Skapa biljetttyper (om inkluderade) – slå upp `allowedCategoryNames` mot nya CategoryId:n
-8. Skapa evenemang (om inkluderade):
+6. Skapa bemanningspass – slå upp station via staffområdets namn + stationsnamn; passansvarig via e-post, fallback till importerande person
+7. Skapa kategorier – slå upp ansvarig via e-post; fallback till importerande person
+8. Skapa biljetttyper (om inkluderade) – slå upp `allowedCategoryNames` mot nya CategoryId:n
+9. Skapa evenemang (om inkluderade):
    - Slå upp kategori via namn; evenemang utan matchande kategori hoppas över med varning
    - Skapas med status `Draft`, `LeadOrganiserId` = importerande person
    - Sessioner: slå upp lokal via namn; session utan matchande lokal hoppas över med varning
@@ -3100,16 +3111,21 @@ Systemet samlar alla avvikelser och returnerar dem efter att upplagan skapats. I
 - `durationDays` i dokumentet avgör upplagets längd; det angivna startdatumet styr förskjutningen
 - Upplagan skapas alltid i status `Draft` oavsett källupplagets status
 
+## Implementationssteg
+- [x] `R-EX01` Kontrakt: importen utgår från samma `EditionExportDocument` som exportflödet
+- [x] `R-EX04` Backend: importkommando/handler/endpoint skapar ny upplaga och returnerar varningar
+- [x] `R-EX05` Admin-UI: importpanel, förhandsgranskning och varningsdialog
+
 ## Domänhändelser
 - `EditionCreated` (för den nya upplagan)
 - Domänhändelser per skapat barn (venues, kategorier etc.) om de höjs av respektive metod
 
 ## Acceptanskriterier
-- [ ] Ny upplaga skapas med korrekt namn, period och alla strukturella element
-- [ ] Datum rekonstrueras korrekt från relativa dag-nummer och angivet startdatum
-- [ ] Person-referenser löses upp via e-post; fallback till importerande person loggas som varning
-- [ ] Evenemang utan matchande kategori hoppas över och loggas som varning
-- [ ] Sessioner utan matchande lokal hoppas över och loggas som varning
-- [ ] Varningslistan visas för administratören efter avslutad import
-- [ ] Upplagan skapas med status `Draft`
-- [ ] Kommandohanteraren har tillhörande enhetstester
+- [x] Ny upplaga skapas med korrekt namn, period och alla strukturella element
+- [x] Datum rekonstrueras korrekt från relativa dag-nummer och angivet startdatum
+- [x] Person-referenser löses upp via e-post; fallback till importerande person loggas som varning
+- [x] Evenemang utan matchande kategori hoppas över och loggas som varning
+- [x] Sessioner utan matchande lokal hoppas över och loggas som varning
+- [x] Varningslistan visas för administratören efter avslutad import
+- [x] Upplagan skapas med status `Draft`
+- [x] Kommandohanteraren har tillhörande enhetstester

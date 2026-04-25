@@ -1,7 +1,9 @@
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Queries;
 using ConventionSystem.Domain.Convention.Aggregates;
+using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Event.Entities;
 using ConventionSystem.Domain.Event.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -183,6 +185,85 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
 
     public void MarkAsRemoved<T>(T entity) where T : class
         => db.Entry(entity).State = Microsoft.EntityFrameworkCore.EntityState.Deleted;
+
+    public async Task DeleteGraphAndSaveAsync(EditionId id, CancellationToken ct = default)
+    {
+        var sessionIds = await db.Events
+            .Where(e => e.EditionId == id)
+            .SelectMany(e => e.Sessions.Select(s => s.Id))
+            .ToListAsync(ct);
+
+        if (sessionIds.Count > 0)
+        {
+            await db.SessionRegistrations
+                .Where(r => sessionIds.Contains(r.SessionId))
+                .ExecuteDeleteAsync(ct);
+
+            await db.SessionWatches
+                .Where(w => sessionIds.Contains(w.SessionId))
+                .ExecuteDeleteAsync(ct);
+        }
+
+        var stationIds = await db.Set<Station>()
+            .Where(s => EF.Property<EditionId>(s, "EditionId") == id)
+            .Select(s => s.Id)
+            .ToListAsync(ct);
+
+        if (stationIds.Count > 0)
+        {
+            await db.Shifts
+                .Where(s => stationIds.Contains(s.StationId))
+                .ExecuteDeleteAsync(ct);
+        }
+
+        await db.Events
+            .Where(e => e.EditionId == id)
+            .ExecuteDeleteAsync(ct);
+
+        await db.StaffApplications
+            .Where(a => a.EditionId == id)
+            .ExecuteDeleteAsync(ct);
+
+        await db.VisitorRegistrations
+            .Where(r => r.EditionId == id)
+            .ExecuteDeleteAsync(ct);
+
+        await db.Tickets
+            .Where(t => t.EditionId == id)
+            .ExecuteDeleteAsync(ct);
+
+        await db.PromotionCodes
+            .Where(p => p.EditionId == id)
+            .ExecuteDeleteAsync(ct);
+
+        await db.TicketTypes
+            .Where(t => t.EditionId == id)
+            .ExecuteDeleteAsync(ct);
+
+        await db.Set<EditionScheduleDay>()
+            .Where(d => EF.Property<EditionId>(d, "EditionId") == id)
+            .ExecuteDeleteAsync(ct);
+
+        await db.Set<Station>()
+            .Where(s => EF.Property<EditionId>(s, "EditionId") == id)
+            .ExecuteDeleteAsync(ct);
+
+        await db.StaffAreas
+            .Where(a => EF.Property<EditionId>(a, "EditionId") == id)
+            .ExecuteDeleteAsync(ct);
+
+        await db.Set<Venue>()
+            .Where(v => EF.Property<EditionId>(v, "EditionId") == id)
+            .ExecuteDeleteAsync(ct);
+
+        await db.Categories
+            .Where(c => EF.Property<EditionId>(c, "EditionId") == id)
+            .ExecuteDeleteAsync(ct);
+
+        await db.Editions
+            .Where(e => e.Id == id)
+            .ExecuteDeleteAsync(ct);
+    }
 
     public Task SaveAsync(CancellationToken ct = default)
         => db.SaveChangesAsync(ct);

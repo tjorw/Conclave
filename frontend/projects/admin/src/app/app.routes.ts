@@ -79,6 +79,11 @@ export const routes: Routes = [
           import('./features/editions/ticket-types/ticket-types.component').then(m => m.TicketTypesComponent),
       },
       {
+        path: 'editions/:id/export',
+        loadComponent: () =>
+          import('./features/editions/export/edition-export.component').then(m => m.EditionExportComponent),
+      },
+      {
         path: 'editions/:id/ticket-types/:ticketTypeId',
         loadComponent: () =>
           import('./features/editions/ticket-types/ticket-type-detail/ticket-type-detail.component').then(m => m.TicketTypeDetailComponent),

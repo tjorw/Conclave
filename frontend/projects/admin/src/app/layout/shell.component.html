@@ -43,6 +43,10 @@
             <mat-icon matListItemIcon>local_activity</mat-icon>
             <span matListItemTitle>{{ NAV.editionTicketTypes }}</span>
           </a>
+          <a mat-list-item [routerLink]="['/editions', activeEdition.id, 'export']" routerLinkActive="active-link">
+            <mat-icon matListItemIcon>data_object</mat-icon>
+            <span matListItemTitle>{{ NAV.editionExport }}</span>
+          </a>
         }
       }
       <mat-divider />
