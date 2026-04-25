@@ -27,12 +27,12 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 
 ### Laganmälningar (R-TM)
 
-- [ ] `R-TM01` `Event.RegistrationMode: Individual | Team` – konfiguration per evenemang (nytt fält på Event-aggregatet)
-- [ ] `R-TM02` `Team`-aggregat – Edition-scoped, captain (`PersonId`), `Members[]` (namn + valfritt `PersonId`)
-- [ ] `R-TM03` `TeamEventRegistration`-aggregat – lag anmäler sig till evenemang, livscykel `Pending → Confirmed | Cancelled`
+- [ ] `R-TM01` `Event.RegistrationMode: Individual | Team` + `TeamSize { Min, Max }` – arrangören konfigurerar anmälningsläge och lagstorlek per evenemang; se UC-TM001
+- [ ] `R-TM02` `Team`-aggregat – Edition-scoped, captain (`PersonId`), lagnamn (obligatoriskt); `Members[]` valfritt och ej obligatoriskt i fas 1; se UC-TM002
+- [ ] `R-TM03` `TeamEventRegistration`-aggregat – lag anmäler sig till evenemang, livscykel `Pending → Confirmed | Cancelled`; se UC-TM002, UC-TM003, UC-TM004
 - [ ] `R-TM04` Admin-vy: arrangör tilldelar lag till session (`TeamSessionAssignment` på `Session`)
 - [ ] `R-TM05` Tidschema: lagmedlemmars tilldelade sessioner visas via query-projektion (utökning av `MyScheduleRepository`)
-- [ ] `R-TM06` Publik vy: laganmälningsflöde – captain anmäler lag, anger medlemmar; en person per bokning
+- [ ] `R-TM06` Publik vy: laganmälningsflöde – captain anmäler lag och anger lagnamn; lagmedlemmar behöver inte anges i fas 1
 
 ### Multitenancy
 

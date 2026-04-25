@@ -2565,205 +2565,6 @@ SystemAdmin (fas 1–3), Tenant-admin (fas 4 – self-service)
 
 ---
 
-# Laganmälningar (UC-TM)
-
-Laganmälningar används för evenemang med turneringsform där ett lag – inte en individ – är registreringsenheten. En captain (bokningskontakt) anmäler laget och anger medlemmar. Arrangören bekräftar och fördelar sedan laget till specifika sessioner. Lagmedlemmar med konventsticker ser tilldelade sessioner i sitt tidschema.
-
----
-
-# UC-TM001 – Skapa lag
-
-## Sammanfattning
-En person skapar ett lag för en upplaga. Personen blir automatiskt captain och bokningskontakt.
-
-## Aktör
-Besökare med giltig biljett (autentiserad)
-
-## Förutsättningar
-- Upplagan finns och är publicerad
-- Personen har en giltig betald eller uthämtad biljett för upplagan
-
-## Flöde
-1. Personen anger lagnamn och EditionId
-2. Systemet skapar `Team` med personen som captain
-3. Systemet returnerar det nya TeamId
-
-## Affärsregler
-- Captain måste ha en giltig biljett för upplagan
-- Lagnamnet får inte vara tomt
-
-## Domänhändelser
-- `TeamCreated { teamId, editionId, captainPersonId, occurredAt }`
-
-## Acceptanskriterier
-- [ ] `Team` sparas med korrekt `EditionId` och `CaptainPersonId`
-- [ ] Tom lagnamn returnerar valideringsfel
-- [ ] Saknad/ogiltig biljett returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
-
----
-
-# UC-TM002 – Hantera lagmedlemmar
-
-## Sammanfattning
-Captain lägger till eller tar bort medlemmar från laget. En medlem kan vara en namngiven person utan konventsticker eller en person med PersonId.
-
-## Aktör
-Captain (lagägare)
-
-## Förutsättningar
-- Laget finns och är inte avbokat
-
-## Flöde (lägg till)
-1. Captain anger TeamId och medlemmens namn samt valfritt PersonId
-2. Systemet lägger till `TeamMember` i laget
-
-## Flöde (ta bort)
-1. Captain anger TeamId och TeamMemberId
-2. Systemet tar bort `TeamMember` från laget
-
-## Affärsregler
-- Namn på lagmedlem får inte vara tomt
-- Om PersonId anges måste personen tillhöra samma upplaga
-- Captain kan inte ta bort sig själv som lagmedlem
-
-## Domänhändelser
-- Inga
-
-## Acceptanskriterier
-- [ ] Lagmedlem sparas med namn och valfritt PersonId
-- [ ] Borttagning av captain returnerar valideringsfel
-- [ ] PersonId som inte tillhör upplagan returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
-
----
-
-# UC-TM003 – Anmäl lag till evenemang
-
-## Sammanfattning
-Captain anmäler laget till ett evenemang med `RegistrationMode = Team`. Anmälan hamnar i status `Pending` tills arrangören bekräftar.
-
-## Aktör
-Captain (bokningskontakt)
-
-## Förutsättningar
-- Laget finns
-- Evenemanget finns, är publicerat och har `RegistrationMode = Team`
-- Laget är inte redan anmält till evenemanget
-
-## Flöde
-1. Captain anger TeamId och EventId
-2. Systemet skapar `TeamEventRegistration` med status `Pending`
-3. Systemet returnerar det nya TeamEventRegistrationId
-
-## Affärsregler
-- Evenemanget måste ha `RegistrationMode = Team`
-- Dubblettanmälan (samma team + event) returnerar valideringsfel
-
-## Domänhändelser
-- `TeamRegisteredForEvent { teamEventRegistrationId, teamId, eventId, occurredAt }`
-
-## Acceptanskriterier
-- [ ] `TeamEventRegistration` sparas med status `Pending`
-- [ ] Anmälan till evenemang med `RegistrationMode = Individual` returnerar valideringsfel
-- [ ] Dubblettanmälan returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
-
----
-
-# UC-TM004 – Bekräfta laganmälan
-
-## Sammanfattning
-Arrangör eller konventionsadministratör bekräftar en laganmälan. Laget kan sedan tilldelas sessioner.
-
-## Aktör
-Evenemangsarrangör eller konventionsadministratör
-
-## Förutsättningar
-- `TeamEventRegistration` finns med status `Pending`
-
-## Flöde
-1. Aktören anger TeamEventRegistrationId
-2. Systemet anropar `TeamEventRegistration.Confirm()`
-3. Systemet sparar uppdateringen
-
-## Affärsregler
-- Endast `Pending`-anmälningar kan bekräftas
-
-## Domänhändelser
-- `TeamEventRegistrationConfirmed { teamEventRegistrationId, teamId, eventId, occurredAt }`
-
-## Acceptanskriterier
-- [ ] Status övergår till `Confirmed`
-- [ ] Bekräftelse av redan bekräftad anmälan returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
-
----
-
-# UC-TM005 – Avboka laganmälan
-
-## Sammanfattning
-Captain eller administratör avbokar en laganmälan.
-
-## Aktör
-Captain (egen anmälan) eller konventionsadministratör
-
-## Förutsättningar
-- `TeamEventRegistration` finns och är inte redan avbokad
-
-## Flöde
-1. Aktören anger TeamEventRegistrationId
-2. Systemet anropar `TeamEventRegistration.Cancel()`
-3. Systemet sparar uppdateringen
-
-## Affärsregler
-- Redan avbokade anmälningar kan inte avbokas igen
-- Befintliga `TeamSessionAssignment`s för laget måste tas bort när anmälan avbokas
-
-## Domänhändelser
-- `TeamEventRegistrationCancelled { teamEventRegistrationId, teamId, eventId, occurredAt }`
-
-## Acceptanskriterier
-- [ ] Status övergår till `Cancelled`
-- [ ] Tillhörande `TeamSessionAssignment`s tas bort
-- [ ] Avbokning av redan avbokad anmälan returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
-
----
-
-# UC-TM006 – Tilldela lag till session
-
-## Sammanfattning
-Arrangören tilldelar ett bekräftat lag till en specifik session inom evenemanget. Lagmedlemmar med PersonId ser sessionen i sitt tidschema.
-
-## Aktör
-Evenemangsarrangör eller konventionsadministratör
-
-## Förutsättningar
-- Sessionen finns och tillhör ett evenemang med `RegistrationMode = Team`
-- `TeamEventRegistration` för laget är `Confirmed`
-- Laget är inte redan tilldelat sessionen
-
-## Flöde
-1. Aktören anger SessionId och TeamId
-2. Systemet skapar `TeamSessionAssignment` på sessionen
-3. Systemet returnerar det nya TeamSessionAssignmentId
-
-## Affärsregler
-- Laget måste ha en bekräftad anmälan till evenemanget
-- Samma lag kan inte tilldelas samma session två gånger
-
-## Domänhändelser
-- `TeamAssignedToSession { teamSessionAssignmentId, sessionId, teamId, occurredAt }`
-
-## Acceptanskriterier
-- [ ] `TeamSessionAssignment` sparas på sessionen
-- [ ] Lagmedlemmar med PersonId kan hämta sessionen via tidsschemats query-projektion
-- [ ] Tilldelning utan bekräftad anmälan returnerar valideringsfel
-- [ ] Dubbeltilldelning returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
-
----
 
 # UC-RC001 – Redigera eventbeskrivning med markdown
 
@@ -3128,4 +2929,166 @@ Systemet samlar alla avvikelser och returnerar dem efter att upplagan skapats. I
 - [x] Sessioner utan matchande lokal hoppas över och loggas som varning
 - [x] Varningslistan visas för administratören efter avslutad import
 - [x] Upplagan skapas med status `Draft`
+
+---
+
+# UC-TM001 – Konfigurera laganmälning på evenemang
+
+## Sammanfattning
+Arrangören väljer om evenemanget tar individuella anmälningar eller laganmälningar. Vid laganmälning anger arrangören minsta och högsta tillåtna antal deltagare per lag.
+
+## Aktör
+Huvud- eller medarrangör
+
+## Förutsättningar
+- Evenemanget finns och har status Utkast
+- Utföraren är huvud- eller medarrangör
+
+## Flöde
+1. Arrangören anger EventId, RegistrationMode (Individual | Team) och, om Team, MinTeamSize och MaxTeamSize
+2. Systemet validerar lagstorlek om Team är valt
+3. Systemet uppdaterar RegistrationMode (och eventuell TeamSize) på Event-aggregatet
+4. Systemet sparar ändringen
+
+## Affärsregler
+- Konfiguration är bara möjlig när evenemanget är i Utkast-läge
+- Om RegistrationMode är Individual ska TeamSize inte vara satt
+- Om RegistrationMode är Team måste MinTeamSize och MaxTeamSize anges
+- MinTeamSize måste vara ≥ 1
+- MaxTeamSize måste vara ≥ MinTeamSize
+
+## Domänhändelser
+- Inga
+
+## Implementationssteg
+- [ ] `R-TM01` Nytt fält `RegistrationMode` (Individual | Team) + value object `TeamSize { Min, Max }` på `Event`-aggregatet; domänmetod `ConfigureTeamRegistration(mode, min, max)` med invarianter; enhetstest
+
+## Acceptanskriterier
+- [ ] RegistrationMode och TeamSize sparas korrekt på evenemanget
+- [ ] Konfiguration på ett icke-Utkast-evenemang returnerar valideringsfel
+- [ ] MaxTeamSize < MinTeamSize returnerar valideringsfel
+- [ ] MinTeamSize < 1 returnerar valideringsfel
+- [ ] RegistrationMode Individual med angiven TeamSize returnerar valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TM002 – Anmäl lag
+
+## Sammanfattning
+En person anmäler ett lag till ett evenemang med laganmälning. Personen anger lagnamnet, blir automatiskt lagkapten och erhåller en laganmälan med status Väntande.
+
+## Aktör
+Besökare (person registrerad i konventionen)
+
+## Förutsättningar
+- Evenemanget finns, är publicerat och har RegistrationMode = Team
+- Besökarregistrering för upplagan är öppen
+- Personen finns och tillhör konventionen
+- Personen har ingen annan aktiv laganmälan för samma evenemang
+
+## Flöde
+1. Besökaren anger EventId, lagnamn och sitt PersonId
+2. Systemet validerar att evenemanget accepterar laganmälningar
+3. Systemet skapar ett Team-aggregat med lagnamnet och personen som captain
+4. Systemet skapar en TeamEventRegistration med status Pending kopplad till teamet och evenemanget
+5. Systemet returnerar TeamId och TeamEventRegistrationId
+
+## Affärsregler
+- Evenemanget måste ha RegistrationMode = Team
+- Lagnamnet får inte vara tomt
+- En person kan bara ha en aktiv laganmälan (status Pending eller Confirmed) per evenemang
+- Lagmedlemmar (utöver captainen) behöver inte anges i fas 1
+
+## Domänhändelser
+- `TeamCreated { teamId, editionId, captainPersonId, name, occurredAt }`
+- `TeamEventRegistrationCreated { registrationId, teamId, eventId, occurredAt }`
+
+## Implementationssteg
+- [ ] `R-TM02` `Team`-aggregat med captain och lagnamn; enhetstest
+- [ ] `R-TM03` `TeamEventRegistration`-aggregat med livscykel Pending → Confirmed | Cancelled; enhetstest
+- [ ] Kommando `RegisterTeamForEventCommand` + handler; validator; endpoint `POST /api/events/{eventId}/team-registrations`
+
+## Acceptanskriterier
+- [ ] Team och TeamEventRegistration skapas; captainPersonId = anmälande person
+- [ ] Lagnamn anges och sparas korrekt
+- [ ] Anmälan till ett evenemang med RegistrationMode = Individual returnerar valideringsfel
+- [ ] Tom lagnamn returnerar valideringsfel
+- [ ] Dubbel aktiv anmälan för samma person och evenemang returnerar valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TM003 – Bekräfta laganmälan
+
+## Sammanfattning
+En arrangör eller administratör bekräftar en väntande laganmälan. Laganmälans status ändras till Bekräftad.
+
+## Aktör
+Arrangör (huvud- eller medarrangör) eller konventionsadministratör
+
+## Förutsättningar
+- TeamEventRegistration finns med status Pending
+- Utföraren är arrangör för evenemanget eller konventionsadministratör
+
+## Flöde
+1. Arrangören anger TeamEventRegistrationId
+2. Systemet validerar status och behörighet
+3. Systemet ändrar status till Confirmed
+4. Systemet sparar ändringen
+
+## Affärsregler
+- Bara en Pending-anmälan kan bekräftas
+- Utföraren måste vara arrangör för evenemanget eller administratör
+
+## Domänhändelser
+- `TeamEventRegistrationConfirmed { registrationId, teamId, eventId, occurredAt }`
+
+## Implementationssteg
+- [ ] `R-TM03` Domänmetod `Confirm()` på `TeamEventRegistration`; enhetstest
+- [ ] Kommando `ConfirmTeamRegistrationCommand` + handler; endpoint `POST /api/team-registrations/{id}/confirm`
+
+## Acceptanskriterier
+- [ ] Status ändras till Confirmed
+- [ ] Bekräftning av en icke-Pending-anmälan returnerar valideringsfel
+- [ ] Saknad behörighet returnerar Forbidden
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TM004 – Avboka laganmälan
+
+## Sammanfattning
+En lagkapten eller administratör avbokar en laganmälan. Laganmälans status sätts till Cancelled.
+
+## Aktör
+Lagkapten (personen som skapade laganmälan) eller konventionsadministratör
+
+## Förutsättningar
+- TeamEventRegistration finns med status Pending eller Confirmed
+- Utföraren är captainen för laget eller konventionsadministratör
+
+## Flöde
+1. Utföraren anger TeamEventRegistrationId
+2. Systemet validerar status och behörighet
+3. Systemet ändrar status till Cancelled
+4. Systemet sparar ändringen
+
+## Affärsregler
+- En Cancelled-anmälan kan inte avbokas igen
+- Captainen kan avboka sin laganmälan oavsett om den är Pending eller Confirmed
+- Administratör kan avboka vilken laganmälan som helst
+
+## Domänhändelser
+- `TeamEventRegistrationCancelled { registrationId, teamId, eventId, cancelledByPersonId, occurredAt }`
+
+## Implementationssteg
+- [ ] `R-TM03` Domänmetod `Cancel(cancelledByPersonId)` på `TeamEventRegistration`; enhetstest
+- [ ] Kommando `CancelTeamRegistrationCommand` + handler; endpoint `POST /api/team-registrations/{id}/cancel`
+
+## Acceptanskriterier
+- [ ] Status ändras till Cancelled
+- [ ] Avbokning av redan Cancelled-anmälan returnerar valideringsfel
+- [ ] Saknad behörighet (varken captain eller admin) returnerar Forbidden
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
 - [x] Kommandohanteraren har tillhörande enhetstester
