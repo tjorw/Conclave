@@ -5,6 +5,10 @@ public sealed class EmailOptions
     public const string SectionName = "Email";
 
     public string Provider { get; set; } = "Logging";
+
+    /// Vilken leverantör OutboxProcessor ska använda för faktisk leverans.
+    /// Används bara när Provider = "Outbox". Tillåtna värden: "Smtp", "SendGrid", "Logging".
+    public string OutboxBackend { get; set; } = "Logging";
     public string FromName { get; set; } = "Konvent";
     public string FromEmail { get; set; } = "noreply@example.com";
 

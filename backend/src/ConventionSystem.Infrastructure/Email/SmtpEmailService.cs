@@ -6,7 +6,7 @@ using MimeKit;
 
 namespace ConventionSystem.Infrastructure.Email;
 
-public sealed class SmtpEmailService(IOptions<EmailOptions> options) : IEmailService
+internal sealed class SmtpEmailService(IOptions<EmailOptions> options) : IEmailService, IDirectEmailSender
 {
     private readonly EmailOptions _options = options.Value;
 
@@ -104,6 +104,9 @@ public sealed class SmtpEmailService(IOptions<EmailOptions> options) : IEmailSer
             loginLink);
         return SendAsync(toEmail, toName, subject, body, ct);
     }
+
+    public Task SendAsync(EmailPayload payload, CancellationToken ct = default)
+        => SendAsync(payload.To, payload.ToName, payload.Subject, payload.Body, ct);
 
     private async Task SendAsync(string toEmail, string toName, string subject, string body, CancellationToken ct)
     {

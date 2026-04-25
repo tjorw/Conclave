@@ -51,6 +51,7 @@ public sealed class ConventionDbContext(
 
     // Infrastructure
     public DbSet<DomainEventLogEntry> DomainEventLog => Set<DomainEventLogEntry>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -70,6 +71,12 @@ public sealed class ConventionDbContext(
                 continue;
 
             if (entityType.ClrType == typeof(Tenant))
+                continue;
+
+            if (entityType.ClrType == typeof(OutboxMessage))
+                continue;
+
+            if (entityType.ClrType == typeof(DomainEventLogEntry))
                 continue;
 
             var builder = modelBuilder.Entity(entityType.Name);

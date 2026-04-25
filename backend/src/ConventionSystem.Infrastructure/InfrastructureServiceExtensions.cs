@@ -9,6 +9,7 @@ using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Registration.Services;
 using ConventionSystem.Infrastructure.Dispatching;
 using ConventionSystem.Infrastructure.Email;
+using Microsoft.Extensions.Hosting;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.MultiTenancy;
 using ConventionSystem.Infrastructure.Persistence;
@@ -51,20 +52,43 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<LoggingEmailService>();
         services.AddScoped<SmtpEmailService>();
         services.AddScoped<SendGridEmailService>();
+        services.AddScoped<OutboxEmailService>();
 
         services.AddScoped<IEmailService>(provider =>
         {
             var options = provider.GetRequiredService<IOptions<EmailOptions>>().Value;
 
-            return options.Provider.ToLowerInvariant() switch
-            {
-                "smtp" => provider.GetRequiredService<SmtpEmailService>(),
-                "sendgrid" => provider.GetRequiredService<SendGridEmailService>(),
-                "logging" => provider.GetRequiredService<LoggingEmailService>(),
-                _ => throw new InvalidOperationException(
-                    $"Ogiltig e-postprovider '{options.Provider}'. Tillatna varden ar 'Logging', 'Smtp' och 'SendGrid'.")
-            };
+            if (string.Equals(options.Provider, "smtp", StringComparison.OrdinalIgnoreCase))
+                return provider.GetRequiredService<SmtpEmailService>();
+            if (string.Equals(options.Provider, "sendgrid", StringComparison.OrdinalIgnoreCase))
+                return provider.GetRequiredService<SendGridEmailService>();
+            if (string.Equals(options.Provider, "logging", StringComparison.OrdinalIgnoreCase))
+                return provider.GetRequiredService<LoggingEmailService>();
+            if (string.Equals(options.Provider, "outbox", StringComparison.OrdinalIgnoreCase))
+                return provider.GetRequiredService<OutboxEmailService>();
+
+            throw new InvalidOperationException(
+                $"Ogiltig e-postprovider '{options.Provider}'. Tillatna varden ar 'Logging', 'Smtp', 'SendGrid' och 'Outbox'.");
         });
+
+        services.AddScoped<IDirectEmailSender>(provider =>
+        {
+            var options = provider.GetRequiredService<IOptions<EmailOptions>>().Value;
+
+            var backend = string.Equals(options.Provider, "outbox", StringComparison.OrdinalIgnoreCase)
+                ? options.OutboxBackend
+                : options.Provider;
+
+            if (string.Equals(backend, "smtp", StringComparison.OrdinalIgnoreCase))
+                return provider.GetRequiredService<SmtpEmailService>();
+
+            if (string.Equals(backend, "sendgrid", StringComparison.OrdinalIgnoreCase))
+                return provider.GetRequiredService<SendGridEmailService>();
+
+            return provider.GetRequiredService<LoggingEmailService>();
+        });
+
+        services.AddHostedService<OutboxProcessor>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();

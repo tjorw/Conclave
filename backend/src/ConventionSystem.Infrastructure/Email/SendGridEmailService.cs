@@ -5,7 +5,7 @@ using SendGrid.Helpers.Mail;
 
 namespace ConventionSystem.Infrastructure.Email;
 
-public sealed class SendGridEmailService(IOptions<EmailOptions> options) : IEmailService
+internal sealed class SendGridEmailService(IOptions<EmailOptions> options) : IEmailService, IDirectEmailSender
 {
     private readonly EmailOptions _options = options.Value;
 
@@ -103,6 +103,9 @@ public sealed class SendGridEmailService(IOptions<EmailOptions> options) : IEmai
             loginLink);
         return SendAsync(toEmail, toName, subject, body, ct);
     }
+
+    public Task SendAsync(EmailPayload payload, CancellationToken ct = default)
+        => SendAsync(payload.To, payload.ToName, payload.Subject, payload.Body, ct);
 
     private async Task SendAsync(string toEmail, string toName, string subject, string body, CancellationToken ct)
     {
