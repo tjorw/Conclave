@@ -217,6 +217,17 @@ En samlad körguide för demo-instansen finns i [docs/DemoDeploy.md](docs/DemoDe
 | [Repository Pattern](https://martinfowler.com/eaaCatalog/repository.html) | Martin Fowler – dataåtkomst bakom interface utan läckage av persistensteknik |
 | [Conventional Commits](https://www.conventionalcommits.org/) | Strukturerade commit-meddelanden med type och scope |
 
+### Outbox och bakgrundsjobb
+
+E-post skickas via outbox-mönstret. Applikationslagret anropar `IEmailService`, infrastrukturen skriver en rad i `outbox_messages`, och `OutboxProcessor` levererar meddelandet asynkront via vald backend (`Logging`, `Smtp` eller `SendGrid`).
+
+Viktiga regler:
+
+- Outbox-payloaden ska vara självbärande. Bakgrundsjobbet ska kunna skicka meddelandet utan att hämta aktuell request, claims, tenant-resolution eller andra föränderliga entiteter.
+- Bakgrundsjobb ska inte bero på `HttpContext`, `ICurrentUser` eller request-scopad användarkontext. Anropa domänmodellen direkt eller använd en explicit systemidentitet när jobbet behöver göra domänändringar.
+- Kod som köar e-post ska inte skicka direkt till SMTP/SendGrid. Direktleverans hör hemma bakom `IDirectEmailSender` och används av `OutboxProcessor`.
+- Ett oskickat outbox-meddelande får inte tas bort av dataunderhåll. Retention-regler för skickade och parkerade meddelanden finns i [docs/DataMaintenance.md](docs/DataMaintenance.md).
+
 ## Kom igång
 
 ### Krav
