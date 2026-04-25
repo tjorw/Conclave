@@ -12,12 +12,14 @@ public record TicketTypeAdminDto(
     int Price,
     string Category,
     IReadOnlyList<DateOnly>? ValidDays,
-    Guid[]? AllowedCategories);
+    Guid[]? AllowedCategories,
+    string? Description);
 
 public record VisitorTicketTypeDto(
     Guid Id,
     string Name,
-    int Price);
+    int Price,
+    string? Description);
 
 public record VisitorRegistrationAdminDto(
     Guid Id,

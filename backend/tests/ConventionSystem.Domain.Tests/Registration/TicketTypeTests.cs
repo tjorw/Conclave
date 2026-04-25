@@ -9,9 +9,10 @@ public class TicketTypeTests
 {
     private static TicketType CreateTicketType(
         IReadOnlyList<DateOnly>? validDays = null,
-        Guid[]? allowedCategories = null)
+        Guid[]? allowedCategories = null,
+        string? description = null)
         => new(TicketTypeId.New(), EditionId.New(), "Helgbiljett", 15000, TicketTypeCategory.Visitor,
-            validDays, allowedCategories);
+            validDays, allowedCategories, description);
 
     [Fact]
     public void Constructor_NoValidDays_ValidDaysIsNull()
@@ -43,6 +44,14 @@ public class TicketTypeTests
     }
 
     [Fact]
+    public void Constructor_WithDescription_StoresTrimmedMarkdown()
+    {
+        var tt = CreateTicketType(description: "  - T-shirt\n- Matkupong  ");
+
+        Assert.Equal("- T-shirt\n- Matkupong", tt.Description);
+    }
+
+    [Fact]
     public void Constructor_NegativePrice_Throws()
     {
         Assert.Throws<ArgumentException>(() =>
@@ -63,13 +72,14 @@ public class TicketTypeTests
         var newDays = new[] { new DateOnly(2027, 3, 3) };
         var newCats = new[] { Guid.NewGuid() };
 
-        tt.Update("Ny biljett", 20000, TicketTypeCategory.Staff, newDays, newCats);
+        tt.Update("Ny biljett", 20000, TicketTypeCategory.Staff, newDays, newCats, "## Beskrivning");
 
         Assert.Equal("Ny biljett", tt.Name);
         Assert.Equal(20000, tt.Price);
         Assert.Equal(TicketTypeCategory.Staff, tt.Type);
         Assert.Equal(newDays, tt.ValidDays);
         Assert.Equal(newCats, tt.AllowedCategories);
+        Assert.Equal("## Beskrivning", tt.Description);
     }
 
     [Fact]
@@ -77,7 +87,7 @@ public class TicketTypeTests
     {
         var tt = CreateTicketType(validDays: [new DateOnly(2027, 3, 1)]);
 
-        tt.Update("Biljett", 0, TicketTypeCategory.Visitor, null, null);
+        tt.Update("Biljett", 0, TicketTypeCategory.Visitor, null, null, null);
 
         Assert.Null(tt.ValidDays);
     }

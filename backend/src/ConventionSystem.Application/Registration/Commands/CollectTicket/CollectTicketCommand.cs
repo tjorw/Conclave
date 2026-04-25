@@ -6,4 +6,4 @@ public sealed record CollectTicketCommand(
 
 public sealed record CollectTicketResult(
     Guid TicketId,
-    IReadOnlyList<string> Perks);
+    string? Description);

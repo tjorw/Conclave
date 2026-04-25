@@ -26,6 +26,9 @@ public sealed class TicketTypeConfiguration : IEntityTypeConfiguration<TicketTyp
 
         builder.Property(t => t.Name).HasMaxLength(200).IsRequired();
         builder.Property(t => t.Price).IsRequired();
+        builder.Property(t => t.Description)
+            .HasColumnName("description")
+            .HasMaxLength(10000);
 
         builder.Property(t => t.Type)
             .HasConversion<string>()
@@ -43,29 +46,6 @@ public sealed class TicketTypeConfiguration : IEntityTypeConfiguration<TicketTyp
                 v => v == null ? null : JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
                 v => v == null ? null : JsonSerializer.Deserialize<Guid[]>(v, (JsonSerializerOptions?)null)));
 
-        builder.HasMany(t => t.Perks)
-            .WithOne()
-            .HasForeignKey("TicketTypeId")
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Navigation(t => t.Perks).HasField("_perks");
-
         builder.HasIndex(t => t.EditionId).HasDatabaseName("IX_ticket_types_edition_id");
-    }
-}
-
-public sealed class TicketPerkConfiguration : IEntityTypeConfiguration<TicketPerk>
-{
-    public void Configure(EntityTypeBuilder<TicketPerk> builder)
-    {
-        builder.ToTable("ticket_perks");
-
-        builder.HasKey(p => p.Id);
-        builder.Property(p => p.Id)
-            .HasConversion(id => id.Value, value => new TicketPerkId(value))
-            .ValueGeneratedNever();
-
-        builder.Property(p => p.Description).HasMaxLength(500).IsRequired();
     }
 }

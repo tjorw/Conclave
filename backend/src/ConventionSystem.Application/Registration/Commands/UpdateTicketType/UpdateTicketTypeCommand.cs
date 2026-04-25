@@ -8,4 +8,5 @@ public sealed record UpdateTicketTypeCommand(
     int Price,
     TicketTypeCategory Category,
     IReadOnlyList<DateOnly>? ValidDays = null,
-    Guid[]? AllowedCategories = null) : ICommand;
+    Guid[]? AllowedCategories = null,
+    string? Description = null) : ICommand;

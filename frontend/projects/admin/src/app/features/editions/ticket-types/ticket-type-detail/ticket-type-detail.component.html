@@ -51,6 +51,7 @@
             }
           </mat-select>
         </mat-form-field>
+        <lib-markdown-editor formControlName="description" label="Beskrivning" [rows]="8" />
         <div class="form-actions">
           @if (!isNew()) {
             <button

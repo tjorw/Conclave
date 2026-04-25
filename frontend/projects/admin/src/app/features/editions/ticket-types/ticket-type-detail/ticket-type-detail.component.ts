@@ -13,6 +13,7 @@ import { MatSelectModule } from '@angular/material/select';
 import {
   ConventionService,
   EditionDto,
+  MarkdownEditorComponent,
   RegistrationService,
   TicketTypeAdminDto,
   toContextErrorMessage,
@@ -37,6 +38,7 @@ import {
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    MarkdownEditorComponent,
   ],
   templateUrl: './ticket-type-detail.component.html',
   styleUrl: './ticket-type-detail.component.scss',
@@ -75,6 +77,7 @@ export class TicketTypeDetailComponent implements OnInit {
     category: ['Visitor', Validators.required],
     validDays: this.fb.control<string[]>([], { nonNullable: true }),
     allowedCategories: this.fb.control<string[]>([], { nonNullable: true }),
+    description: [''],
   });
 
   readonly editionDayOptions = computed(() => {
@@ -140,6 +143,7 @@ export class TicketTypeDetailComponent implements OnInit {
           category: tt.category,
           validDays: tt.validDays ?? [],
           allowedCategories: tt.allowedCategories ?? [],
+          description: tt.description ?? '',
         });
       } else if (this.edition()) {
         this.error.set('Biljetttypen hittades inte.');
@@ -157,6 +161,7 @@ export class TicketTypeDetailComponent implements OnInit {
       category: v.category!,
       validDays: this.normalize(v.validDays),
       allowedCategories: this.normalize(v.allowedCategories),
+      description: this.normalizeText(v.description),
     };
     this.saving.set(true);
     const onError = (err: unknown, label: string) => {
@@ -206,6 +211,11 @@ export class TicketTypeDetailComponent implements OnInit {
   private normalize(value: string[] | null | undefined): string[] | null {
     if (!value || value.length === 0) return null;
     return [...new Set(value)];
+  }
+
+  private normalizeText(value: string | null | undefined): string | null {
+    const normalized = value?.trim();
+    return normalized ? normalized : null;
   }
 
   navigateBack(): void {

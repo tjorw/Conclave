@@ -11,7 +11,7 @@ namespace ConventionSystem.Infrastructure.Persistence.Repositories;
 public sealed class TicketTypeRepository(ConventionDbContext db) : ITicketTypeRepository
 {
     public Task<TicketType?> GetByIdAsync(TicketTypeId id, CancellationToken ct = default)
-        => db.TicketTypes.Include(t => t.Perks).FirstOrDefaultAsync(t => t.Id == id, ct);
+        => db.TicketTypes.FirstOrDefaultAsync(t => t.Id == id, ct);
 
     public async Task<IReadOnlyList<TicketTypeAdminDto>> ListByEditionIdAsync(EditionId editionId, CancellationToken ct = default)
     {
@@ -24,7 +24,8 @@ public sealed class TicketTypeRepository(ConventionDbContext db) : ITicketTypeRe
                 t.Price,
                 t.Type.ToString(),
                 t.ValidDays,
-                t.AllowedCategories))
+                t.AllowedCategories,
+                t.Description))
             .ToListAsync(ct);
     }
 

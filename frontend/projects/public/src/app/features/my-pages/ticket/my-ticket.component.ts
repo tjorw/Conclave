@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MyVisitorRegistrationDto, RegistrationService, TICKET_PAYMENT_STATUS_LABEL, VisitorTicketTypeDto, toErrorMessage } from 'shared';
+import { MarkdownComponent } from 'ngx-markdown';
 import { EditionService } from '../../../services/edition.service';
 
 @Component({
@@ -17,6 +18,7 @@ import { EditionService } from '../../../services/edition.service';
     MatButtonModule,
     MatCheckboxModule,
     MatProgressSpinnerModule,
+    MarkdownComponent,
   ],
   templateUrl: './my-ticket.component.html',
   styleUrl: './my-ticket.component.scss',

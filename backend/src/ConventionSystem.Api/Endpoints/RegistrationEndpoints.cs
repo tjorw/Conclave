@@ -66,7 +66,7 @@ public static class RegistrationEndpoints
             async (Guid editionId, CreateTicketTypeRequest request, ISender sender, CancellationToken ct) =>
             {
                 var id = await sender.Send(new CreateTicketTypeCommand(editionId, request.Name, request.Price, request.Category,
-                    request.ValidDays, request.AllowedCategories), ct);
+                    request.ValidDays, request.AllowedCategories, request.Description), ct);
                 return Results.Created($"/ticket-types/{id}", new { id });
             });
 
@@ -322,7 +322,7 @@ public static class RegistrationEndpoints
             async (Guid ticketTypeId, UpdateTicketTypeRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new UpdateTicketTypeCommand(ticketTypeId, request.Name, request.Price,
-                    request.Category, request.ValidDays, request.AllowedCategories), ct);
+                    request.Category, request.ValidDays, request.AllowedCategories, request.Description), ct);
                 return Results.NoContent();
             });
 
@@ -346,8 +346,8 @@ public static class RegistrationEndpoints
     }
 }
 
-public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
-public record UpdateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
+public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null, string? Description = null);
+public record UpdateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null, string? Description = null);
 public record SubmitVisitorRegistrationRequest(Guid TicketTypeId);
 public record ConfirmPaymentRequest(string ExternalReference);
 public record CreatePromotionCodeRequest(

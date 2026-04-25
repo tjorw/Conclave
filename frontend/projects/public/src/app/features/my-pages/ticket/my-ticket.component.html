@@ -124,6 +124,9 @@
                     <span class="ticket-option-content">
                       <span class="ticket-option-name">{{ ticketTypeLabel(ticketType) }}</span>
                       <span class="ticket-option-meta">Besökarbiljett</span>
+                      @if (ticketType.description) {
+                        <markdown class="ticket-option-description" [data]="ticketType.description" />
+                      }
                     </span>
                     <span class="ticket-option-price">{{ ticketTypePriceLabel(ticketType) }}</span>
                   </label>

@@ -1013,32 +1013,6 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.ToTable("promotion_code_redemptions", (string)null);
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Registration.Entities.TicketPerk", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("tenant_id");
-
-                    b.Property<Guid>("TicketTypeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId");
-
-                    b.HasIndex("TicketTypeId");
-
-                    b.ToTable("ticket_perks", (string)null);
-                });
-
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Entities.TicketType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1047,6 +1021,11 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.Property<string>("AllowedCategories")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("allowed_categories");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(10000)
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("description");
 
                     b.Property<Guid>("EditionId")
                         .HasColumnType("uniqueidentifier")
@@ -1474,15 +1453,6 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Registration.Entities.TicketPerk", b =>
-                {
-                    b.HasOne("ConventionSystem.Domain.Registration.Entities.TicketType", null)
-                        .WithMany("Perks")
-                        .HasForeignKey("TicketTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ConventionSystem.Domain.Staff.Aggregates.Shift", b =>
                 {
                     b.OwnsOne("ConventionSystem.Domain.Staff.ValueObjects.StaffingRequirement", "StaffingRequirement", b1 =>
@@ -1580,11 +1550,6 @@ namespace ConventionSystem.Infrastructure.Migrations
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.StaffApplication", b =>
                 {
                     b.Navigation("Availabilities");
-                });
-
-            modelBuilder.Entity("ConventionSystem.Domain.Registration.Entities.TicketType", b =>
-                {
-                    b.Navigation("Perks");
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Staff.Aggregates.Shift", b =>

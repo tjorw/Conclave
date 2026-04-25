@@ -12,12 +12,14 @@ export interface TicketTypeAdminDto {
   category: TicketTypeCategory;
   validDays: string[] | null;
   allowedCategories: string[] | null;
+  description: string | null;
 }
 
 export interface VisitorTicketTypeDto {
   id: string;
   name: string;
   price: number;
+  description: string | null;
 }
 
 export interface PromotionCodeAdminDto {
