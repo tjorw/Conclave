@@ -10,6 +10,7 @@ public interface ITicketRepository
     Task<Ticket?> GetByIdAsync(TicketId id, CancellationToken ct = default);
     Task<IReadOnlyList<Ticket>> ListActiveOrganiserTicketsAsync(EditionId editionId, IReadOnlyCollection<PersonId> personIds, CancellationToken ct = default);
     Task<IReadOnlyList<Ticket>> ListActiveStaffTicketsAsync(EditionId editionId, IReadOnlyCollection<PersonId> personIds, CancellationToken ct = default);
+    Task<IReadOnlyList<PersonTicketForReceptionDto>> ListForReceptionAsync(PersonId personId, EditionId editionId, CancellationToken ct = default);
     Task<bool> ExistsByTypeAsync(TicketTypeId ticketTypeId, CancellationToken ct = default);
     void Add(Ticket ticket);
     Task AddAndSaveAsync(Ticket ticket, CancellationToken ct = default);

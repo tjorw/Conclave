@@ -1,6 +1,7 @@
 using ConventionSystem.Application.Convention.Commands.AddReceptionStaff;
 using ConventionSystem.Application.Convention.Commands.RemoveReceptionStaff;
 using ConventionSystem.Application.Convention.Queries.ListReceptionStaff;
+using ConventionSystem.Application.Convention.Queries.SearchPersonsForReception;
 using ConventionSystem.Application.Convention.Commands.ChangeCategoryResponsible;
 using ConventionSystem.Application.Convention.Queries.ListEditionResponsibles;
 using ConventionSystem.Application.Convention.Commands.SetActiveEdition;
@@ -320,6 +321,16 @@ public static class EditionEndpoints
         groups.Authenticated.MapGet("/editions/{editionId:guid}/staff-schedule",
             async (Guid editionId, Guid? staffAreaId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new GetStaffScheduleQuery(editionId, staffAreaId), ct)));
+
+        groups.Authenticated.MapGet("/editions/{editionId:guid}/persons/search",
+            async (Guid editionId, string q, ISender sender, CancellationToken ct) =>
+            {
+                if (string.IsNullOrWhiteSpace(q))
+                    return Results.BadRequest("Sökterm krävs.");
+                if (!Guid.TryParse(q.Trim(), out _) && q.Trim().Length < 2)
+                    return Results.BadRequest("Söktermen måste vara minst 2 tecken.");
+                return Results.Ok(await sender.Send(new SearchPersonsForReceptionQuery(editionId, q), ct));
+            });
     }
 
     private static readonly JsonSerializerOptions ExportJsonOptions = new(JsonSerializerDefaults.Web)

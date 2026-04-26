@@ -115,6 +115,20 @@ public record PromotionCodeAdminDto(
     DateTimeOffset? ValidUntil,
     Guid[]? AllowedTicketTypeIds);
 
+public record PersonTicketForReceptionDto(
+    Guid TicketId,
+    Guid TicketTypeId,
+    string TicketTypeName,
+    string TicketTypeCategory,
+    string Status,
+    int? FinalPrice,
+    IReadOnlyList<DateOnly>? ValidDays,
+    Guid[]? AllowedCategories,
+    IReadOnlyList<string> Perks,
+    bool IsCollected,
+    DateTimeOffset? CollectedAt,
+    DateTimeOffset CreatedAt);
+
 public record PromotionCodeRedemptionHistoryDto(
     Guid Id,
     Guid PersonId,

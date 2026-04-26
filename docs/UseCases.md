@@ -3225,10 +3225,10 @@ Receptionspersonal (konventionsadministratör eller `ReceptionStaff`)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Sökning på namn eller e-post returnerar matchande personer inom aktiv edition
-- [ ] Sökning på exakt `TicketId` returnerar rätt person direkt
-- [ ] Fritext kortare än 2 tecken ger valideringsfel
-- [ ] Receptionspersonal utan rätt roll får 403
+- [x] Sökning på namn eller e-post returnerar matchande personer inom aktiv edition
+- [x] Sökning på exakt `TicketId` returnerar rätt person direkt
+- [x] Fritext kortare än 2 tecken ger valideringsfel
+- [x] Receptionspersonal utan rätt roll får 403
 
 ---
 
@@ -3257,9 +3257,9 @@ Receptionspersonal (konventionsadministratör eller `ReceptionStaff`)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Alla biljetter för person och aktiv edition returneras
-- [ ] Svaret inkluderar `TicketType.Name`, status, `ValidDays`, `AllowedCategories` och lista av `TicketPerk`
-- [ ] Receptionspersonal utan rätt roll får 403
+- [x] Alla biljetter för person och aktiv edition returneras
+- [x] Svaret inkluderar `TicketType.Name`, status, `ValidDays`, `AllowedCategories` och lista av `TicketPerk`
+- [x] Receptionspersonal utan rätt roll får 403
 
 ---
 
