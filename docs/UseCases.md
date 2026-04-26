@@ -3131,3 +3131,171 @@ Lagkapten (personen som skapade laganmälan) eller konventionsadministratör
 - [ ] Saknad behörighet (varken captain eller admin) returnerar Forbidden
 - [ ] Kommandohanteraren har ett tillhörande enhetstest
 - [x] Kommandohanteraren har tillhörande enhetstester
+
+---
+
+# UC-RX001 – Tilldela receptionsroll
+
+## Sammanfattning
+En konventionsadministratör tilldelar en person rollen `ReceptionStaff` för en specifik `Edition`. Personen får därmed tillgång till receptionsappen och JWT-claim `is_reception`.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- `Edition` finns
+- `Person` finns och tillhör konventet
+- Utförande användare är administratör för konventet
+
+## Flöde
+1. Administratören anger `EditionId` och `PersonId`
+2. Systemet kontrollerar att personen inte redan har receptionsrollen för upplagan
+3. Systemet skapar en `ReceptionStaff`-post på `Edition`
+4. Systemet returnerar bekräftelse
+
+## Affärsregler
+- En person kan bara ha receptionsrollen en gång per `Edition`
+- Konventionsadministratörer har implicit receptionsåtkomst utan att tilldelas rollen
+
+## Domänhändelser
+- `ReceptionStaffAdded { editionId, personId, addedById, occurredAt }`
+
+## Acceptanskriterier
+- [x] `ReceptionStaff`-post skapas och kopplas till korrekt `EditionId`
+- [x] Dubblett ger valideringsfel
+- [x] Saknad behörighet returnerar Forbidden
+- [x] Kommandohanterare har tillhörande enhetstest
+
+---
+
+# UC-RX002 – Ta bort receptionsroll
+
+## Sammanfattning
+En konventionsadministratör tar bort en persons `ReceptionStaff`-roll från en `Edition`.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- `ReceptionStaff`-post finns för angiven `EditionId` och `PersonId`
+- Utförande användare är administratör för konventet
+
+## Flöde
+1. Administratören anger `EditionId` och `PersonId`
+2. Systemet tar bort `ReceptionStaff`-posten
+3. Systemet returnerar bekräftelse
+
+## Affärsregler
+- En person som är konventionsadministratör förlorar inte receptionsåtkomst om `ReceptionStaff`-posten tas bort
+
+## Domänhändelser
+- `ReceptionStaffRemoved { editionId, personId, removedById, occurredAt }`
+
+## Acceptanskriterier
+- [x] `ReceptionStaff`-post raderas
+- [x] Borttagning av icke-existerande post ger valideringsfel
+- [x] Saknad behörighet returnerar Forbidden
+- [x] Kommandohanterare har tillhörande enhetstest
+
+---
+
+# UC-RX003 – Sök person vid receptionen
+
+## Sammanfattning
+Receptionspersonal söker efter en besökare, arrangör eller funktionär via namn, e-post eller biljett-ID. Resultatet används för att identifiera personen inför incheckning.
+
+## Aktör
+Receptionspersonal (konventionsadministratör eller `ReceptionStaff`)
+
+## Förutsättningar
+- Aktiv `Edition` finns
+- Utförande användare har receptionsåtkomst
+
+## Flöde
+1. Personalen anger sökterm (fritext) eller skannat `TicketId`
+2. Systemet söker mot `Person.Name`, `Person.Email` och `Ticket.TicketId` inom aktiv `Edition`
+3. Systemet returnerar matchande personer med biljettstatussammanfattning
+
+## Affärsregler
+- Fritextsökning kräver minst 2 tecken
+- Sökning på exakt `TicketId` returnerar direkt utan minimigräns
+- Resultatlistan begränsas till 20 träffar
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Sökning på namn eller e-post returnerar matchande personer inom aktiv edition
+- [ ] Sökning på exakt `TicketId` returnerar rätt person direkt
+- [ ] Fritext kortare än 2 tecken ger valideringsfel
+- [ ] Receptionspersonal utan rätt roll får 403
+
+---
+
+# UC-RX004 – Visa personens biljetter vid incheckning
+
+## Sammanfattning
+Receptionspersonal hämtar alla biljetter en person har för aktiv `Edition`, med status och förmåner, som underlag för incheckning och biljettutdelning.
+
+## Aktör
+Receptionspersonal (konventionsadministratör eller `ReceptionStaff`)
+
+## Förutsättningar
+- `Person` finns
+- Utförande användare har receptionsåtkomst
+
+## Flöde
+1. Personalen väljer en person (t.ex. via UC-RX003)
+2. Systemet hämtar alla `Ticket`-poster för personen och aktiv `Edition`
+3. Systemet returnerar biljetter med typ, status, giltighetsdagar, tillåtna kategorier och förmåner
+
+## Affärsregler
+- Biljetter visas oavsett status (inkl. `Revoked`) för att ge full bild
+- `Collected`-biljetter markeras tydligt för att undvika dubbelutdelning
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Alla biljetter för person och aktiv edition returneras
+- [ ] Svaret inkluderar `TicketType.Name`, status, `ValidDays`, `AllowedCategories` och lista av `TicketPerk`
+- [ ] Receptionspersonal utan rätt roll får 403
+
+---
+
+# UC-RX005 – Walk-up-incheckning
+
+## Sammanfattning
+En person som inte registrerat sig i förväg anländer vid receptionen. Receptionspersonal skapar konto, reserverar biljetttyp, registrerar manuell betalning och checkar in personen i ett sammanhängande flöde.
+
+## Aktör
+Receptionspersonal (konventionsadministratör eller `ReceptionStaff`)
+
+## Förutsättningar
+- Aktiv `Edition` finns med minst en tillgänglig `TicketType`
+
+## Flöde
+1. Personalen söker efter personen och får ingen träff (UC-RX003)
+2. Personalen anger namn och e-post och väljer biljetttyp
+3. Systemet identifierar eller skapar personkonto (UC002)
+4. Systemet skapar `VisitorRegistration` och `Ticket` med status `Reserved` (UC-VR001)
+5. Personalen bekräftar betalning (kontant eller Swish)
+6. Systemet registrerar manuell betalning → biljettstatus `Paid` (UC-TK004)
+7. Systemet checkar in biljetten → biljettstatus `Collected` (UC-TK008)
+8. Systemet visar förmånslistan för utdelning
+
+## Affärsregler
+- Om personen redan finns (e-postmatch) används det befintliga kontot
+- Betalningsintegrering (Swish, kortläsare) är utanför scope i fas 1 – betalning registreras manuellt
+
+## Domänhändelser
+- Se UC002, UC-VR001, UC-TK004 och UC-TK008
+
+## Implementationssteg
+- [ ] `R-RX05` Frontend walk-up-komponent som orkestrerar UC002 → UC-VR001 → UC-TK004 → UC-TK008 i sekvens
+
+## Acceptanskriterier
+- [ ] Person som inte finns skapas med korrekt konventions-scope
+- [ ] Person som redan finns (e-postmatch) återanvänds utan duplikat
+- [ ] Biljett skapas, betalas och checkas in utan manuella mellansteg
+- [ ] Förmåner visas i sista steget

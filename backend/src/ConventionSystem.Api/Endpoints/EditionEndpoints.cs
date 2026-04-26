@@ -1,3 +1,6 @@
+using ConventionSystem.Application.Convention.Commands.AddReceptionStaff;
+using ConventionSystem.Application.Convention.Commands.RemoveReceptionStaff;
+using ConventionSystem.Application.Convention.Queries.ListReceptionStaff;
 using ConventionSystem.Application.Convention.Commands.ChangeCategoryResponsible;
 using ConventionSystem.Application.Convention.Queries.ListEditionResponsibles;
 using ConventionSystem.Application.Convention.Commands.SetActiveEdition;
@@ -264,6 +267,24 @@ public static class EditionEndpoints
                 return Results.NoContent();
             });
 
+        editions.MapGet("/reception-staff",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListReceptionStaffQuery(editionId), ct)));
+
+        editions.MapPost("/reception-staff",
+            async (Guid editionId, AddReceptionStaffRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new AddReceptionStaffCommand(editionId, request.PersonId), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapDelete("/reception-staff/{personId:guid}",
+            async (Guid editionId, Guid personId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveReceptionStaffCommand(editionId, personId), ct);
+                return Results.NoContent();
+            });
+
         editions.MapGet("/visitors",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListEditionVisitorsQuery(editionId), ct)));
@@ -308,6 +329,7 @@ public static class EditionEndpoints
     };
 }
 
+public record AddReceptionStaffRequest(Guid PersonId);
 public record CopyEditionStructureRequest(Guid SourceEditionId);
 public record ImportEditionRequest(string Name, DateOnly StartDate, EditionExportDocument Document);
 public record CreateVenueRequest(string Name, string Building, string? Description);

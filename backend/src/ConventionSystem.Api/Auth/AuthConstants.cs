@@ -24,5 +24,7 @@ public static class AuthConstants
         public const string IsAdminTrue = "true";
         public const string IsSystemAdmin = "is_system_admin";
         public const string IsSystemAdminTrue = "true";
+        public const string IsReception = "is_reception";
+        public const string IsReceptionTrue = "true";
     }
 }

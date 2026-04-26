@@ -112,3 +112,11 @@ export interface EditionResponsibleDto {
   personName: string | null;
   email: string | null;
 }
+
+export interface ReceptionStaffMemberDto {
+  personId: string;
+  name: string;
+  email: string;
+  addedAt: string;
+  addedById: string;
+}

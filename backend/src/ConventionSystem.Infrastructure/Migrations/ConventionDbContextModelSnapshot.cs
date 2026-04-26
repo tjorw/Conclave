@@ -248,6 +248,38 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.ToTable("persons", (string)null);
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.ReceptionStaff", b =>
+                {
+                    b.Property<Guid>("EditionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("edition_id");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("AddedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("added_at");
+
+                    b.Property<Guid>("AddedById")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("added_by_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("EditionId", "PersonId");
+
+                    b.HasIndex("EditionId")
+                        .HasDatabaseName("IX_edition_reception_staff_edition_id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("edition_reception_staff", (string)null);
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.StaffArea", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1289,6 +1321,15 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.ReceptionStaff", b =>
+                {
+                    b.HasOne("ConventionSystem.Domain.Convention.Aggregates.Edition", null)
+                        .WithMany("ReceptionStaff")
+                        .HasForeignKey("EditionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.StaffArea", b =>
                 {
                     b.HasOne("ConventionSystem.Domain.Convention.Aggregates.Edition", null)
@@ -1521,6 +1562,8 @@ namespace ConventionSystem.Infrastructure.Migrations
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Aggregates.Edition", b =>
                 {
                     b.Navigation("Categories");
+
+                    b.Navigation("ReceptionStaff");
 
                     b.Navigation("ScheduleDays");
 

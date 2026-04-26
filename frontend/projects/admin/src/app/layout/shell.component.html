@@ -108,6 +108,10 @@
           <mat-icon matListItemIcon>assignment</mat-icon>
           <span matListItemTitle>{{ NAV.staffApplications }}</span>
         </a>
+        <a mat-list-item routerLink="persons/reception-staff" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>local_convenience_store</mat-icon>
+          <span matListItemTitle>{{ NAV.receptionStaff }}</span>
+        </a>
       }
       <mat-divider />
       <button type="button" class="nav-section-toggle" (click)="toggleNavSection('visitors')"

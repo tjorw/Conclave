@@ -4,6 +4,7 @@ using ConventionSystem.Domain.Convention.Enums;
 using ConventionSystem.Domain.Convention.Ids;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ReceptionStaffEntity = ConventionSystem.Domain.Convention.Entities.ReceptionStaff;
 
 namespace ConventionSystem.Infrastructure.Persistence.Configurations.Convention;
 
@@ -51,12 +52,14 @@ public sealed class EditionConfiguration : IEntityTypeConfiguration<Edition>
         builder.HasMany(e => e.Stations).WithOne().HasForeignKey("EditionId").IsRequired();
         builder.HasMany(e => e.Categories).WithOne().HasForeignKey("EditionId").IsRequired();
         builder.HasMany(e => e.ScheduleDays).WithOne().HasForeignKey("EditionId").IsRequired();
+        builder.HasMany(e => e.ReceptionStaff).WithOne().HasForeignKey("EditionId").IsRequired();
 
         builder.Navigation(e => e.Venues).HasField("_venues");
         builder.Navigation(e => e.StaffAreas).HasField("_staffAreas");
         builder.Navigation(e => e.Stations).HasField("_stations");
         builder.Navigation(e => e.Categories).HasField("_categories");
         builder.Navigation(e => e.ScheduleDays).HasField("_scheduleDays");
+        builder.Navigation(e => e.ReceptionStaff).HasField("_receptionStaff");
 
         builder.HasIndex(e => e.ConventionId).HasDatabaseName("IX_editions_convention_id");
     }
@@ -167,5 +170,31 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.Property(c => c.Name).HasMaxLength(200).IsRequired();
         builder.Property(c => c.Description).HasMaxLength(1000);
+    }
+}
+
+public sealed class ReceptionStaffConfiguration : IEntityTypeConfiguration<ReceptionStaffEntity>
+{
+    public void Configure(EntityTypeBuilder<ReceptionStaffEntity> builder)
+    {
+        builder.ToTable("edition_reception_staff");
+
+        builder.Property<EditionId>("EditionId")
+            .HasConversion(id => id.Value, value => new EditionId(value))
+            .HasColumnName("edition_id");
+
+        builder.HasKey("EditionId", nameof(ReceptionStaffEntity.PersonId));
+
+        builder.Property(r => r.PersonId)
+            .HasConversion(id => id.Value, value => new PersonId(value))
+            .HasColumnName("person_id");
+
+        builder.Property(r => r.AddedById)
+            .HasConversion(id => id.Value, value => new PersonId(value))
+            .HasColumnName("added_by_id");
+
+        builder.Property(r => r.AddedAt).HasColumnName("added_at");
+
+        builder.HasIndex("EditionId").HasDatabaseName("IX_edition_reception_staff_edition_id");
     }
 }

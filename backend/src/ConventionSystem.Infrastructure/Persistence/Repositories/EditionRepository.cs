@@ -52,6 +52,11 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
             .Include(e => e.Venues)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
+    public Task<Edition?> GetByIdWithReceptionStaffAsync(EditionId id, CancellationToken ct = default)
+        => db.Editions
+            .Include(e => e.ReceptionStaff)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
     public Task<IReadOnlyList<EditionSummaryDto>> ListByConventionIdAsync(ConventionId id, CancellationToken ct = default)
         => db.Editions
             .Where(e => e.ConventionId == id)

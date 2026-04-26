@@ -27,6 +27,7 @@ export const NAV = {
   editionTicketTypes: 'Biljettyper',
   editionExport: 'Export',
   eventsSection:  'Evenemang',
+  receptionStaff:  'Receptionspersonal',
   staffingSection: 'Bemanning',
   visitorsSection: 'Besökare',
   personsSection:  'Personer',

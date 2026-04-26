@@ -68,6 +68,18 @@ public static class EditionContextLoader
         return await CreateContextAsync(conventionRepository, edition, ct);
     }
 
+    public static async Task<EditionContext> LoadWithReceptionStaffAsync(
+        IEditionRepository editionRepository,
+        IConventionRepository conventionRepository,
+        EditionId editionId,
+        CancellationToken ct)
+    {
+        var edition = await editionRepository.GetByIdWithReceptionStaffAsync(editionId, ct)
+            ?? throw new InvalidOperationException($"Upplaga '{editionId.Value}' hittades inte.");
+
+        return await CreateContextAsync(conventionRepository, edition, ct);
+    }
+
     public static async Task<EditionContext> LoadWithCategoriesAndVenuesAsync(
         IEditionRepository editionRepository,
         IConventionRepository conventionRepository,

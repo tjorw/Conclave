@@ -12,6 +12,7 @@ import {
   EditionSummaryDto,
   EditionVisitorDto,
   PersonDto,
+  ReceptionStaffMemberDto,
   StaffAreaDto,
   StationDto,
   VenueDto,
@@ -347,5 +348,17 @@ export class ConventionService {
 
   listEditionResponsibles(editionId: string) {
     return this.http.get<EditionResponsibleDto[]>(`${this.env.apiBaseUrl}/editions/${editionId}/responsibles`);
+  }
+
+  listEditionReceptionStaff(editionId: string) {
+    return this.http.get<ReceptionStaffMemberDto[]>(`${this.env.apiBaseUrl}/editions/${editionId}/reception-staff`);
+  }
+
+  addEditionReceptionStaff(editionId: string, personId: string) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/editions/${editionId}/reception-staff`, { personId });
+  }
+
+  removeEditionReceptionStaff(editionId: string, personId: string) {
+    return this.http.delete<void>(`${this.env.apiBaseUrl}/editions/${editionId}/reception-staff/${personId}`);
   }
 }

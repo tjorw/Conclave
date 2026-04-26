@@ -15,6 +15,7 @@ public sealed class Edition : AggregateRoot
     private readonly List<Station> _stations = [];
     private readonly List<Category> _categories = [];
     private readonly List<EditionScheduleDay> _scheduleDays = [];
+    private readonly List<ReceptionStaff> _receptionStaff = [];
 
     public EditionId Id { get; private set; }
     public ConventionId ConventionId { get; private set; }
@@ -32,6 +33,7 @@ public sealed class Edition : AggregateRoot
     public IReadOnlyList<Station> Stations => _stations.AsReadOnly();
     public IReadOnlyList<Category> Categories => _categories.AsReadOnly();
     public IReadOnlyList<EditionScheduleDay> ScheduleDays => _scheduleDays.AsReadOnly();
+    public IReadOnlyList<ReceptionStaff> ReceptionStaff => _receptionStaff.AsReadOnly();
 
     private Edition() { }
 
@@ -252,6 +254,27 @@ public sealed class Edition : AggregateRoot
 
     public bool IsStaffCoordinator(PersonId personId)
         => StaffCoordinatorId == personId;
+
+    public bool IsReceptionStaff(PersonId personId)
+        => _receptionStaff.Any(r => r.PersonId == personId);
+
+    public void AddReceptionStaff(PersonId personId, PersonId addedById)
+    {
+        if (_receptionStaff.Any(r => r.PersonId == personId))
+            throw new PersonAlreadyReceptionStaffException();
+
+        _receptionStaff.Add(new ReceptionStaff(personId, addedById));
+        RaiseDomainEvent(new ReceptionStaffAdded(Id, personId, addedById, DateTimeOffset.UtcNow));
+    }
+
+    public void RemoveReceptionStaff(PersonId personId, PersonId removedById)
+    {
+        var entry = _receptionStaff.SingleOrDefault(r => r.PersonId == personId)
+            ?? throw new PersonNotReceptionStaffException();
+
+        _receptionStaff.Remove(entry);
+        RaiseDomainEvent(new ReceptionStaffRemoved(Id, personId, removedById, DateTimeOffset.UtcNow));
+    }
 
     public bool IsCategoryResponsible(CategoryId categoryId, PersonId personId)
         => _categories.Any(c => c.Id == categoryId && c.ResponsibleId == personId);

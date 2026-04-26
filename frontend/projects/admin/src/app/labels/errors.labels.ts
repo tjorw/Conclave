@@ -84,6 +84,11 @@ export const ERROR = {
   deactivatePromotionCode:'Kunde inte deaktivera kampanjkod',
   fetchPromotionHistory:  'Kunde inte hämta inlösningshistorik',
 
+  // Receptionspersonal
+  fetchReceptionStaff:    'Kunde inte hämta receptionspersonal',
+  addReceptionStaff:      'Kunde inte tilldela receptionsrollen',
+  removeReceptionStaff:   'Kunde inte ta bort receptionsrollen',
+
   // Person
   createPerson:           'Kunde inte skapa person',
   updatePerson:           'Kunde inte uppdatera person',
