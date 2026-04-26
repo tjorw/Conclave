@@ -15,10 +15,6 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-HL03` Hjälpsystem – första omgången Markdown-innehåll (6 filer: convention, event, registration, staff)
 - [ ] `R-HL04` Hjälpsystem – `HelpPanel`-komponent på listsidor (UC-HL002)
 - [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
-- [x] `R-AT01` Arrangörsbiljetter – visa tillgängliga arrangörsbiljetter informativt vid arrangemangsanmälan (UC-EV013)
-- [x] `R-AT02` Arrangörsbiljetter – tilldela/byta arrangörsbiljett vid publicering, inklusive medarrangörer och atomär revoke + ny biljett (UC-EV014)
-- [x] `R-AT03` Arrangörsbiljetter – manuell adminhantering av arrangörsbiljett fristående från publiceringsflödet (UC-EV015)
-- [x] `R-AT04` Arrangörsbiljetter – arrangör ser sin tilldelade biljett i "Mina biljetter" utan egen avbokningsåtgärd (UC-EV016)
 - [ ] `R-ST01` Funktionärsbiljetter – publik vy visar tilldelade funktionärsbiljetter tillsammans med övriga biljetter, med samma skydd mot egen avbokning som andra tilldelade biljetter
 - [ ] `R-BK01` Bokningskö – första bokningsförsök hamnar i väntlista när arrangemanget kräver tilldelning i stället för direkt bekräftelse
 - [ ] `R-BK02` Bokningstilldelning – stöd strategi per arrangemang: först till kvarn, lottning eller manuell tilldelning
@@ -79,7 +75,6 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 | **`Shift` saknar `EditionId`** | `Shift` har ingen direkt koppling till `EditionId`. `MyScheduleRepository` löser detta via `Edition.Stations`-navigeringen (shadow FK). Om Shift-kontexten växer bör ett direkt `EditionId` övervägas på `Shift` för att slippa join-beroendet mot Convention. | Låg – fungerar korrekt, men fragil vid schemamigration |
 | **Deduplikering i tidsschema** | Om samma session förekommer i flera kategorier (t.ex. bokad OCH arrangör) prioriteras Booked > Organiser > Watching i `MyScheduleRepository`. Prioriteringslogiken är inte testad på domännivå. Om affärsreglerna ändras (t.ex. "visa alltid arrangörsrollen oavsett bokning") behöver deduplikeringen ses över. | Låg – nuvarande beteende är rimligt |
 | **Inga `DbSet<Station>` i `ConventionDbContext`** | `Station` och `Venue` nås via `db.Set<T>()` i stället för namngivna `DbSet<T>`-properties. Inkonsekvens mot övriga entiteter. Lägg till `DbSet<Station>` och `DbSet<Venue>` i `ConventionDbContext` om fler queries börjar hämta dem direkt. | Låg |
-| ~~**`ITicketRepository.ListByPersonAndEditionAsync` dubblettmetod**~~ | ~~`ITicketRepository` och `IVisitorRegistrationRepository` exponerade samma `ListByPersonAndEditionAsync` med subtilt olika semantik och `canCancel`-logik. `GetMyVisitorRegistrationHandler` använde fel repository. Åtgärdat: metoden borttagen ur `ITicketRepository`, handlern bygger nu på `IVisitorRegistrationRepository`, `canCancel` synkroniserad med `TicketTypeCategory.Visitor`-guard.~~ | ~~Löst~~ |
 
 ---
 
