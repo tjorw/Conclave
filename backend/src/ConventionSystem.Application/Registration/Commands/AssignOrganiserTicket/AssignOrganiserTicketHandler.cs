@@ -64,11 +64,11 @@ public sealed class AssignOrganiserTicketHandler(
 
         if (ticketTypeId is not null)
         {
-            await ticketRepository.AddAsync(Ticket.CreateOrganizerTicket(
+            ticketRepository.Add(Ticket.CreateOrganizerTicket(
                 ticketTypeId.Value,
                 personId,
                 editionId,
-                performedById), ct);
+                performedById));
         }
 
         await ticketRepository.SaveAsync(ct);

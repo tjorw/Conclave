@@ -48,14 +48,13 @@ public class OrganizerTicketsAssignedHandlerTests
             DateTimeOffset.UtcNow));
 
         Assert.Equal(TicketStatus.Revoked, currentTicket.Status);
-        await _ticketRepo.Received(1).AddAsync(
+        _ticketRepo.Received(1).Add(
             Arg.Is<Ticket>(t =>
                 t.PersonId == personId &&
                 t.EditionId == editionId &&
                 t.TicketTypeId == newTypeId &&
                 t.AssignedById == performedById &&
-                t.Status == TicketStatus.Reserved),
-            Arg.Any<CancellationToken>());
+                t.Status == TicketStatus.Reserved));
         await _ticketRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
 

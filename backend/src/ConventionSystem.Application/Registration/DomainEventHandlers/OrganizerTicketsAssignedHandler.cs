@@ -47,11 +47,11 @@ public sealed class OrganizerTicketsAssignedHandler(
             if (assignment.TicketTypeId is not null)
             {
                 var ticketTypeId = assignment.TicketTypeId.Value;
-                await ticketRepository.AddAsync(Ticket.CreateOrganizerTicket(
+                ticketRepository.Add(Ticket.CreateOrganizerTicket(
                     ticketTypeId,
                     assignment.PersonId,
                     domainEvent.EditionId,
-                    domainEvent.PerformedById), ct);
+                    domainEvent.PerformedById));
             }
         }
 

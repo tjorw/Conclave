@@ -6,8 +6,6 @@ using ConventionSystem.Domain.Registration.Enums;
 using ConventionSystem.Domain.Registration.Ids;
 using Microsoft.EntityFrameworkCore;
 
-
-
 namespace ConventionSystem.Infrastructure.Persistence.Repositories;
 
 public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVisitorRegistrationRepository
@@ -30,13 +28,9 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
         => db.VisitorRegistrations
             .Where(r => r.PersonId == personId
                         && r.EditionId == editionId
-                        && r.Status != VisitorRegistrationStatus.Cancelled)
-            .Join(
-                db.Tickets,
-                registration => registration.TicketId,
-                ticket => ticket.Id,
-                (registration, ticket) => ticket)
-            .AnyAsync(ticket => ticket.TicketTypeId == ticketTypeId, ct);
+                        && r.Status != VisitorRegistrationStatus.Cancelled
+                        && db.Tickets.Any(t => t.Id == r.TicketId && t.TicketTypeId == ticketTypeId))
+            .AnyAsync(ct);
 
     public async Task<IReadOnlyList<EditionVisitorDto>> ListConfirmedByEditionIdAsync(EditionId editionId, CancellationToken ct = default)
     {

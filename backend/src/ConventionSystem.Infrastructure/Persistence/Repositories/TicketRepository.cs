@@ -36,11 +36,7 @@ public sealed class TicketRepository(ConventionDbContext db) : ITicketRepository
     public Task<bool> ExistsByTypeAsync(TicketTypeId ticketTypeId, CancellationToken ct = default)
         => db.Tickets.AnyAsync(t => t.TicketTypeId == ticketTypeId, ct);
 
-    public Task AddAsync(Ticket ticket, CancellationToken ct = default)
-    {
-        db.Tickets.Add(ticket);
-        return Task.CompletedTask;
-    }
+    public void Add(Ticket ticket) => db.Tickets.Add(ticket);
 
     public async Task AddAndSaveAsync(Ticket ticket, CancellationToken ct = default)
     {

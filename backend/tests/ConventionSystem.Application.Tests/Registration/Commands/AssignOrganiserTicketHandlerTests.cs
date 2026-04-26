@@ -54,14 +54,13 @@ public class AssignOrganiserTicketHandlerTests
             newTypeId.Value), default);
 
         Assert.Equal(TicketStatus.Revoked, currentTicket.Status);
-        await _ticketRepo.Received(1).AddAsync(
+        _ticketRepo.Received(1).Add(
             Arg.Is<Ticket>(t =>
                 t.PersonId == setup.organiser.Id &&
                 t.EditionId == setup.edition.Id &&
                 t.TicketTypeId == newTypeId &&
                 t.AssignedById == setup.admin.Id &&
-                t.Status == TicketStatus.Reserved),
-            Arg.Any<CancellationToken>());
+                t.Status == TicketStatus.Reserved));
         await _ticketRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
 
@@ -80,7 +79,7 @@ public class AssignOrganiserTicketHandlerTests
             null), default);
 
         Assert.Equal(TicketStatus.Revoked, currentTicket.Status);
-        await _ticketRepo.DidNotReceive().AddAsync(Arg.Any<Ticket>(), Arg.Any<CancellationToken>());
+        _ticketRepo.DidNotReceive().Add(Arg.Any<Ticket>());
         await _ticketRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
 

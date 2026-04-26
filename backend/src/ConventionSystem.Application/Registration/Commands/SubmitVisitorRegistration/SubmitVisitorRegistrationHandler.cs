@@ -57,7 +57,7 @@ public sealed class SubmitVisitorRegistrationHandler(
             registration.ConfirmPayment("AUTO-FREE");
         }
 
-        await ticketRepository.AddAsync(ticket, ct);
+        ticketRepository.Add(ticket);
         await visitorRegistrationRepository.AddAndSaveAsync(registration, ct);
 
         return registration.Id.Value;
