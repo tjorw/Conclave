@@ -5,6 +5,7 @@ import {
   CollectTicketResultDto,
   PersonSearchResultDto,
   PersonTicketDto,
+  VisitorTicketTypeDto,
 } from '../models/reception.models';
 
 @Injectable({ providedIn: 'root' })
@@ -32,6 +33,26 @@ export class ReceptionService {
     return this.http.post<CollectTicketResultDto>(
       `${this.env.apiBaseUrl}/tickets/${ticketId}/collect`,
       {}
+    );
+  }
+
+  listWalkupTicketTypes(editionId: string) {
+    return this.http.get<VisitorTicketTypeDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/walkup-ticket-types`
+    );
+  }
+
+  createWalkupPerson(editionId: string, name: string, email: string, phone: string | null) {
+    return this.http.post<{ id: string }>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/walkup-persons`,
+      { name, email, phone }
+    );
+  }
+
+  walkupRegister(editionId: string, personId: string, ticketTypeId: string) {
+    return this.http.post<{ ticketId: string }>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/walkup-registrations`,
+      { personId, ticketTypeId }
     );
   }
 }

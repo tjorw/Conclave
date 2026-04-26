@@ -25,6 +25,9 @@ using ConventionSystem.Application.Registration.Commands.RevokeTicket;
 using ConventionSystem.Application.Registration.Commands.SubmitStaffApplication;
 using ConventionSystem.Application.Registration.Commands.SubmitVisitorRegistration;
 using ConventionSystem.Application.Registration.Commands.UnwatchSession;
+using ConventionSystem.Application.Registration.Commands.WalkupRegister;
+using ConventionSystem.Application.Registration.Commands.CreateWalkupPerson;
+using ConventionSystem.Application.Registration.Queries.ListVisitorTicketTypesForWalkup;
 using ConventionSystem.Application.Registration.Commands.UpdateTicketType;
 using ConventionSystem.Application.Registration.Commands.WatchSession;
 using ConventionSystem.Application.Registration.Queries.GetMySessionRegistrations;
@@ -124,6 +127,29 @@ public static class RegistrationEndpoints
                 var result = await sender.Send(new CollectTicketCommand(ticketId), ct);
                 return Results.Ok(result);
             });
+
+        // UC-RX005: Walk-up – skapa person
+        groups.Authenticated.MapPost("/editions/{editionId:guid}/walkup-persons",
+            async (Guid editionId, WalkupPersonRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var id = await sender.Send(
+                    new CreateWalkupPersonCommand(editionId, request.Name, request.Email, request.Phone), ct);
+                return Results.Created($"/persons/{id}", new { id });
+            });
+
+        // UC-RX005: Walk-up – registrera och betala
+        groups.Authenticated.MapPost("/editions/{editionId:guid}/walkup-registrations",
+            async (Guid editionId, WalkupRegistrationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var ticketId = await sender.Send(
+                    new WalkupRegisterCommand(editionId, request.PersonId, request.TicketTypeId), ct);
+                return Results.Created($"/tickets/{ticketId}", new { ticketId });
+            });
+
+        // UC-RX005: Walk-up – biljetttyper för reception
+        groups.Authenticated.MapGet("/editions/{editionId:guid}/walkup-ticket-types",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListVisitorTicketTypesForWalkupQuery(editionId), ct)));
 
         // UC-TK007: Makulera biljett
         groups.Authenticated.MapDelete("/tickets/{ticketId:guid}",
@@ -411,6 +437,8 @@ public record TicketPaymentWebhookRequest(Guid VisitorRegistrationId, string Ext
 public record RedeemPromotionCodeRequest(string Code);
 public record IssueTicketRequest(Guid PersonId, Guid TicketTypeId);
 public record SubmitStaffApplicationRequest(string InterestDescription);
+public record WalkupPersonRequest(string Name, string Email, string? Phone);
+public record WalkupRegistrationRequest(Guid PersonId, Guid TicketTypeId);
 public record AddAvailabilityRequest(DateTime From, DateTime To);
 public record StaffAreaPreferenceRequest(Guid StaffAreaId);
 public record RegisterForSessionRequest(Guid TicketId);

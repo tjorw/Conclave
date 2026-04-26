@@ -31,3 +31,10 @@ export interface CollectTicketResultDto {
   ticketId: string;
   description: string | null;
 }
+
+export interface VisitorTicketTypeDto {
+  id: string;
+  name: string;
+  price: number;
+  description: string | null;
+}
