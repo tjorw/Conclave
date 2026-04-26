@@ -72,6 +72,13 @@
               }
             }
           }
+
+          @if (personSchedule(); as schedule) {
+            <div class="schedule-section">
+              <h3 class="schedule-heading">Schema</h3>
+              <app-schedule-panel [schedule]="schedule"></app-schedule-panel>
+            </div>
+          }
         </div>
       }
     }

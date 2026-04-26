@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENVIRONMENT } from 'shared';
 import {
   CollectTicketResultDto,
+  PersonScheduleDto,
   PersonSearchResultDto,
   PersonTicketDto,
   VisitorTicketTypeDto,
@@ -33,6 +34,12 @@ export class ReceptionService {
     return this.http.post<CollectTicketResultDto>(
       `${this.env.apiBaseUrl}/tickets/${ticketId}/collect`,
       {}
+    );
+  }
+
+  getPersonSchedule(personId: string, editionId: string) {
+    return this.http.get<PersonScheduleDto>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/persons/${personId}/schedule`
     );
   }
 

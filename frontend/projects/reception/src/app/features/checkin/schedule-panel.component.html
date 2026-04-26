@@ -1,0 +1,57 @@
+@if (!hasContent()) {
+  <p class="no-schedule">Inga registrerade arbetspass eller evenemang.</p>
+} @else {
+  <div class="schedule-total">
+    <span class="total-label">Totalt</span>
+    <span class="total-hours">{{ formatHours(schedule().total.totalHours) }}</span>
+    <span class="total-breakdown">
+      @if (schedule().total.totalShiftHours > 0) {
+        <span>Funktionär: {{ formatHours(schedule().total.totalShiftHours) }}</span>
+      }
+      @if (schedule().total.totalSessionHours > 0) {
+        <span>Arrangör: {{ formatHours(schedule().total.totalSessionHours) }}</span>
+      }
+    </span>
+  </div>
+
+  @for (day of schedule().dailySummary; track day.date) {
+    <div class="schedule-day">
+      <div class="day-header">
+        <span class="day-date">{{ day.date | date: 'EEEE d MMM' : undefined : 'sv' }}</span>
+        <span class="day-total">{{ formatHours(day.totalHours) }}</span>
+      </div>
+
+      @for (shift of schedule().shifts; track shift.shiftId) {
+        @if (shift.date === day.date) {
+          <div class="schedule-item schedule-item--shift">
+            <mat-icon class="item-icon">engineering</mat-icon>
+            <div class="item-content">
+              <span class="item-title">{{ shift.areaName }} · {{ shift.stationName }}</span>
+              <span class="item-time">
+                {{ shift.start | date: 'HH:mm' }} – {{ shift.end | date: 'HH:mm' }}
+              </span>
+            </div>
+            <span class="item-badge item-badge--{{ shift.status.toLowerCase() }}">
+              {{ statusLabel(shift.status) }}
+            </span>
+          </div>
+        }
+      }
+
+      @for (session of schedule().sessions; track session.sessionId) {
+        @if (session.date === day.date) {
+          <div class="schedule-item schedule-item--session">
+            <mat-icon class="item-icon">event</mat-icon>
+            <div class="item-content">
+              <span class="item-title">{{ session.eventTitle }}</span>
+              <span class="item-subtitle">{{ session.venueName }} · {{ session.role }}</span>
+              <span class="item-time">
+                {{ session.start | date: 'HH:mm' }} – {{ session.end | date: 'HH:mm' }}
+              </span>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  }
+}

@@ -21,8 +21,7 @@ public class SearchPersonsForReceptionHandlerTests
     public SearchPersonsForReceptionHandlerTests()
     {
         _handler = new SearchPersonsForReceptionHandler(
-            _editionRepo, _conventionRepo, _currentUser, _personRepo,
-            Substitute.For<Application.Registration.Abstractions.ITicketRepository>());
+            _editionRepo, _conventionRepo, _currentUser, _personRepo);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,

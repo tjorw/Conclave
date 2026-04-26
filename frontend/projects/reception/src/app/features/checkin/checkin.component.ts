@@ -17,9 +17,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { PersonSearchResultDto, PersonTicketDto } from '../../models/reception.models';
+import { PersonScheduleDto, PersonSearchResultDto, PersonTicketDto } from '../../models/reception.models';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ReceptionService } from '../../services/reception.service';
+import { SchedulePanelComponent } from './schedule-panel.component';
 import { TicketCardComponent } from './ticket-card.component';
 import { QrScannerComponent } from './qr-scanner.component';
 
@@ -36,6 +37,7 @@ import { QrScannerComponent } from './qr-scanner.component';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     TicketCardComponent,
+    SchedulePanelComponent,
     QrScannerComponent,
   ],
   templateUrl: './checkin.component.html',
@@ -53,6 +55,7 @@ export class CheckinComponent implements OnInit {
   readonly searchResults = signal<PersonSearchResultDto[]>([]);
   readonly selectedPerson = signal<PersonSearchResultDto | null>(null);
   readonly personTickets = signal<PersonTicketDto[] | null>(null);
+  readonly personSchedule = signal<PersonScheduleDto | null>(null);
   readonly loadingTickets = signal(false);
   readonly collectingTicketId = signal<string | null>(null);
   readonly showQrScanner = signal(false);
@@ -80,6 +83,7 @@ export class CheckinComponent implements OnInit {
         this.searching.set(true);
         this.selectedPerson.set(null);
         this.personTickets.set(null);
+        this.personSchedule.set(null);
         return this.receptionService.searchPersons(editionId, t);
       }),
       takeUntilDestroyed(this.destroyRef),
@@ -101,6 +105,7 @@ export class CheckinComponent implements OnInit {
     if (this.selectedPerson()?.personId === person.personId) {
       this.selectedPerson.set(null);
       this.personTickets.set(null);
+      this.personSchedule.set(null);
       return;
     }
     const editionId = this.editionContext.activeEdition()?.id;
@@ -108,6 +113,7 @@ export class CheckinComponent implements OnInit {
 
     this.selectedPerson.set(person);
     this.personTickets.set(null);
+    this.personSchedule.set(null);
     this.loadingTickets.set(true);
 
     this.receptionService.getPersonTickets(person.personId, editionId)
@@ -121,6 +127,13 @@ export class CheckinComponent implements OnInit {
           this.loadingTickets.set(false);
           this.snackBar.open('Kunde inte ladda biljetter.', 'OK', { duration: 4000 });
         },
+      });
+
+    this.receptionService.getPersonSchedule(person.personId, editionId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: schedule => this.personSchedule.set(schedule),
+        error: () => { /* schema visas inte om det misslyckas */ },
       });
   }
 
@@ -158,5 +171,6 @@ export class CheckinComponent implements OnInit {
     this.searchResults.set([]);
     this.selectedPerson.set(null);
     this.personTickets.set(null);
+    this.personSchedule.set(null);
   }
 }

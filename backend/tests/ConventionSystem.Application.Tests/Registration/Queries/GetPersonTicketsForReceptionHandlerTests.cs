@@ -55,7 +55,7 @@ public class GetPersonTicketsForReceptionHandlerTests
         var expected = new List<PersonTicketForReceptionDto>
         {
             new(Guid.NewGuid(), Guid.NewGuid(), "Dagsbiljett", "Visitor", "Active",
-                150, null, null, [], false, null, DateTimeOffset.UtcNow)
+                150, null, null, null, false, null, DateTimeOffset.UtcNow)
         };
         _ticketRepo.ListForReceptionAsync(new PersonId(personId), edition.Id, Arg.Any<CancellationToken>())
             .Returns(expected);

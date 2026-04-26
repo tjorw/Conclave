@@ -3,6 +3,7 @@ using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Export.Abstractions;
+using ConventionSystem.Application.Reception.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Tenancy.Abstractions;
@@ -46,6 +47,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ISessionRegistrationRepository, SessionRegistrationRepository>();
         services.AddScoped<ISessionWatchRepository, SessionWatchRepository>();
         services.AddScoped<IMyScheduleRepository, MyScheduleRepository>();
+        services.AddScoped<IReceptionScheduleRepository, ReceptionScheduleRepository>();
         services.AddScoped<IRegistrationRuleService, RegistrationRuleService>();
 
         services.AddOptions<EmailOptions>()
