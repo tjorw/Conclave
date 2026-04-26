@@ -1,0 +1,20 @@
+<div class="scanner-overlay">
+  <div class="scanner-header">
+    <span>Skanna biljettkod</span>
+    <button mat-icon-button (click)="close()" aria-label="Stäng">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  @if (!supported) {
+    <p class="scanner-message">QR-skanning stöds inte i den här webbläsaren. Ange biljettnumret manuellt.</p>
+  } @else if (error()) {
+    <p class="scanner-message scanner-message--error">{{ error() }}</p>
+  } @else {
+    <div class="video-wrapper">
+      <video #video autoplay playsinline muted class="camera-feed"></video>
+      <div class="scan-guide"></div>
+    </div>
+    <p class="scanner-hint">Rikta kameran mot QR-koden på biljetten</p>
+  }
+</div>

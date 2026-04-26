@@ -1,15 +1,162 @@
-import { Component, inject } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { PersonSearchResultDto, PersonTicketDto } from '../../models/reception.models';
 import { EditionContextService } from '../../services/edition-context.service';
+import { ReceptionService } from '../../services/reception.service';
+import { TicketCardComponent } from './ticket-card.component';
+import { QrScannerComponent } from './qr-scanner.component';
 
 @Component({
   selector: 'app-checkin',
   standalone: true,
-  imports: [MatCardModule, MatIconModule],
+  imports: [
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule,
+    TicketCardComponent,
+    QrScannerComponent,
+  ],
   templateUrl: './checkin.component.html',
   styleUrl: './checkin.component.scss',
 })
-export class CheckinComponent {
+export class CheckinComponent implements OnInit {
+  private readonly receptionService = inject(ReceptionService);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly destroyRef = inject(DestroyRef);
   readonly editionContext = inject(EditionContextService);
+
+  readonly searchControl = new FormControl('');
+
+  readonly searching = signal(false);
+  readonly searchResults = signal<PersonSearchResultDto[]>([]);
+  readonly selectedPerson = signal<PersonSearchResultDto | null>(null);
+  readonly personTickets = signal<PersonTicketDto[] | null>(null);
+  readonly loadingTickets = signal(false);
+  readonly collectingTicketId = signal<string | null>(null);
+  readonly showQrScanner = signal(false);
+
+  readonly hasResults = computed(() => this.searchResults().length > 0);
+  readonly noResults = computed(
+    () => !this.searching() && (this.searchControl.value?.trim().length ?? 0) >= 2 && this.searchResults().length === 0
+  );
+
+  ngOnInit(): void {
+    this.searchControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(term => {
+        const t = term?.trim() ?? '';
+        const editionId = this.editionContext.activeEdition()?.id;
+        if (!editionId) return of([]);
+
+        const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(t);
+        if (!isGuid && t.length < 2) {
+          this.searchResults.set([]);
+          return of(null);
+        }
+
+        this.searching.set(true);
+        this.selectedPerson.set(null);
+        this.personTickets.set(null);
+        return this.receptionService.searchPersons(editionId, t);
+      }),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: results => {
+        this.searching.set(false);
+        if (results !== null) {
+          this.searchResults.set(results ?? []);
+        }
+      },
+      error: () => {
+        this.searching.set(false);
+        this.snackBar.open('Sökning misslyckades.', 'OK', { duration: 4000 });
+      },
+    });
+  }
+
+  selectPerson(person: PersonSearchResultDto): void {
+    if (this.selectedPerson()?.personId === person.personId) {
+      this.selectedPerson.set(null);
+      this.personTickets.set(null);
+      return;
+    }
+    const editionId = this.editionContext.activeEdition()?.id;
+    if (!editionId) return;
+
+    this.selectedPerson.set(person);
+    this.personTickets.set(null);
+    this.loadingTickets.set(true);
+
+    this.receptionService.getPersonTickets(person.personId, editionId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: tickets => {
+          this.personTickets.set(tickets);
+          this.loadingTickets.set(false);
+        },
+        error: () => {
+          this.loadingTickets.set(false);
+          this.snackBar.open('Kunde inte ladda biljetter.', 'OK', { duration: 4000 });
+        },
+      });
+  }
+
+  collectTicket(ticketId: string): void {
+    this.collectingTicketId.set(ticketId);
+    this.receptionService.collectTicket(ticketId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.collectingTicketId.set(null);
+          this.snackBar.open('Biljett incheckad!', '', { duration: 3000 });
+          // Uppdatera biljetter för vald person
+          const person = this.selectedPerson();
+          const editionId = this.editionContext.activeEdition()?.id;
+          if (person && editionId) {
+            this.receptionService.getPersonTickets(person.personId, editionId)
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe({ next: tickets => this.personTickets.set(tickets) });
+          }
+        },
+        error: () => {
+          this.collectingTicketId.set(null);
+          this.snackBar.open('Incheckning misslyckades.', 'OK', { duration: 5000 });
+        },
+      });
+  }
+
+  onQrScanned(ticketId: string): void {
+    this.showQrScanner.set(false);
+    this.searchControl.setValue(ticketId);
+  }
+
+  clearSearch(): void {
+    this.searchControl.setValue('');
+    this.searchResults.set([]);
+    this.selectedPerson.set(null);
+    this.personTickets.set(null);
+  }
 }

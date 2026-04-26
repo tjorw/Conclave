@@ -1,16 +1,79 @@
+@if (showQrScanner()) {
+  <app-qr-scanner
+    (scanned)="onQrScanned($event)"
+    (closed)="showQrScanner.set(false)"
+  ></app-qr-scanner>
+}
+
 <div class="page-header">
   <h1 class="page-title">Incheckning</h1>
-  <p class="page-subtitle">
-    @if (editionContext.activeEdition(); as edition) {
-      Checka in besökare för <strong>{{ edition.name }}</strong>
-    }
-  </p>
+  @if (editionContext.activeEdition(); as edition) {
+    <p class="page-subtitle">{{ edition.name }}</p>
+  }
 </div>
 
-<mat-card class="placeholder-card">
-  <mat-card-content class="placeholder-content">
-    <mat-icon>how_to_reg</mat-icon>
-    <p>Incheckningsflödet implementeras i R-RX04.</p>
-    <p class="placeholder-desc">Sök person → se biljetter → bekräfta incheckning → visa förmåner.</p>
-  </mat-card-content>
-</mat-card>
+<div class="search-bar">
+  <mat-form-field appearance="outline" class="search-field">
+    <mat-label>Sök på namn, e-post eller biljettnummer</mat-label>
+    <input matInput [formControl]="searchControl" autocomplete="off" />
+    @if (searching()) {
+      <mat-spinner matSuffix diameter="20"></mat-spinner>
+    } @else if (searchControl.value) {
+      <button matSuffix mat-icon-button (click)="clearSearch()" aria-label="Rensa">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </mat-form-field>
+
+  <button mat-icon-button class="qr-button" (click)="showQrScanner.set(true)" aria-label="Skanna QR-kod" title="Skanna QR-kod">
+    <mat-icon>qr_code_scanner</mat-icon>
+  </button>
+</div>
+
+@if (noResults()) {
+  <p class="no-results">Inga träffar för "{{ searchControl.value }}".</p>
+}
+
+@if (hasResults()) {
+  <div class="results-list">
+    @for (person of searchResults(); track person.personId) {
+      <mat-card
+        class="person-card"
+        [class.person-card--selected]="selectedPerson()?.personId === person.personId"
+        (click)="selectPerson(person)"
+      >
+        <mat-card-header>
+          <mat-icon mat-card-avatar class="person-avatar">person</mat-icon>
+          <mat-card-title>{{ person.name }}</mat-card-title>
+          <mat-card-subtitle>{{ person.email }}@if (person.phone) { · {{ person.phone }} }</mat-card-subtitle>
+          <span class="ticket-count">
+            {{ person.tickets.length }} biljett{{ person.tickets.length !== 1 ? 'er' : '' }}
+          </span>
+        </mat-card-header>
+      </mat-card>
+
+      @if (selectedPerson()?.personId === person.personId) {
+        <div class="ticket-list">
+          @if (loadingTickets()) {
+            <div class="loading-row">
+              <mat-spinner diameter="24"></mat-spinner>
+              <span>Laddar biljetter…</span>
+            </div>
+          } @else if (personTickets() !== null) {
+            @if (personTickets()!.length === 0) {
+              <p class="no-tickets">Inga biljetter för den här upplagan.</p>
+            } @else {
+              @for (ticket of personTickets()!; track ticket.ticketId) {
+                <app-ticket-card
+                  [ticket]="ticket"
+                  [collecting]="collectingTicketId() === ticket.ticketId"
+                  (collect)="collectTicket($event)"
+                ></app-ticket-card>
+              }
+            }
+          }
+        </div>
+      }
+    }
+  </div>
+}
