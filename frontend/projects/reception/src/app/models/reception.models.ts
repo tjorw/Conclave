@@ -21,7 +21,7 @@ export interface PersonTicketDto {
   finalPrice: number | null;
   validDays: string[] | null;
   allowedCategories: string[] | null;
-  perks: string[];
+  description: string | null;
   isCollected: boolean;
   collectedAt: string | null;
   createdAt: string;

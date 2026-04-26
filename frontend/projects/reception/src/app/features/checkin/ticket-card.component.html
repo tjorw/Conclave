@@ -22,18 +22,10 @@
       </div>
     }
 
-    @if (ticket().perks.length > 0) {
-      <mat-divider class="perks-divider"></mat-divider>
-      <div class="perks-section">
-        <p class="perks-label">Förmåner att dela ut:</p>
-        <mat-chip-set>
-          @for (perk of ticket().perks; track perk) {
-            <mat-chip>
-              <mat-icon matChipAvatar>redeem</mat-icon>
-              {{ perk }}
-            </mat-chip>
-          }
-        </mat-chip-set>
+    @if (ticket().description) {
+      <div class="info-row">
+        <mat-icon class="info-icon">info</mat-icon>
+        <span>{{ ticket().description }}</span>
       </div>
     }
 
@@ -55,9 +47,6 @@
       } @else {
         <div class="confirm-panel">
           <p class="confirm-text">Bekräfta incheckning av <strong>{{ ticket().ticketTypeName }}</strong>?</p>
-          @if (ticket().perks.length > 0) {
-            <p class="confirm-perks">Dela ut: {{ ticket().perks.join(', ') }}</p>
-          }
           <div class="confirm-actions">
             <button mat-flat-button color="primary" (click)="confirmCollect()" [disabled]="collecting()">
               <mat-icon>check</mat-icon>

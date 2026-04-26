@@ -14,8 +14,7 @@ public sealed class SearchPersonsForReceptionHandler(
     IEditionRepository editionRepo,
     IConventionRepository conventionRepo,
     ICurrentUser currentUser,
-    IPersonRepository personRepo,
-    ITicketRepository ticketRepo)
+    IPersonRepository personRepo)
     : IQueryHandler<SearchPersonsForReceptionQuery, IReadOnlyList<PersonSearchResultDto>>
 {
     public async Task<IReadOnlyList<PersonSearchResultDto>> Handle(

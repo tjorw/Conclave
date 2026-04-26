@@ -10,7 +10,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -38,7 +37,6 @@ type WalkupStep = 'person' | 'tickettype' | 'confirm' | 'done';
     MatButtonModule,
     MatCardModule,
     MatIconModule,
-    MatChipsModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
@@ -85,7 +83,7 @@ export class WalkupComponent implements OnInit {
   readonly registering = signal(false);
   readonly registerError = signal<string | null>(null);
   readonly completedTicketId = signal<string | null>(null);
-  readonly completedPerks = signal<string[]>([]);
+  readonly completedDescription = signal<string | null>(null);
 
   ngOnInit(): void {
     this.searchControl.valueChanges.pipe(
@@ -191,12 +189,12 @@ export class WalkupComponent implements OnInit {
                   .subscribe({
                     next: tickets => {
                       const ticket = tickets.find(t => t.ticketId === res.ticketId);
-                      this.completedPerks.set(ticket?.perks ?? []);
+                      this.completedDescription.set(ticket?.description ?? null);
                       this.registering.set(false);
                       this.step.set('done');
                     },
                     error: () => {
-                      this.completedPerks.set([]);
+                      this.completedDescription.set(null);
                       this.registering.set(false);
                       this.step.set('done');
                     },
@@ -226,7 +224,7 @@ export class WalkupComponent implements OnInit {
     this.selectedTicketType.set(null);
     this.ticketTypes.set([]);
     this.completedTicketId.set(null);
-    this.completedPerks.set([]);
+    this.completedDescription.set(null);
     this.registerError.set(null);
   }
 

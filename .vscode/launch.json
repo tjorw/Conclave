@@ -11,6 +11,14 @@
         "Serve Frontend Reception"
       ],
       "stopAll": true
+    },
+    {
+      "name": "Debug API + Reception",
+      "configurations": [
+        "Debug ConventionSystem.Api",
+        "Serve Frontend Reception"
+      ],
+      "stopAll": true
     }
   ],
   "configurations": [

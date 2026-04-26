@@ -124,7 +124,7 @@ public record PersonTicketForReceptionDto(
     int? FinalPrice,
     IReadOnlyList<DateOnly>? ValidDays,
     Guid[]? AllowedCategories,
-    IReadOnlyList<string> Perks,
+    string? Description,
     bool IsCollected,
     DateTimeOffset? CollectedAt,
     DateTimeOffset CreatedAt);

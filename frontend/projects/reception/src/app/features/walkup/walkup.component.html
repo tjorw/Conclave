@@ -150,8 +150,13 @@
     <mat-card-actions>
       <button mat-flat-button color="primary"
         (click)="register()" [disabled]="registering()">
-        @if (registering()) { <mat-spinner diameter="20"></mat-spinner> }
-        @else { <mat-icon>how_to_reg</mat-icon> Registrera och checka in }
+        @if (registering()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <ng-container>
+            <mat-icon>how_to_reg</mat-icon> Registrera och checka in
+          </ng-container>
+        }
       </button>
       <button mat-stroked-button (click)="backToTicketType()" [disabled]="registering()">
         <mat-icon>arrow_back</mat-icon> Tillbaka
@@ -169,16 +174,8 @@
       <mat-card-subtitle>{{ selectedPerson()?.name }} har checkats in</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      @if (completedPerks().length > 0) {
-        <p class="perks-label">Dela ut:</p>
-        <mat-chip-set>
-          @for (perk of completedPerks(); track perk) {
-            <mat-chip>
-              <mat-icon matChipAvatar>redeem</mat-icon>
-              {{ perk }}
-            </mat-chip>
-          }
-        </mat-chip-set>
+      @if (completedDescription()) {
+        <p class="perks-label">{{ completedDescription() }}</p>
       }
     </mat-card-content>
     <mat-card-actions>

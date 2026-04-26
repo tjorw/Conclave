@@ -2,8 +2,6 @@ import { Component, input, output, signal } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatDividerModule } from '@angular/material/divider';
 import { DatePipe } from '@angular/common';
 import { PersonTicketDto } from '../../models/reception.models';
 
@@ -14,8 +12,6 @@ import { PersonTicketDto } from '../../models/reception.models';
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatChipsModule,
-    MatDividerModule,
     DatePipe,
   ],
   templateUrl: './ticket-card.component.html',

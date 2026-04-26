@@ -73,22 +73,12 @@ public sealed class TicketRepository(ConventionDbContext db) : ITicketRepository
         var typeIds = tickets.Select(t => t.TicketTypeId).Distinct().ToList();
         var ticketTypes = await db.TicketTypes
             .Where(tt => typeIds.Contains(tt.Id))
-            .Select(tt => new { tt.Id, tt.Name, tt.Type, tt.ValidDays, tt.AllowedCategories })
+            .Select(tt => new { tt.Id, tt.Name, tt.Type, tt.ValidDays, tt.AllowedCategories, tt.Description })
             .ToDictionaryAsync(tt => tt.Id, ct);
-
-        var perksRaw = await db.Set<TicketPerk>()
-            .Where(p => typeIds.Contains(EF.Property<TicketTypeId>(p, "TicketTypeId")))
-            .Select(p => new { TypeId = EF.Property<TicketTypeId>(p, "TicketTypeId"), p.Description })
-            .ToListAsync(ct);
-
-        var perksByType = perksRaw
-            .GroupBy(p => p.TypeId)
-            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(p => p.Description).ToList());
 
         return tickets.Select(t =>
         {
             ticketTypes.TryGetValue(t.TicketTypeId, out var tt);
-            perksByType.TryGetValue(t.TicketTypeId, out var perks);
             return new PersonTicketForReceptionDto(
                 t.Id.Value,
                 t.TicketTypeId.Value,
@@ -98,7 +88,7 @@ public sealed class TicketRepository(ConventionDbContext db) : ITicketRepository
                 t.FinalPrice,
                 tt?.ValidDays,
                 tt?.AllowedCategories,
-                perks ?? [],
+                tt?.Description ?? string.Empty,
                 t.IsCollected,
                 t.CollectedAt,
                 t.CreatedAt);
