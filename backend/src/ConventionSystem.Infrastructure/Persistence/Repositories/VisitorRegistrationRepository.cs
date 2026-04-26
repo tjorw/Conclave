@@ -84,35 +84,26 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
 
         return registrations.Select(registration =>
         {
-            string? ticketTypeName = null;
-            int? ticketPrice = null;
-            string ticketTypeCategory = "";
-            string ticketStatus = "";
-            string? ticketTypeDescription = null;
-            IReadOnlyList<DateOnly>? validDays = null;
-            if (ticketMap.TryGetValue(registration.TicketId, out var ticket)
-                && ticketTypeMap.TryGetValue(ticket.TicketTypeId, out var ticketType))
-            {
-                ticketTypeName = ticketType.Name;
-                ticketPrice = ticket.FinalPrice ?? ticketType.Price;
-                ticketTypeCategory = ticketType.Type.ToString();
-                ticketStatus = ticket.Status.ToString();
-                ticketTypeDescription = ticketType.Description;
-                validDays = ticketType.ValidDays;
-            }
+            ticketMap.TryGetValue(registration.TicketId, out var ticket);
+            var ticketType = ticket is not null && ticketTypeMap.TryGetValue(ticket.TicketTypeId, out var tt) ? tt : null;
+
+            var ticketPrice = ticket?.FinalPrice ?? ticketType?.Price;
+            var canCancel =
+                ticketType?.Type == TicketTypeCategory.Visitor &&
+                (registration.Status == VisitorRegistrationStatus.PendingPayment ||
+                 (registration.Status == VisitorRegistrationStatus.Confirmed && ticketPrice == 0));
 
             return new MyVisitorRegistrationDto(
                 registration.Id.Value,
                 registration.Status.ToString(),
-                ticketTypeName,
+                ticketType?.Name,
                 registration.TicketId.Value,
                 ticketPrice,
-                ticketTypeCategory,
-                ticketStatus,
-                ticketTypeDescription,
-                validDays,
-                registration.Status == VisitorRegistrationStatus.PendingPayment ||
-                (registration.Status == VisitorRegistrationStatus.Confirmed && ticketPrice == 0));
+                ticketType?.Type.ToString() ?? "",
+                ticket?.Status.ToString() ?? "",
+                ticketType?.Description,
+                ticketType?.ValidDays,
+                canCancel);
         }).ToList();
     }
 

@@ -79,6 +79,7 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 | **`Shift` saknar `EditionId`** | `Shift` har ingen direkt koppling till `EditionId`. `MyScheduleRepository` löser detta via `Edition.Stations`-navigeringen (shadow FK). Om Shift-kontexten växer bör ett direkt `EditionId` övervägas på `Shift` för att slippa join-beroendet mot Convention. | Låg – fungerar korrekt, men fragil vid schemamigration |
 | **Deduplikering i tidsschema** | Om samma session förekommer i flera kategorier (t.ex. bokad OCH arrangör) prioriteras Booked > Organiser > Watching i `MyScheduleRepository`. Prioriteringslogiken är inte testad på domännivå. Om affärsreglerna ändras (t.ex. "visa alltid arrangörsrollen oavsett bokning") behöver deduplikeringen ses över. | Låg – nuvarande beteende är rimligt |
 | **Inga `DbSet<Station>` i `ConventionDbContext`** | `Station` och `Venue` nås via `db.Set<T>()` i stället för namngivna `DbSet<T>`-properties. Inkonsekvens mot övriga entiteter. Lägg till `DbSet<Station>` och `DbSet<Venue>` i `ConventionDbContext` om fler queries börjar hämta dem direkt. | Låg |
+| ~~**`ITicketRepository.ListByPersonAndEditionAsync` dubblettmetod**~~ | ~~`ITicketRepository` och `IVisitorRegistrationRepository` exponerade samma `ListByPersonAndEditionAsync` med subtilt olika semantik och `canCancel`-logik. `GetMyVisitorRegistrationHandler` använde fel repository. Åtgärdat: metoden borttagen ur `ITicketRepository`, handlern bygger nu på `IVisitorRegistrationRepository`, `canCancel` synkroniserad med `TicketTypeCategory.Visitor`-guard.~~ | ~~Löst~~ |
 
 ---
 

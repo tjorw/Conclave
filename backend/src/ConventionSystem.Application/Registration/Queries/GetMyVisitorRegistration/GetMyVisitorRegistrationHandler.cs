@@ -5,11 +5,11 @@ using ConventionSystem.Domain.Convention.Ids;
 namespace ConventionSystem.Application.Registration.Queries.GetMyVisitorRegistration;
 
 public sealed class GetMyVisitorRegistrationHandler(
-    ITicketRepository ticketRepository,
+    IVisitorRegistrationRepository visitorRegistrationRepository,
     ICurrentUser currentUser)
     : IRequestHandler<GetMyVisitorRegistrationQuery, IReadOnlyList<MyVisitorRegistrationDto>>
 {
     public Task<IReadOnlyList<MyVisitorRegistrationDto>> Handle(GetMyVisitorRegistrationQuery query, CancellationToken ct)
-        => ticketRepository.ListByPersonAndEditionAsync(
+        => visitorRegistrationRepository.ListByPersonAndEditionAsync(
             currentUser.PersonId, new EditionId(query.EditionId), ct);
 }

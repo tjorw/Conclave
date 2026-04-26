@@ -1,5 +1,4 @@
 using ConventionSystem.Application.Registration.Abstractions;
-using ConventionSystem.Application.Registration.Queries;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Enums;
@@ -12,63 +11,6 @@ public sealed class TicketRepository(ConventionDbContext db) : ITicketRepository
 {
     public Task<Ticket?> GetByIdAsync(TicketId id, CancellationToken ct = default)
         => db.Tickets.FirstOrDefaultAsync(t => t.Id == id, ct);
-
-    public async Task<IReadOnlyList<MyVisitorRegistrationDto>> ListByPersonAndEditionAsync(
-        PersonId personId,
-        EditionId editionId,
-        CancellationToken ct = default)
-    {
-        var tickets = await db.Tickets
-            .Where(t => t.PersonId == personId
-                        && t.EditionId == editionId
-                        && t.Status != TicketStatus.Revoked)
-            .OrderByDescending(t => t.CreatedAt)
-            .ToListAsync(ct);
-
-        if (tickets.Count == 0)
-            return [];
-
-        var ticketIds = tickets.Select(t => t.Id).ToHashSet();
-        var registrations = await db.VisitorRegistrations
-            .Where(r => ticketIds.Contains(r.TicketId))
-            .ToDictionaryAsync(r => r.TicketId, ct);
-
-        var ticketTypeIds = tickets.Select(t => t.TicketTypeId).Distinct().ToHashSet();
-        var ticketTypes = await db.TicketTypes
-            .Where(tt => ticketTypeIds.Contains(tt.Id))
-            .ToDictionaryAsync(tt => tt.Id, ct);
-
-        return tickets.Select(ticket =>
-        {
-            registrations.TryGetValue(ticket.Id, out var registration);
-            ticketTypes.TryGetValue(ticket.TicketTypeId, out var ticketType);
-
-            var category = ticketType?.Type.ToString() ?? "";
-            var price = ticket.FinalPrice ?? ticketType?.Price;
-            var status = registration?.Status.ToString() ?? ticket.Status.ToString();
-            var isFreeConfirmedVisitorRegistration =
-                registration?.Status == VisitorRegistrationStatus.Confirmed &&
-                price == 0 &&
-                ticketType?.Type == TicketTypeCategory.Visitor;
-
-            var canCancel =
-                ticketType?.Type == TicketTypeCategory.Visitor &&
-                registration is not null &&
-                (registration.Status == VisitorRegistrationStatus.PendingPayment || isFreeConfirmedVisitorRegistration);
-
-            return new MyVisitorRegistrationDto(
-                registration?.Id.Value ?? ticket.Id.Value,
-                status,
-                ticketType?.Name,
-                ticket.Id.Value,
-                price,
-                category,
-                ticket.Status.ToString(),
-                ticketType?.Description,
-                ticketType?.ValidDays,
-                canCancel);
-        }).ToList();
-    }
 
     public async Task<IReadOnlyList<Ticket>> ListActiveOrganiserTicketsAsync(
         EditionId editionId,
