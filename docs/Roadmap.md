@@ -21,7 +21,7 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [x] `R-RX03` Receptionsqueries – `GET /editions/{id}/persons/search` och `GET /persons/{id}/tickets?editionId=` (UC-RX003, UC-RX004)
 - [x] `R-RX04` Incheckningsflöde – sök person → biljettkort med status → collect-bekräftelse med förmåner; tablett-optimerad UI (UC-TK008)
 - [x] `R-RX05` Walk-up – skapa person + välj biljetttyp + manuell betalning + incheckning i ett sammanhängande flöde (UC-RX005)
-- [ ] `R-RX06` Receptionsapp i demo-deploy – hosting på `/reception/`; byggs in i publish-steget
+- [x] `R-RX06` Receptionsapp i demo-deploy – hosting på `/reception/`; byggs in i publish-steget
 - [ ] `R-BK01` Bokningskö – första bokningsförsök hamnar i väntlista när arrangemanget kräver tilldelning i stället för direkt bekräftelse
 - [ ] `R-BK02` Bokningstilldelning – stöd strategi per arrangemang: först till kvarn, lottning eller manuell tilldelning
 - [ ] `R-I18N01` Språkstyrning – samla kvarvarande hårdkodade UI-texter bakom labels/översättningslager och förbered engelsk version
@@ -44,7 +44,7 @@ Implementationsordning: R-RX01 → R-RX02 → R-RX03 → R-RX04 → R-RX05 → R
 - [x] `R-RX03` Receptionsqueries – query `SearchPersonsForReceptionQuery` + endpoint `GET /editions/{id}/persons/search?q=`; query `GetPersonTicketsForReceptionQuery` + endpoint `GET /persons/{id}/tickets?editionId=`; båda kräver receptionsåtkomst (UC-RX003, UC-RX004)
 - [x] `R-RX04` Incheckningsflöde – `CheckinSearchComponent` med debounce-sökning; `TicketCardComponent` som visar status, giltighetsdagar, kategorier och förmåner; collect-bekräftelse med förmånslista; QR-skanning via kamera-API (UC-TK008)
 - [x] `R-RX05` Walk-up – steg-för-steg-flöde: sök/skapa person → välj biljetttyp → bekräfta betalning → automatisk incheckning; orkestrerar UC002 → UC-VR001 → UC-TK004 → UC-TK008 i sekvens (UC-RX005)
-- [ ] `R-RX06` Demo-deploy – receptionsappen med `base href /reception/`, output i `frontend/dist/reception`; kopieras till `wwwroot/reception/` i publish-steget; SPA-fallback för `/reception/*`
+- [x] `R-RX06` Demo-deploy – receptionsappen med `base href /reception/`, output i `frontend/dist/reception`; kopieras till `wwwroot/reception/` i publish-steget; SPA-fallback för `/reception/*`
 
 ### Laganmälningar (R-TM)
 
