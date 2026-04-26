@@ -15,7 +15,7 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-HL03` Hjälpsystem – första omgången Markdown-innehåll (6 filer: convention, event, registration, staff)
 - [ ] `R-HL04` Hjälpsystem – `HelpPanel`-komponent på listsidor (UC-HL002)
 - [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
-- [ ] `R-ST01` Funktionärsbiljetter – publik vy visar tilldelade funktionärsbiljetter tillsammans med övriga biljetter, med samma skydd mot egen avbokning som andra tilldelade biljetter
+- [x] `R-ST01` Funktionärsbiljetter – publik vy visar tilldelade funktionärsbiljetter tillsammans med övriga biljetter, med samma skydd mot egen avbokning som andra tilldelade biljetter
 - [ ] `R-BK01` Bokningskö – första bokningsförsök hamnar i väntlista när arrangemanget kräver tilldelning i stället för direkt bekräftelse
 - [ ] `R-BK02` Bokningstilldelning – stöd strategi per arrangemang: först till kvarn, lottning eller manuell tilldelning
 - [ ] `R-I18N01` Språkstyrning – samla kvarvarande hårdkodade UI-texter bakom labels/översättningslager och förbered engelsk version

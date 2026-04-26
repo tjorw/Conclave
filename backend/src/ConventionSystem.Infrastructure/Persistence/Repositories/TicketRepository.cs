@@ -33,6 +33,27 @@ public sealed class TicketRepository(ConventionDbContext db) : ITicketRepository
             .ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<Ticket>> ListActiveStaffTicketsAsync(
+        EditionId editionId,
+        IReadOnlyCollection<PersonId> personIds,
+        CancellationToken ct = default)
+    {
+        if (personIds.Count == 0)
+            return [];
+
+        var staffTicketTypeIds = db.TicketTypes
+            .Where(tt => tt.EditionId == editionId && tt.Type == TicketTypeCategory.Staff)
+            .Select(tt => tt.Id);
+
+        return await db.Tickets
+            .Where(t =>
+                t.EditionId == editionId &&
+                personIds.Contains(t.PersonId) &&
+                t.Status != TicketStatus.Revoked &&
+                staffTicketTypeIds.Contains(t.TicketTypeId))
+            .ToListAsync(ct);
+    }
+
     public Task<bool> ExistsByTypeAsync(TicketTypeId ticketTypeId, CancellationToken ct = default)
         => db.Tickets.AnyAsync(t => t.TicketTypeId == ticketTypeId, ct);
 

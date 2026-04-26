@@ -149,6 +149,47 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
         }).ToList();
     }
 
+    public async Task<IReadOnlyList<MyVisitorRegistrationDto>> ListAssignedTicketsByPersonAndEditionAsync(
+        PersonId personId, EditionId editionId, CancellationToken ct = default)
+    {
+        var tickets = await db.Tickets
+            .Where(t =>
+                t.PersonId == personId &&
+                t.EditionId == editionId &&
+                t.AssignedById != null &&
+                t.Status != TicketStatus.Revoked)
+            .OrderBy(t => t.CreatedAt)
+            .Select(t => new { t.Id, t.TicketTypeId, t.FinalPrice, t.Status })
+            .ToListAsync(ct);
+
+        if (tickets.Count == 0)
+            return [];
+
+        var ticketTypeIds = tickets.Select(t => t.TicketTypeId).Distinct().ToHashSet();
+        var ticketTypeMap = await db.TicketTypes
+            .Where(tt => ticketTypeIds.Contains(tt.Id))
+            .Select(tt => new { tt.Id, tt.Name, tt.Price, tt.Type, tt.Description, tt.ValidDays })
+            .ToDictionaryAsync(tt => tt.Id, ct);
+
+        return tickets.Select(ticket =>
+        {
+            ticketTypeMap.TryGetValue(ticket.TicketTypeId, out var ticketType);
+            var ticketPrice = ticket.FinalPrice ?? ticketType?.Price;
+
+            return new MyVisitorRegistrationDto(
+                ticket.Id.Value,
+                ticket.Status.ToString(),
+                ticketType?.Name,
+                ticket.Id.Value,
+                ticketPrice,
+                ticketType?.Type.ToString() ?? "",
+                ticket.Status.ToString(),
+                ticketType?.Description,
+                ticketType?.ValidDays,
+                CanCancel: false);
+        }).ToList();
+    }
+
     public async Task AddAndSaveAsync(VisitorRegistration registration, CancellationToken ct = default)
     {
         db.VisitorRegistrations.Add(registration);

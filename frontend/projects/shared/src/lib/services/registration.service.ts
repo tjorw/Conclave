@@ -10,6 +10,8 @@ import {
   MyStaffApplicationDto,
   OrganiserTicketAssignmentDto,
   OrganiserTicketTypeDto,
+  StaffTicketAssignmentDto,
+  StaffTicketTypeDto,
   TicketTypeAdminDto,
   VisitorTicketTypeDto,
   VisitorRegistrationAdminDto,
@@ -57,6 +59,25 @@ export class RegistrationService {
   assignOrganiserTicket(editionId: string, personId: string, ticketTypeId: string | null) {
     return this.http.put<void>(
       `${this.env.apiBaseUrl}/editions/${editionId}/organiser-ticket-assignments/${personId}`,
+      { ticketTypeId }
+    );
+  }
+
+  getStaffTicketTypes(editionId: string) {
+    return this.http.get<StaffTicketTypeDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/staff-ticket-types`
+    );
+  }
+
+  getEditionStaffTicketAssignments(editionId: string) {
+    return this.http.get<StaffTicketAssignmentDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/staff-ticket-assignments`
+    );
+  }
+
+  assignStaffTicket(editionId: string, personId: string, ticketTypeId: string | null) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/staff-ticket-assignments/${personId}`,
       { ticketTypeId }
     );
   }

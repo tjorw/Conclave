@@ -757,6 +757,45 @@ Konventionsadministratör
 
 ---
 
+# UC-ST007 – Tilldela funktionärsbiljett
+
+## Sammanfattning
+En bemanningskoordinator tilldelar en funktionärsbiljett (`TicketTypeCategory.Staff`) till en godkänd funktionär. Funktionären ser biljetten i "Mina biljetter" utan möjlighet att själv avboka.
+
+## Aktör
+Konventionsadministratör, `StaffCoordinator`
+
+## Förutsättningar
+- Upplagan finns
+- `TicketType` med `Category = Staff` finns och tillhör upplagan
+- Personen är en godkänd funktionär för upplagan
+
+## Flöde
+1. Koordinatorn väljer funktionär och biljetttyp i admin-vyn för funktionärer
+2. Systemet revokar eventuell befintlig aktiv funktionärsbiljett av annan typ
+3. Systemet skapar ny `Ticket` med `AssignedById` satt
+4. Funktionären ser biljetten i "Mina biljetter" i publika appen
+
+## Affärsregler
+- Byte av biljetttyp är atomärt (revoka + skapa)
+- Samma biljetttyp som redan tilldelad → noop
+- `TicketTypeId = null` → revoka utan ny biljett
+- Funktionären kan inte själv avboka biljetten
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [x] `Ticket` skapas med `TicketTypeCategory.Staff`, `AssignedById` satt, status `Reserved`
+- [x] Befintlig aktiv funktionärsbiljett av annan typ revokeras vid byte
+- [x] Biljetttyp som inte tillhör `Edition` ger valideringsfel
+- [x] Biljetttyp som inte är `Staff` ger valideringsfel
+- [x] Utförare utan behörighet (varken admin eller StaffCoordinator) ger `ForbiddenException`
+- [x] Funktionärsbiljetten syns i publika vyn ("Mina biljetter") utan avboka-åtgärd
+- [x] Kommandohanterare har tillhörande enhetstest
+
+---
+
 # UC-TK003 – Tilldela biljett till person
 
 ## Sammanfattning
@@ -785,10 +824,10 @@ Konventionsadministratör, `EventCoordinator` (arrangörsbiljetter), `VolunteerC
 - Inga
 
 ## Acceptanskriterier
-- [ ] `Ticket` persisteras med status `Reserved` och korrekt `assignedById`
-- [ ] Person som inte tillhör konventet ger valideringsfel
-- [ ] `TicketType` som inte tillhör `Edition` ger valideringsfel
-- [ ] Kommandohanterare har tillhörande enhetstest
+- [x] `Ticket` persisteras med status `Reserved` och korrekt `assignedById`
+- [x] Person som inte tillhör konventet ger valideringsfel
+- [x] `TicketType` som inte tillhör `Edition` ger valideringsfel
+- [x] Kommandohanterare har tillhörande enhetstest
 
 ---
 

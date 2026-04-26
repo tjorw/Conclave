@@ -6,7 +6,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ConventionService, EditionStaffMemberDto, PersonDto, StaffService, STAFF_APPLICATION_STATUS_LABEL, toErrorMessage } from 'shared';
+import { MatSelectModule } from '@angular/material/select';
+import { ConventionService, EditionStaffMemberDto, PersonDto, RegistrationService, StaffService, StaffTicketAssignmentDto, StaffTicketTypeDto, STAFF_APPLICATION_STATUS_LABEL, toErrorMessage } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, PLACEHOLDER, TOOLTIP } from '../../labels/ui.labels';
@@ -25,6 +26,7 @@ type StaffSortKey = 'name' | 'email' | 'phone' | 'status';
     MatIconModule,
     MatInputModule,
     MatProgressSpinnerModule,
+    MatSelectModule,
   ],
   templateUrl: './edition-staff.component.html',
   styleUrl: './edition-staff.component.scss',
@@ -32,6 +34,7 @@ type StaffSortKey = 'name' | 'email' | 'phone' | 'status';
 export class EditionStaffComponent {
   private readonly svc     = inject(ConventionService);
   private readonly staffSvc = inject(StaffService);
+  private readonly regSvc  = inject(RegistrationService);
   private readonly fb      = inject(FormBuilder);
   readonly editionContext  = inject(EditionContextService);
 
@@ -41,6 +44,10 @@ export class EditionStaffComponent {
   readonly PLACEHOLDER = PLACEHOLDER;
 
   readonly staff       = signal<EditionStaffMemberDto[]>([]);
+  readonly staffTicketTypes       = signal<StaffTicketTypeDto[]>([]);
+  readonly staffTicketAssignments = signal<StaffTicketAssignmentDto[]>([]);
+  readonly ticketSelection        = signal<Record<string, string | null>>({});
+  readonly savingPersonId         = signal<string | null>(null);
   readonly loading     = signal(false);
   readonly error       = signal<string | null>(null);
   readonly searchQuery = signal('');
@@ -81,6 +88,9 @@ export class EditionStaffComponent {
         this.load(edition.id);
       } else {
         this.staff.set([]);
+        this.staffTicketTypes.set([]);
+        this.staffTicketAssignments.set([]);
+        this.ticketSelection.set({});
         this.loading.set(false);
       }
     });
@@ -93,7 +103,27 @@ export class EditionStaffComponent {
       next: s => { this.staff.set(s); this.loading.set(false); },
       error: () => { this.error.set(ERROR.fetchStaff); this.loading.set(false); },
     });
+    this.regSvc.getStaffTicketTypes(editionId).subscribe({
+      next: types => this.staffTicketTypes.set(types),
+      error: () => this.staffTicketTypes.set([]),
+    });
+    this.loadTicketAssignments(editionId);
   }
+
+  private loadTicketAssignments(editionId: string): void {
+    this.regSvc.getEditionStaffTicketAssignments(editionId).subscribe({
+      next: assignments => {
+        this.staffTicketAssignments.set(assignments);
+        this.ticketSelection.set(Object.fromEntries(assignments.map(a => [a.personId, a.ticketTypeId])));
+      },
+      error: () => {
+        this.staffTicketAssignments.set([]);
+        this.ticketSelection.set({});
+      },
+    });
+  }
+
+  readonly hasStaffTicketTypes = computed(() => this.staffTicketTypes().length > 0);
 
   readonly filtered = computed(() => {
     const q = this.searchQuery().toLowerCase();
@@ -125,6 +155,40 @@ export class EditionStaffComponent {
 
   applicationStatusLabel(status: string): string {
     return STAFF_APPLICATION_STATUS_LABEL[status] ?? status;
+  }
+
+  currentTicketLabel(personId: string): string {
+    const assignment = this.staffTicketAssignments().find(a => a.personId === personId);
+    return assignment?.ticketTypeName ?? 'Ingen aktiv funktionärsbiljett';
+  }
+
+  setTicketSelection(personId: string, ticketTypeId: string | null): void {
+    this.ticketSelection.update(sel => ({ ...sel, [personId]: ticketTypeId }));
+  }
+
+  ticketTypePriceLabel(price: number): string {
+    if (price === 0) return 'Kostnadsfri';
+    return new Intl.NumberFormat('sv-SE', {
+      style: 'currency', currency: 'SEK', maximumFractionDigits: 0,
+    }).format(price / 100);
+  }
+
+  saveTicket(personId: string): void {
+    const editionId = this.editionContext.activeEdition()?.id;
+    if (!editionId || this.savingPersonId()) return;
+
+    this.savingPersonId.set(personId);
+    this.error.set(null);
+    this.regSvc.assignStaffTicket(editionId, personId, this.ticketSelection()[personId] ?? null).subscribe({
+      next: () => {
+        this.savingPersonId.set(null);
+        this.loadTicketAssignments(editionId);
+      },
+      error: err => {
+        this.savingPersonId.set(null);
+        this.error.set(toErrorMessage(err, 'Kunde inte uppdatera funktionärsbiljetten.'));
+      },
+    });
   }
 
   openAddForm(): void {

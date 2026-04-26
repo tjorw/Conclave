@@ -37,6 +37,21 @@ export interface OrganiserTicketAssignmentDto {
   status: TicketStatus | null;
 }
 
+export interface StaffTicketTypeDto {
+  id: string;
+  name: string;
+  price: number;
+  description: string | null;
+}
+
+export interface StaffTicketAssignmentDto {
+  personId: string;
+  ticketId: string | null;
+  ticketTypeId: string | null;
+  ticketTypeName: string | null;
+  status: TicketStatus | null;
+}
+
 export interface PromotionCodeAdminDto {
   id: string;
   code: string;

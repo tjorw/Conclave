@@ -3,6 +3,7 @@ using ConventionSystem.Application.Registration.Commands.AddAvailability;
 using ConventionSystem.Application.Registration.Commands.AddStaffMember;
 using ConventionSystem.Application.Registration.Commands.AddStaffAreaPreference;
 using ConventionSystem.Application.Registration.Commands.AssignOrganiserTicket;
+using ConventionSystem.Application.Registration.Commands.AssignStaffTicket;
 using ConventionSystem.Application.Registration.Commands.CancelSessionRegistration;
 using ConventionSystem.Application.Registration.Commands.CancelOwnTicket;
 using ConventionSystem.Application.Registration.Commands.CancelVisitorRegistration;
@@ -35,7 +36,9 @@ using ConventionSystem.Application.Registration.Queries.GetMyWatchedSessions;
 using ConventionSystem.Application.Registration.Queries.GetEventOrganiserTicketAssignments;
 using ConventionSystem.Application.Registration.Queries.ListAvailableTicketTypes;
 using ConventionSystem.Application.Registration.Queries.ListEditionOrganiserTicketAssignments;
+using ConventionSystem.Application.Registration.Queries.ListEditionStaffTicketAssignments;
 using ConventionSystem.Application.Registration.Queries.ListOrganiserTicketTypes;
+using ConventionSystem.Application.Registration.Queries.ListStaffTicketTypes;
 using ConventionSystem.Application.Registration.Queries.ListPromotionCodeRedemptions;
 using ConventionSystem.Application.Registration.Queries.ListPromotionCodes;
 using ConventionSystem.Application.Registration.Queries.ListTicketTypes;
@@ -328,6 +331,22 @@ public static class RegistrationEndpoints
                 return Results.NoContent();
             });
 
+        // R-ST01: Funktionärsbiljetter – lista biljetttyper och tilldelning
+        groups.Admin.MapGet("/editions/{editionId:guid}/staff-ticket-types",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListStaffTicketTypesQuery(editionId), ct)));
+
+        groups.Admin.MapGet("/editions/{editionId:guid}/staff-ticket-assignments",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListEditionStaffTicketAssignmentsQuery(editionId), ct)));
+
+        groups.Admin.MapPut("/editions/{editionId:guid}/staff-ticket-assignments/{personId:guid}",
+            async (Guid editionId, Guid personId, AssignStaffTicketRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new AssignStaffTicketCommand(editionId, personId, request.TicketTypeId), ct);
+                return Results.NoContent();
+            });
+
         // 3.1.8 – Lista biljettyper
         groups.Admin.MapGet("/editions/{editionId:guid}/ticket-types",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
@@ -375,6 +394,7 @@ public static class RegistrationEndpoints
 public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null, string? Description = null);
 public record UpdateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null, string? Description = null);
 public record AssignOrganiserTicketRequest(Guid? TicketTypeId);
+public record AssignStaffTicketRequest(Guid? TicketTypeId);
 public record SubmitVisitorRegistrationRequest(Guid TicketTypeId);
 public record ConfirmPaymentRequest(string ExternalReference);
 public record CreatePromotionCodeRequest(
