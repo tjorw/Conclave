@@ -116,10 +116,15 @@ export interface SessionRegistrationDto {
 
 export interface MyVisitorRegistrationDto {
   id: string;
-  status: VisitorRegistrationStatus;
+  status: VisitorRegistrationStatus | TicketStatus;
   ticketTypeName: string | null;
   ticketId: string;
   ticketPrice: number | null;
+  ticketTypeCategory: TicketTypeCategory;
+  ticketStatus: TicketStatus;
+  ticketTypeDescription: string | null;
+  validDays: string[] | null;
+  canCancel: boolean;
 }
 
 export interface MySessionRegistrationSummaryDto {
