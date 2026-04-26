@@ -40,7 +40,7 @@ public class AssignStaffTicketHandlerTests
     {
         var setup = Setup();
         var ticketTypeId = TicketTypeId.New();
-        var ticketType = new TicketType(ticketTypeId, setup.edition.Id, "Funktionär", 0, TicketTypeCategory.Staff);
+        var ticketType = new TicketType(ticketTypeId, setup.edition.Id, "Funktionär", 500, TicketTypeCategory.Staff);
 
         _ticketRepo.ListActiveStaffTicketsAsync(setup.edition.Id, Arg.Any<IReadOnlyCollection<PersonId>>(), Arg.Any<CancellationToken>())
             .Returns([]);
@@ -69,7 +69,7 @@ public class AssignStaffTicketHandlerTests
         var oldTypeId = TicketTypeId.New();
         var newTypeId = TicketTypeId.New();
         var currentTicket = new Ticket(TicketId.New(), oldTypeId, setup.staffMember.Id, setup.edition.Id, setup.staffCoord.Id);
-        var newTicketType = new TicketType(newTypeId, setup.edition.Id, "Funktionär VIP", 0, TicketTypeCategory.Staff);
+        var newTicketType = new TicketType(newTypeId, setup.edition.Id, "Funktionär VIP", 500, TicketTypeCategory.Staff);
 
         _ticketRepo.ListActiveStaffTicketsAsync(setup.edition.Id, Arg.Any<IReadOnlyCollection<PersonId>>(), Arg.Any<CancellationToken>())
             .Returns([currentTicket]);
@@ -88,6 +88,29 @@ public class AssignStaffTicketHandlerTests
                 t.TicketTypeId == newTypeId &&
                 t.Status == TicketStatus.Reserved));
         await _ticketRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_FreeTicketType_AutoConfirmsTicket()
+    {
+        var setup = Setup();
+        var ticketTypeId = TicketTypeId.New();
+        var ticketType = new TicketType(ticketTypeId, setup.edition.Id, "Funktionär (gratis)", 0, TicketTypeCategory.Staff);
+
+        _ticketRepo.ListActiveStaffTicketsAsync(setup.edition.Id, Arg.Any<IReadOnlyCollection<PersonId>>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        _ticketTypeRepo.GetByIdAsync(ticketTypeId, Arg.Any<CancellationToken>())
+            .Returns(ticketType);
+
+        await _handler.Handle(new AssignStaffTicketCommand(
+            setup.edition.Id.Value,
+            setup.staffMember.Id.Value,
+            ticketTypeId.Value), default);
+
+        _ticketRepo.Received(1).Add(
+            Arg.Is<Ticket>(t =>
+                t.TicketTypeId == ticketTypeId &&
+                t.Status == TicketStatus.Paid));
     }
 
     [Fact]

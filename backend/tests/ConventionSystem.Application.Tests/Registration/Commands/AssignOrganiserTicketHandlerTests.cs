@@ -41,7 +41,7 @@ public class AssignOrganiserTicketHandlerTests
         var oldTypeId = TicketTypeId.New();
         var newTypeId = TicketTypeId.New();
         var currentTicket = new Ticket(TicketId.New(), oldTypeId, setup.organiser.Id, setup.edition.Id, setup.admin.Id);
-        var newTicketType = new TicketType(newTypeId, setup.edition.Id, "Arrangör", 0, TicketTypeCategory.Organiser);
+        var newTicketType = new TicketType(newTypeId, setup.edition.Id, "Arrangör", 500, TicketTypeCategory.Organiser);
 
         _ticketRepo.ListActiveOrganiserTicketsAsync(setup.edition.Id, Arg.Any<IReadOnlyCollection<PersonId>>(), Arg.Any<CancellationToken>())
             .Returns([currentTicket]);
@@ -81,6 +81,29 @@ public class AssignOrganiserTicketHandlerTests
         Assert.Equal(TicketStatus.Revoked, currentTicket.Status);
         _ticketRepo.DidNotReceive().Add(Arg.Any<Ticket>());
         await _ticketRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_FreeTicketType_AutoConfirmsTicket()
+    {
+        var setup = Setup();
+        var ticketTypeId = TicketTypeId.New();
+        var ticketType = new TicketType(ticketTypeId, setup.edition.Id, "Arrangör (gratis)", 0, TicketTypeCategory.Organiser);
+
+        _ticketRepo.ListActiveOrganiserTicketsAsync(setup.edition.Id, Arg.Any<IReadOnlyCollection<PersonId>>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        _ticketTypeRepo.GetByIdAsync(ticketTypeId, Arg.Any<CancellationToken>())
+            .Returns(ticketType);
+
+        await _handler.Handle(new AssignOrganiserTicketCommand(
+            setup.edition.Id.Value,
+            setup.organiser.Id.Value,
+            ticketTypeId.Value), default);
+
+        _ticketRepo.Received(1).Add(
+            Arg.Is<Ticket>(t =>
+                t.TicketTypeId == ticketTypeId &&
+                t.Status == TicketStatus.Paid));
     }
 
     [Fact]

@@ -6,6 +6,7 @@ using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
+using ConventionSystem.Domain.Registration.Entities;
 using ConventionSystem.Domain.Registration.Enums;
 using ConventionSystem.Domain.Registration.Ids;
 
@@ -43,10 +44,11 @@ public sealed class AssignStaffTicketHandler(
             throw new ForbiddenException("Personen tillhör inte denna konvention.");
 
         TicketTypeId? ticketTypeId = null;
+        TicketType? ticketType = null;
         if (command.TicketTypeId is not null)
         {
             ticketTypeId = new TicketTypeId(command.TicketTypeId.Value);
-            var ticketType = await ticketTypeRepository.GetByIdAsync(ticketTypeId.Value, ct)
+            ticketType = await ticketTypeRepository.GetByIdAsync(ticketTypeId.Value, ct)
                 ?? throw new ResourceNotFoundException("Biljetttypen", command.TicketTypeId.Value.ToString());
 
             if (ticketType.EditionId != editionId)
@@ -66,11 +68,10 @@ public sealed class AssignStaffTicketHandler(
 
         if (ticketTypeId is not null)
         {
-            ticketRepository.Add(Ticket.CreateOrganizerTicket(
-                ticketTypeId.Value,
-                personId,
-                editionId,
-                performedById));
+            var newTicket = Ticket.CreateOrganizerTicket(ticketTypeId.Value, personId, editionId, performedById);
+            if (ticketType!.Price == 0)
+                newTicket.ConfirmPayment();
+            ticketRepository.Add(newTicket);
         }
 
         await ticketRepository.SaveAsync(ct);
