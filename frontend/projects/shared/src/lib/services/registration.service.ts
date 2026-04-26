@@ -48,6 +48,19 @@ export class RegistrationService {
     );
   }
 
+  getEditionOrganiserTicketAssignments(editionId: string) {
+    return this.http.get<OrganiserTicketAssignmentDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/organiser-ticket-assignments`
+    );
+  }
+
+  assignOrganiserTicket(editionId: string, personId: string, ticketTypeId: string | null) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/organiser-ticket-assignments/${personId}`,
+      { ticketTypeId }
+    );
+  }
+
   submitVisitorRegistration(editionId: string, ticketTypeId: string) {
     return this.http.post<{ id: string }>(
       `${this.env.apiBaseUrl}/editions/${editionId}/visitor-registrations`,

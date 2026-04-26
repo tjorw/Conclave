@@ -8,6 +8,27 @@
 
 .muted { color: #999; }
 
+.ticket-cell {
+  min-width: 260px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.action-cell {
+  width: 96px;
+  white-space: nowrap;
+
+  button {
+    min-width: 76px;
+  }
+
+  mat-spinner {
+    margin: 0 auto;
+  }
+}
+
 .no-edition {
   opacity: 0.6;
   font-style: italic;

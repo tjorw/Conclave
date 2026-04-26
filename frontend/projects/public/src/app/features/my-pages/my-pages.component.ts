@@ -47,7 +47,7 @@ export class MyPagesComponent implements OnInit {
     () => this.myEvents().filter(event => event.status !== 'Cancelled')
   );
   readonly activeMyTickets = computed(
-    () => this.myTickets().filter(ticket => ticket.status !== 'Cancelled')
+    () => this.myTickets().filter(ticket => ticket.status !== 'Cancelled' && ticket.ticketStatus !== 'Revoked')
   );
   readonly activeMyApplication = computed(() => {
     const application = this.myApplication();
@@ -92,6 +92,22 @@ export class MyPagesComponent implements OnInit {
   latestTicketPriceLabel(): string {
     const latest = this.activeMyTickets()[0]?.ticketPrice ?? null;
     return this.priceLabel(latest);
+  }
+
+  latestTicketStatusLabel(): string {
+    const latest = this.activeMyTickets()[0];
+    if (!latest) return '';
+
+    return latest.status === 'Confirmed' || latest.status === 'Paid' || latest.status === 'Collected'
+      ? 'Senaste bekräftad'
+      : 'Senaste reserverad';
+  }
+
+  latestTicketStatusClass(): string {
+    const latest = this.activeMyTickets()[0];
+    return latest?.status === 'Confirmed' || latest?.status === 'Paid' || latest?.status === 'Collected'
+      ? 'tag-green'
+      : 'tag-orange';
   }
 
   totalTicketPriceLabel(): string {

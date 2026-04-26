@@ -73,24 +73,32 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
         var ticketIds = registrations.Select(r => r.TicketId).Distinct().ToHashSet();
         var ticketMap = await db.Tickets
             .Where(t => ticketIds.Contains(t.Id))
-            .Select(t => new { t.Id, t.TicketTypeId, t.FinalPrice })
+            .Select(t => new { t.Id, t.TicketTypeId, t.FinalPrice, t.Status })
             .ToDictionaryAsync(t => t.Id, ct);
 
         var ticketTypeIds = ticketMap.Values.Select(t => t.TicketTypeId).Distinct().ToHashSet();
         var ticketTypeMap = await db.TicketTypes
             .Where(tt => ticketTypeIds.Contains(tt.Id))
-            .Select(tt => new { tt.Id, tt.Name, tt.Price })
+            .Select(tt => new { tt.Id, tt.Name, tt.Price, tt.Type, tt.Description, tt.ValidDays })
             .ToDictionaryAsync(tt => tt.Id, ct);
 
         return registrations.Select(registration =>
         {
             string? ticketTypeName = null;
             int? ticketPrice = null;
+            string ticketTypeCategory = "";
+            string ticketStatus = "";
+            string? ticketTypeDescription = null;
+            IReadOnlyList<DateOnly>? validDays = null;
             if (ticketMap.TryGetValue(registration.TicketId, out var ticket)
                 && ticketTypeMap.TryGetValue(ticket.TicketTypeId, out var ticketType))
             {
                 ticketTypeName = ticketType.Name;
                 ticketPrice = ticket.FinalPrice ?? ticketType.Price;
+                ticketTypeCategory = ticketType.Type.ToString();
+                ticketStatus = ticket.Status.ToString();
+                ticketTypeDescription = ticketType.Description;
+                validDays = ticketType.ValidDays;
             }
 
             return new MyVisitorRegistrationDto(
@@ -98,7 +106,13 @@ public sealed class VisitorRegistrationRepository(ConventionDbContext db) : IVis
                 registration.Status.ToString(),
                 ticketTypeName,
                 registration.TicketId.Value,
-                ticketPrice);
+                ticketPrice,
+                ticketTypeCategory,
+                ticketStatus,
+                ticketTypeDescription,
+                validDays,
+                registration.Status == VisitorRegistrationStatus.PendingPayment ||
+                (registration.Status == VisitorRegistrationStatus.Confirmed && ticketPrice == 0));
         }).ToList();
     }
 

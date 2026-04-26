@@ -1984,9 +1984,9 @@ Konventionsadministratör
 - Inga nya krav utöver ordinarie biljett- och historikhändelser
 
 ## Acceptanskriterier
-- [ ] Admin kan tilldela, byta och ta bort arrangörsbiljett fristående från publiceringsflödet
-- [ ] Byte är atomärt
-- [ ] Logg och historik bevaras genom att revokerad biljett inte tas bort ur databasen
+- [x] Admin kan tilldela, byta och ta bort arrangörsbiljett fristående från publiceringsflödet
+- [x] Byte är atomärt
+- [x] Logg och historik bevaras genom att revokerad biljett inte tas bort ur databasen
 
 ---
 
@@ -2017,9 +2017,9 @@ Arrangör (autentiserad)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Arrangörsbiljetten syns i biljettvyn tillsammans med övriga biljetter
-- [ ] Ingen avboka-åtgärd finns tillgänglig på arrangörsbiljetter
-- [ ] Rätt biljetttypsinformation visas
+- [x] Arrangörsbiljetten syns i biljettvyn tillsammans med övriga biljetter
+- [x] Ingen avboka-åtgärd finns tillgänglig på arrangörsbiljetter
+- [x] Rätt biljetttypsinformation visas
 
 ---
 

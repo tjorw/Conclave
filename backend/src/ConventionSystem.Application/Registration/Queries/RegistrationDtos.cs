@@ -48,7 +48,12 @@ public record MyVisitorRegistrationDto(
     string Status,
     string? TicketTypeName,
     Guid TicketId,
-    int? TicketPrice);
+    int? TicketPrice,
+    string TicketTypeCategory,
+    string TicketStatus,
+    string? TicketTypeDescription,
+    IReadOnlyList<DateOnly>? ValidDays,
+    bool CanCancel);
 
 public record MySessionRegistrationSummaryDto(
     Guid Id,

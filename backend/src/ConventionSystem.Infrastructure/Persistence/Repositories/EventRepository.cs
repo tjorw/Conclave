@@ -219,7 +219,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
     {
         var events = await db.Events
             .Include(e => e.CoOrganisers)
-            .Where(e => e.EditionId == editionId && e.Status == Domain.Event.Enums.EventStatus.Published)
+            .Where(e => e.EditionId == editionId && e.Status != Domain.Event.Enums.EventStatus.Cancelled)
             .OrderBy(e => e.Title)
             .ToListAsync(ct);
 
