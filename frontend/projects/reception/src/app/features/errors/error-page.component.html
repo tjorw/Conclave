@@ -1,0 +1,19 @@
+<div class="error-wrapper">
+  <mat-icon class="error-icon">
+    @switch (errorCode) {
+      @case ('401') { lock }
+      @case ('403') { block }
+      @case ('404') { search_off }
+      @default { error }
+    }
+  </mat-icon>
+  <h1>
+    @switch (errorCode) {
+      @case ('401') { Inte inloggad }
+      @case ('403') { Åtkomst nekad }
+      @case ('404') { Sidan hittades inte }
+      @default { Ett fel uppstod }
+    }
+  </h1>
+  <a mat-stroked-button routerLink="/">Tillbaka till startsidan</a>
+</div>

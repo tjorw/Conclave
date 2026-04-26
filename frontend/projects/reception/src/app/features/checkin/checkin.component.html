@@ -1,0 +1,16 @@
+<div class="page-header">
+  <h1 class="page-title">Incheckning</h1>
+  <p class="page-subtitle">
+    @if (editionContext.activeEdition(); as edition) {
+      Checka in besökare för <strong>{{ edition.name }}</strong>
+    }
+  </p>
+</div>
+
+<mat-card class="placeholder-card">
+  <mat-card-content class="placeholder-content">
+    <mat-icon>how_to_reg</mat-icon>
+    <p>Incheckningsflödet implementeras i R-RX04.</p>
+    <p class="placeholder-desc">Sök person → se biljetter → bekräfta incheckning → visa förmåner.</p>
+  </mat-card-content>
+</mat-card>

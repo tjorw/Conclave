@@ -1,0 +1,18 @@
+.error-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+  text-align: center;
+
+  h1 { margin: 0; font-size: 1.5rem; }
+}
+
+.error-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #9e9e9e;
+}

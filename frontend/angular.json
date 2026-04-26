@@ -188,6 +188,88 @@
         }
       }
     },
+    "reception": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/reception",
+      "sourceRoot": "projects/reception/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/reception/src/main.ts",
+            "tsConfig": "projects/reception/tsconfig.app.json",
+            "outputPath": {
+              "base": "dist/reception"
+            },
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/reception/public"
+              }
+            ],
+            "styles": ["projects/reception/src/styles.scss"]
+          },
+          "configurations": {
+            "production": {
+              "baseHref": "/reception/",
+              "fileReplacements": [
+                {
+                  "replace": "projects/reception/src/environments/environment.ts",
+                  "with": "projects/reception/src/environments/environment.prod.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kB",
+                  "maximumError": "10kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "port": 4203
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "reception:build:production"
+            },
+            "development": {
+              "buildTarget": "reception:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/reception/tsconfig.app.json"
+          }
+        }
+      }
+    },
     "portal": {
       "projectType": "application",
       "schematics": {

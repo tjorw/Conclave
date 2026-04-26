@@ -1,0 +1,22 @@
+.placeholder-card { max-width: 560px; }
+
+.placeholder-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  text-align: center;
+  gap: 8px;
+  color: #666;
+
+  mat-icon {
+    font-size: 56px;
+    width: 56px;
+    height: 56px;
+    color: #bdbdbd;
+    margin-bottom: 8px;
+  }
+
+  p { margin: 0; }
+  .placeholder-desc { font-size: 0.85rem; color: #9e9e9e; }
+}

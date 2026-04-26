@@ -17,7 +17,7 @@ Prioriterad lista – återstående arbete, högst prioritet överst.
 - [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
 - [x] `R-ST01` Funktionärsbiljetter – publik vy visar tilldelade funktionärsbiljetter tillsammans med övriga biljetter, med samma skydd mot egen avbokning som andra tilldelade biljetter
 - [x] `R-RX01` Receptionsroll – `ReceptionStaff`-entitet på `Edition` + UC-RX001/UC-RX002 + JWT-claim `is_reception`; admin-vy för att lista, tilldela och ta bort
-- [ ] `R-RX02` Receptionsapp – ny Angular-app `reception` i workspace; shell med aktiv editionskontext; auth-guard för `is_reception`
+- [x] `R-RX02` Receptionsapp – ny Angular-app `reception` i workspace; shell med aktiv editionskontext; auth-guard för `is_reception`; kör på port 4203 under utveckling
 - [ ] `R-RX03` Receptionsqueries – `GET /editions/{id}/persons/search` och `GET /persons/{id}/tickets?editionId=` (UC-RX003, UC-RX004)
 - [ ] `R-RX04` Incheckningsflöde – sök person → biljettkort med status → collect-bekräftelse med förmåner; tablett-optimerad UI (UC-TK008)
 - [ ] `R-RX05` Walk-up – skapa person + välj biljetttyp + manuell betalning + incheckning i ett sammanhängande flöde (UC-RX005)
@@ -40,7 +40,7 @@ Betalningsintegrering (Swish, kortläsare) är utanför scope i fas 1 – betaln
 Implementationsordning: R-RX01 → R-RX02 → R-RX03 → R-RX04 → R-RX05 → R-RX06
 
 - [x] `R-RX01` Receptionsroll – `ReceptionStaff`-entitet på `Edition`; `AddReceptionStaff` och `RemoveReceptionStaff` domänmetoder; kommandohanterare + endpoints `POST /editions/{id}/reception-staff` och `DELETE /editions/{id}/reception-staff/{personId}`; JWT-claim `is_reception` baserat på aktiv editions `ReceptionStaff` + admin-flagga; admin-vy att lista och tilldela
-- [ ] `R-RX02` Receptionsapp – `ng generate app reception`; routing (`/checkin`, `/walkup`); shell med aktiv konventionskontext laddad vid startup via `GET /convention`; auth-guard för `is_reception`; kör på port 4202 under utveckling
+- [x] `R-RX02` Receptionsapp – `ng generate app reception`; routing (`/checkin`, `/walkup`); shell med aktiv konventionskontext laddad vid startup via `GET /convention`; auth-guard för `is_reception`; kör på port 4203 under utveckling
 - [ ] `R-RX03` Receptionsqueries – query `SearchPersonsForReceptionQuery` + endpoint `GET /editions/{id}/persons/search?q=`; query `GetPersonTicketsForReceptionQuery` + endpoint `GET /persons/{id}/tickets?editionId=`; båda kräver receptionsåtkomst (UC-RX003, UC-RX004)
 - [ ] `R-RX04` Incheckningsflöde – `CheckinSearchComponent` med debounce-sökning; `TicketCardComponent` som visar status, giltighetsdagar, kategorier och förmåner; collect-bekräftelse med förmånslista; QR-skanning via kamera-API (UC-TK008)
 - [ ] `R-RX05` Walk-up – steg-för-steg-flöde: sök/skapa person → välj biljetttyp → bekräfta betalning → automatisk incheckning; orkestrerar UC002 → UC-VR001 → UC-TK004 → UC-TK008 i sekvens (UC-RX005)

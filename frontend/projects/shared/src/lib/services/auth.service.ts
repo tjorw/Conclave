@@ -39,6 +39,7 @@ export class AuthService {
   });
   readonly isAdmin = computed(() => this.claims()?.is_admin === 'true');
   readonly isSystemAdmin = computed(() => this.claims()?.is_system_admin === 'true');
+  readonly isReception = computed(() => this.claims()?.is_reception === 'true');
   readonly personId = computed(() => this.claims()?.person_id ?? null);
 
   constructor() {
