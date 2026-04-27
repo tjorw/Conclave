@@ -133,7 +133,7 @@
     </mat-card>
   }
 
-  @if (e.status === 'Published') {
+  @if (e.status === 'Published' && pendingComments().length > 0) {
     <mat-card class="content-card">
       <mat-card-header>
         <mat-card-title>{{ PAGE.pendingCommentsTitle }}</mat-card-title>
