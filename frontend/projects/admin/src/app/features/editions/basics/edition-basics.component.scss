@@ -25,7 +25,7 @@
 }
 
 .schedule-days-header {
-  color: #666;
+  color: var(--c-text-secondary);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -46,11 +46,11 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  color: #333;
+  color: var(--c-text-primary);
   font-weight: 500;
 
   mat-icon {
-    color: #777;
+    color: var(--c-text-light);
     flex: 0 0 auto;
     font-size: 20px;
     height: 20px;

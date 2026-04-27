@@ -12,7 +12,7 @@
 .form-card-title {
   font-size: .85rem;
   font-weight: 500;
-  color: #555;
+  color: var(--c-text-medium);
   margin: 0 0 12px;
 }
 
@@ -30,7 +30,7 @@
 }
 
 .selected-row {
-  background: rgba(0, 0, 0, .04);
+  background: var(--c-bg-subtle);
 }
 
 .expand-icon {
@@ -42,13 +42,13 @@
 
 .detail-row td {
   padding: 0;
-  background: #fafafa;
+  background: var(--c-bg-hover);
   border-top: none;
 }
 
 .shift-detail {
   padding: 16px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--c-border-strong);
 }
 
 .shift-detail-actions {
@@ -108,6 +108,6 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .06em;
-  color: #999;
+  color: var(--c-text-muted);
   margin: 8px 0 4px;
 }

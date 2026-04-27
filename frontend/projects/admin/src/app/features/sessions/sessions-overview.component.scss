@@ -65,9 +65,9 @@
   gap: 8px;
   padding: 10px 12px;
   border-radius: 6px;
-  background: #ffebee;
+  background: var(--c-error-bg);
   border: 1px solid #ffcdd2;
-  color: #b71c1c;
+  color: var(--c-error-text);
   font-weight: 500;
 }
 

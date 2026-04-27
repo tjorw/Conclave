@@ -26,10 +26,10 @@
   display: block;
   font-size: 0.8rem;
   white-space: nowrap;
-  color: #555;
+  color: var(--c-text-medium);
 }
 
 .muted-text {
-  color: #bbb;
+  color: var(--c-text-faint);
   font-size: 0.875rem;
 }

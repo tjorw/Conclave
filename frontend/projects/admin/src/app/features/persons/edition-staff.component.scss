@@ -14,11 +14,11 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: #e8f5e9;
+  background: var(--c-success-bg);
   border-radius: 4px;
   margin-bottom: 8px;
   font-size: 0.9rem;
-  color: #2e7d32;
+  color: var(--c-success-text);
 
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
 }

@@ -16,7 +16,7 @@
 
 .json-panel {
   overflow: hidden;
-  border: 1px solid #e2e5ea;
+  border: 1px solid var(--c-border-strong);
   border-radius: 8px;
   background: #fff;
 }
@@ -27,9 +27,9 @@
   justify-content: space-between;
   min-height: 44px;
   padding: 0 14px;
-  border-bottom: 1px solid #e8ebef;
-  background: #f7f8fa;
-  color: #444;
+  border-bottom: 1px solid var(--c-border-medium);
+  background: var(--c-bg-inset);
+  color: var(--c-text-dark);
   font-family: Consolas, 'Courier New', monospace;
   font-size: 0.8125rem;
 }
@@ -38,7 +38,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #666;
+  color: var(--c-text-secondary);
   font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
 
