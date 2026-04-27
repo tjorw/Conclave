@@ -1,0 +1,75 @@
+<div class="page-header">
+  <h1 class="page-title">Funktionsområden</h1>
+  @if (editionCtx.activeEdition(); as edition) {
+    <p class="page-subtitle">{{ edition.name }}</p>
+  }
+</div>
+
+@if (!editionCtx.activeEdition()) {
+  <p class="muted-info">Välj en upplaga i verktygsfältet.</p>
+} @else {
+  @if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="spinner-center"><mat-spinner diameter="48" /></div>
+  } @else {
+    <mat-card>
+      <mat-card-content class="no-pad">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>
+                <button type="button" class="sort-header" (click)="setSort('name')">
+                  Namn <mat-icon>{{ sortIconFor('name') }}</mat-icon>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="setSort('description')">
+                  Beskrivning <mat-icon>{{ sortIconFor('description') }}</mat-icon>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="setSort('responsible')">
+                  Ansvarig <mat-icon>{{ sortIconFor('responsible') }}</mat-icon>
+                </button>
+              </th>
+              <th>
+                <button type="button" class="sort-header" (click)="setSort('stations')">
+                  Stationer <mat-icon>{{ sortIconFor('stations') }}</mat-icon>
+                </button>
+              </th>
+              <th class="actions-col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (area of sortedAreas(); track area.id) {
+              <tr class="navigable-row" (click)="openDetail(area.id)">
+                <td>{{ area.name }}</td>
+                <td class="muted">{{ area.description || '–' }}</td>
+                <td>{{ personName(area.responsibleId) }}</td>
+                <td>
+                  <div class="station-list">
+                    @for (name of stationsForArea(area); track name) {
+                      <span class="station-chip">{{ name }}</span>
+                    } @empty {
+                      <span class="muted">–</span>
+                    }
+                  </div>
+                </td>
+                <td class="row-actions">
+                  <mat-icon class="row-indicator">chevron_right</mat-icon>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="empty-cell">Inga funktionsområden tillagda.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  }
+}

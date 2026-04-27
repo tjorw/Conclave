@@ -144,6 +144,11 @@ export const routes: Routes = [
       {
         path: 'staff-areas',
         loadComponent: () =>
+          import('./features/staffing/staff-function-areas.component').then(m => m.StaffFunctionAreasComponent),
+      },
+      {
+        path: 'staffing-schedule',
+        loadComponent: () =>
           import('./features/staffing/staff-areas.component').then(m => m.StaffAreasComponent),
       },
       {

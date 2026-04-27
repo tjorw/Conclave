@@ -1,0 +1,12 @@
+.station-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.station-chip {
+  background: #e0e0e0;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 12px;
+}

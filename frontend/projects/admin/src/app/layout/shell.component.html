@@ -100,9 +100,13 @@
           <mat-icon matListItemIcon>construction</mat-icon>
           <span matListItemTitle>{{ NAV.staff }}</span>
         </a>
-        <a mat-list-item routerLink="staff-areas" routerLinkActive="active-link">
+        <a mat-list-item routerLink="staff-areas" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
           <mat-icon matListItemIcon>badge</mat-icon>
           <span matListItemTitle>{{ NAV.staffAreas }}</span>
+        </a>
+        <a mat-list-item routerLink="staffing-schedule" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>calendar_view_week</mat-icon>
+          <span matListItemTitle>{{ NAV.staffingSchedule }}</span>
         </a>
         <a mat-list-item routerLink="staff-applications" routerLinkActive="active-link">
           <mat-icon matListItemIcon>assignment</mat-icon>
