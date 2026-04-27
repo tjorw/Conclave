@@ -31,14 +31,7 @@ public sealed class UpdateSessionHandler(
             conventionRepository,
             ev.EditionId,
             ct);
-
-        ApplicationAuthorization.EnsureCategoryManager(
-            context.Convention,
-            context.Edition,
-            ev.CategoryId,
-            performedById,
-            "Utföraren har inte behörighet att redigera sessioner för detta evenemang.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan uppdatera pass.");    
         if (!context.Edition.Venues.Any(v => v.Id == venueId))
             throw new InvalidOperationException("Lokalen hittades inte på denna upplaga.");
 

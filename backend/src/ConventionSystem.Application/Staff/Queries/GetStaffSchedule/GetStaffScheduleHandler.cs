@@ -30,8 +30,6 @@ public sealed class GetStaffScheduleHandler(
                 throw new InvalidOperationException($"Funktionsområde '{staffAreaGuid}' hittades inte på upplagan.");
 
             if (!context.Convention.IsAdministrator(currentUser.PersonId)
-                && !context.Edition.IsStaffCoordinator(currentUser.PersonId)
-                && !context.Edition.IsStaffAreaResponsible(staffAreaId, currentUser.PersonId)
                 && !currentUser.IsReception)
             {
                 throw new ForbiddenException("Utföraren har inte behörighet att visa detta bemanningsschema.");

@@ -29,13 +29,7 @@ public sealed class RemoveCoOrganiserHandler(
             ev.EditionId,
             ct);
 
-        ApplicationAuthorization.EnsureCategoryManager(
-            context.Convention,
-            context.Edition,
-            ev.CategoryId,
-            performedById,
-            "Utföraren har inte behörighet att ta bort medarrangörer för detta evenemang.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan ta bort medarrangörer."); 
         ev.RemoveCoOrganiser(new PersonId(command.PersonId), performedById);
         await eventRepository.SaveAsync(ct);
     }

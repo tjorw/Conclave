@@ -27,13 +27,7 @@ public sealed class RejectAssignmentHandler(
             shiftId,
             ct);
 
-        ApplicationAuthorization.EnsureShiftManager(
-            context.Convention,
-            context.Edition,
-            context.Shift.StationId,
-            performedById,
-            "Utföraren har inte behörighet att avvisa denna tilldelning.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan avslå personalplaceringar.");
         context.Shift.RejectAssignment(assignmentId);
         await shiftRepository.SaveAsync(ct);
     }

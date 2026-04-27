@@ -27,16 +27,14 @@ public sealed class AssignStaffTicketHandler(
         var personId = new PersonId(command.PersonId);
         var performedById = currentUser.PersonId;
 
+
         var edition = await editionRepository.GetByIdAsync(editionId, ct)
             ?? throw new ResourceNotFoundException("Upplagan", command.EditionId.ToString());
 
         var convention = await conventionRepository.GetByIdAsync(edition.ConventionId, ct)
             ?? throw new ResourceNotFoundException("Konventionen", edition.ConventionId.Value.ToString());
 
-        ApplicationAuthorization.EnsureStaffApplicationManager(
-            convention, edition, performedById,
-            "Utföraren har inte behörighet att hantera funktionärsbiljetter.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(convention, performedById, "Endast administratörer kan tilldela funktionärsbiljetter.");
         var person = await personRepository.GetByIdAsync(personId, ct)
             ?? throw new ResourceNotFoundException("Person", command.PersonId.ToString());
 

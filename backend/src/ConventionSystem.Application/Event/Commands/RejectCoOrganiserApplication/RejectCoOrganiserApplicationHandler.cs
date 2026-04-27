@@ -28,13 +28,7 @@ public sealed class RejectCoOrganiserApplicationHandler(
             ev.EditionId,
             ct);
 
-        ApplicationAuthorization.EnsureCategoryManager(
-            context.Convention,
-            context.Edition,
-            ev.CategoryId,
-            performedById,
-            "Utföraren har inte behörighet att avslå medarrangörer för detta evenemang.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan avslå medarrangörsansökningar.");
         ev.RejectCoOrganiserApplication(
             new CoOrganiserApplicationId(command.ApplicationId),
             performedById,

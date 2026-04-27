@@ -32,13 +32,7 @@ public sealed class ScheduleSessionHandler(
             ev.EditionId,
             ct);
 
-        ApplicationAuthorization.EnsureCategoryManager(
-            context.Convention,
-            context.Edition,
-            ev.CategoryId,
-            performedById,
-            "Utföraren har inte behörighet att schemalägga sessioner för detta evenemang.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan schemalägga pass.");  
         if (!context.Edition.Venues.Any(v => v.Id == venueId))
             throw new InvalidOperationException("Lokalen hittades inte på denna upplaga.");
 

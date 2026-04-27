@@ -27,13 +27,7 @@ public sealed class ConfirmAssignmentHandler(
             shiftId,
             ct);
 
-        ApplicationAuthorization.EnsureShiftManager(
-            context.Convention,
-            context.Edition,
-            context.Shift.StationId,
-            performedById,
-            "Utföraren har inte behörighet att bekräfta denna tilldelning.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan bekräfta personalplaceringar.");  
         context.Shift.ConfirmAssignment(assignmentId);
         await shiftRepository.SaveAsync(ct);
     }

@@ -27,14 +27,7 @@ public sealed class CancelEventHandler(
             conventionRepository,
             ev.EditionId,
             ct);
-
-        ApplicationAuthorization.EnsureCategoryManager(
-            context.Convention,
-            context.Edition,
-            ev.CategoryId,
-            performedById,
-            "Utföraren har inte behörighet att ställa in detta evenemang.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan avboka evenemang."); 
         ev.CancelEvent(performedById);
         await eventRepository.SaveAsync(ct);
     }

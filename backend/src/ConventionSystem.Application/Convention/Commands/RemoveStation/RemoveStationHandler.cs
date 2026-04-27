@@ -23,14 +23,7 @@ public sealed class RemoveStationHandler(
             conventionRepository,
             editionId,
             ct);
-
-        ApplicationAuthorization.EnsureStationManager(
-            context.Convention,
-            context.Edition,
-            stationId,
-            performedById,
-            "Utföraren har inte behörighet att ta bort denna station.");
-
+            ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan ta bort en station.");
         var station = context.Edition.RemoveStation(stationId);
         editionRepository.MarkAsRemoved(station);
         await editionRepository.SaveAsync(ct);

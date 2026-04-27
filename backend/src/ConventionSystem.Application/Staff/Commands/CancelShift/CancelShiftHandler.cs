@@ -25,14 +25,7 @@ public sealed class CancelShiftHandler(
             conventionRepository,
             shiftId,
             ct);
-
-        ApplicationAuthorization.EnsureShiftManager(
-            context.Convention,
-            context.Edition,
-            context.Shift.StationId,
-            performedById,
-            "Utföraren har inte behörighet att ställa in detta pass.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan avboka pass.");
         context.Shift.Cancel(performedById);
         await shiftRepository.SaveAsync(ct);
     }

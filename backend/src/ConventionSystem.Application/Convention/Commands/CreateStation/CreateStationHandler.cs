@@ -23,13 +23,8 @@ public sealed class CreateStationHandler(
             conventionRepository,
             editionId,
             ct);
-
-        ApplicationAuthorization.EnsureStaffAreaManager(
-            context.Convention,
-            context.Edition,
-            staffAreaId,
-            performedById,
-            "Utföraren har inte behörighet att skapa stationer för detta funktionsområde.");
+            
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan skapa en station.");
 
         var station = context.Edition.CreateStation(command.Name, staffAreaId, command.Description);
         await editionRepository.SaveAsync(ct);

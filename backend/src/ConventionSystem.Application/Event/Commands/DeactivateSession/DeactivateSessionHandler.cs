@@ -28,14 +28,7 @@ public sealed class DeactivateSessionHandler(
             conventionRepository,
             ev.EditionId,
             ct);
-
-        ApplicationAuthorization.EnsureCategoryManager(
-            context.Convention,
-            context.Edition,
-            ev.CategoryId,
-            performedById,
-            "Utföraren har inte behörighet att inaktivera sessioner för detta evenemang.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan avaktivera ett pass.");
         ev.DeactivateSession(sessionId, performedById);
         await eventRepository.SaveAsync(ct);
     }

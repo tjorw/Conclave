@@ -31,13 +31,7 @@ public sealed class ApproveVersionHandler(
             ev.EditionId,
             ct);
 
-        ApplicationAuthorization.EnsureCategoryManager(
-            context.Convention,
-            context.Edition,
-            ev.CategoryId,
-            performedById,
-            "Utföraren har inte behörighet att godkänna evenemang i denna kategori.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan godkänna en version av evenemanget.");
         var organizerTicketAssignments = (command.OrganizerTicketAssignments ?? [])
             .Select(a => new OrganizerTicketAssignment(
                 new PersonId(a.PersonId),

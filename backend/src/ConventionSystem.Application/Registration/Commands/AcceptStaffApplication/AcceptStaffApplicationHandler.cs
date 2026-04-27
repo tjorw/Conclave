@@ -26,12 +26,7 @@ public sealed class AcceptStaffApplicationHandler(
             applicationId,
             ct);
 
-        ApplicationAuthorization.EnsureStaffApplicationManager(
-            context.Convention,
-            context.Edition,
-            performedById,
-            "Utföraren har inte behörighet att acceptera staffansökningar.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan godkänna personalansökningar.");  
         context.Application.Accept(performedById);
         await staffApplicationRepository.SaveAsync(ct);
     }

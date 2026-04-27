@@ -28,14 +28,7 @@ public sealed class ApproveCoOrganiserApplicationHandler(
             conventionRepository,
             ev.EditionId,
             ct);
-
-        ApplicationAuthorization.EnsureCategoryManager(
-            context.Convention,
-            context.Edition,
-            ev.CategoryId,
-            performedById,
-            "Utföraren har inte behörighet att godkänna medarrangörer för detta evenemang.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan godkänna medarrangörsansökningar.");
         var applicationId = new CoOrganiserApplicationId(command.ApplicationId);
         var application = ev.CoOrganiserApplications.FirstOrDefault(a => a.Id == applicationId)
             ?? throw new ResourceNotFoundException("Medarrangörsansökan", command.ApplicationId.ToString());

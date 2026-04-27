@@ -31,13 +31,7 @@ public sealed class RejectVersionHandler(
             ev.EditionId,
             ct);
 
-        ApplicationAuthorization.EnsureCategoryManager(
-            context.Convention,
-            context.Edition,
-            ev.CategoryId,
-            performedById,
-            "Utföraren har inte behörighet att avvisa evenemang i denna kategori.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan avvisa en version av evenemanget.");
         ev.Reject(performedById, command.Comment);
         await eventRepository.SaveAsync(ct);
     }

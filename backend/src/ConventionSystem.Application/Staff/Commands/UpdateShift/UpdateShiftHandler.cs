@@ -32,22 +32,9 @@ public sealed class UpdateShiftHandler(
             shiftId,
             ct);
 
-        ApplicationAuthorization.EnsureShiftManager(
-            context.Convention,
-            context.Edition,
-            context.Shift.StationId,
-            performedById,
-            "Utföraren har inte behörighet att uppdatera detta pass.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan uppdatera pass.");    
         if (!context.Edition.Stations.Any(station => station.Id == targetStationId))
             throw new InvalidOperationException("Stationen hittades inte på denna upplaga.");
-
-        ApplicationAuthorization.EnsureShiftManager(
-            context.Convention,
-            context.Edition,
-            targetStationId,
-            performedById,
-            "Utföraren har inte behörighet att flytta passet till denna station.");
 
         var responsible = await personRepository.GetByIdAsync(responsibleId, ct)
             ?? throw new InvalidOperationException($"Skiftansvarig '{command.ResponsibleId}' hittades inte.");

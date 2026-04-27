@@ -23,14 +23,7 @@ public sealed class UpdateStationHandler(
             conventionRepository,
             editionId,
             ct);
-
-        ApplicationAuthorization.EnsureStationManager(
-            context.Convention,
-            context.Edition,
-            stationId,
-            performedById,
-            "Utföraren har inte behörighet att uppdatera denna station.");
-
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan uppdatera en station.");
         context.Edition.UpdateStation(stationId, command.Name, command.Description);
         await editionRepository.SaveAsync(ct);
     }
