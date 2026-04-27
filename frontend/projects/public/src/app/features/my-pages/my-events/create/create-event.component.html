@@ -32,6 +32,29 @@
           Du väljer titel, beskrivning och sessionönskemål i nästa steg.
         </p>
 
+        @if (organiserTicketTypes().length > 0) {
+          <section class="organiser-tickets" aria-label="Tillgängliga arrangörsbiljetter">
+            <div class="organiser-tickets-header">
+              <h3>Arrangörsbiljetter</h3>
+              <p>Biljetter kan tilldelas när arrangemanget publiceras.</p>
+            </div>
+
+            <div class="organiser-ticket-list">
+              @for (ticketType of organiserTicketTypes(); track ticketType.id) {
+                <article class="organiser-ticket">
+                  <div>
+                    <strong>{{ ticketType.name }}</strong>
+                    @if (ticketType.description) {
+                      <p>{{ ticketType.description }}</p>
+                    }
+                  </div>
+                  <span>{{ ticketPriceLabel(ticketType.price) }}</span>
+                </article>
+              }
+            </div>
+          </section>
+        }
+
         <button mat-flat-button class="save-btn" type="submit"
                 [disabled]="form.invalid || saving()">
           @if (saving()) {

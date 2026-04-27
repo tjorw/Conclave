@@ -105,6 +105,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .FirstOrDefaultAsync(ct);
 
         var personIds = new List<PersonId> { ev.LeadOrganiserId };
+        personIds.AddRange(ev.CoOrganisers.Select(c => c.PersonId));
         if (category is not null) personIds.Add(category.ResponsibleId);
         foreach (var comment in ev.Comments)
         {
@@ -138,6 +139,9 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             ev.RegistrationType.ToString(),
             ev.DropInRules,
             ev.CoOrganisers.Select(c => c.PersonId.Value).ToList(),
+            ev.CoOrganisers.Select(c => new CoOrganiserDto(
+                c.PersonId.Value,
+                personNames.GetValueOrDefault(c.PersonId.Value))).ToList(),
             ev.CoOrganiserApplications.Select(a => new CoOrganiserApplicationDto(
                 a.Id.Value,
                 a.Email,
@@ -216,7 +220,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
     {
         var events = await db.Events
             .Include(e => e.CoOrganisers)
-            .Where(e => e.EditionId == editionId && e.Status == Domain.Event.Enums.EventStatus.Published)
+            .Where(e => e.EditionId == editionId && e.Status != Domain.Event.Enums.EventStatus.Cancelled)
             .OrderBy(e => e.Title)
             .ToListAsync(ct);
 

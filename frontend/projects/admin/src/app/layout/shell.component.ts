@@ -15,6 +15,16 @@ import { ACTION } from '../labels/ui.labels';
 
 type NavSection = 'editions' | 'persons' | 'events' | 'staffing' | 'visitors';
 
+const COLLAPSED_NAV_SECTIONS_STORAGE_KEY = 'admin_collapsed_nav_sections';
+const NAV_SECTIONS: readonly NavSection[] = ['editions', 'persons', 'events', 'staffing', 'visitors'];
+const DEFAULT_COLLAPSED_NAV_SECTIONS: Record<NavSection, boolean> = {
+  editions: true,
+  persons: true,
+  events: true,
+  staffing: true,
+  visitors: true,
+};
+
 @Component({
   selector: 'app-shell',
   standalone: true,
@@ -44,13 +54,7 @@ export class ShellComponent implements OnInit {
 
   readonly NAV    = NAV;
   readonly ACTION = ACTION;
-  readonly collapsedNavSections: Record<NavSection, boolean> = {
-    editions: true,
-    persons: true,
-    events: true,
-    staffing: true,
-    visitors: true,
-  };
+  readonly collapsedNavSections: Record<NavSection, boolean> = this.loadCollapsedNavSections();
 
   ngOnInit(): void {
     this.editionContext.load();
@@ -66,6 +70,7 @@ export class ShellComponent implements OnInit {
 
   toggleNavSection(section: NavSection): void {
     this.collapsedNavSections[section] = !this.collapsedNavSections[section];
+    this.saveCollapsedNavSections();
   }
 
   navSectionAriaLabel(sectionLabel: string, section: NavSection): string {
@@ -76,5 +81,39 @@ export class ShellComponent implements OnInit {
   logout(): void {
     this.auth.logout();
     this.router.navigateByUrl('/login');
+  }
+
+  private loadCollapsedNavSections(): Record<NavSection, boolean> {
+    const collapsedNavSections = { ...DEFAULT_COLLAPSED_NAV_SECTIONS };
+
+    try {
+      const stored = localStorage.getItem(COLLAPSED_NAV_SECTIONS_STORAGE_KEY);
+      if (!stored) return collapsedNavSections;
+
+      const parsed = JSON.parse(stored) as Partial<Record<NavSection, unknown>> | null;
+      if (parsed === null) return collapsedNavSections;
+
+      for (const section of NAV_SECTIONS) {
+        if (typeof parsed[section] === 'boolean') {
+          collapsedNavSections[section] = parsed[section];
+        }
+      }
+    } catch {
+      try {
+        localStorage.removeItem(COLLAPSED_NAV_SECTIONS_STORAGE_KEY);
+      } catch {
+        // Ignore storage failures; menu defaults are still safe.
+      }
+    }
+
+    return collapsedNavSections;
+  }
+
+  private saveCollapsedNavSections(): void {
+    try {
+      localStorage.setItem(COLLAPSED_NAV_SECTIONS_STORAGE_KEY, JSON.stringify(this.collapsedNavSections));
+    } catch {
+      // Ignore storage failures; the current view still updates.
+    }
   }
 }

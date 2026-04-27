@@ -102,6 +102,7 @@ var webRootPath = app.Environment.WebRootPath;
 var publicIndexPath = webRootPath is null ? null : Path.Combine(webRootPath, "index.html");
 var adminIndexPath = webRootPath is null ? null : Path.Combine(webRootPath, "admin", "index.html");
 var portalIndexPath = webRootPath is null ? null : Path.Combine(webRootPath, "portal", "index.html");
+var receptionIndexPath = webRootPath is null ? null : Path.Combine(webRootPath, "reception", "index.html");
 
 if (webRootPath is not null && Directory.Exists(webRootPath))
 {
@@ -148,6 +149,11 @@ if (adminIndexPath is not null && File.Exists(adminIndexPath))
 if (portalIndexPath is not null && File.Exists(portalIndexPath))
 {
     app.MapFallbackToFile("/portal/{*path:nonfile}", "portal/index.html");
+}
+
+if (receptionIndexPath is not null && File.Exists(receptionIndexPath))
+{
+    app.MapFallbackToFile("/reception/{*path:nonfile}", "reception/index.html");
 }
 
 app.Run();

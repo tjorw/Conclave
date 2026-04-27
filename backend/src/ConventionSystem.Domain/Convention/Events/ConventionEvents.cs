@@ -69,6 +69,18 @@ public record RegistrationClosed(
     PersonId PerformedById,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
+public record ReceptionStaffAdded(
+    EditionId EditionId,
+    PersonId PersonId,
+    PersonId AddedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record ReceptionStaffRemoved(
+    EditionId EditionId,
+    PersonId PersonId,
+    PersonId RemovedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public record StructureCopiedFromEdition(
     EditionId TargetId,
     EditionId SourceId,

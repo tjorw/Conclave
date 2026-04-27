@@ -1,3 +1,8 @@
+using ConventionSystem.Application.Reception.Queries.GetPersonScheduleForReception;
+using ConventionSystem.Application.Convention.Commands.AddReceptionStaff;
+using ConventionSystem.Application.Convention.Commands.RemoveReceptionStaff;
+using ConventionSystem.Application.Convention.Queries.ListReceptionStaff;
+using ConventionSystem.Application.Convention.Queries.SearchPersonsForReception;
 using ConventionSystem.Application.Convention.Commands.ChangeCategoryResponsible;
 using ConventionSystem.Application.Convention.Queries.ListEditionResponsibles;
 using ConventionSystem.Application.Convention.Commands.SetActiveEdition;
@@ -14,6 +19,7 @@ using ConventionSystem.Application.Convention.Commands.CreateVenue;
 using ConventionSystem.Application.Convention.Commands.CloseRegistration;
 using ConventionSystem.Application.Convention.Commands.OpenRegistration;
 using ConventionSystem.Application.Convention.Commands.PublishEdition;
+using ConventionSystem.Application.Convention.Commands.RemoveEdition;
 using ConventionSystem.Application.Convention.Commands.UnpublishEdition;
 using ConventionSystem.Application.Convention.Commands.RemoveCategory;
 using ConventionSystem.Application.Convention.Commands.RemoveStaffArea;
@@ -24,9 +30,14 @@ using ConventionSystem.Application.Convention.Commands.UpdateCategory;
 using ConventionSystem.Application.Convention.Commands.UpdateEdition;
 using ConventionSystem.Application.Convention.Commands.UpdateStaffArea;
 using ConventionSystem.Application.Convention.Commands.UpdateVenue;
+using ConventionSystem.Application.Export.Commands.ExportEdition;
+using ConventionSystem.Application.Export.Commands.ImportEdition;
+using ConventionSystem.Application.Export.Contracts;
 using ConventionSystem.Domain.Convention.Enums;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Staff.Queries.GetStaffSchedule;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ConventionSystem.Api.Endpoints;
 
@@ -51,6 +62,18 @@ public static class EditionEndpoints
                 return Results.Created($"/editions/{id}", new { id });
             });
 
+        groups.Admin.MapPost("/conventions/{conventionId:guid}/editions/import",
+            async (Guid conventionId, ImportEditionRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var result = await sender.Send(new ImportEditionCommand(
+                    conventionId,
+                    request.Name,
+                    request.StartDate,
+                    request.Document), ct);
+
+                return Results.Ok(result);
+            });
+
         var editions = groups.Admin.MapGroup("/editions/{editionId:guid}");
 
         editions.MapPut("/",
@@ -67,6 +90,13 @@ public static class EditionEndpoints
                         .Select(d => new ConventionSystem.Application.Convention.Commands.UpdateEdition.EditionScheduleDayCommand(
                             d.Date, d.StartTime, d.EndTime))
                         .ToList()), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapDelete("/",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveEditionCommand(editionId), ct);
                 return Results.NoContent();
             });
 
@@ -239,6 +269,24 @@ public static class EditionEndpoints
                 return Results.NoContent();
             });
 
+        editions.MapGet("/reception-staff",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListReceptionStaffQuery(editionId), ct)));
+
+        editions.MapPost("/reception-staff",
+            async (Guid editionId, AddReceptionStaffRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new AddReceptionStaffCommand(editionId, request.PersonId), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapDelete("/reception-staff/{personId:guid}",
+            async (Guid editionId, Guid personId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveReceptionStaffCommand(editionId, personId), ct);
+                return Results.NoContent();
+            });
+
         editions.MapGet("/visitors",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListEditionVisitorsQuery(editionId), ct)));
@@ -259,13 +307,47 @@ public static class EditionEndpoints
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new GetEditionSessionsQuery(editionId), ct)));
 
+        editions.MapGet("/export",
+            async (Guid editionId, bool? includeEvents, bool? includeTicketTypes, ISender sender, CancellationToken ct) =>
+            {
+                var export = await sender.Send(new ExportEditionCommand(
+                    editionId,
+                    includeEvents ?? false,
+                    includeTicketTypes ?? false), ct);
+
+                var bytes = JsonSerializer.SerializeToUtf8Bytes(export.Document, ExportJsonOptions);
+                return Results.File(bytes, "application/json", export.FileName);
+            });
+
         groups.Authenticated.MapGet("/editions/{editionId:guid}/staff-schedule",
             async (Guid editionId, Guid? staffAreaId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new GetStaffScheduleQuery(editionId, staffAreaId), ct)));
+
+        groups.Authenticated.MapGet("/editions/{editionId:guid}/persons/search",
+            async (Guid editionId, string q, ISender sender, CancellationToken ct) =>
+            {
+                if (string.IsNullOrWhiteSpace(q))
+                    return Results.BadRequest("Sökterm krävs.");
+                if (!Guid.TryParse(q.Trim(), out _) && q.Trim().Length < 2)
+                    return Results.BadRequest("Söktermen måste vara minst 2 tecken.");
+                return Results.Ok(await sender.Send(new SearchPersonsForReceptionQuery(editionId, q), ct));
+            });
+
+        groups.Authenticated.MapGet("/editions/{editionId:guid}/persons/{personId:guid}/schedule",
+            async (Guid editionId, Guid personId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetPersonScheduleForReceptionQuery(personId, editionId), ct)));
     }
+
+    private static readonly JsonSerializerOptions ExportJsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 }
 
+public record AddReceptionStaffRequest(Guid PersonId);
 public record CopyEditionStructureRequest(Guid SourceEditionId);
+public record ImportEditionRequest(string Name, DateOnly StartDate, EditionExportDocument Document);
 public record CreateVenueRequest(string Name, string Building, string? Description);
 public record UpdateVenueRequest(string Name, string Building, string? Description);
 public record CreateStaffAreaRequest(string Name, string? Description, Guid ResponsibleId);

@@ -25,24 +25,6 @@
   }
 }
 
-.status-list {
-  margin: 0;
-  display: grid;
-  gap: 12px;
-
-  dt {
-    font-size: .8rem;
-    color: var(--brand-text-muted);
-    margin-bottom: 2px;
-  }
-
-  dd {
-    margin: 0;
-    font-size: .96rem;
-    color: var(--brand-text);
-  }
-}
-
 .ticket-card-grid {
   display: grid;
   gap: 14px;
@@ -225,6 +207,29 @@
 .ticket-option-meta {
   font-size: .78rem;
   color: var(--brand-text-muted);
+}
+
+.ticket-option-description {
+  display: block;
+  margin-top: 6px;
+  font-size: .86rem;
+  line-height: 1.45;
+  color: var(--brand-text);
+
+  ::ng-deep ul,
+  ::ng-deep ol,
+  ::ng-deep p {
+    margin: 4px 0 0;
+  }
+
+  ::ng-deep ul,
+  ::ng-deep ol {
+    padding-left: 18px;
+  }
+
+  ::ng-deep > :first-child {
+    margin-top: 0;
+  }
 }
 
 .ticket-option-price {

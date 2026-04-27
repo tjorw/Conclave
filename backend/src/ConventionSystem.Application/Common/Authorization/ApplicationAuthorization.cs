@@ -68,6 +68,16 @@ public static class ApplicationAuthorization
         }
     }
 
+    public static void EnsureReceptionAccess(
+        ConventionAggregate convention,
+        EditionAggregate edition,
+        PersonId performedById,
+        string message)
+    {
+        if (!convention.IsAdministrator(performedById) && !edition.IsReceptionStaff(performedById))
+            throw new ForbiddenException(message);
+    }
+
     public static void EnsureCategoryManager(
         ConventionAggregate convention,
         EditionAggregate edition,

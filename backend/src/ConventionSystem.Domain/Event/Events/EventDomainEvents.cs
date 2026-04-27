@@ -1,6 +1,7 @@
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Ids;
+using ConventionSystem.Domain.Event.ValueObjects;
 
 namespace ConventionSystem.Domain.Event.Events;
 
@@ -20,6 +21,13 @@ public record EventApproved(
     PersonId LeadOrganiserId,
     PersonId ReviewedById,
     string EventTitle,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record OrganizerTicketsAssigned(
+    EventId EventId,
+    EditionId EditionId,
+    PersonId PerformedById,
+    IReadOnlyList<OrganizerTicketAssignment> Assignments,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
 public record EventRejected(

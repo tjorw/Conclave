@@ -4,6 +4,7 @@ using ConventionSystem.Application.Convention.Commands.CreatePerson;
 using ConventionSystem.Application.Convention.Commands.DeactivatePerson;
 using ConventionSystem.Application.Convention.Commands.ReactivatePerson;
 using ConventionSystem.Application.Convention.Commands.UpdatePerson;
+using ConventionSystem.Application.Registration.Queries.GetPersonTicketsForReception;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -22,6 +23,10 @@ public static class PersonEndpoints
                     new CreatePersonCommand(conventionId, request.Name, request.Email, request.Phone), ct);
                 return Results.Created($"/persons/{id}", new { id });
             });
+
+        groups.Authenticated.MapGet("/persons/{personId:guid}/tickets",
+            async (Guid personId, Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetPersonTicketsForReceptionQuery(personId, editionId), ct)));
 
         var persons = groups.Admin.MapGroup("/persons/{personId:guid}");
 

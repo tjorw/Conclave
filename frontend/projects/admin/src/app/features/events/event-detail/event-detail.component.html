@@ -35,6 +35,41 @@
     <div class="error-banner">{{ error() }}</div>
   }
 
+  @if (e.status === 'UnderReview' && organiserTicketTypes().length > 0) {
+    <mat-card class="content-card organiser-ticket-card">
+      <mat-card-header>
+        <mat-card-title>Arrangörsbiljetter vid publicering</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="organiser-ticket-list">
+          @for (organiser of eventOrganisers(); track organiser.personId) {
+            <div class="organiser-ticket-row">
+              <div class="organiser-ticket-person">
+                <strong>{{ organiser.personName ?? organiser.personId }}</strong>
+                <span>{{ organiser.role }}</span>
+                <small>Nuvarande: {{ currentOrganiserTicketLabel(organiser.personId) }}</small>
+              </div>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Biljett vid publicering</mat-label>
+                <mat-select
+                  [value]="organiserTicketSelection()[organiser.personId] ?? null"
+                  (selectionChange)="setOrganiserTicketSelection(organiser.personId, $event.value)">
+                  <mat-option [value]="null">Ingen biljett</mat-option>
+                  @for (ticketType of organiserTicketTypes(); track ticketType.id) {
+                    <mat-option [value]="ticketType.id">
+                      {{ ticketType.name }} · {{ ticketTypePriceLabel(ticketType.price) }}
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
   <!-- Livscykelkontroll -->
   @if (!showRejectForm()) {
     <div class="action-bar">

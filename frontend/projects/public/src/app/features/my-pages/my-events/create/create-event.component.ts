@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { CategoryDto, ConventionService, EventService, AuthService, toErrorMessage } from 'shared';
+import { CategoryDto, ConventionService, EventService, AuthService, OrganiserTicketTypeDto, RegistrationService, toErrorMessage } from 'shared';
 import { EditionService } from '../../../../services/edition.service';
 
 @Component({
@@ -30,6 +30,7 @@ export class CreateEventComponent implements OnInit {
   private readonly editionSvc    = inject(EditionService);
   private readonly conventionSvc = inject(ConventionService);
   private readonly eventSvc      = inject(EventService);
+  private readonly regSvc        = inject(RegistrationService);
   private readonly authSvc       = inject(AuthService);
   private readonly router        = inject(Router);
   private readonly destroyRef    = inject(DestroyRef);
@@ -38,6 +39,7 @@ export class CreateEventComponent implements OnInit {
   readonly saving     = signal(false);
   readonly error      = signal<string | null>(null);
   readonly categories = signal<CategoryDto[]>([]);
+  readonly organiserTicketTypes = signal<OrganiserTicketTypeDto[]>([]);
 
   readonly form = this.fb.group({
     categoryId: ['', Validators.required],
@@ -55,6 +57,11 @@ export class CreateEventComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+
+    this.regSvc.getOrganiserTicketTypes(editionId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ticketTypes => this.organiserTicketTypes.set(ticketTypes),
+      error: () => this.organiserTicketTypes.set([]),
     });
   }
 
@@ -76,5 +83,15 @@ export class CreateEventComponent implements OnInit {
         this.saving.set(false);
       },
     });
+  }
+
+  ticketPriceLabel(price: number): string {
+    if (price === 0) return 'Kostnadsfri';
+
+    return new Intl.NumberFormat('sv-SE', {
+      style: 'currency',
+      currency: 'SEK',
+      maximumFractionDigits: 0,
+    }).format(price / 100);
   }
 }

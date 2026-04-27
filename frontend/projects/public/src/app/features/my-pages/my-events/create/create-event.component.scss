@@ -31,6 +31,60 @@
   margin: 4px 0 12px;
 }
 
+.organiser-tickets {
+  border: 1px solid rgba(47, 89, 116, 0.18);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 4px 0 12px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.organiser-tickets-header {
+  margin-bottom: 10px;
+
+  h3 {
+    margin: 0 0 2px;
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--brand-text);
+  }
+
+  p {
+    margin: 0;
+    font-size: .82rem;
+    color: var(--brand-text-muted);
+  }
+}
+
+.organiser-ticket-list {
+  display: grid;
+  gap: 8px;
+}
+
+.organiser-ticket {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(47, 89, 116, 0.12);
+  font-size: .86rem;
+
+  strong {
+    color: var(--brand-text);
+  }
+
+  p {
+    margin: 2px 0 0;
+    color: var(--brand-text-muted);
+  }
+
+  span {
+    white-space: nowrap;
+    color: var(--brand-text);
+    font-weight: 600;
+  }
+}
+
 .save-btn {
   background-color: var(--brand-primary) !important;
   color: #fff !important;

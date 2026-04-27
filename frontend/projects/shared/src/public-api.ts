@@ -37,6 +37,7 @@ export * from './lib/services/feed.service';
 export * from './lib/guards/auth.guard';
 export * from './lib/guards/admin.guard';
 export * from './lib/guards/system-admin.guard';
+export * from './lib/guards/reception.guard';
 
 // Labels
 export * from './lib/labels/event.labels';

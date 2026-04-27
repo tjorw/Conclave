@@ -1,0 +1,63 @@
+<div class="page-header">
+  <h1 class="page-title">Kategorier</h1>
+  <p class="page-subtitle">{{ edition()?.name }}</p>
+</div>
+
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+<div class="action-bar">
+  <span class="spacer"></span>
+  <button mat-flat-button color="primary" (click)="openNew()" [disabled]="saving()">
+    <mat-icon>add</mat-icon>
+    Lägg till kategori
+  </button>
+</div>
+
+@if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else {
+  <mat-card>
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>
+              <button type="button" class="sort-header" (click)="setSort('name')">
+                Namn <mat-icon>{{ sortIcon('name') }}</mat-icon>
+              </button>
+            </th>
+            <th>
+              <button type="button" class="sort-header" (click)="setSort('description')">
+                Beskrivning <mat-icon>{{ sortIcon('description') }}</mat-icon>
+              </button>
+            </th>
+            <th>
+              <button type="button" class="sort-header" (click)="setSort('responsible')">
+                Ansvarig <mat-icon>{{ sortIcon('responsible') }}</mat-icon>
+              </button>
+            </th>
+            <th class="actions-col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of sortedCategories(edition()?.categories ?? []); track c.id) {
+            <tr class="navigable-row" (click)="openDetail(c.id)">
+              <td>{{ c.name }}</td>
+              <td class="muted">{{ c.description || '–' }}</td>
+              <td>{{ personName(c.responsibleId) }}</td>
+              <td class="row-actions">
+                <mat-icon class="row-indicator">chevron_right</mat-icon>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="empty-cell">Inga kategorier tillagda.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
+}

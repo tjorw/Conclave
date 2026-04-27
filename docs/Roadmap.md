@@ -9,32 +9,25 @@ Spårar vad som återstår inför produktionsstart.
 Prioriterad lista – återstående arbete, högst prioritet överst.
 
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
+- [ ] `R-DM01` Dataunderhall och retention - implementera stadjobb for skickade outbox-meddelanden och gammal domain event-logg. Se `docs/DataMaintenance.md` for regler.
 - [ ] `R-HL01` Hjälpsystem – `HelpTooltip`-komponent och initiala texter för Convention/Edition (UC-HL001)
 - [ ] `R-HL02` Hjälpsystem – `HelpDrawer` + `HelpService` med route-mappning (UC-HL003, UC-HL004)
 - [ ] `R-HL03` Hjälpsystem – första omgången Markdown-innehåll (6 filer: convention, event, registration, staff)
 - [ ] `R-HL04` Hjälpsystem – `HelpPanel`-komponent på listsidor (UC-HL002)
 - [ ] `R-HL05` Hjälpsystem – tooltip-täckning för Event, Registration, Staff
-- [ ] `R-OB01` Outbox-mönster för extern kommunikation – `OutboxMessage`-tabell, `OutboxEmailSender` (implementerar `IEmailSender`), `OutboxProcessor` (`IHostedService`, kör var 30:e sekund), Polly-retry med exponentiell backoff. Se `docs/Outbox.md` för design.
-
-### Medarrangörer (R-CO)
-
-Mål: huvudarrangören ska kunna föreslå medarrangörer med e-postadress, men de ska inte få arrangörsbehörighet, synas som medarrangörer eller räknas för arrangörsbiljetter förrän admin har godkänt ansökan.
-
-- [x] `R-CO01` Domänmodell: ersätt direkt tillägg av `CoOrganiser` med `CoOrganiserApplication`/`CoOrganiserInvite` på `Event` med status `Pending | Approved | Rejected | Cancelled`, e-post, valfritt namn, requestedById, reviewedById/reviewedAt och kommentar.
-- [x] `R-CO02` Publik arrangörsvy: huvudarrangör kan lägga till medarrangör genom e-postadress; listan visar väntar på godkännande/godkänd/avslagen och tillåter återkallande innan godkännande.
-- [x] `R-CO03` Admin-vy: kategoriansvarig eller konventionsadmin granskar medarrangörsansökningar per evenemang/upplaga och kan godkänna eller avslå.
-- [x] `R-CO04` Godkännande: systemet matchar e-post mot befintlig `Person` i konventionen eller skapar en inaktiv/grundläggande personpost enligt UC002, lägger först då till aktiv `CoOrganiser`, och hindrar dubletter mot både lead organiser, aktiva medarrangörer och väntande ansökningar.
-- [x] `R-CO05` Behörighet och projektioner: endast godkända medarrangörer räknas i `IsOrganiser`, `ListMyEvents`, arrangörsschema, publik eventdetalj och arrangörsbiljettsflöden.
-- [ ] `R-CO06` Notiser: skicka e-post vid nominering och granskningsbeslut via `R-OB01`; tills Outbox finns loggas domänhändelser utan extern leverans.
+- [ ] `R-BK01` Bokningskö – första bokningsförsök hamnar i väntlista när arrangemanget kräver tilldelning i stället för direkt bekräftelse
+- [ ] `R-BK02` Bokningstilldelning – stöd strategi per arrangemang: först till kvarn, lottning eller manuell tilldelning
+- [ ] `R-I18N01` Språkstyrning – samla kvarvarande hårdkodade UI-texter bakom labels/översättningslager och förbered engelsk version
+- [ ] `R-SCH03` Datumkontroller i boknings-, pass- och sessionsflöden föreslår första konventsdagen och dagens standardtider där det passar användarflödet.
 
 ### Laganmälningar (R-TM)
 
-- [ ] `R-TM01` `Event.RegistrationMode: Individual | Team` – konfiguration per evenemang (nytt fält på Event-aggregatet)
-- [ ] `R-TM02` `Team`-aggregat – Edition-scoped, captain (`PersonId`), `Members[]` (namn + valfritt `PersonId`)
-- [ ] `R-TM03` `TeamEventRegistration`-aggregat – lag anmäler sig till evenemang, livscykel `Pending → Confirmed | Cancelled`
+- [ ] `R-TM01` `Event.RegistrationMode: Individual | Team` + `TeamSize { Min, Max }` – arrangören konfigurerar anmälningsläge och lagstorlek per evenemang; se UC-TM001
+- [ ] `R-TM02` `Team`-aggregat – Edition-scoped, captain (`PersonId`), lagnamn (obligatoriskt); `Members[]` valfritt och ej obligatoriskt i fas 1; se UC-TM002
+- [ ] `R-TM03` `TeamEventRegistration`-aggregat – lag anmäler sig till evenemang, livscykel `Pending → Confirmed | Cancelled`; se UC-TM002, UC-TM003, UC-TM004
 - [ ] `R-TM04` Admin-vy: arrangör tilldelar lag till session (`TeamSessionAssignment` på `Session`)
 - [ ] `R-TM05` Tidschema: lagmedlemmars tilldelade sessioner visas via query-projektion (utökning av `MyScheduleRepository`)
-- [ ] `R-TM06` Publik vy: laganmälningsflöde – captain anmäler lag, anger medlemmar; en person per bokning
+- [ ] `R-TM06` Publik vy: laganmälningsflöde – captain anmäler lag och anger lagnamn; lagmedlemmar behöver inte anges i fas 1
 
 ### Multitenancy
 
@@ -54,7 +47,7 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 - [ ] `R-RC01` Markdown i eventbeskrivningar – `Description`-fältet (max 10 000 tecken) stödjer markdown; live preview i admin-editorn; publik vy renderar med `ngx-markdown` (UC-RC001)
 - [ ] `R-RC02` Bilduppladdning – `IFileStorage`-abstraktion; `LocalDiskFileStorage` (MVP) + `BlobFileStorage` (stub); endpoint `POST /api/uploads`; bilder refereras via URL i markdown (UC-RC002)
 - [ ] `R-RC03` Redaktionella informationssidor – `Page`-aggregat i nytt `Content` bounded context; konventions- eller upplagescopead; `IsPublished`-flagga; admin CRUD + publik `GET /api/pages/{slug}` (UC-RC003, UC-RC004)
-- [ ] `R-RC04` Mailmallar – adminredigerbara mallar i databas; standardmall per typ i kod (restore-funktion); `TemplateRenderer` med Markdig + variabelsubstitution; oberoende av R-OB01, kopplas in när Outbox är klart (UC-RC005, UC-RC006)
+- [ ] `R-RC04` Mailmallar – adminredigerbara mallar i databas; standardmall per typ i kod (restore-funktion); `TemplateRenderer` med Markdig + variabelsubstitution; 
 
 ### Programtaggar (R-TAG)
 
@@ -62,6 +55,8 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 - [ ] `R-TAG02` Tillämpa taggar på `Event` – evenemang refererar endast till taggar som finns definierade på samma `Edition`. Validering ska hindra okända taggar och taggar från annan upplaga.
 - [ ] `R-TAG03` Publik exponering och filtrering – event-feed och programdetalj visar taggar; publika programvyn erbjuder taggfilter utöver dag och kategori.
 - [ ] `R-TAG04` Kopiering av struktur – `CopyStructure` bör kopiera editionens taggdefinitioner på samma sätt som lokaler, funktionsområden och stationer när det är relevant för ny upplaga.
+
+
 
 ---
 
@@ -79,7 +74,7 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 | **`Shift` saknar `EditionId`** | `Shift` har ingen direkt koppling till `EditionId`. `MyScheduleRepository` löser detta via `Edition.Stations`-navigeringen (shadow FK). Om Shift-kontexten växer bör ett direkt `EditionId` övervägas på `Shift` för att slippa join-beroendet mot Convention. | Låg – fungerar korrekt, men fragil vid schemamigration |
 | **Deduplikering i tidsschema** | Om samma session förekommer i flera kategorier (t.ex. bokad OCH arrangör) prioriteras Booked > Organiser > Watching i `MyScheduleRepository`. Prioriteringslogiken är inte testad på domännivå. Om affärsreglerna ändras (t.ex. "visa alltid arrangörsrollen oavsett bokning") behöver deduplikeringen ses över. | Låg – nuvarande beteende är rimligt |
 | **Inga `DbSet<Station>` i `ConventionDbContext`** | `Station` och `Venue` nås via `db.Set<T>()` i stället för namngivna `DbSet<T>`-properties. Inkonsekvens mot övriga entiteter. Lägg till `DbSet<Station>` och `DbSet<Venue>` i `ConventionDbContext` om fler queries börjar hämta dem direkt. | Låg |
-| **`ICurrentUser` i bakgrundsjobb (dokumentera)** | `ICurrentUser` läser från `HttpContext` – fungerar inte utanför HTTP-request-scopet. Bakgrundsjobb och seeders måste anropa domänmodellen direkt eller använda systemidentitet. Outbox-processorn är referensimplementation för rätt mönster (`R-OB01`). | Medel |
+
 ---
 
 ## Fas 4 – Demo och driftsättning
@@ -98,19 +93,3 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - `environment.ts` konfigureras med rätt `conventionId` och `apiBaseUrl`
 - Admin-konto skapas via `CreateConventionCommand` + `UserManager`
 - Välkomstmejl med inloggningsuppgifter för konventets admin
-
-
-## Refine
-- Bakgrundsjobb för mail m.m. → se `R-OB01` (Outbox-mönster, design i `docs/Outbox.md`)
-- Föreslå startdatum i datum kontroller som är första dagen på konventet
-- public - funktionering skall visa funktionärsbiljetter
-- arrangör - skall visa arrangörsbiljetter
-- biljetter till arranggörer - man behöver bli tilldelad
-- bokningar väntlista - man hamnar där först
-- bokningar i arrangmang (tilldelning)
--- först går först
--- lottning
--- manuell
-- språkstyrning
--- engelsk version
-- default start och sluttid på evenemanget, men sätt per dag

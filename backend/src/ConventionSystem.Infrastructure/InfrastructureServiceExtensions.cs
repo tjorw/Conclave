@@ -2,6 +2,8 @@ using ConventionSystem.Application.Abstractions;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
+using ConventionSystem.Application.Export.Abstractions;
+using ConventionSystem.Application.Reception.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Tenancy.Abstractions;
@@ -9,6 +11,7 @@ using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Registration.Services;
 using ConventionSystem.Infrastructure.Dispatching;
 using ConventionSystem.Infrastructure.Email;
+using Microsoft.Extensions.Hosting;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.MultiTenancy;
 using ConventionSystem.Infrastructure.Persistence;
@@ -32,6 +35,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IEditionRepository, EditionRepository>();
         services.AddScoped<IShiftRepository, ShiftRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IEditionExportReadService, EditionExportReadService>();
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<ISystemTenantReadService, SystemTenantReadService>();
 
@@ -43,6 +47,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ISessionRegistrationRepository, SessionRegistrationRepository>();
         services.AddScoped<ISessionWatchRepository, SessionWatchRepository>();
         services.AddScoped<IMyScheduleRepository, MyScheduleRepository>();
+        services.AddScoped<IReceptionScheduleRepository, ReceptionScheduleRepository>();
         services.AddScoped<IRegistrationRuleService, RegistrationRuleService>();
 
         services.AddOptions<EmailOptions>()
@@ -51,20 +56,32 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<LoggingEmailService>();
         services.AddScoped<SmtpEmailService>();
         services.AddScoped<SendGridEmailService>();
+        services.AddScoped<OutboxEmailService>();
 
-        services.AddScoped<IEmailService>(provider =>
+        services.AddScoped<IEmailService>(provider => provider.GetRequiredService<OutboxEmailService>());
+
+        services.AddScoped<IDirectEmailSender>(provider =>
         {
             var options = provider.GetRequiredService<IOptions<EmailOptions>>().Value;
 
-            return options.Provider.ToLowerInvariant() switch
-            {
-                "smtp" => provider.GetRequiredService<SmtpEmailService>(),
-                "sendgrid" => provider.GetRequiredService<SendGridEmailService>(),
-                "logging" => provider.GetRequiredService<LoggingEmailService>(),
-                _ => throw new InvalidOperationException(
-                    $"Ogiltig e-postprovider '{options.Provider}'. Tillatna varden ar 'Logging', 'Smtp' och 'SendGrid'.")
-            };
+            var backend = string.Equals(options.Provider, "outbox", StringComparison.OrdinalIgnoreCase)
+                ? options.OutboxBackend
+                : options.Provider;
+
+            if (string.Equals(backend, "smtp", StringComparison.OrdinalIgnoreCase))
+                return provider.GetRequiredService<SmtpEmailService>();
+
+            if (string.Equals(backend, "sendgrid", StringComparison.OrdinalIgnoreCase))
+                return provider.GetRequiredService<SendGridEmailService>();
+
+            if (string.Equals(backend, "logging", StringComparison.OrdinalIgnoreCase))
+                return provider.GetRequiredService<LoggingEmailService>();
+
+            throw new InvalidOperationException(
+                $"Ogiltig e-postprovider '{backend}'. Tillatna varden ar 'Logging', 'Smtp', 'SendGrid' och 'Outbox'.");
         });
+
+        services.AddHostedService<OutboxProcessor>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();

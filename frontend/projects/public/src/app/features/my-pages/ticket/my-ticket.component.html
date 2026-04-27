@@ -19,24 +19,38 @@
     <section class="card status-card">
       <h2>Dina registreringar</h2>
       <div class="ticket-card-grid">
-        @for (ticket of registrations(); track ticket.id; let i = $index) {
+        @for (ticket of registrations(); track ticket.ticketId; let i = $index) {
           <article class="ticket-card">
             <header class="ticket-card-header">
               <div class="ticket-card-title-block">
                 <h3>{{ ticket.ticketTypeName ?? ('Biljett ' + (i + 1)) }}</h3>
                 <p class="ticket-price-inline">{{ registrationPriceLabel(ticket) }}</p>
               </div>
-              <span [class]="ticket.status === 'Confirmed' ? 'status-chip green' : 'status-chip orange'">
+              <span [class]="statusChipClass(ticket.status)">
                 {{ paymentStatusLabel(ticket.status) }}
               </span>
             </header>
 
             <dl class="ticket-card-fields">
               <div>
-                <dt>Referensnummer</dt>
-                <dd>{{ referenceNumber(ticket.id) }}</dd>
+                <dt>Typ</dt>
+                <dd>{{ ticketCategoryLabel(ticket) }}</dd>
               </div>
+              <div>
+                <dt>Referensnummer</dt>
+                <dd>{{ referenceNumber(ticket.ticketId) }}</dd>
+              </div>
+              @if (validDaysLabel(ticket); as validDays) {
+                <div>
+                  <dt>Giltiga dagar</dt>
+                  <dd>{{ validDays }}</dd>
+                </div>
+              }
             </dl>
+
+            @if (ticket.ticketTypeDescription) {
+              <markdown class="ticket-option-description" [data]="ticket.ticketTypeDescription" />
+            }
 
             @if (canCancelRegistration(ticket)) {
               <div>
@@ -124,6 +138,9 @@
                     <span class="ticket-option-content">
                       <span class="ticket-option-name">{{ ticketTypeLabel(ticketType) }}</span>
                       <span class="ticket-option-meta">Besökarbiljett</span>
+                      @if (ticketType.description) {
+                        <markdown class="ticket-option-description" [data]="ticketType.description" />
+                      }
                     </span>
                     <span class="ticket-option-price">{{ ticketTypePriceLabel(ticketType) }}</span>
                   </label>

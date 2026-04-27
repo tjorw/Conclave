@@ -29,8 +29,8 @@ public class ListAvailableTicketTypesHandlerTests
         _repo.ListByEditionIdAsync(new EditionId(editionId), Arg.Any<CancellationToken>())
             .Returns(new List<TicketTypeAdminDto>
             {
-                new(helgId, "Helg", 1200, "Visitor", null, null),
-                new(Guid.NewGuid(), "Staff", 0, "Staff", null, null),
+                new(helgId, "Helg", 1200, "Visitor", null, null, "- Inträde hela helgen"),
+                new(Guid.NewGuid(), "Staff", 0, "Staff", null, null, null),
             });
         _registrationRepo
             .HasActiveRegistrationForTicketTypeAsync(
@@ -45,6 +45,7 @@ public class ListAvailableTicketTypesHandlerTests
         var single = Assert.Single(result);
         Assert.Equal("Helg", single.Name);
         Assert.Equal(1200, single.Price);
+        Assert.Equal("- Inträde hela helgen", single.Description);
     }
 
     [Fact]
@@ -57,8 +58,8 @@ public class ListAvailableTicketTypesHandlerTests
         _repo.ListByEditionIdAsync(new EditionId(editionId), Arg.Any<CancellationToken>())
             .Returns(new List<TicketTypeAdminDto>
             {
-                new(fridayId, "Dag Fredag", 5000, "Visitor", null, null),
-                new(saturdayId, "Dag Lördag", 5000, "Visitor", null, null),
+                new(fridayId, "Dag Fredag", 5000, "Visitor", null, null, null),
+                new(saturdayId, "Dag Lördag", 5000, "Visitor", null, null, null),
             });
 
         _registrationRepo
@@ -91,7 +92,7 @@ public class ListAvailableTicketTypesHandlerTests
         _repo.ListByEditionIdAsync(new EditionId(editionId), Arg.Any<CancellationToken>())
             .Returns(new List<TicketTypeAdminDto>
             {
-                new(Guid.NewGuid(), "Staff", 0, "Staff", null, null),
+                new(Guid.NewGuid(), "Staff", 0, "Staff", null, null, null),
             });
         _registrationRepo
             .HasActiveRegistrationForTicketTypeAsync(

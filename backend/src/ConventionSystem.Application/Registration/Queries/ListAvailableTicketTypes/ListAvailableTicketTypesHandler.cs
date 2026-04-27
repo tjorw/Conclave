@@ -35,7 +35,11 @@ public sealed class ListAvailableTicketTypesHandler(
 
             if (!hasActiveRegistration)
             {
-                available.Add(new VisitorTicketTypeDto(ticketType.Id, ticketType.Name, ticketType.Price));
+                available.Add(new VisitorTicketTypeDto(
+                    ticketType.Id,
+                    ticketType.Name,
+                    ticketType.Price,
+                    ticketType.Description));
             }
         }
 

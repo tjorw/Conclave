@@ -35,3 +35,12 @@ public record StationDto(Guid Id, Guid StaffAreaId, string Name, string? Descrip
 public record CategoryDto(Guid Id, string Name, string? OrganizerInstructions, string? PublicDescription, Guid ResponsibleId);
 
 public record EditionResponsibleDto(string Position, Guid? PersonId, string? PersonName, string? Email);
+
+public record PersonSearchResultDto(
+    Guid PersonId,
+    string Name,
+    string Email,
+    string? Phone,
+    IReadOnlyList<TicketSummaryForReceptionDto> Tickets);
+
+public record TicketSummaryForReceptionDto(Guid TicketId, string TicketTypeName, string Status);

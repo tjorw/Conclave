@@ -44,10 +44,10 @@ export class EventService {
     );
   }
 
-  approveEvent(eventId: string) {
+  approveEvent(eventId: string, organizerTicketAssignments: { personId: string; ticketTypeId: string | null }[] = []) {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/events/${eventId}/approve`,
-      {}
+      { organizerTicketAssignments }
     );
   }
 

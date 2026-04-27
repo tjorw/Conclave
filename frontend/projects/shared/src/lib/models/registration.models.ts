@@ -12,12 +12,44 @@ export interface TicketTypeAdminDto {
   category: TicketTypeCategory;
   validDays: string[] | null;
   allowedCategories: string[] | null;
+  description: string | null;
 }
 
 export interface VisitorTicketTypeDto {
   id: string;
   name: string;
   price: number;
+  description: string | null;
+}
+
+export interface OrganiserTicketTypeDto {
+  id: string;
+  name: string;
+  price: number;
+  description: string | null;
+}
+
+export interface OrganiserTicketAssignmentDto {
+  personId: string;
+  ticketId: string | null;
+  ticketTypeId: string | null;
+  ticketTypeName: string | null;
+  status: TicketStatus | null;
+}
+
+export interface StaffTicketTypeDto {
+  id: string;
+  name: string;
+  price: number;
+  description: string | null;
+}
+
+export interface StaffTicketAssignmentDto {
+  personId: string;
+  ticketId: string | null;
+  ticketTypeId: string | null;
+  ticketTypeName: string | null;
+  status: TicketStatus | null;
 }
 
 export interface PromotionCodeAdminDto {
@@ -99,10 +131,15 @@ export interface SessionRegistrationDto {
 
 export interface MyVisitorRegistrationDto {
   id: string;
-  status: VisitorRegistrationStatus;
+  status: VisitorRegistrationStatus | TicketStatus;
   ticketTypeName: string | null;
   ticketId: string;
   ticketPrice: number | null;
+  ticketTypeCategory: TicketTypeCategory;
+  ticketStatus: TicketStatus;
+  ticketTypeDescription: string | null;
+  validDays: string[] | null;
+  canCancel: boolean;
 }
 
 export interface MySessionRegistrationSummaryDto {

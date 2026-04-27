@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MyVisitorRegistrationDto, RegistrationService, TICKET_PAYMENT_STATUS_LABEL, VisitorTicketTypeDto, toErrorMessage } from 'shared';
+import { MarkdownComponent } from 'ngx-markdown';
 import { EditionService } from '../../../services/edition.service';
 
 @Component({
@@ -17,6 +18,7 @@ import { EditionService } from '../../../services/edition.service';
     MatButtonModule,
     MatCheckboxModule,
     MatProgressSpinnerModule,
+    MarkdownComponent,
   ],
   templateUrl: './my-ticket.component.html',
   styleUrl: './my-ticket.component.scss',
@@ -114,7 +116,7 @@ export class MyTicketComponent implements OnInit {
   }
 
   canRedeemPromotionCode(registration: MyVisitorRegistrationDto): boolean {
-    return registration.status === 'PendingPayment' && !!registration.ticketId;
+    return registration.ticketTypeCategory === 'Visitor' && registration.status === 'PendingPayment' && !!registration.ticketId;
   }
 
   promotionCodeValue(ticketId: string): string {
@@ -172,13 +174,17 @@ export class MyTicketComponent implements OnInit {
   }
 
   canCancelRegistration(registration: MyVisitorRegistrationDto): boolean {
-    const ticketPrice = Number(registration.ticketPrice);
-    const isFreeConfirmed = registration.status === 'Confirmed' && Number.isFinite(ticketPrice) && ticketPrice === 0;
-    return registration.status === 'PendingPayment' || isFreeConfirmed;
+    return registration.canCancel;
   }
 
   paymentStatusLabel(status: string): string {
     return TICKET_PAYMENT_STATUS_LABEL[status] ?? status;
+  }
+
+  statusChipClass(status: string): string {
+    return status === 'Confirmed' || status === 'Paid' || status === 'Collected'
+      ? 'status-chip green'
+      : 'status-chip orange';
   }
 
   referenceNumber(id: string): string {
@@ -218,6 +224,22 @@ export class MyTicketComponent implements OnInit {
     }).format(price / 100);
   }
 
+  ticketCategoryLabel(registration: MyVisitorRegistrationDto): string {
+    switch (registration.ticketTypeCategory) {
+      case 'Organiser': return 'Arrangörsbiljett';
+      case 'Staff': return 'Funktionärsbiljett';
+      default: return 'Besökarbiljett';
+    }
+  }
+
+  validDaysLabel(registration: MyVisitorRegistrationDto): string | null {
+    if (!registration.validDays || registration.validDays.length === 0) {
+      return null;
+    }
+
+    return registration.validDays.join(', ');
+  }
+
   private loadState(): void {
     const editionId = this.editionSvc.editionId();
     if (!editionId) {
@@ -236,7 +258,7 @@ export class MyTicketComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: registrations => {
-          const activeRegistrations = registrations.filter(registration => registration.status !== 'Cancelled');
+          const activeRegistrations = registrations.filter(registration => registration.status !== 'Cancelled' && registration.ticketStatus !== 'Revoked');
 
           this.registrations.set(activeRegistrations);
           this.loadingRegistration.set(false);

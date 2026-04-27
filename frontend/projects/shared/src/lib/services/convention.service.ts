@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { ENVIRONMENT } from '../environment/environment.token';
 import { ConventionContextService } from './convention-context.service';
 import {
@@ -12,6 +12,7 @@ import {
   EditionSummaryDto,
   EditionVisitorDto,
   PersonDto,
+  ReceptionStaffMemberDto,
   StaffAreaDto,
   StationDto,
   VenueDto,
@@ -24,6 +25,16 @@ export interface CreateEditionRequest {
   staffCoordinatorId: string;
   eventCoordinatorId: string;
   scheduleDays?: EditionScheduleDayRequest[] | null;
+}
+
+export interface ImportWarningDto {
+  code: string;
+  message: string;
+}
+
+export interface ImportEditionResultDto {
+  editionId: string;
+  warnings: ImportWarningDto[];
 }
 
 export interface EditionScheduleDayRequest {
@@ -128,6 +139,14 @@ export class ConventionService {
     return this.http.post<{ id: string }>(`${this.base}/editions`, request);
   }
 
+  importEdition(name: string, startDate: string, document: unknown) {
+    return this.http.post<ImportEditionResultDto>(`${this.base}/editions/import`, {
+      name,
+      startDate,
+      document,
+    });
+  }
+
   listPersons() {
     return this.http.get<PersonDto[]>(`${this.base}/persons`);
   }
@@ -142,6 +161,17 @@ export class ConventionService {
 
   getEdition(editionId: string) {
     return this.http.get<EditionDto>(`${this.env.apiBaseUrl}/editions/${editionId}`);
+  }
+
+  exportEdition(editionId: string, includeEvents: boolean, includeTicketTypes: boolean) {
+    const params = new HttpParams()
+      .set('includeEvents', includeEvents)
+      .set('includeTicketTypes', includeTicketTypes);
+
+    return this.http.get(`${this.env.apiBaseUrl}/editions/${editionId}/export`, {
+      params,
+      responseType: 'text',
+    });
   }
 
   publishEdition(editionId: string) {
@@ -246,6 +276,10 @@ export class ConventionService {
     return this.http.put<void>(`${this.env.apiBaseUrl}/editions/${editionId}`, request);
   }
 
+  removeEdition(editionId: string) {
+    return this.http.delete<void>(`${this.env.apiBaseUrl}/editions/${editionId}`);
+  }
+
   updateVenue(editionId: string, venueId: string, request: UpdateVenueRequest) {
     return this.http.put<void>(`${this.env.apiBaseUrl}/editions/${editionId}/venues/${venueId}`, request);
   }
@@ -316,5 +350,17 @@ export class ConventionService {
 
   listEditionResponsibles(editionId: string) {
     return this.http.get<EditionResponsibleDto[]>(`${this.env.apiBaseUrl}/editions/${editionId}/responsibles`);
+  }
+
+  listEditionReceptionStaff(editionId: string) {
+    return this.http.get<ReceptionStaffMemberDto[]>(`${this.env.apiBaseUrl}/editions/${editionId}/reception-staff`);
+  }
+
+  addEditionReceptionStaff(editionId: string, personId: string) {
+    return this.http.post<void>(`${this.env.apiBaseUrl}/editions/${editionId}/reception-staff`, { personId });
+  }
+
+  removeEditionReceptionStaff(editionId: string, personId: string) {
+    return this.http.delete<void>(`${this.env.apiBaseUrl}/editions/${editionId}/reception-staff/${personId}`);
   }
 }

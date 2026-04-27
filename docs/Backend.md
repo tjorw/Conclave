@@ -238,13 +238,15 @@ API-lagret via `HttpContext`.
 public interface ICurrentUser
 {
     PersonId PersonId { get; }
+    bool IsAdmin { get; }
 }
 ```
 
 **Begränsning:** `ICurrentUser` fungerar bara inom ett HTTP-request-scope.
 Seeders, bakgrundsjobb och integrationstest-setup får **inte** anropa handlers
 som injicerar `ICurrentUser` – de måste istället anropa domänmodellen direkt
-och kalla `repository.MarkAsAdded(entity)` + `repository.SaveAsync()` manuellt.
+eller använda en explicit systemidentitet när jobbet behöver göra domänändringar.
+Se även README-avsnittet om outbox och bakgrundsjobb.
 
 ### Domain event handlers
 

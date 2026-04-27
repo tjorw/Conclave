@@ -19,6 +19,9 @@ import {
   CategoryDto, ConventionService, DateTimeRangeComponent, EditionDto, EditionSessionDto, EventDto, EventService, VenueDto,
   EVENT_COMMENT_STATUS_LABEL, EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
   MarkdownEditorComponent,
+  OrganiserTicketAssignmentDto,
+  OrganiserTicketTypeDto,
+  RegistrationService,
   toErrorMessage,
 } from 'shared';
 import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
@@ -61,6 +64,7 @@ export class EventDetailComponent implements OnInit {
   private readonly router     = inject(Router);
   private readonly svc        = inject(EventService);
   private readonly conSvc     = inject(ConventionService);
+  private readonly regSvc     = inject(RegistrationService);
   private readonly fb         = inject(FormBuilder);
   private readonly dialog     = inject(MatDialog);
 
@@ -96,6 +100,9 @@ export class EventDetailComponent implements OnInit {
   readonly timelineLoading       = signal(false);
   private readonly timelineLoaded = signal(false);
   readonly sessionSort = signal<SortState<EventSessionSortKey>>({ key: 'start', direction: 'desc' });
+  readonly organiserTicketTypes = signal<OrganiserTicketTypeDto[]>([]);
+  readonly organiserTicketAssignments = signal<OrganiserTicketAssignmentDto[]>([]);
+  readonly organiserTicketSelection = signal<Record<string, string | null>>({});
 
   readonly rejectForm = this.fb.group({
     comment: ['', [Validators.required, Validators.minLength(5)]],
@@ -144,6 +151,7 @@ export class EventDetailComponent implements OnInit {
         this.event.set(e);
         this.loading.set(false);
         this.populateEditForm(e);
+        this.loadOrganiserTicketState(e);
         this.conSvc.getEdition(e.editionId).subscribe({
           next: ed => {
             this.edition.set(ed);
@@ -170,6 +178,24 @@ export class EventDetailComponent implements OnInit {
 
   readonly commentStatusLabel = EVENT_COMMENT_STATUS_LABEL;
 
+  readonly eventOrganisers = computed(() => {
+    const ev = this.event();
+    if (!ev) return [];
+
+    return [
+      {
+        personId: ev.leadOrganiserId,
+        personName: ev.leadOrganiserName,
+        role: 'Huvudarrangör',
+      },
+      ...(ev.coOrganisers ?? []).map(co => ({
+        personId: co.personId,
+        personName: co.personName,
+        role: 'Medarrangör',
+      })),
+    ];
+  });
+
   // ── Category ────────────────────────────────────────────────────────────
 
   openChangeCategoryDialog(): void {
@@ -195,7 +221,7 @@ export class EventDetailComponent implements OnInit {
     const ev = this.event();
     if (!ev || this.saving()) return;
     this.saving.set(true);
-    this.svc.approveEvent(ev.id).subscribe({
+    this.svc.approveEvent(ev.id, this.approvalTicketAssignments()).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
       error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.approveEvent)); },
     });
@@ -381,8 +407,60 @@ export class EventDetailComponent implements OnInit {
   private reload(): void {
     const id = this.route.snapshot.paramMap.get('eventId')!;
     this.svc.getEvent(id).subscribe({
-      next: e => { this.event.set(e); this.populateEditForm(e); },
+      next: e => { this.event.set(e); this.populateEditForm(e); this.loadOrganiserTicketState(e); },
     });
+  }
+
+  private loadOrganiserTicketState(e: EventDto): void {
+    this.regSvc.getOrganiserTicketTypes(e.editionId).subscribe({
+      next: ticketTypes => this.organiserTicketTypes.set(ticketTypes),
+      error: () => this.organiserTicketTypes.set([]),
+    });
+
+    this.regSvc.getEventOrganiserTicketAssignments(e.id).subscribe({
+      next: assignments => {
+        this.organiserTicketAssignments.set(assignments);
+        this.organiserTicketSelection.set(
+          Object.fromEntries(this.eventOrganisers().map(organiser => {
+            const current = assignments.find(a => a.personId === organiser.personId);
+            return [organiser.personId, current?.ticketTypeId ?? null];
+          }))
+        );
+      },
+      error: () => {
+        this.organiserTicketAssignments.set([]);
+        this.organiserTicketSelection.set(
+          Object.fromEntries(this.eventOrganisers().map(organiser => [organiser.personId, null]))
+        );
+      },
+    });
+  }
+
+  private approvalTicketAssignments(): { personId: string; ticketTypeId: string | null }[] {
+    const selection = this.organiserTicketSelection();
+    return this.eventOrganisers().map(organiser => ({
+      personId: organiser.personId,
+      ticketTypeId: selection[organiser.personId] ?? null,
+    }));
+  }
+
+  setOrganiserTicketSelection(personId: string, ticketTypeId: string | null): void {
+    this.organiserTicketSelection.update(selection => ({ ...selection, [personId]: ticketTypeId }));
+  }
+
+  currentOrganiserTicketLabel(personId: string): string {
+    const assignment = this.organiserTicketAssignments().find(a => a.personId === personId);
+    return assignment?.ticketTypeName ?? 'Ingen aktiv arrangörsbiljett';
+  }
+
+  ticketTypePriceLabel(price: number): string {
+    if (price === 0) return 'Kostnadsfri';
+
+    return new Intl.NumberFormat('sv-SE', {
+      style: 'currency',
+      currency: 'SEK',
+      maximumFractionDigits: 0,
+    }).format(price / 100);
   }
 
   private populateEditForm(e: EventDto): void {

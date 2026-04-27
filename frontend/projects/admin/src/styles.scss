@@ -1,6 +1,7 @@
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   font-family: Roboto, 'Helvetica Neue', sans-serif;
@@ -25,6 +26,18 @@ html, body {
   font-size: 0.875rem;
   line-height: 1.4;
   margin: 0;
+}
+
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  flex-wrap: wrap;
+
+  .spacer {
+    flex: 1 1 auto;
+  }
 }
 
 .back-link {
@@ -57,6 +70,31 @@ html, body {
   margin: 0 0 16px;
 }
 
+.detail-card {
+  max-width: 640px;
+}
+
+.detail-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+
+  .danger-action {
+    margin-right: auto;
+  }
+}
+
 // Shared tables
 .data-table {
   width: 100%;
@@ -85,7 +123,9 @@ html, body {
     color: #333;
   }
 
-  tr:last-child td { border-bottom: none; }
+  tr:last-child td {
+    border-bottom: none;
+  }
 
   tbody tr:hover td {
     background: #fafafa;
@@ -103,7 +143,9 @@ html, body {
     background: #f5f5f5;
   }
 
-  .actions-col { width: 88px; }
+  .actions-col {
+    width: 88px;
+  }
 }
 
 .sort-header {
@@ -152,7 +194,9 @@ html, body {
     background: #f7f8fa;
   }
 
-  tr:last-child td { border-bottom: none; }
+  tr:last-child td {
+    border-bottom: none;
+  }
 }
 
 .row-actions,
@@ -179,6 +223,10 @@ html, body {
   }
 }
 
+.align-right {
+  text-align: right !important;
+}
+
 .row-indicator {
   color: #999;
   font-size: 20px;
@@ -194,11 +242,26 @@ html, body {
   font-size: 0.8rem;
   font-weight: 500;
 
-  &.chip-green  { background: #e8f5e9; color: #2e7d32; }
-  &.chip-grey   { background: #f5f5f5; color: #757575; }
-  &.chip-blue   { background: #e3f2fd; color: #1565c0; }
-  &.chip-red    { background: #ffebee; color: #c62828; }
-  &.chip-orange { background: #fff3e0; color: #e65100; }
+  &.chip-green {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  &.chip-grey {
+    background: #f5f5f5;
+    color: #757575;
+  }
+  &.chip-blue {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+  &.chip-red {
+    background: #ffebee;
+    color: #c62828;
+  }
+  &.chip-orange {
+    background: #fff3e0;
+    color: #e65100;
+  }
 }
 
 // Utilities
@@ -258,4 +321,34 @@ html, body {
 
 .muted-info {
   padding: 24px 0;
+}
+
+.muted {
+  color: #999;
+}
+
+@media (max-width: 640px) {
+  .action-bar {
+    align-items: stretch;
+  }
+
+  .action-bar .spacer {
+    display: none;
+  }
+
+  .action-bar button {
+    width: 100%;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+
+  .form-actions .danger-action {
+    margin-right: 0;
+  }
 }

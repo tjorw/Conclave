@@ -24,14 +24,18 @@ public class CollectTicketHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ValidCommand_CollectsTicketAndReturnsPerks()
+    public async Task Handle_ValidCommand_CollectsTicketAndReturnsDescription()
     {
         var ticketTypeId = TicketTypeId.New();
         var ticket = new Ticket(TicketId.New(), ticketTypeId, PersonId.New(), EditionId.New());
         ticket.ConfirmPayment();
-        var ticketType = new TicketType(ticketTypeId, ticket.EditionId, "Helgbiljett", 15000, TicketTypeCategory.Visitor);
-        ticketType.AddPerk("T-shirt");
-        ticketType.AddPerk("Matkupong dag 1");
+        var ticketType = new TicketType(
+            ticketTypeId,
+            ticket.EditionId,
+            "Helgbiljett",
+            15000,
+            TicketTypeCategory.Visitor,
+            description: "- T-shirt\n- Matkupong dag 1");
 
         _ticketRepo.GetByIdAsync(ticket.Id, Arg.Any<CancellationToken>()).Returns(ticket);
         _ticketTypeRepo.GetByIdAsync(ticketTypeId, Arg.Any<CancellationToken>()).Returns(ticketType);
@@ -40,7 +44,7 @@ public class CollectTicketHandlerTests
 
         Assert.Equal(TicketStatus.Collected, ticket.Status);
         Assert.Equal(ticket.Id.Value, result.TicketId);
-        Assert.Equal(["T-shirt", "Matkupong dag 1"], result.Perks);
+        Assert.Equal("- T-shirt\n- Matkupong dag 1", result.Description);
         await _ticketRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
 

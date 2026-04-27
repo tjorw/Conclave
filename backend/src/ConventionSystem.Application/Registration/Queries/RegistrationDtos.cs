@@ -12,12 +12,40 @@ public record TicketTypeAdminDto(
     int Price,
     string Category,
     IReadOnlyList<DateOnly>? ValidDays,
-    Guid[]? AllowedCategories);
+    Guid[]? AllowedCategories,
+    string? Description);
 
 public record VisitorTicketTypeDto(
     Guid Id,
     string Name,
-    int Price);
+    int Price,
+    string? Description);
+
+public record OrganiserTicketTypeDto(
+    Guid Id,
+    string Name,
+    int Price,
+    string? Description);
+
+public record StaffTicketTypeDto(
+    Guid Id,
+    string Name,
+    int Price,
+    string? Description);
+
+public record StaffTicketAssignmentDto(
+    Guid PersonId,
+    Guid? TicketId,
+    Guid? TicketTypeId,
+    string? TicketTypeName,
+    string? Status);
+
+public record OrganiserTicketAssignmentDto(
+    Guid PersonId,
+    Guid? TicketId,
+    Guid? TicketTypeId,
+    string? TicketTypeName,
+    string? Status);
 
 public record VisitorRegistrationAdminDto(
     Guid Id,
@@ -33,7 +61,12 @@ public record MyVisitorRegistrationDto(
     string Status,
     string? TicketTypeName,
     Guid TicketId,
-    int? TicketPrice);
+    int? TicketPrice,
+    string TicketTypeCategory,
+    string TicketStatus,
+    string? TicketTypeDescription,
+    IReadOnlyList<DateOnly>? ValidDays,
+    bool CanCancel);
 
 public record MySessionRegistrationSummaryDto(
     Guid Id,
@@ -81,6 +114,20 @@ public record PromotionCodeAdminDto(
     DateTimeOffset? ValidFrom,
     DateTimeOffset? ValidUntil,
     Guid[]? AllowedTicketTypeIds);
+
+public record PersonTicketForReceptionDto(
+    Guid TicketId,
+    Guid TicketTypeId,
+    string TicketTypeName,
+    string TicketTypeCategory,
+    string Status,
+    int? FinalPrice,
+    IReadOnlyList<DateOnly>? ValidDays,
+    Guid[]? AllowedCategories,
+    string? Description,
+    bool IsCollected,
+    DateTimeOffset? CollectedAt,
+    DateTimeOffset CreatedAt);
 
 public record PromotionCodeRedemptionHistoryDto(
     Guid Id,

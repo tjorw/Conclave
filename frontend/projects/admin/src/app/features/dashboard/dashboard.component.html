@@ -31,55 +31,121 @@
         <mat-card-title>Skapa ny upplaga</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <form [formGroup]="createForm" (ngSubmit)="create()" class="create-form">
-          <mat-form-field appearance="outline">
-            <mat-label>{{ FIELD.name }}</mat-label>
-            <input matInput formControlName="name" [placeholder]="PLACEHOLDER.editionName" />
-          </mat-form-field>
+        <div class="create-mode-toggle" aria-label="Skapametod">
+          <button mat-stroked-button type="button"
+            [class.create-mode-active]="createMode() === 'manual'"
+            (click)="setCreateMode('manual')">
+            <mat-icon>edit_calendar</mat-icon>
+            Manuell
+          </button>
+          <button mat-stroked-button type="button"
+            [class.create-mode-active]="createMode() === 'import'"
+            (click)="setCreateMode('import')">
+            <mat-icon>data_object</mat-icon>
+            Importera JSON
+          </button>
+        </div>
 
-          <div class="date-row">
+        @if (createMode() === 'manual') {
+          <form [formGroup]="createForm" (ngSubmit)="create()" class="create-form">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ FIELD.name }}</mat-label>
+              <input matInput formControlName="name" [placeholder]="PLACEHOLDER.editionName" />
+            </mat-form-field>
+
+            <div class="date-row">
+              <mat-form-field appearance="outline">
+                <mat-label>{{ FIELD.startDate }}</mat-label>
+                <input matInput type="date" formControlName="startDate" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>{{ FIELD.endDate }}</mat-label>
+                <input matInput type="date" formControlName="endDate" />
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ FIELD.staffCoord }}</mat-label>
+              <mat-select formControlName="staffCoordinatorId">
+                @for (person of persons(); track person.id) {
+                  <mat-option [value]="person.id">{{ person.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>{{ FIELD.eventCoord }}</mat-label>
+              <mat-select formControlName="eventCoordinatorId">
+                @for (person of persons(); track person.id) {
+                  <mat-option [value]="person.id">{{ person.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <div class="form-actions">
+              <button mat-button type="button" (click)="toggleCreateForm()" [disabled]="saving()">
+                {{ ACTION.cancel }}
+              </button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="createForm.invalid || saving()">
+                @if (saving()) {
+                  <mat-spinner diameter="18" />
+                } @else {
+                  {{ ACTION.create }}
+                }
+              </button>
+            </div>
+          </form>
+        } @else {
+          <form [formGroup]="importForm" (ngSubmit)="importEdition()" class="create-form import-form">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ FIELD.name }}</mat-label>
+              <input matInput formControlName="name" [placeholder]="PLACEHOLDER.editionName" />
+            </mat-form-field>
+
             <mat-form-field appearance="outline">
               <mat-label>{{ FIELD.startDate }}</mat-label>
               <input matInput type="date" formControlName="startDate" />
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>{{ FIELD.endDate }}</mat-label>
-              <input matInput type="date" formControlName="endDate" />
+              <mat-label>Exportdokument JSON</mat-label>
+              <textarea matInput rows="12" formControlName="json" spellcheck="false"
+                (input)="onImportJsonInput($any($event.target).value)"></textarea>
             </mat-form-field>
-          </div>
 
-          <mat-form-field appearance="outline">
-            <mat-label>{{ FIELD.staffCoord }}</mat-label>
-            <mat-select formControlName="staffCoordinatorId">
-              @for (person of persons(); track person.id) {
-                <mat-option [value]="person.id">{{ person.name }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+            @if (importParseResult().error; as parseError) {
+              <div class="error-banner">{{ parseError }}</div>
+            } @else if (importParseResult().preview; as preview) {
+              <div class="import-preview" aria-label="Importförhandsgranskning">
+                <div><span>Schema</span><strong>{{ preview.schemaVersion ?? '-' }}</strong></div>
+                <div><span>Dagar</span><strong>{{ preview.durationDays ?? '-' }}</strong></div>
+                <div><span>Lokaler</span><strong>{{ preview.venues }}</strong></div>
+                <div><span>Områden</span><strong>{{ preview.staffAreas }}</strong></div>
+                <div><span>Stationer</span><strong>{{ preview.stations }}</strong></div>
+                <div><span>Pass</span><strong>{{ preview.shifts }}</strong></div>
+                <div><span>Kategorier</span><strong>{{ preview.categories }}</strong></div>
+                <div><span>Evenemang</span><strong>{{ preview.events }}</strong></div>
+                <div><span>Sessioner</span><strong>{{ preview.sessions }}</strong></div>
+                <div><span>Biljettyper</span><strong>{{ preview.ticketTypes }}</strong></div>
+              </div>
+            }
 
-          <mat-form-field appearance="outline">
-            <mat-label>{{ FIELD.eventCoord }}</mat-label>
-            <mat-select formControlName="eventCoordinatorId">
-              @for (person of persons(); track person.id) {
-                <mat-option [value]="person.id">{{ person.name }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-
-          <div class="form-actions">
-            <button mat-button type="button" (click)="toggleCreateForm()" [disabled]="saving()">
-              {{ ACTION.cancel }}
-            </button>
-            <button mat-flat-button color="primary" type="submit" [disabled]="createForm.invalid || saving()">
-              @if (saving()) {
-                <mat-spinner diameter="18" />
-              } @else {
-                {{ ACTION.create }}
-              }
-            </button>
-          </div>
-        </form>
+            <div class="form-actions">
+              <button mat-button type="button" (click)="toggleCreateForm()" [disabled]="saving()">
+                {{ ACTION.cancel }}
+              </button>
+              <button mat-flat-button color="primary" type="submit"
+                [disabled]="importForm.invalid || !!importParseResult().error || saving()">
+                @if (saving()) {
+                  <mat-spinner diameter="18" />
+                } @else {
+                  Skapa från import
+                }
+              </button>
+            </div>
+          </form>
+        }
       </mat-card-content>
     </mat-card>
   }
@@ -113,7 +179,15 @@
                   {{ statusLabel(edition.status) }}
                 </mat-chip>
               </mat-chip-set>
-              <mat-icon class="row-indicator">chevron_right</mat-icon>
+              <div class="edition-card-actions">
+                <button mat-icon-button type="button"
+                  aria-label="Ta bort upplaga"
+                  [disabled]="saving() || !canRemoveEdition(edition.id)"
+                  (click)="removeEdition(edition, $event)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+                <mat-icon class="row-indicator">chevron_right</mat-icon>
+              </div>
             </div>
           </mat-card-content>
         </mat-card>

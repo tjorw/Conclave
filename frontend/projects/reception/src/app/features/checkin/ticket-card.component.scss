@@ -1,0 +1,71 @@
+.ticket-card {
+  margin-bottom: 12px;
+  transition: opacity 0.2s;
+
+  &--collected {
+    opacity: 0.7;
+  }
+
+  mat-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+}
+
+.status-badge {
+  margin-left: auto;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.status--reserved { background: #e3f2fd; color: #1565c0; }
+  &.status--paid     { background: #e8f5e9; color: #2e7d32; }
+  &.status--collected { background: #ede7f6; color: #4527a0; }
+  &.status--cancelled { background: #fafafa; color: #757575; }
+  &.status--revoked   { background: #ffebee; color: #c62828; }
+}
+
+.category-badge {
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.9rem;
+
+  &--muted {
+    color: rgba(0, 0, 0, 0.55);
+    font-size: 0.85rem;
+  }
+}
+
+.info-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.confirm-panel {
+  padding: 8px 0;
+  width: 100%;
+}
+
+.confirm-text {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

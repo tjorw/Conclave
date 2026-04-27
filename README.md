@@ -23,6 +23,7 @@ För Demo är beslutad hostingmodell:
 - `public` på `/`
 - `admin` på `/admin/`
 - `portal` på `/portal/`
+- `reception` på `/reception/`
 
 Syftet är att demo-instansen ska kunna paketeras som en sammanhållen publish-artifact och verifieras lokalt utan separat frontend-devserver. Lokal utveckling fortsätter däremot tills vidare att köras med separata Angular-devservrar på egna portar.
 
@@ -31,6 +32,7 @@ För deployspåret byggs klienterna med följande paths:
 - `public` med `base href /` och output i `frontend/dist/public`
 - `admin` med `base href /admin/` och output i `frontend/dist/admin`
 - `portal` med `base href /portal/` och output i `frontend/dist/portal`
+- `reception` med `base href /reception/` och output i `frontend/dist/reception`
 
 Samlad produktionsbuild kan köras med:
 
@@ -216,6 +218,17 @@ En samlad körguide för demo-instansen finns i [docs/DemoDeploy.md](docs/DemoDe
 | [CQRS](https://martinfowler.com/bliki/CQRS.html) | Martin Fowler – separata modeller för läsning och skrivning |
 | [Repository Pattern](https://martinfowler.com/eaaCatalog/repository.html) | Martin Fowler – dataåtkomst bakom interface utan läckage av persistensteknik |
 | [Conventional Commits](https://www.conventionalcommits.org/) | Strukturerade commit-meddelanden med type och scope |
+
+### Outbox och bakgrundsjobb
+
+E-post skickas via outbox-mönstret. Applikationslagret anropar `IEmailService`, infrastrukturen skriver en rad i `outbox_messages`, och `OutboxProcessor` levererar meddelandet asynkront via vald backend (`Logging`, `Smtp` eller `SendGrid`).
+
+Viktiga regler:
+
+- Outbox-payloaden ska vara självbärande. Bakgrundsjobbet ska kunna skicka meddelandet utan att hämta aktuell request, claims, tenant-resolution eller andra föränderliga entiteter.
+- Bakgrundsjobb ska inte bero på `HttpContext`, `ICurrentUser` eller request-scopad användarkontext. Anropa domänmodellen direkt eller använd en explicit systemidentitet när jobbet behöver göra domänändringar.
+- Kod som köar e-post ska inte skicka direkt till SMTP/SendGrid. Direktleverans hör hemma bakom `IDirectEmailSender` och används av `OutboxProcessor`.
+- Ett oskickat outbox-meddelande får inte tas bort av dataunderhåll. Retention-regler för skickade och parkerade meddelanden finns i [docs/DataMaintenance.md](docs/DataMaintenance.md).
 
 ## Kom igång
 
@@ -470,9 +483,10 @@ Testnivåer och minimikrav för frontend-PR:er beskrivs i
 │       └── ConventionSystem.Integration.Tests/
 ├── frontend/
 │   └── projects/
-│       ├── admin/     # Admin-app – rollbaserad, port 4200 (Angular Material)
-│       ├── public/    # Publik vy – konventionsbrandad, port 4201 (Angular Material)
-│       └── shared/    # Delat bibliotek: API-typer, tjänster, auth, interceptors
+│       ├── admin/       # Admin-app – rollbaserad, port 4200 (Angular Material)
+│       ├── public/      # Publik vy – konventionsbrandad, port 4201 (Angular Material)
+│       ├── reception/   # Receptionsapp – receptionsdisk, tablett-optimerad, port 4202 (Angular Material)
+│       └── shared/      # Delat bibliotek: API-typer, tjänster, auth, interceptors
 └── docs/
     ├── Backend.md      # Arkitekturprinciper och kodmönster per lager
     ├── Frontend.md     # Angular-konventioner och komponentmönster
@@ -493,12 +507,13 @@ Kärn-BC. Ansvarar för konventionens identitet, organisationsstruktur och livsc
 | Typ | Namn |
 |---|---|
 | Aggregate roots | `Convention`, `Edition` |
-| Entiteter | `Person`, `ConventionAdministrator`, `Venue`, `StaffArea`, `Station`, `Category` |
+| Entiteter | `Person`, `ConventionAdministrator`, `ReceptionStaff`, `Venue`, `StaffArea`, `Station`, `Category` |
 | Value objects | `DatePeriod` |
 
 **Viktiga regler:**
 - `Edition` måste vara `Published` innan registrering eller evenemang kan skapas
 - En `Edition` har en bemanningskoordinator och en evenemangskoordinator
+- `ReceptionStaff` är edition-scoped och ger tillgång till receptionsappen; konventionsadministratörer har implicit samma åtkomst
 
 ### Event
 

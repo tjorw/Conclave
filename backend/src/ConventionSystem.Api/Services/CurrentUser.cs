@@ -28,4 +28,13 @@ public sealed class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICur
             return claim is not null && bool.TryParse(claim.Value, out var result) && result;
         }
     }
+
+    public bool IsReception
+    {
+        get
+        {
+            var claim = httpContextAccessor.HttpContext?.User.FindFirst(AuthConstants.Claims.IsReception);
+            return claim is not null && bool.TryParse(claim.Value, out var result) && result;
+        }
+    }
 }

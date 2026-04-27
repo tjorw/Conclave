@@ -22,8 +22,8 @@
           @if (activeMyTickets().length > 0) {
             <p class="card-summary">
               {{ activeMyTickets().length }} biljett{{ activeMyTickets().length > 1 ? 'er' : '' }} ·
-              <span [class]="activeMyTickets()[0]!.status === 'Confirmed' ? 'tag-green' : 'tag-orange'">
-                {{ activeMyTickets()[0]!.status === 'Confirmed' ? 'Senaste bekräftad' : 'Senaste inväntar betalning' }}
+              <span [class]="latestTicketStatusClass()">
+                {{ latestTicketStatusLabel() }}
               </span>
             </p>
             <p class="card-next">Senaste pris: {{ latestTicketPriceLabel() }}</p>

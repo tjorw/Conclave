@@ -38,7 +38,7 @@ public sealed class CreateTicketTypeHandler(
         }
 
         var ticketType = new TicketType(TicketTypeId.New(), editionId, command.Name, command.Price, command.Category,
-            command.ValidDays, command.AllowedCategories);
+            command.ValidDays, command.AllowedCategories, command.Description);
         await ticketTypeRepository.AddAndSaveAsync(ticketType, ct);
         return ticketType.Id.Value;
     }

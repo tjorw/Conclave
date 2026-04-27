@@ -19,7 +19,7 @@
           <mat-icon>{{ isNavSectionCollapsed('editions') ? 'expand_more' : 'expand_less' }}</mat-icon>
         </button>
         @if (!isNavSectionCollapsed('editions')) {
-          <a mat-list-item [routerLink]="['/editions', activeEdition.id]" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+          <a mat-list-item [routerLink]="['/editions', activeEdition.id, 'basics']" routerLinkActive="active-link">
             <mat-icon matListItemIcon>settings</mat-icon>
             <span matListItemTitle>{{ NAV.editionBasics }}</span>
           </a>
@@ -42,6 +42,10 @@
           <a mat-list-item [routerLink]="['/editions', activeEdition.id, 'ticket-types']" routerLinkActive="active-link">
             <mat-icon matListItemIcon>local_activity</mat-icon>
             <span matListItemTitle>{{ NAV.editionTicketTypes }}</span>
+          </a>
+          <a mat-list-item [routerLink]="['/editions', activeEdition.id, 'export']" routerLinkActive="active-link">
+            <mat-icon matListItemIcon>data_object</mat-icon>
+            <span matListItemTitle>{{ NAV.editionExport }}</span>
           </a>
         }
       }
@@ -103,6 +107,10 @@
         <a mat-list-item routerLink="staff-applications" routerLinkActive="active-link">
           <mat-icon matListItemIcon>assignment</mat-icon>
           <span matListItemTitle>{{ NAV.staffApplications }}</span>
+        </a>
+        <a mat-list-item routerLink="persons/reception-staff" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>local_convenience_store</mat-icon>
+          <span matListItemTitle>{{ NAV.receptionStaff }}</span>
         </a>
       }
       <mat-divider />

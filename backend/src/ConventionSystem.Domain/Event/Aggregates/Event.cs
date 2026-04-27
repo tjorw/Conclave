@@ -106,7 +106,7 @@ public sealed class Event : AggregateRoot
         RaiseDomainEvent(new EventSubmittedForReview(Id, DateTimeOffset.UtcNow));
     }
 
-    public void Approve(PersonId responsibleId)
+    public void Approve(PersonId responsibleId, IReadOnlyList<OrganizerTicketAssignment>? organizerTicketAssignments = null)
     {
         if (Status == EventStatus.Cancelled)
             throw new EventIsCancelledException();
@@ -118,7 +118,29 @@ public sealed class Event : AggregateRoot
             throw new EventDescriptionRequiredException();
 
         Status = EventStatus.Published;
-        RaiseDomainEvent(new EventApproved(Id, LeadOrganiserId, responsibleId, Title, DateTimeOffset.UtcNow));
+        var occurredAt = DateTimeOffset.UtcNow;
+        RaiseDomainEvent(new EventApproved(Id, LeadOrganiserId, responsibleId, Title, occurredAt));
+
+        if (organizerTicketAssignments is { Count: > 0 })
+        {
+            EnsureOrganizerTicketAssignmentsAreForOrganisers(organizerTicketAssignments);
+            RaiseDomainEvent(new OrganizerTicketsAssigned(Id, EditionId, responsibleId, organizerTicketAssignments, occurredAt));
+        }
+    }
+
+    private void EnsureOrganizerTicketAssignmentsAreForOrganisers(IReadOnlyList<OrganizerTicketAssignment> assignments)
+    {
+        var organiserIds = _coOrganisers.Select(c => c.PersonId).Append(LeadOrganiserId).ToHashSet();
+        var assignedPersonIds = new HashSet<PersonId>();
+
+        foreach (var assignment in assignments)
+        {
+            if (!organiserIds.Contains(assignment.PersonId))
+                throw new DomainRuleViolationException("Arrangörsbiljett kan bara tilldelas huvudarrangör eller godkända medarrangörer.");
+
+            if (!assignedPersonIds.Add(assignment.PersonId))
+                throw new DomainRuleViolationException("En arrangör kan bara ha en biljettilldelning i samma publicering.");
+        }
     }
 
     public void ReturnToDraft(PersonId performedById)

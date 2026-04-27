@@ -8,6 +8,10 @@ import {
   MyOrganiserSessionSummaryDto,
   MyAssignedShiftSummaryDto,
   MyStaffApplicationDto,
+  OrganiserTicketAssignmentDto,
+  OrganiserTicketTypeDto,
+  StaffTicketAssignmentDto,
+  StaffTicketTypeDto,
   TicketTypeAdminDto,
   VisitorTicketTypeDto,
   VisitorRegistrationAdminDto,
@@ -31,6 +35,50 @@ export class RegistrationService {
   getAvailableTicketTypes(editionId: string) {
     return this.http.get<VisitorTicketTypeDto[]>(
       `${this.env.apiBaseUrl}/editions/${editionId}/available-ticket-types`
+    );
+  }
+
+  getOrganiserTicketTypes(editionId: string) {
+    return this.http.get<OrganiserTicketTypeDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/organiser-ticket-types`
+    );
+  }
+
+  getEventOrganiserTicketAssignments(eventId: string) {
+    return this.http.get<OrganiserTicketAssignmentDto[]>(
+      `${this.env.apiBaseUrl}/events/${eventId}/organiser-ticket-assignments`
+    );
+  }
+
+  getEditionOrganiserTicketAssignments(editionId: string) {
+    return this.http.get<OrganiserTicketAssignmentDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/organiser-ticket-assignments`
+    );
+  }
+
+  assignOrganiserTicket(editionId: string, personId: string, ticketTypeId: string | null) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/organiser-ticket-assignments/${personId}`,
+      { ticketTypeId }
+    );
+  }
+
+  getStaffTicketTypes(editionId: string) {
+    return this.http.get<StaffTicketTypeDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/staff-ticket-types`
+    );
+  }
+
+  getEditionStaffTicketAssignments(editionId: string) {
+    return this.http.get<StaffTicketAssignmentDto[]>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/staff-ticket-assignments`
+    );
+  }
+
+  assignStaffTicket(editionId: string, personId: string, ticketTypeId: string | null) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/staff-ticket-assignments/${personId}`,
+      { ticketTypeId }
     );
   }
 
@@ -154,6 +202,7 @@ export class RegistrationService {
   createTicketType(editionId: string, body: {
     name: string; price: number; category: string;
     validDays?: string[] | null; allowedCategories?: string[] | null;
+    description?: string | null;
   }) {
     return this.http.post<{ id: string }>(
       `${this.env.apiBaseUrl}/editions/${editionId}/ticket-types`, body
@@ -163,6 +212,7 @@ export class RegistrationService {
   updateTicketType(editionId: string, ticketTypeId: string, body: {
     name: string; price: number; category: string;
     validDays?: string[] | null; allowedCategories?: string[] | null;
+    description?: string | null;
   }) {
     return this.http.put<void>(
       `${this.env.apiBaseUrl}/editions/${editionId}/ticket-types/${ticketTypeId}`, body

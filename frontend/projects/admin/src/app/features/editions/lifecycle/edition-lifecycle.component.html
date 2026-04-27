@@ -1,0 +1,119 @@
+@if (loading()) {
+  <div class="spinner-wrapper"><mat-spinner diameter="48" /></div>
+} @else if (error()) {
+  <p class="error-message">{{ error() }}</p>
+} @else if (edition(); as e) {
+  <div class="page-header">
+    <h1 class="page-title">{{ e.name }}</h1>
+    <p class="page-subtitle">Livscykel</p>
+  </div>
+
+  <div class="lifecycle-header">
+    <div>
+      <h2>{{ PAGE.stateCardTitle }}</h2>
+      <p>{{ PAGE.stateCardHint }}</p>
+    </div>
+  </div>
+
+  <div class="lifecycle-overview" aria-label="Livscykelstatus">
+    <div class="lifecycle-stat">
+      <mat-icon [class.is-positive]="isPublished()">published_with_changes</mat-icon>
+      <span>{{ PAGE.publishTitle }}</span>
+      <strong>{{ isPublished() ? PAGE.statusPublished : PAGE.statusDraft }}</strong>
+    </div>
+    <div class="lifecycle-stat">
+      <mat-icon [class.is-positive]="isActiveEdition()">public</mat-icon>
+      <span>{{ PAGE.activeEditionTitle }}</span>
+      <strong>{{ isActiveEdition() ? PAGE.statusActive : PAGE.statusNotActive }}</strong>
+    </div>
+    <div class="lifecycle-stat">
+      <mat-icon [class.is-positive]="openRegistrationCount() > 0">how_to_reg</mat-icon>
+      <span>{{ PAGE.registrationsTitle }}</span>
+      <strong>{{ openRegistrationCount() }} / {{ registrationTypes.length }} {{ PAGE.statusOpen.toLowerCase() }}</strong>
+    </div>
+  </div>
+
+  <div class="lifecycle-grid">
+    <section class="lifecycle-panel lifecycle-panel--primary">
+      <div class="lifecycle-panel-main">
+        <mat-icon class="panel-icon">published_with_changes</mat-icon>
+        <div class="panel-copy">
+          <h3>{{ PAGE.publishTitle }}</h3>
+          <p>{{ PAGE.publishHint }}</p>
+        </div>
+      </div>
+      <div class="lifecycle-panel-action">
+        <mat-chip [color]="isPublished() ? 'primary' : 'default'" highlighted>
+          {{ isPublished() ? PAGE.statusPublished : PAGE.statusDraft }}
+        </mat-chip>
+        @if (isDraft()) {
+          <button mat-flat-button color="primary" [disabled]="saving()" (click)="publish()">
+            <mat-icon>publish</mat-icon> {{ PAGE.publishAction }}
+          </button>
+        } @else {
+          <button mat-stroked-button color="warn" [disabled]="saving()" (click)="unpublish()">
+            <mat-icon>undo</mat-icon> {{ PAGE.unpublishAction }}
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="lifecycle-panel">
+      <div class="lifecycle-panel-main">
+        <mat-icon class="panel-icon">public</mat-icon>
+        <div class="panel-copy">
+          <h3>{{ PAGE.activeEditionTitle }}</h3>
+          <p>{{ PAGE.activeEditionHint }}</p>
+        </div>
+      </div>
+      <div class="lifecycle-panel-action">
+        <mat-chip [color]="isActiveEdition() ? 'primary' : 'default'" highlighted>
+          {{ isActiveEdition() ? PAGE.statusActive : PAGE.statusNotActive }}
+        </mat-chip>
+        <button mat-stroked-button color="primary"
+          [disabled]="saving() || isActiveEdition()" (click)="setActive()">
+          <mat-icon>public</mat-icon> {{ PAGE.setActiveAction }}
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <section class="registration-panel">
+    <div class="registration-panel-header">
+      <div>
+        <h3>{{ PAGE.registrationsTitle }}</h3>
+        <p>{{ PAGE.registrationsHint }}</p>
+      </div>
+      <span class="registration-count">
+        {{ openRegistrationCount() }} / {{ registrationTypes.length }} {{ PAGE.statusOpen.toLowerCase() }}
+      </span>
+    </div>
+
+    @if (isPublished()) {
+      <div class="registration-list">
+        @for (type of registrationTypes; track type.type) {
+          <div class="registration-row" [class.registration-row--open]="registrationOpen(type.type)">
+            <div class="registration-name">
+              <mat-icon>{{ registrationStatusIcon(type.type) }}</mat-icon>
+              <span>{{ registrationTypeLabels[type.type] }}</span>
+            </div>
+            <mat-chip [color]="registrationOpen(type.type) ? 'primary' : 'default'" highlighted>
+              {{ registrationOpen(type.type) ? PAGE.statusOpen : PAGE.statusClosed }}
+            </mat-chip>
+            <button mat-stroked-button
+              [color]="registrationOpen(type.type) ? 'warn' : 'primary'"
+              [disabled]="saving()"
+              (click)="toggleRegistration(type.type)">
+              {{ registrationOpen(type.type) ? ACTION.close : ACTION.open }}
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="registration-disabled">
+        <mat-icon>info</mat-icon>
+        <span>{{ PAGE.requiresPublished }}</span>
+      </div>
+    }
+  </section>
+}

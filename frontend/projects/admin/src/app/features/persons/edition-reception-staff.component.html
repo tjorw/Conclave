@@ -1,0 +1,139 @@
+<div class="page-header">
+  <h1 class="page-title">Receptionspersonal</h1>
+  <p class="page-subtitle">
+    @if (editionContext.activeEdition(); as e) {
+      Personer med receptionsroll för <strong>{{ e.name }}</strong>
+    } @else {
+      Välj en upplaga i verktygsfältet
+    }
+  </p>
+</div>
+
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+@if (!editionContext.activeEdition()) {
+  <p class="no-edition">Välj en upplaga för att visa receptionspersonal.</p>
+} @else if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else {
+  <div class="action-bar">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [placeholder]="PLACEHOLDER.searchNameEmail" (input)="onSearch($event)" />
+    </mat-form-field>
+
+    @if (!showAddForm()) {
+      <button mat-stroked-button (click)="openAddForm()" class="add-btn">
+        <mat-icon>person_add</mat-icon> {{ ACTION.add }} receptionspersonal
+      </button>
+    }
+  </div>
+
+  @if (showAddForm()) {
+    <mat-card class="add-form-card">
+      <mat-card-header>
+        <mat-card-title>Tilldela receptionsroll</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="add-form">
+          <mat-form-field appearance="outline" class="form-field-full">
+            <mat-label>{{ FIELD.emailAddress }}</mat-label>
+            <input matInput type="email" [placeholder]="PLACEHOLDER.emailExampleSv"
+              [value]="addEmailInput()"
+              (input)="addEmailInput.set($any($event.target).value)" />
+          </mat-form-field>
+
+          @if (matchedPerson(); as person) {
+            @if (alreadyMember()) {
+              <div class="person-info person-info--warning">
+                <mat-icon>warning</mat-icon>
+                <span><strong>{{ person.name }}</strong> har redan receptionsrollen för denna upplaga.</span>
+              </div>
+            } @else {
+              <div class="person-info person-info--match">
+                <mat-icon>person</mat-icon>
+                <span>Befintlig person: <strong>{{ person.name }}</strong></span>
+              </div>
+            }
+          } @else if (addEmailInput().trim()) {
+            <div class="person-info person-info--missing">
+              <mat-icon>person_off</mat-icon>
+              <span>Ingen person med den e-postadressen hittades i registret.</span>
+            </div>
+          }
+
+          <div class="form-actions">
+            <button type="button" mat-button (click)="cancelAddForm()">{{ ACTION.cancel }}</button>
+            <button type="button" mat-flat-button color="primary"
+              [disabled]="addDisabled()"
+              (click)="submitAdd()">
+              @if (addSaving()) {
+                <mat-spinner diameter="18" />
+              } @else {
+                Tilldela
+              }
+            </button>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <mat-card>
+    <mat-card-content class="no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th><button type="button" class="sort-header" (click)="setSort('name')">Namn <mat-icon>{{ sortIcon('name') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('email')">E-post <mat-icon>{{ sortIcon('email') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setSort('addedAt')">Tillagd <mat-icon>{{ sortIcon('addedAt') }}</mat-icon></button></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of sortedFiltered(); track m.personId) {
+            <tr>
+              <td><strong>{{ m.name }}</strong></td>
+              <td>{{ m.email }}</td>
+              <td class="muted">{{ formatDate(m.addedAt) }}</td>
+              <td class="action-cell">
+                @if (confirmPersonId() === m.personId) {
+                  <span class="confirm-remove">
+                    Ta bort receptionsroll?
+                    <button type="button" mat-button color="warn"
+                      [disabled]="removingPersonId() !== null"
+                      (click)="confirmRemove(m.personId)">Ja</button>
+                    <button type="button" mat-button (click)="cancelRemove()">Avbryt</button>
+                  </span>
+                } @else {
+                  <button type="button" mat-icon-button
+                    [disabled]="removingPersonId() !== null"
+                    (click)="requestRemove(m.personId)"
+                    title="Ta bort receptionsroll">
+                    @if (removingPersonId() === m.personId) {
+                      <mat-spinner diameter="18" />
+                    } @else {
+                      <mat-icon>person_remove</mat-icon>
+                    }
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="empty-cell">
+                @if (searchQuery()) {
+                  Ingen receptionspersonal matchar sökningen.
+                } @else {
+                  Ingen receptionspersonal tillagd för denna upplaga.
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
+}

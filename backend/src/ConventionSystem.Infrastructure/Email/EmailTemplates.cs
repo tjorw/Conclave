@@ -67,6 +67,26 @@ internal static class EmailTemplates
             $"{temporaryPassword}\n\n" +
             "Byt lösenord efter första inloggningen.\n\n" +
             "Vänliga hälsningar,\nConclave");
+    public static (string Subject, string Body) CoOrganiserApplicationReceived(string eventTitle)
+        => (
+            $"Din medarrangörsansökan för '{eventTitle}' är mottagen",
+            $"Hej!\n\nDin ansökan om att bli medarrangör för evenemanget '{eventTitle}' är mottagen och väntar på granskning. Vi återkommer när ansökan har granskats.\n\nVänliga hälsningar,\nKonventteamet");
+
+    public static (string Subject, string Body) CoOrganiserApplicationApproved(string eventTitle)
+        => (
+            $"Din medarrangörsansökan för '{eventTitle}' är godkänd",
+            $"Hej!\n\nDin ansökan om att bli medarrangör för evenemanget '{eventTitle}' har godkänts. Välkommen som medarrangör!\n\nVänliga hälsningar,\nKonventteamet");
+
+    public static (string Subject, string Body) CoOrganiserApplicationRejected(string eventTitle, string? comment)
+    {
+        var commentSection = string.IsNullOrWhiteSpace(comment)
+            ? string.Empty
+            : $"\nKommentar: {comment}";
+        return (
+            $"Din medarrangörsansökan för '{eventTitle}' kunde inte godkännas",
+            $"Hej!\n\nDin ansökan om att bli medarrangör för evenemanget '{eventTitle}' har tyvärr inte godkänts.{commentSection}\n\nVänliga hälsningar,\nKonventteamet");
+    }
+
     public static (string Subject, string Body) TenantProvisionedWelcome(
         string organizationName,
         string subdomain,

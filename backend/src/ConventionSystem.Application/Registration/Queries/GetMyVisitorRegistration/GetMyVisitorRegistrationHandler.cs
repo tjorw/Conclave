@@ -9,7 +9,14 @@ public sealed class GetMyVisitorRegistrationHandler(
     ICurrentUser currentUser)
     : IRequestHandler<GetMyVisitorRegistrationQuery, IReadOnlyList<MyVisitorRegistrationDto>>
 {
-    public Task<IReadOnlyList<MyVisitorRegistrationDto>> Handle(GetMyVisitorRegistrationQuery query, CancellationToken ct)
-        => visitorRegistrationRepository.ListByPersonAndEditionAsync(
-            currentUser.PersonId, new EditionId(query.EditionId), ct);
+    public async Task<IReadOnlyList<MyVisitorRegistrationDto>> Handle(GetMyVisitorRegistrationQuery query, CancellationToken ct)
+    {
+        var editionId = new EditionId(query.EditionId);
+        var personId = currentUser.PersonId;
+
+        var visitorRegistrations = await visitorRegistrationRepository.ListByPersonAndEditionAsync(personId, editionId, ct);
+        var assignedTickets = await visitorRegistrationRepository.ListAssignedTicketsByPersonAndEditionAsync(personId, editionId, ct);
+
+        return [..visitorRegistrations, ..assignedTickets];
+    }
 }

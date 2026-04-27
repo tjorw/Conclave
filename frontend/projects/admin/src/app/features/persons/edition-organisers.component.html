@@ -2,7 +2,7 @@
   <h1 class="page-title">Arrangörer</h1>
   <p class="page-subtitle">
     @if (editionContext.activeEdition(); as e) {
-      Arrangörer på publicerade evenemang för <strong>{{ e.name }}</strong>
+      Arrangörer på evenemang för <strong>{{ e.name }}</strong>
     } @else {
       Välj en upplaga i verktygsfältet
     }
@@ -34,6 +34,10 @@
             <th><button type="button" class="sort-header" (click)="setSort('email')">E-post <mat-icon>{{ sortIcon('email') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="setSort('event')">Evenemang <mat-icon>{{ sortIcon('event') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="setSort('role')">Roll <mat-icon>{{ sortIcon('role') }}</mat-icon></button></th>
+            @if (hasOrganiserTicketTypes()) {
+              <th>Arrangörsbiljett</th>
+              <th></th>
+            }
           </tr>
         </thead>
         <tbody>
@@ -43,14 +47,44 @@
               <td>{{ o.email }}</td>
               <td>{{ o.eventTitle }}</td>
               <td class="muted">{{ o.role }}</td>
+              @if (hasOrganiserTicketTypes()) {
+                <td class="ticket-cell">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>{{ currentTicketLabel(o.personId) }}</mat-label>
+                    <mat-select
+                      [value]="ticketSelection()[o.personId] ?? null"
+                      (selectionChange)="setTicketSelection(o.personId, $event.value)">
+                      <mat-option [value]="null">Ingen biljett</mat-option>
+                      @for (ticketType of organiserTicketTypes(); track ticketType.id) {
+                        <mat-option [value]="ticketType.id">
+                          {{ ticketType.name }} · {{ ticketTypePriceLabel(ticketType.price) }}
+                        </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </td>
+                <td class="action-cell">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    (click)="saveTicket(o.personId)"
+                    [disabled]="savingPersonId() !== null">
+                    @if (savingPersonId() === o.personId) {
+                      <mat-spinner diameter="18" />
+                    } @else {
+                      Spara
+                    }
+                  </button>
+                </td>
+              }
             </tr>
           } @empty {
             <tr>
-              <td colspan="4" class="empty-cell">
+              <td [attr.colspan]="hasOrganiserTicketTypes() ? 6 : 4" class="empty-cell">
                 @if (searchQuery()) {
                   Inga arrangörer matchar sökningen.
                 } @else {
-                  Inga arrangörer på publicerade evenemang för denna upplaga.
+                  Inga arrangörer på evenemang för denna upplaga.
                 }
               </td>
             </tr>

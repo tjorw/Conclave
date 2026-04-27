@@ -28,24 +28,68 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () =>
-          import('./features/dashboard/dashboard.component').then(
-            m => m.DashboardComponent
-          ),
+          import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
+      },
+
+      // ── Upplaga ──────────────────────────────────────────────────────────────
+      { path: 'editions/:id', redirectTo: 'editions/:id/basics', pathMatch: 'full' },
+      {
+        path: 'editions/:id/basics',
+        loadComponent: () =>
+          import('./features/editions/basics/edition-basics.component').then(m => m.EditionBasicsComponent),
       },
       {
-        path: 'editions/:id',
+        path: 'editions/:id/lifecycle',
         loadComponent: () =>
-          import('./features/editions/edition-detail/edition-detail.component').then(
-            m => m.EditionDetailComponent
-          ),
+          import('./features/editions/lifecycle/edition-lifecycle.component').then(m => m.EditionLifecycleComponent),
       },
       {
-        path: 'editions/:id/:section',
+        path: 'editions/:id/venues',
         loadComponent: () =>
-          import('./features/editions/edition-detail/edition-detail.component').then(
-            m => m.EditionDetailComponent
-          ),
+          import('./features/editions/venues/venues.component').then(m => m.VenuesComponent),
       },
+      {
+        path: 'editions/:id/venues/:venueId',
+        loadComponent: () =>
+          import('./features/editions/venues/venue-detail/venue-detail.component').then(m => m.VenueDetailComponent),
+      },
+      {
+        path: 'editions/:id/staff-areas',
+        loadComponent: () =>
+          import('./features/editions/edition-staff-areas/edition-staff-areas.component').then(m => m.EditionStaffAreasComponent),
+      },
+      {
+        path: 'editions/:id/staff-areas/:areaId',
+        loadComponent: () =>
+          import('./features/editions/edition-staff-areas/edition-staff-area-detail/edition-staff-area-detail.component').then(m => m.EditionStaffAreaDetailComponent),
+      },
+      {
+        path: 'editions/:id/categories',
+        loadComponent: () =>
+          import('./features/editions/categories/categories.component').then(m => m.CategoriesComponent),
+      },
+      {
+        path: 'editions/:id/categories/:categoryId',
+        loadComponent: () =>
+          import('./features/editions/categories/category-detail/category-detail.component').then(m => m.CategoryDetailComponent),
+      },
+      {
+        path: 'editions/:id/ticket-types',
+        loadComponent: () =>
+          import('./features/editions/ticket-types/ticket-types.component').then(m => m.TicketTypesComponent),
+      },
+      {
+        path: 'editions/:id/export',
+        loadComponent: () =>
+          import('./features/editions/export/edition-export.component').then(m => m.EditionExportComponent),
+      },
+      {
+        path: 'editions/:id/ticket-types/:ticketTypeId',
+        loadComponent: () =>
+          import('./features/editions/ticket-types/ticket-type-detail/ticket-type-detail.component').then(m => m.TicketTypeDetailComponent),
+      },
+
+      // ── Personer ─────────────────────────────────────────────────────────────
       {
         path: 'persons',
         loadComponent: () =>
@@ -72,6 +116,13 @@ export const routes: Routes = [
           import('./features/persons/edition-responsibles.component').then(m => m.EditionResponsiblesComponent),
       },
       {
+        path: 'persons/reception-staff',
+        loadComponent: () =>
+          import('./features/persons/edition-reception-staff.component').then(m => m.EditionReceptionStaffComponent),
+      },
+
+      // ── Evenemang ────────────────────────────────────────────────────────────
+      {
         path: 'events',
         loadComponent: () =>
           import('./features/events/events.component').then(m => m.EventsComponent),
@@ -79,60 +130,55 @@ export const routes: Routes = [
       {
         path: 'events/:eventId',
         loadComponent: () =>
-          import('./features/events/event-detail/event-detail.component').then(
-            m => m.EventDetailComponent
-          ),
+          import('./features/events/event-detail/event-detail.component').then(m => m.EventDetailComponent),
       },
+
+      // ── Schema ───────────────────────────────────────────────────────────────
       {
         path: 'sessions',
         loadComponent: () =>
-          import('./features/sessions/sessions-overview.component').then(
-            m => m.SessionsOverviewComponent
-          ),
+          import('./features/sessions/sessions-overview.component').then(m => m.SessionsOverviewComponent),
       },
+
+      // ── Bemanning ────────────────────────────────────────────────────────────
       {
         path: 'staff-areas',
         loadComponent: () =>
-          import('./features/staffing/staff-areas.component').then(
-            m => m.StaffAreasComponent
-          ),
+          import('./features/staffing/staff-areas.component').then(m => m.StaffAreasComponent),
       },
       {
         path: 'staff-areas/:areaId',
         loadComponent: () =>
-          import('./features/staffing/staff-area-detail/staff-area-detail.component').then(
-            m => m.StaffAreaDetailComponent
-          ),
+          import('./features/staffing/staff-area-detail/staff-area-detail.component').then(m => m.StaffAreaDetailComponent),
       },
       {
         path: 'staff-applications',
         loadComponent: () =>
-          import('./features/staffing/staff-applications.component').then(
-            m => m.StaffApplicationsComponent
-          ),
+          import('./features/staffing/staff-applications.component').then(m => m.StaffApplicationsComponent),
       },
+
+      // ── Besökare ─────────────────────────────────────────────────────────────
       { path: 'registrations', redirectTo: 'registrations/visitors', pathMatch: 'full' },
       {
         path: 'registrations/visitors',
         loadComponent: () =>
-          import('./features/registrations/registrations.component').then(
-            m => m.RegistrationsComponent
-          ),
+          import('./features/registrations/registrations.component').then(m => m.RegistrationsComponent),
         data: { page: 'visitors' },
       },
       {
         path: 'registrations/promotion-codes',
         loadComponent: () =>
-          import('./features/registrations/registrations.component').then(
-            m => m.RegistrationsComponent
-          ),
+          import('./features/registrations/registrations.component').then(m => m.RegistrationsComponent),
         data: { page: 'promotion-codes' },
       },
+
+      // ── Feeds ────────────────────────────────────────────────────────────────
       {
         path: 'feeds',
         loadComponent: () =>
           import('./features/feeds/feeds.component').then(m => m.FeedsComponent),
       },
+
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

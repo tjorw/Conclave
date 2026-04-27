@@ -6,4 +6,5 @@ public interface ICurrentUser
 {
     PersonId PersonId { get; }
     bool IsAdmin { get; }
+    bool IsReception { get; }
 }

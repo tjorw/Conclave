@@ -2,6 +2,8 @@ using ConventionSystem.Application.Registration.Commands.AcceptStaffApplication;
 using ConventionSystem.Application.Registration.Commands.AddAvailability;
 using ConventionSystem.Application.Registration.Commands.AddStaffMember;
 using ConventionSystem.Application.Registration.Commands.AddStaffAreaPreference;
+using ConventionSystem.Application.Registration.Commands.AssignOrganiserTicket;
+using ConventionSystem.Application.Registration.Commands.AssignStaffTicket;
 using ConventionSystem.Application.Registration.Commands.CancelSessionRegistration;
 using ConventionSystem.Application.Registration.Commands.CancelOwnTicket;
 using ConventionSystem.Application.Registration.Commands.CancelVisitorRegistration;
@@ -23,6 +25,9 @@ using ConventionSystem.Application.Registration.Commands.RevokeTicket;
 using ConventionSystem.Application.Registration.Commands.SubmitStaffApplication;
 using ConventionSystem.Application.Registration.Commands.SubmitVisitorRegistration;
 using ConventionSystem.Application.Registration.Commands.UnwatchSession;
+using ConventionSystem.Application.Registration.Commands.WalkupRegister;
+using ConventionSystem.Application.Registration.Commands.CreateWalkupPerson;
+using ConventionSystem.Application.Registration.Queries.ListVisitorTicketTypesForWalkup;
 using ConventionSystem.Application.Registration.Commands.UpdateTicketType;
 using ConventionSystem.Application.Registration.Commands.WatchSession;
 using ConventionSystem.Application.Registration.Queries.GetMySessionRegistrations;
@@ -31,7 +36,12 @@ using ConventionSystem.Application.Registration.Queries.GetMyVisitorRegistration
 using ConventionSystem.Application.Registration.Queries.GetMyAssignedShifts;
 using ConventionSystem.Application.Registration.Queries.GetMyOrganiserSessions;
 using ConventionSystem.Application.Registration.Queries.GetMyWatchedSessions;
+using ConventionSystem.Application.Registration.Queries.GetEventOrganiserTicketAssignments;
 using ConventionSystem.Application.Registration.Queries.ListAvailableTicketTypes;
+using ConventionSystem.Application.Registration.Queries.ListEditionOrganiserTicketAssignments;
+using ConventionSystem.Application.Registration.Queries.ListEditionStaffTicketAssignments;
+using ConventionSystem.Application.Registration.Queries.ListOrganiserTicketTypes;
+using ConventionSystem.Application.Registration.Queries.ListStaffTicketTypes;
 using ConventionSystem.Application.Registration.Queries.ListPromotionCodeRedemptions;
 using ConventionSystem.Application.Registration.Queries.ListPromotionCodes;
 using ConventionSystem.Application.Registration.Queries.ListTicketTypes;
@@ -66,7 +76,7 @@ public static class RegistrationEndpoints
             async (Guid editionId, CreateTicketTypeRequest request, ISender sender, CancellationToken ct) =>
             {
                 var id = await sender.Send(new CreateTicketTypeCommand(editionId, request.Name, request.Price, request.Category,
-                    request.ValidDays, request.AllowedCategories), ct);
+                    request.ValidDays, request.AllowedCategories, request.Description), ct);
                 return Results.Created($"/ticket-types/{id}", new { id });
             });
 
@@ -117,6 +127,29 @@ public static class RegistrationEndpoints
                 var result = await sender.Send(new CollectTicketCommand(ticketId), ct);
                 return Results.Ok(result);
             });
+
+        // UC-RX005: Walk-up – skapa person
+        groups.Authenticated.MapPost("/editions/{editionId:guid}/walkup-persons",
+            async (Guid editionId, WalkupPersonRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var id = await sender.Send(
+                    new CreateWalkupPersonCommand(editionId, request.Name, request.Email, request.Phone), ct);
+                return Results.Created($"/persons/{id}", new { id });
+            });
+
+        // UC-RX005: Walk-up – registrera och betala
+        groups.Authenticated.MapPost("/editions/{editionId:guid}/walkup-registrations",
+            async (Guid editionId, WalkupRegistrationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                var ticketId = await sender.Send(
+                    new WalkupRegisterCommand(editionId, request.PersonId, request.TicketTypeId), ct);
+                return Results.Created($"/tickets/{ticketId}", new { ticketId });
+            });
+
+        // UC-RX005: Walk-up – biljetttyper för reception
+        groups.Authenticated.MapGet("/editions/{editionId:guid}/walkup-ticket-types",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListVisitorTicketTypesForWalkupQuery(editionId), ct)));
 
         // UC-TK007: Makulera biljett
         groups.Authenticated.MapDelete("/tickets/{ticketId:guid}",
@@ -225,6 +258,16 @@ public static class RegistrationEndpoints
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListAvailableTicketTypesQuery(editionId), ct)));
 
+        // UC-EV013: Informativa arrangörsbiljetter vid arrangemangsanmälan
+        groups.Authenticated.MapGet("/editions/{editionId:guid}/organiser-ticket-types",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListOrganiserTicketTypesQuery(editionId), ct)));
+
+        // UC-EV014: Nuvarande arrangörsbiljetter för publiceringsvyn
+        groups.Authenticated.MapGet("/events/{eventId:guid}/organiser-ticket-assignments",
+            async (Guid eventId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetEventOrganiserTicketAssignmentsQuery(eventId), ct)));
+
         // 3.2.4 – Mina sessionsregistreringar
         groups.Authenticated.MapGet("/editions/{editionId:guid}/my-session-registrations",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
@@ -302,6 +345,34 @@ public static class RegistrationEndpoints
                 return Results.Created($"/staff-applications/{id}", new { id });
             });
 
+        // UC-EV015: Manuell hantering av arrangörsbiljetter
+        groups.Admin.MapGet("/editions/{editionId:guid}/organiser-ticket-assignments",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListEditionOrganiserTicketAssignmentsQuery(editionId), ct)));
+
+        groups.Admin.MapPut("/editions/{editionId:guid}/organiser-ticket-assignments/{personId:guid}",
+            async (Guid editionId, Guid personId, AssignOrganiserTicketRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new AssignOrganiserTicketCommand(editionId, personId, request.TicketTypeId), ct);
+                return Results.NoContent();
+            });
+
+        // R-ST01: Funktionärsbiljetter – lista biljetttyper och tilldelning
+        groups.Admin.MapGet("/editions/{editionId:guid}/staff-ticket-types",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListStaffTicketTypesQuery(editionId), ct)));
+
+        groups.Admin.MapGet("/editions/{editionId:guid}/staff-ticket-assignments",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListEditionStaffTicketAssignmentsQuery(editionId), ct)));
+
+        groups.Admin.MapPut("/editions/{editionId:guid}/staff-ticket-assignments/{personId:guid}",
+            async (Guid editionId, Guid personId, AssignStaffTicketRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new AssignStaffTicketCommand(editionId, personId, request.TicketTypeId), ct);
+                return Results.NoContent();
+            });
+
         // 3.1.8 – Lista biljettyper
         groups.Admin.MapGet("/editions/{editionId:guid}/ticket-types",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
@@ -322,7 +393,7 @@ public static class RegistrationEndpoints
             async (Guid ticketTypeId, UpdateTicketTypeRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new UpdateTicketTypeCommand(ticketTypeId, request.Name, request.Price,
-                    request.Category, request.ValidDays, request.AllowedCategories), ct);
+                    request.Category, request.ValidDays, request.AllowedCategories, request.Description), ct);
                 return Results.NoContent();
             });
 
@@ -346,8 +417,10 @@ public static class RegistrationEndpoints
     }
 }
 
-public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
-public record UpdateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null);
+public record CreateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null, string? Description = null);
+public record UpdateTicketTypeRequest(string Name, int Price, TicketTypeCategory Category, IReadOnlyList<DateOnly>? ValidDays = null, Guid[]? AllowedCategories = null, string? Description = null);
+public record AssignOrganiserTicketRequest(Guid? TicketTypeId);
+public record AssignStaffTicketRequest(Guid? TicketTypeId);
 public record SubmitVisitorRegistrationRequest(Guid TicketTypeId);
 public record ConfirmPaymentRequest(string ExternalReference);
 public record CreatePromotionCodeRequest(
@@ -364,6 +437,8 @@ public record TicketPaymentWebhookRequest(Guid VisitorRegistrationId, string Ext
 public record RedeemPromotionCodeRequest(string Code);
 public record IssueTicketRequest(Guid PersonId, Guid TicketTypeId);
 public record SubmitStaffApplicationRequest(string InterestDescription);
+public record WalkupPersonRequest(string Name, string Email, string? Phone);
+public record WalkupRegistrationRequest(Guid PersonId, Guid TicketTypeId);
 public record AddAvailabilityRequest(DateTime From, DateTime To);
 public record StaffAreaPreferenceRequest(Guid StaffAreaId);
 public record RegisterForSessionRequest(Guid TicketId);

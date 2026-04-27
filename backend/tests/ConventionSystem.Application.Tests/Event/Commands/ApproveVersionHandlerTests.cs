@@ -46,6 +46,7 @@ public class ApproveVersionHandlerTests
         ev.SubmitForReview();
 
         _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _eventRepo.GetByIdWithCoOrganisersAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _editionRepo.GetByIdWithCategoriesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
 
@@ -81,6 +82,7 @@ public class ApproveVersionHandlerTests
         var (_, responsible, _, ev) = Setup();
         ev.Approve(responsible.Id);
         _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _eventRepo.GetByIdWithCoOrganisersAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _currentUser.PersonId.Returns(responsible.Id);
 
         await Assert.ThrowsAsync<EventAlreadyPublishedException>(
@@ -94,6 +96,7 @@ public class ApproveVersionHandlerTests
         // Återställ till Draft för att testa direktpublicering
         ev.ReturnToDraft(responsible.Id);
         _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _eventRepo.GetByIdWithCoOrganisersAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _currentUser.PersonId.Returns(responsible.Id);
 
         await _handler.Handle(new ApproveVersionCommand(ev.Id.Value), default);

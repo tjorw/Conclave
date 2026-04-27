@@ -4,6 +4,7 @@ using ConventionSystem.Api.Services;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Tenancy.Abstractions;
+using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Tenancy.Enums;
 using ConventionSystem.Domain.Tenancy.Ids;
@@ -26,6 +27,7 @@ public static class AuthEndpoints
             ITenantContext tenantContext,
             IOptions<MultitenancyOptions> multitenancyOptions,
             IConventionRepository conventionRepo,
+            IEditionRepository editionRepo,
             IPersonRepository personRepo,
             IJwtTokenIssuer jwtTokenIssuer,
             CancellationToken ct) =>
@@ -88,10 +90,20 @@ public static class AuthEndpoints
                 await userManager.UpdateAsync(user);
             }
 
-            var isAdmin = convention.IsAdministrator(new PersonId(personId));
+            var personIdTyped = new PersonId(personId);
+            var isAdmin = convention.IsAdministrator(personIdTyped);
+
+            var isReception = false;
+            if (convention.ActiveEditionId is { } activeEditionId)
+            {
+                var activeEdition = await editionRepo.GetByIdWithReceptionStaffAsync(activeEditionId, ct);
+                isReception = isAdmin || (activeEdition?.IsReceptionStaff(personIdTyped) ?? false);
+            }
+
             var token = jwtTokenIssuer.Issue(
                 personId,
                 isAdmin,
+                isReception,
                 isSystemAdmin,
                 AuthConstants.Claims.UserTypeTenantUser,
                 multitenancyOptions.Value.Enabled ? tenantContext.TenantId : user.TenantId);
@@ -126,6 +138,7 @@ public static class AuthEndpoints
             var token = jwtTokenIssuer.Issue(
                 user.PersonId,
                 isAdmin: false,
+                isReception: false,
                 isSystemAdmin: true,
                 AuthConstants.Claims.UserTypeSystemAdmin,
                 tenantId: null);

@@ -13,6 +13,7 @@ public sealed class JwtTokenIssuer(IOptions<JwtOptions> options) : IJwtTokenIssu
     public string Issue(
         Guid? personId,
         bool isAdmin,
+        bool isReception,
         bool isSystemAdmin,
         string userType,
         Guid? tenantId)
@@ -25,6 +26,8 @@ public sealed class JwtTokenIssuer(IOptions<JwtOptions> options) : IJwtTokenIssu
             claims.Add(new Claim(AuthConstants.Claims.TenantId, tenantId.Value.ToString()));
         if (isAdmin)
             claims.Add(new Claim(AuthConstants.Claims.IsAdmin, AuthConstants.Claims.IsAdminTrue));
+        if (isReception)
+            claims.Add(new Claim(AuthConstants.Claims.IsReception, AuthConstants.Claims.IsReceptionTrue));
         if (isSystemAdmin)
             claims.Add(new Claim(AuthConstants.Claims.IsSystemAdmin, AuthConstants.Claims.IsSystemAdminTrue));
 

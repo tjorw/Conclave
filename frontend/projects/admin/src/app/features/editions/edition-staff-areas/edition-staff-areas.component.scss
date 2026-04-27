@@ -1,0 +1,21 @@
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.muted { color: #bbb; }
+
+.station-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.station-chip {
+  background: #f0f0f0;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 0.8125rem;
+}

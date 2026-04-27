@@ -757,6 +757,45 @@ Konventionsadministratör
 
 ---
 
+# UC-ST007 – Tilldela funktionärsbiljett
+
+## Sammanfattning
+En bemanningskoordinator tilldelar en funktionärsbiljett (`TicketTypeCategory.Staff`) till en godkänd funktionär. Funktionären ser biljetten i "Mina biljetter" utan möjlighet att själv avboka.
+
+## Aktör
+Konventionsadministratör, `StaffCoordinator`
+
+## Förutsättningar
+- Upplagan finns
+- `TicketType` med `Category = Staff` finns och tillhör upplagan
+- Personen är en godkänd funktionär för upplagan
+
+## Flöde
+1. Koordinatorn väljer funktionär och biljetttyp i admin-vyn för funktionärer
+2. Systemet revokar eventuell befintlig aktiv funktionärsbiljett av annan typ
+3. Systemet skapar ny `Ticket` med `AssignedById` satt
+4. Funktionären ser biljetten i "Mina biljetter" i publika appen
+
+## Affärsregler
+- Byte av biljetttyp är atomärt (revoka + skapa)
+- Samma biljetttyp som redan tilldelad → noop
+- `TicketTypeId = null` → revoka utan ny biljett
+- Funktionären kan inte själv avboka biljetten
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [x] `Ticket` skapas med `TicketTypeCategory.Staff`, `AssignedById` satt, status `Reserved`
+- [x] Befintlig aktiv funktionärsbiljett av annan typ revokeras vid byte
+- [x] Biljetttyp som inte tillhör `Edition` ger valideringsfel
+- [x] Biljetttyp som inte är `Staff` ger valideringsfel
+- [x] Utförare utan behörighet (varken admin eller StaffCoordinator) ger `ForbiddenException`
+- [x] Funktionärsbiljetten syns i publika vyn ("Mina biljetter") utan avboka-åtgärd
+- [x] Kommandohanterare har tillhörande enhetstest
+
+---
+
 # UC-TK003 – Tilldela biljett till person
 
 ## Sammanfattning
@@ -785,10 +824,10 @@ Konventionsadministratör, `EventCoordinator` (arrangörsbiljetter), `VolunteerC
 - Inga
 
 ## Acceptanskriterier
-- [ ] `Ticket` persisteras med status `Reserved` och korrekt `assignedById`
-- [ ] Person som inte tillhör konventet ger valideringsfel
-- [ ] `TicketType` som inte tillhör `Edition` ger valideringsfel
-- [ ] Kommandohanterare har tillhörande enhetstest
+- [x] `Ticket` persisteras med status `Reserved` och korrekt `assignedById`
+- [x] Person som inte tillhör konventet ger valideringsfel
+- [x] `TicketType` som inte tillhör `Edition` ger valideringsfel
+- [x] Kommandohanterare har tillhörande enhetstest
 
 ---
 
@@ -1897,9 +1936,9 @@ Arrangör (autentiserad)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Arrangörsbiljetter visas i anmälningsformuläret i publika appen
-- [ ] Om inga arrangörsbiljetter finns visas inte sektionen
-- [ ] Arrangören kan inte välja eller ansöka om biljett i detta steg
+- [x] Arrangörsbiljetter visas i anmälningsformuläret i publika appen
+- [x] Om inga arrangörsbiljetter finns visas inte sektionen
+- [x] Arrangören kan inte välja eller ansöka om biljett i detta steg
 
 ---
 
@@ -1941,10 +1980,10 @@ Kategoriansvarig eller evenemangskoordinator (admin)
 - `OrganizerTicketsAssigned { eventId, editionId, assignments, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Publiceringsvyn visar tillgängliga arrangörsbiljetter och nuvarande tilldelning
-- [ ] Systemet sparar korrekt med revoke + ny biljett vid byte
-- [ ] Publicering och biljetttilldelning sker i samma anrop och transaktion
-- [ ] Om inga `TicketTypeCategory = Organiser`-typer finns visas inte biljettsektionen
+- [x] Publiceringsvyn visar tillgängliga arrangörsbiljetter och nuvarande tilldelning
+- [x] Systemet sparar korrekt med revoke + ny biljett vid byte
+- [x] Publicering och biljetttilldelning sker i samma anrop och transaktion
+- [x] Om inga `TicketTypeCategory = Organiser`-typer finns visas inte biljettsektionen
 
 ---
 
@@ -1984,9 +2023,9 @@ Konventionsadministratör
 - Inga nya krav utöver ordinarie biljett- och historikhändelser
 
 ## Acceptanskriterier
-- [ ] Admin kan tilldela, byta och ta bort arrangörsbiljett fristående från publiceringsflödet
-- [ ] Byte är atomärt
-- [ ] Logg och historik bevaras genom att revokerad biljett inte tas bort ur databasen
+- [x] Admin kan tilldela, byta och ta bort arrangörsbiljett fristående från publiceringsflödet
+- [x] Byte är atomärt
+- [x] Logg och historik bevaras genom att revokerad biljett inte tas bort ur databasen
 
 ---
 
@@ -2017,9 +2056,9 @@ Arrangör (autentiserad)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Arrangörsbiljetten syns i biljettvyn tillsammans med övriga biljetter
-- [ ] Ingen avboka-åtgärd finns tillgänglig på arrangörsbiljetter
-- [ ] Rätt biljetttypsinformation visas
+- [x] Arrangörsbiljetten syns i biljettvyn tillsammans med övriga biljetter
+- [x] Ingen avboka-åtgärd finns tillgänglig på arrangörsbiljetter
+- [x] Rätt biljetttypsinformation visas
 
 ---
 
@@ -2029,13 +2068,13 @@ Arrangör (autentiserad)
 - Ingår i `allowedCategories`-logiken som vanligt, men tilldelas aldrig via självregistrering
 
 ### Ticket (Registration BC)
-- Ny property: `Guid? EventId` för spårbarhet till vilket arrangemang biljetten tilldelades från
-- Ny metod: `static Ticket CreateOrganizerTicket(TicketTypeId, PersonId, EventId, EditionId)`
+- Arrangörsbiljetter är upplage-/personbaserade och har ingen koppling till ett enskilt arrangemang
+- Ny metod: `static Ticket CreateOrganizerTicket(TicketTypeId, PersonId, EditionId)`
 - Ny domänmetod på aggregatroten: `AssignOrganizerTicket(PersonId, TicketTypeId)` och `RevokeOrganizerTicket(PersonId)`
 
 ### Event (Event BC)
 - `Publish()` tar en optional parameter `IReadOnlyList<OrganizerTicketAssignment>`
-- Nytt value object: `record OrganizerTicketAssignment(PersonId PersonId, TicketTypeId TicketTypeId)`
+- Nytt value object: `record OrganizerTicketAssignment(PersonId PersonId, TicketTypeId? TicketTypeId)`
 - Skickar `OrganizerTicketsAssigned` som domain event som Registration BC lyssnar på
 
 ### Kommunikation mellan BC
@@ -2565,205 +2604,6 @@ SystemAdmin (fas 1–3), Tenant-admin (fas 4 – self-service)
 
 ---
 
-# Laganmälningar (UC-TM)
-
-Laganmälningar används för evenemang med turneringsform där ett lag – inte en individ – är registreringsenheten. En captain (bokningskontakt) anmäler laget och anger medlemmar. Arrangören bekräftar och fördelar sedan laget till specifika sessioner. Lagmedlemmar med konventsticker ser tilldelade sessioner i sitt tidschema.
-
----
-
-# UC-TM001 – Skapa lag
-
-## Sammanfattning
-En person skapar ett lag för en upplaga. Personen blir automatiskt captain och bokningskontakt.
-
-## Aktör
-Besökare med giltig biljett (autentiserad)
-
-## Förutsättningar
-- Upplagan finns och är publicerad
-- Personen har en giltig betald eller uthämtad biljett för upplagan
-
-## Flöde
-1. Personen anger lagnamn och EditionId
-2. Systemet skapar `Team` med personen som captain
-3. Systemet returnerar det nya TeamId
-
-## Affärsregler
-- Captain måste ha en giltig biljett för upplagan
-- Lagnamnet får inte vara tomt
-
-## Domänhändelser
-- `TeamCreated { teamId, editionId, captainPersonId, occurredAt }`
-
-## Acceptanskriterier
-- [ ] `Team` sparas med korrekt `EditionId` och `CaptainPersonId`
-- [ ] Tom lagnamn returnerar valideringsfel
-- [ ] Saknad/ogiltig biljett returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
-
----
-
-# UC-TM002 – Hantera lagmedlemmar
-
-## Sammanfattning
-Captain lägger till eller tar bort medlemmar från laget. En medlem kan vara en namngiven person utan konventsticker eller en person med PersonId.
-
-## Aktör
-Captain (lagägare)
-
-## Förutsättningar
-- Laget finns och är inte avbokat
-
-## Flöde (lägg till)
-1. Captain anger TeamId och medlemmens namn samt valfritt PersonId
-2. Systemet lägger till `TeamMember` i laget
-
-## Flöde (ta bort)
-1. Captain anger TeamId och TeamMemberId
-2. Systemet tar bort `TeamMember` från laget
-
-## Affärsregler
-- Namn på lagmedlem får inte vara tomt
-- Om PersonId anges måste personen tillhöra samma upplaga
-- Captain kan inte ta bort sig själv som lagmedlem
-
-## Domänhändelser
-- Inga
-
-## Acceptanskriterier
-- [ ] Lagmedlem sparas med namn och valfritt PersonId
-- [ ] Borttagning av captain returnerar valideringsfel
-- [ ] PersonId som inte tillhör upplagan returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
-
----
-
-# UC-TM003 – Anmäl lag till evenemang
-
-## Sammanfattning
-Captain anmäler laget till ett evenemang med `RegistrationMode = Team`. Anmälan hamnar i status `Pending` tills arrangören bekräftar.
-
-## Aktör
-Captain (bokningskontakt)
-
-## Förutsättningar
-- Laget finns
-- Evenemanget finns, är publicerat och har `RegistrationMode = Team`
-- Laget är inte redan anmält till evenemanget
-
-## Flöde
-1. Captain anger TeamId och EventId
-2. Systemet skapar `TeamEventRegistration` med status `Pending`
-3. Systemet returnerar det nya TeamEventRegistrationId
-
-## Affärsregler
-- Evenemanget måste ha `RegistrationMode = Team`
-- Dubblettanmälan (samma team + event) returnerar valideringsfel
-
-## Domänhändelser
-- `TeamRegisteredForEvent { teamEventRegistrationId, teamId, eventId, occurredAt }`
-
-## Acceptanskriterier
-- [ ] `TeamEventRegistration` sparas med status `Pending`
-- [ ] Anmälan till evenemang med `RegistrationMode = Individual` returnerar valideringsfel
-- [ ] Dubblettanmälan returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
-
----
-
-# UC-TM004 – Bekräfta laganmälan
-
-## Sammanfattning
-Arrangör eller konventionsadministratör bekräftar en laganmälan. Laget kan sedan tilldelas sessioner.
-
-## Aktör
-Evenemangsarrangör eller konventionsadministratör
-
-## Förutsättningar
-- `TeamEventRegistration` finns med status `Pending`
-
-## Flöde
-1. Aktören anger TeamEventRegistrationId
-2. Systemet anropar `TeamEventRegistration.Confirm()`
-3. Systemet sparar uppdateringen
-
-## Affärsregler
-- Endast `Pending`-anmälningar kan bekräftas
-
-## Domänhändelser
-- `TeamEventRegistrationConfirmed { teamEventRegistrationId, teamId, eventId, occurredAt }`
-
-## Acceptanskriterier
-- [ ] Status övergår till `Confirmed`
-- [ ] Bekräftelse av redan bekräftad anmälan returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
-
----
-
-# UC-TM005 – Avboka laganmälan
-
-## Sammanfattning
-Captain eller administratör avbokar en laganmälan.
-
-## Aktör
-Captain (egen anmälan) eller konventionsadministratör
-
-## Förutsättningar
-- `TeamEventRegistration` finns och är inte redan avbokad
-
-## Flöde
-1. Aktören anger TeamEventRegistrationId
-2. Systemet anropar `TeamEventRegistration.Cancel()`
-3. Systemet sparar uppdateringen
-
-## Affärsregler
-- Redan avbokade anmälningar kan inte avbokas igen
-- Befintliga `TeamSessionAssignment`s för laget måste tas bort när anmälan avbokas
-
-## Domänhändelser
-- `TeamEventRegistrationCancelled { teamEventRegistrationId, teamId, eventId, occurredAt }`
-
-## Acceptanskriterier
-- [ ] Status övergår till `Cancelled`
-- [ ] Tillhörande `TeamSessionAssignment`s tas bort
-- [ ] Avbokning av redan avbokad anmälan returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
-
----
-
-# UC-TM006 – Tilldela lag till session
-
-## Sammanfattning
-Arrangören tilldelar ett bekräftat lag till en specifik session inom evenemanget. Lagmedlemmar med PersonId ser sessionen i sitt tidschema.
-
-## Aktör
-Evenemangsarrangör eller konventionsadministratör
-
-## Förutsättningar
-- Sessionen finns och tillhör ett evenemang med `RegistrationMode = Team`
-- `TeamEventRegistration` för laget är `Confirmed`
-- Laget är inte redan tilldelat sessionen
-
-## Flöde
-1. Aktören anger SessionId och TeamId
-2. Systemet skapar `TeamSessionAssignment` på sessionen
-3. Systemet returnerar det nya TeamSessionAssignmentId
-
-## Affärsregler
-- Laget måste ha en bekräftad anmälan till evenemanget
-- Samma lag kan inte tilldelas samma session två gånger
-
-## Domänhändelser
-- `TeamAssignedToSession { teamSessionAssignmentId, sessionId, teamId, occurredAt }`
-
-## Acceptanskriterier
-- [ ] `TeamSessionAssignment` sparas på sessionen
-- [ ] Lagmedlemmar med PersonId kan hämta sessionen via tidsschemats query-projektion
-- [ ] Tilldelning utan bekräftad anmälan returnerar valideringsfel
-- [ ] Dubbeltilldelning returnerar valideringsfel
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
-
----
 
 # UC-RC001 – Redigera eventbeskrivning med markdown
 
@@ -2987,3 +2827,475 @@ Konventionsadministratör
 - [ ] `IsCustomized` sätts till `false`
 - [ ] Nästa utskick av aktuell typ använder standardtextens ämne och brödtext
 - [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-EX001 – Exportera upplaga som JSON
+
+## Sammanfattning
+En administratör exporterar en upplaga som ett fristående JSON-dokument som kan användas för att skapa en ny upplaga med samma struktur.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Upplagan finns
+- Utföraren är administratör för konventionen
+
+## Flöde
+1. Administratören navigerar till exportsidan i admin-appen
+2. Administratören väljer vilka valbara block som skall ingå: evenemang och/eller biljetttyper
+3. Admin-appen hämtar upplagan med vald data och producerar ett `EditionExportDocument`
+4. Admin-appen visar dokumentet som formaterad JSON inline så att administratören kan kopiera innehållet
+5. Administratören kan även ladda ner samma JSON som fil
+
+## Valbara block
+- **Evenemang** – titel, beskrivning, kategorinamn, registreringstyp, inpläggningsregler, sessioner (lokal via namn, dag (relativt), klockslag, max-platser, starttyp)
+- **Biljetttyper** – namn, pris, typ (Visitor/Organiser/Staff), beskrivning, giltiga dagar (relativt), tillåtna kategorier via namn
+- **Bemanningspass** – exporteras alltid under respektive station: dag (relativt), klockslag, min/max bemanning och passansvarig via e-post
+
+## Datumrepresentation
+Alla datum uttrycks relativt till upplagets startdatum. Dag 1 = första dagen. Klockslag är lokaltid som `HH:mm`.
+
+## Vad som aldrig exporteras
+- Interna ID:n (inga `Guid`-värden i dokumentet)
+- Transaktionsdata: biljetter, registreringar, staffansökningar, kommentarer, medarrangörsstatus
+- Upplagens status, öppna registreringar eller koordinatorer
+- Identiteter (person-ID:n) – person-referenser uttrycks som e-postadresser
+
+## Affärsregler
+- Dokumentet är versions­märkt med `schemaVersion` för framtida kompabilitet
+- Venues, staffområden, stationer, bemanningspass och kategorier exporteras alltid som en del av upplagestrukturen
+- Stationer placeras hierarkiskt under sitt staffområde i dokumentet
+- Bemanningspass placeras hierarkiskt under sin station i dokumentet
+- Sessionens dag beräknas som `(sessionDatum - upplagets startdatum).TotalDays + 1`
+
+## Implementationssteg
+- [x] `R-EX01` Kontrakt: `EditionExportDocument` och DTO:er finns i application-lagret utan exportlogik
+- [x] `R-EX02` Backend: kommando/handler/endpoint skapar och returnerar JSON-fil
+- [x] `R-EX03` Admin-UI: exportsida med valbara block, inline JSON, kopiera och nedladdningsknapp
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [x] Exportdokumentet innehåller inga interna ID:n
+- [x] Datum är relativa (dag-nummer, inte datum)
+- [x] Valfria block inkluderas respektive utelämnas korrekt baserat på administratörens val
+- [x] Filen laddas ner med `Content-Disposition: attachment` och ett meningsfullt filnamn
+- [x] Person-referenser exporteras som e-postadresser
+- [x] Admin-appen visar JSON inline för kopiering
+- [x] Admin-appen erbjuder nedladdning av samma JSON
+- [x] Stationer och bemanningspass exporteras utan interna ID:n
+
+---
+
+# UC-EX002 – Importera upplaga från JSON
+
+## Sammanfattning
+En administratör skapar en ny upplaga genom att klistra in ett exportdokument och ange namn och startdatum för den nya upplagan. Systemet tolkar dokumentet, skapar strukturen och rapporterar eventuella avvikelser.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Konventionen finns
+- Utföraren är administratör för konventionen
+- Administratören har ett giltigt `EditionExportDocument` som JSON
+
+## Flöde
+1. Administratören klickar "Skapa ny upplaga" på dashboard
+2. Administratören väljer alternativet "Importera från JSON"
+3. Administratören klistrar in JSON-dokumentet i textfältet
+4. Admin-appen tolkar dokumentet och visar en förhandsgranskning (antal venues, kategorier, evenemang m.m.)
+5. Administratören anger namn och startdatum för den nya upplagan
+6. Administratören klickar "Skapa från import"
+7. Systemet skapar upplagan och all inkluderad struktur med nya interna ID:n
+8. Systemet returnerar den nya `EditionId` och en lista med importvarningar
+9. Admin-appen navigerar till den nya upplagan och visar varningarna
+
+## Importlogik
+Systemet utför skapandet i följande ordning:
+1. Skapa upplagan med angivet namn och period (startdatum + `durationDays`)
+2. Skapa schemaläggningsdagar (relativt till startdatum)
+3. Skapa venues – bygg `namn → VenueId`-karta
+4. Skapa staffområden – slå upp ansvarig via e-post; fallback till importerande person
+5. Skapa stationer – slå upp staffområde via namnet
+6. Skapa bemanningspass – slå upp station via staffområdets namn + stationsnamn; passansvarig via e-post, fallback till importerande person
+7. Skapa kategorier – slå upp ansvarig via e-post; fallback till importerande person
+8. Skapa biljetttyper (om inkluderade) – slå upp `allowedCategoryNames` mot nya CategoryId:n
+9. Skapa evenemang (om inkluderade):
+   - Slå upp kategori via namn; evenemang utan matchande kategori hoppas över med varning
+   - Skapas med status `Draft`, `LeadOrganiserId` = importerande person
+   - Sessioner: slå upp lokal via namn; session utan matchande lokal hoppas över med varning
+
+## Datumrekonstruktion
+- Upplagets period: `startDate` till `startDate + (durationDays - 1) dagar`
+- Schemaläggningsdagar: `startDate + (day - 1) dagar`
+- Sessionstidpunkter: `startDate + (day - 1) dagar` kombinerat med `startTime`/`endTime`
+
+## Importvarningar
+Systemet samlar alla avvikelser och returnerar dem efter att upplagan skapats. Importen avbryts inte av mjuka fel.
+
+| Varningskod | Beskrivning |
+|---|---|
+| `PersonNotFound` | E-post finns inte bland konventionens members – ersatt av importerande person |
+| `CategoryNotFound` | Evenemang refererade kategorinamn som inte matchade – evenemang hoppades över |
+| `VenueNotFound` | Session refererade lokal­namn som inte matchade – session hoppades över |
+| `EventSkipped` | Evenemang kunde inte skapas av annat skäl |
+
+## Affärsregler
+- Importen skapar alltid en ny upplaga – befintliga upplagor uppdateras aldrig
+- Alla interna ID:n genereras på nytt
+- Dokumentets `schemaVersion` valideras; okänd version avvisas med fel
+- `durationDays` i dokumentet avgör upplagets längd; det angivna startdatumet styr förskjutningen
+- Upplagan skapas alltid i status `Draft` oavsett källupplagets status
+
+## Implementationssteg
+- [x] `R-EX01` Kontrakt: importen utgår från samma `EditionExportDocument` som exportflödet
+- [x] `R-EX04` Backend: importkommando/handler/endpoint skapar ny upplaga och returnerar varningar
+- [x] `R-EX05` Admin-UI: importpanel, förhandsgranskning och varningsdialog
+
+## Domänhändelser
+- `EditionCreated` (för den nya upplagan)
+- Domänhändelser per skapat barn (venues, kategorier etc.) om de höjs av respektive metod
+
+## Acceptanskriterier
+- [x] Ny upplaga skapas med korrekt namn, period och alla strukturella element
+- [x] Datum rekonstrueras korrekt från relativa dag-nummer och angivet startdatum
+- [x] Person-referenser löses upp via e-post; fallback till importerande person loggas som varning
+- [x] Evenemang utan matchande kategori hoppas över och loggas som varning
+- [x] Sessioner utan matchande lokal hoppas över och loggas som varning
+- [x] Varningslistan visas för administratören efter avslutad import
+- [x] Upplagan skapas med status `Draft`
+
+---
+
+# UC-TM001 – Konfigurera laganmälning på evenemang
+
+## Sammanfattning
+Arrangören väljer om evenemanget tar individuella anmälningar eller laganmälningar. Vid laganmälning anger arrangören minsta och högsta tillåtna antal deltagare per lag.
+
+## Aktör
+Huvud- eller medarrangör
+
+## Förutsättningar
+- Evenemanget finns och har status Utkast
+- Utföraren är huvud- eller medarrangör
+
+## Flöde
+1. Arrangören anger EventId, RegistrationMode (Individual | Team) och, om Team, MinTeamSize och MaxTeamSize
+2. Systemet validerar lagstorlek om Team är valt
+3. Systemet uppdaterar RegistrationMode (och eventuell TeamSize) på Event-aggregatet
+4. Systemet sparar ändringen
+
+## Affärsregler
+- Konfiguration är bara möjlig när evenemanget är i Utkast-läge
+- Om RegistrationMode är Individual ska TeamSize inte vara satt
+- Om RegistrationMode är Team måste MinTeamSize och MaxTeamSize anges
+- MinTeamSize måste vara ≥ 1
+- MaxTeamSize måste vara ≥ MinTeamSize
+
+## Domänhändelser
+- Inga
+
+## Implementationssteg
+- [ ] `R-TM01` Nytt fält `RegistrationMode` (Individual | Team) + value object `TeamSize { Min, Max }` på `Event`-aggregatet; domänmetod `ConfigureTeamRegistration(mode, min, max)` med invarianter; enhetstest
+
+## Acceptanskriterier
+- [ ] RegistrationMode och TeamSize sparas korrekt på evenemanget
+- [ ] Konfiguration på ett icke-Utkast-evenemang returnerar valideringsfel
+- [ ] MaxTeamSize < MinTeamSize returnerar valideringsfel
+- [ ] MinTeamSize < 1 returnerar valideringsfel
+- [ ] RegistrationMode Individual med angiven TeamSize returnerar valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TM002 – Anmäl lag
+
+## Sammanfattning
+En person anmäler ett lag till ett evenemang med laganmälning. Personen anger lagnamnet, blir automatiskt lagkapten och erhåller en laganmälan med status Väntande.
+
+## Aktör
+Besökare (person registrerad i konventionen)
+
+## Förutsättningar
+- Evenemanget finns, är publicerat och har RegistrationMode = Team
+- Besökarregistrering för upplagan är öppen
+- Personen finns och tillhör konventionen
+- Personen har ingen annan aktiv laganmälan för samma evenemang
+
+## Flöde
+1. Besökaren anger EventId, lagnamn och sitt PersonId
+2. Systemet validerar att evenemanget accepterar laganmälningar
+3. Systemet skapar ett Team-aggregat med lagnamnet och personen som captain
+4. Systemet skapar en TeamEventRegistration med status Pending kopplad till teamet och evenemanget
+5. Systemet returnerar TeamId och TeamEventRegistrationId
+
+## Affärsregler
+- Evenemanget måste ha RegistrationMode = Team
+- Lagnamnet får inte vara tomt
+- En person kan bara ha en aktiv laganmälan (status Pending eller Confirmed) per evenemang
+- Lagmedlemmar (utöver captainen) behöver inte anges i fas 1
+
+## Domänhändelser
+- `TeamCreated { teamId, editionId, captainPersonId, name, occurredAt }`
+- `TeamEventRegistrationCreated { registrationId, teamId, eventId, occurredAt }`
+
+## Implementationssteg
+- [ ] `R-TM02` `Team`-aggregat med captain och lagnamn; enhetstest
+- [ ] `R-TM03` `TeamEventRegistration`-aggregat med livscykel Pending → Confirmed | Cancelled; enhetstest
+- [ ] Kommando `RegisterTeamForEventCommand` + handler; validator; endpoint `POST /api/events/{eventId}/team-registrations`
+
+## Acceptanskriterier
+- [ ] Team och TeamEventRegistration skapas; captainPersonId = anmälande person
+- [ ] Lagnamn anges och sparas korrekt
+- [ ] Anmälan till ett evenemang med RegistrationMode = Individual returnerar valideringsfel
+- [ ] Tom lagnamn returnerar valideringsfel
+- [ ] Dubbel aktiv anmälan för samma person och evenemang returnerar valideringsfel
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TM003 – Bekräfta laganmälan
+
+## Sammanfattning
+En arrangör eller administratör bekräftar en väntande laganmälan. Laganmälans status ändras till Bekräftad.
+
+## Aktör
+Arrangör (huvud- eller medarrangör) eller konventionsadministratör
+
+## Förutsättningar
+- TeamEventRegistration finns med status Pending
+- Utföraren är arrangör för evenemanget eller konventionsadministratör
+
+## Flöde
+1. Arrangören anger TeamEventRegistrationId
+2. Systemet validerar status och behörighet
+3. Systemet ändrar status till Confirmed
+4. Systemet sparar ändringen
+
+## Affärsregler
+- Bara en Pending-anmälan kan bekräftas
+- Utföraren måste vara arrangör för evenemanget eller administratör
+
+## Domänhändelser
+- `TeamEventRegistrationConfirmed { registrationId, teamId, eventId, occurredAt }`
+
+## Implementationssteg
+- [ ] `R-TM03` Domänmetod `Confirm()` på `TeamEventRegistration`; enhetstest
+- [ ] Kommando `ConfirmTeamRegistrationCommand` + handler; endpoint `POST /api/team-registrations/{id}/confirm`
+
+## Acceptanskriterier
+- [ ] Status ändras till Confirmed
+- [ ] Bekräftning av en icke-Pending-anmälan returnerar valideringsfel
+- [ ] Saknad behörighet returnerar Forbidden
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+
+---
+
+# UC-TM004 – Avboka laganmälan
+
+## Sammanfattning
+En lagkapten eller administratör avbokar en laganmälan. Laganmälans status sätts till Cancelled.
+
+## Aktör
+Lagkapten (personen som skapade laganmälan) eller konventionsadministratör
+
+## Förutsättningar
+- TeamEventRegistration finns med status Pending eller Confirmed
+- Utföraren är captainen för laget eller konventionsadministratör
+
+## Flöde
+1. Utföraren anger TeamEventRegistrationId
+2. Systemet validerar status och behörighet
+3. Systemet ändrar status till Cancelled
+4. Systemet sparar ändringen
+
+## Affärsregler
+- En Cancelled-anmälan kan inte avbokas igen
+- Captainen kan avboka sin laganmälan oavsett om den är Pending eller Confirmed
+- Administratör kan avboka vilken laganmälan som helst
+
+## Domänhändelser
+- `TeamEventRegistrationCancelled { registrationId, teamId, eventId, cancelledByPersonId, occurredAt }`
+
+## Implementationssteg
+- [ ] `R-TM03` Domänmetod `Cancel(cancelledByPersonId)` på `TeamEventRegistration`; enhetstest
+- [ ] Kommando `CancelTeamRegistrationCommand` + handler; endpoint `POST /api/team-registrations/{id}/cancel`
+
+## Acceptanskriterier
+- [ ] Status ändras till Cancelled
+- [ ] Avbokning av redan Cancelled-anmälan returnerar valideringsfel
+- [ ] Saknad behörighet (varken captain eller admin) returnerar Forbidden
+- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] Kommandohanteraren har tillhörande enhetstester
+
+---
+
+# UC-RX001 – Tilldela receptionsroll
+
+## Sammanfattning
+En konventionsadministratör tilldelar en person rollen `ReceptionStaff` för en specifik `Edition`. Personen får därmed tillgång till receptionsappen och JWT-claim `is_reception`.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- `Edition` finns
+- `Person` finns och tillhör konventet
+- Utförande användare är administratör för konventet
+
+## Flöde
+1. Administratören anger `EditionId` och `PersonId`
+2. Systemet kontrollerar att personen inte redan har receptionsrollen för upplagan
+3. Systemet skapar en `ReceptionStaff`-post på `Edition`
+4. Systemet returnerar bekräftelse
+
+## Affärsregler
+- En person kan bara ha receptionsrollen en gång per `Edition`
+- Konventionsadministratörer har implicit receptionsåtkomst utan att tilldelas rollen
+
+## Domänhändelser
+- `ReceptionStaffAdded { editionId, personId, addedById, occurredAt }`
+
+## Acceptanskriterier
+- [x] `ReceptionStaff`-post skapas och kopplas till korrekt `EditionId`
+- [x] Dubblett ger valideringsfel
+- [x] Saknad behörighet returnerar Forbidden
+- [x] Kommandohanterare har tillhörande enhetstest
+
+---
+
+# UC-RX002 – Ta bort receptionsroll
+
+## Sammanfattning
+En konventionsadministratör tar bort en persons `ReceptionStaff`-roll från en `Edition`.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- `ReceptionStaff`-post finns för angiven `EditionId` och `PersonId`
+- Utförande användare är administratör för konventet
+
+## Flöde
+1. Administratören anger `EditionId` och `PersonId`
+2. Systemet tar bort `ReceptionStaff`-posten
+3. Systemet returnerar bekräftelse
+
+## Affärsregler
+- En person som är konventionsadministratör förlorar inte receptionsåtkomst om `ReceptionStaff`-posten tas bort
+
+## Domänhändelser
+- `ReceptionStaffRemoved { editionId, personId, removedById, occurredAt }`
+
+## Acceptanskriterier
+- [x] `ReceptionStaff`-post raderas
+- [x] Borttagning av icke-existerande post ger valideringsfel
+- [x] Saknad behörighet returnerar Forbidden
+- [x] Kommandohanterare har tillhörande enhetstest
+
+---
+
+# UC-RX003 – Sök person vid receptionen
+
+## Sammanfattning
+Receptionspersonal söker efter en besökare, arrangör eller funktionär via namn, e-post eller biljett-ID. Resultatet används för att identifiera personen inför incheckning.
+
+## Aktör
+Receptionspersonal (konventionsadministratör eller `ReceptionStaff`)
+
+## Förutsättningar
+- Aktiv `Edition` finns
+- Utförande användare har receptionsåtkomst
+
+## Flöde
+1. Personalen anger sökterm (fritext) eller skannat `TicketId`
+2. Systemet söker mot `Person.Name`, `Person.Email` och `Ticket.TicketId` inom aktiv `Edition`
+3. Systemet returnerar matchande personer med biljettstatussammanfattning
+
+## Affärsregler
+- Fritextsökning kräver minst 2 tecken
+- Sökning på exakt `TicketId` returnerar direkt utan minimigräns
+- Resultatlistan begränsas till 20 träffar
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [x] Sökning på namn eller e-post returnerar matchande personer inom aktiv edition
+- [x] Sökning på exakt `TicketId` returnerar rätt person direkt
+- [x] Fritext kortare än 2 tecken ger valideringsfel
+- [x] Receptionspersonal utan rätt roll får 403
+
+---
+
+# UC-RX004 – Visa personens biljetter vid incheckning
+
+## Sammanfattning
+Receptionspersonal hämtar alla biljetter en person har för aktiv `Edition`, med status och förmåner, som underlag för incheckning och biljettutdelning.
+
+## Aktör
+Receptionspersonal (konventionsadministratör eller `ReceptionStaff`)
+
+## Förutsättningar
+- `Person` finns
+- Utförande användare har receptionsåtkomst
+
+## Flöde
+1. Personalen väljer en person (t.ex. via UC-RX003)
+2. Systemet hämtar alla `Ticket`-poster för personen och aktiv `Edition`
+3. Systemet returnerar biljetter med typ, status, giltighetsdagar, tillåtna kategorier och förmåner
+
+## Affärsregler
+- Biljetter visas oavsett status (inkl. `Revoked`) för att ge full bild
+- `Collected`-biljetter markeras tydligt för att undvika dubbelutdelning
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [x] Alla biljetter för person och aktiv edition returneras
+- [x] Svaret inkluderar `TicketType.Name`, status, `ValidDays`, `AllowedCategories` och lista av `TicketPerk`
+- [x] Receptionspersonal utan rätt roll får 403
+
+---
+
+# UC-RX005 – Walk-up-incheckning
+
+## Sammanfattning
+En person som inte registrerat sig i förväg anländer vid receptionen. Receptionspersonal skapar konto, reserverar biljetttyp, registrerar manuell betalning och checkar in personen i ett sammanhängande flöde.
+
+## Aktör
+Receptionspersonal (konventionsadministratör eller `ReceptionStaff`)
+
+## Förutsättningar
+- Aktiv `Edition` finns med minst en tillgänglig `TicketType`
+
+## Flöde
+1. Personalen söker efter personen och får ingen träff (UC-RX003)
+2. Personalen anger namn och e-post och väljer biljetttyp
+3. Systemet identifierar eller skapar personkonto (UC002)
+4. Systemet skapar `VisitorRegistration` och `Ticket` med status `Reserved` (UC-VR001)
+5. Personalen bekräftar betalning (kontant eller Swish)
+6. Systemet registrerar manuell betalning → biljettstatus `Paid` (UC-TK004)
+7. Systemet checkar in biljetten → biljettstatus `Collected` (UC-TK008)
+8. Systemet visar förmånslistan för utdelning
+
+## Affärsregler
+- Om personen redan finns (e-postmatch) används det befintliga kontot
+- Betalningsintegrering (Swish, kortläsare) är utanför scope i fas 1 – betalning registreras manuellt
+
+## Domänhändelser
+- Se UC002, UC-VR001, UC-TK004 och UC-TK008
+
+## Implementationssteg
+- [ ] `R-RX05` Frontend walk-up-komponent som orkestrerar UC002 → UC-VR001 → UC-TK004 → UC-TK008 i sekvens
+
+## Acceptanskriterier
+- [ ] Person som inte finns skapas med korrekt konventions-scope
+- [ ] Person som redan finns (e-postmatch) återanvänds utan duplikat
+- [ ] Biljett skapas, betalas och checkas in utan manuella mellansteg
+- [ ] Förmåner visas i sista steget

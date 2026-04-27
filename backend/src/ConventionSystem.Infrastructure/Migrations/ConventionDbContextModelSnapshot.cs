@@ -254,6 +254,38 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.ToTable("persons", (string)null);
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.ReceptionStaff", b =>
+                {
+                    b.Property<Guid>("EditionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("edition_id");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("AddedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("added_at");
+
+                    b.Property<Guid>("AddedById")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("added_by_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("EditionId", "PersonId");
+
+                    b.HasIndex("EditionId")
+                        .HasDatabaseName("IX_edition_reception_staff_edition_id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("edition_reception_staff", (string)null);
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.StaffArea", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1019,32 +1051,6 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.ToTable("promotion_code_redemptions", (string)null);
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Registration.Entities.TicketPerk", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("tenant_id");
-
-                    b.Property<Guid>("TicketTypeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId");
-
-                    b.HasIndex("TicketTypeId");
-
-                    b.ToTable("ticket_perks", (string)null);
-                });
-
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Entities.TicketType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1053,6 +1059,11 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.Property<string>("AllowedCategories")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("allowed_categories");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(10000)
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("description");
 
                     b.Property<Guid>("EditionId")
                         .HasColumnType("uniqueidentifier")
@@ -1211,15 +1222,55 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("TenantId")
+                    b.HasKey("Id");
+
+                    b.ToTable("domain_event_log", (string)null);
+                });
+
+            modelBuilder.Entity("ConventionSystem.Infrastructure.Persistence.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("tenant_id");
+                        .HasDefaultValueSql("newsequentialid()");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("error");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("ProcessAfter")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("process_after");
+
+                    b.Property<DateTimeOffset?>("ProcessedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("processed_at");
+
+                    b.Property<int>("RetryCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("retry_count");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TenantId");
+                    b.HasIndex("ProcessedAt")
+                        .HasDatabaseName("ix_outbox_messages_processed_at");
 
-                    b.ToTable("domain_event_log", (string)null);
+                    b.ToTable("outbox_messages", (string)null);
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Aggregates.Edition", b =>
@@ -1271,6 +1322,15 @@ namespace ConventionSystem.Infrastructure.Migrations
                 {
                     b.HasOne("ConventionSystem.Domain.Convention.Aggregates.Edition", null)
                         .WithMany("ScheduleDays")
+                        .HasForeignKey("EditionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.ReceptionStaff", b =>
+                {
+                    b.HasOne("ConventionSystem.Domain.Convention.Aggregates.Edition", null)
+                        .WithMany("ReceptionStaff")
                         .HasForeignKey("EditionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1440,15 +1500,6 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ConventionSystem.Domain.Registration.Entities.TicketPerk", b =>
-                {
-                    b.HasOne("ConventionSystem.Domain.Registration.Entities.TicketType", null)
-                        .WithMany("Perks")
-                        .HasForeignKey("TicketTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ConventionSystem.Domain.Staff.Aggregates.Shift", b =>
                 {
                     b.OwnsOne("ConventionSystem.Domain.Staff.ValueObjects.StaffingRequirement", "StaffingRequirement", b1 =>
@@ -1518,6 +1569,8 @@ namespace ConventionSystem.Infrastructure.Migrations
                 {
                     b.Navigation("Categories");
 
+                    b.Navigation("ReceptionStaff");
+
                     b.Navigation("ScheduleDays");
 
                     b.Navigation("StaffAreas");
@@ -1546,11 +1599,6 @@ namespace ConventionSystem.Infrastructure.Migrations
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.StaffApplication", b =>
                 {
                     b.Navigation("Availabilities");
-                });
-
-            modelBuilder.Entity("ConventionSystem.Domain.Registration.Entities.TicketType", b =>
-                {
-                    b.Navigation("Perks");
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Staff.Aggregates.Shift", b =>

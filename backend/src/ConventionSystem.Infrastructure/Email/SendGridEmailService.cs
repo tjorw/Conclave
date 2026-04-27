@@ -1,108 +1,15 @@
-using ConventionSystem.Application.Common;
 using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
 namespace ConventionSystem.Infrastructure.Email;
 
-public sealed class SendGridEmailService(IOptions<EmailOptions> options) : IEmailService
+internal sealed class SendGridEmailService(IOptions<EmailOptions> options) : IDirectEmailSender
 {
     private readonly EmailOptions _options = options.Value;
 
-    public Task SendVisitorRegistrationConfirmedAsync(string toEmail, string toName, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.VisitorRegistrationConfirmed();
-        return SendAsync(toEmail, toName, subject, body, ct);
-    }
-
-    public Task SendStaffApplicationReceivedAsync(string toEmail, string toName, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.StaffApplicationReceived();
-        return SendAsync(toEmail, toName, subject, body, ct);
-    }
-
-    public Task SendStaffApplicationAcceptedAsync(string toEmail, string toName, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.StaffApplicationAccepted();
-        return SendAsync(toEmail, toName, subject, body, ct);
-    }
-
-    public Task SendStaffApplicationRejectedAsync(string toEmail, string toName, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.StaffApplicationRejected();
-        return SendAsync(toEmail, toName, subject, body, ct);
-    }
-
-    public Task SendEventApprovedAsync(string toEmail, string toName, string eventTitle, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.EventApproved(eventTitle);
-        return SendAsync(toEmail, toName, subject, body, ct);
-    }
-
-    public Task SendEventRejectedAsync(string toEmail, string toName, string eventTitle, string comment, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.EventRejected(eventTitle, comment);
-        return SendAsync(toEmail, toName, subject, body, ct);
-    }
-
-    public Task SendPasswordResetAsync(string toEmail, string toName, string resetLink, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.PasswordReset(resetLink);
-        return SendAsync(toEmail, toName, subject, body, ct);
-    }
-
-    public Task SendEmailConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.EmailConfirmation(confirmLink);
-        return SendAsync(toEmail, toName, subject, body, ct);
-    }
-
-    public Task SendResendConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.ResendConfirmation(confirmLink);
-        return SendAsync(toEmail, toName, subject, body, ct);
-    }
-
-    public Task SendPasswordChangedAsync(string toEmail, string toName, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.PasswordChanged();
-        return SendAsync(toEmail, toName, subject, body, ct);
-    }
-
-    public Task SendTenantSignupWelcomeAsync(
-        string toEmail,
-        string toName,
-        string organizationName,
-        string subdomain,
-        string temporaryPassword,
-        string confirmLink,
-        CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.TenantSignupWelcome(
-            organizationName,
-            subdomain,
-            temporaryPassword,
-            confirmLink);
-        return SendAsync(toEmail, toName, subject, body, ct);
-    }
-
-    public Task SendTenantProvisionedWelcomeAsync(
-        string toEmail,
-        string toName,
-        string organizationName,
-        string subdomain,
-        string temporaryPassword,
-        string loginLink,
-        CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.TenantProvisionedWelcome(
-            organizationName,
-            subdomain,
-            toEmail,
-            temporaryPassword,
-            loginLink);
-        return SendAsync(toEmail, toName, subject, body, ct);
-    }
+    public Task SendAsync(EmailPayload payload, CancellationToken ct = default)
+        => SendAsync(payload.To, payload.ToName, payload.Subject, payload.Body, ct);
 
     private async Task SendAsync(string toEmail, string toName, string subject, string body, CancellationToken ct)
     {

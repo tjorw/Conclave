@@ -26,10 +26,6 @@ public sealed class CollectTicketHandler(
         ticket.Collect(performedById);
         await ticketRepository.SaveAsync(ct);
 
-        var perks = ticketType.Perks
-            .Select(perk => perk.Description)
-            .ToList();
-
-        return new CollectTicketResult(ticket.Id.Value, perks);
+        return new CollectTicketResult(ticket.Id.Value, ticketType.Description);
     }
 }

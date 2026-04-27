@@ -74,7 +74,7 @@ public class SubmitVisitorRegistrationHandlerTests
 
         await _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, ticketType.Id.Value), default);
 
-        await _ticketRepo.Received(1).AddAsync(Arg.Any<Domain.Registration.Aggregates.Ticket>(), Arg.Any<CancellationToken>());
+        _ticketRepo.Received(1).Add(Arg.Any<Domain.Registration.Aggregates.Ticket>());
         await _registrationRepo.Received(1).AddAndSaveAsync(Arg.Any<Domain.Registration.Aggregates.VisitorRegistration>(), Arg.Any<CancellationToken>());
     }
 
@@ -146,7 +146,7 @@ public class SubmitVisitorRegistrationHandlerTests
 
         Domain.Registration.Aggregates.Ticket? createdTicket = null;
         _ticketRepo
-            .When(repo => repo.AddAsync(Arg.Any<Domain.Registration.Aggregates.Ticket>(), Arg.Any<CancellationToken>()))
+            .When(repo => repo.Add(Arg.Any<Domain.Registration.Aggregates.Ticket>()))
             .Do(call => createdTicket = call.ArgAt<Domain.Registration.Aggregates.Ticket>(0));
 
         await _handler.Handle(new SubmitVisitorRegistrationCommand(edition.Id.Value, freeTicketType.Id.Value), default);

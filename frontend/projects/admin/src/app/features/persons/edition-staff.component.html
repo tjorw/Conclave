@@ -99,6 +99,10 @@
             <th><button type="button" class="sort-header" (click)="setSort('email')">E-post <mat-icon>{{ sortIcon('email') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="setSort('phone')">Telefon <mat-icon>{{ sortIcon('phone') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="setSort('status')">Status <mat-icon>{{ sortIcon('status') }}</mat-icon></button></th>
+            @if (hasStaffTicketTypes()) {
+              <th>Funktionärsbiljett</th>
+              <th></th>
+            }
           </tr>
         </thead>
         <tbody>
@@ -108,10 +112,40 @@
               <td>{{ s.email }}</td>
               <td class="muted">{{ s.phone || '–' }}</td>
               <td class="muted">{{ applicationStatusLabel(s.applicationStatus) }}</td>
+              @if (hasStaffTicketTypes()) {
+                <td class="ticket-cell">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>{{ currentTicketLabel(s.personId) }}</mat-label>
+                    <mat-select
+                      [value]="ticketSelection()[s.personId] ?? null"
+                      (selectionChange)="setTicketSelection(s.personId, $event.value)">
+                      <mat-option [value]="null">Ingen biljett</mat-option>
+                      @for (ticketType of staffTicketTypes(); track ticketType.id) {
+                        <mat-option [value]="ticketType.id">
+                          {{ ticketType.name }} · {{ ticketTypePriceLabel(ticketType.price) }}
+                        </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </td>
+                <td class="action-cell">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    (click)="saveTicket(s.personId)"
+                    [disabled]="savingPersonId() !== null">
+                    @if (savingPersonId() === s.personId) {
+                      <mat-spinner diameter="18" />
+                    } @else {
+                      Spara
+                    }
+                  </button>
+                </td>
+              }
             </tr>
           } @empty {
             <tr>
-              <td colspan="4" class="empty-cell">
+              <td [attr.colspan]="hasStaffTicketTypes() ? 6 : 4" class="empty-cell">
                 @if (searchQuery()) {
                   Inga funktionärer matchar sökningen.
                 } @else {

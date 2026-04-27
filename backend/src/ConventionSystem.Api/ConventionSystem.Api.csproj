@@ -34,6 +34,7 @@
       <FrontendPublicFiles Include="$(FrontendDistRoot)\public\browser\**\*" />
       <FrontendAdminFiles Include="$(FrontendDistRoot)\admin\browser\**\*" />
       <FrontendPortalFiles Include="$(FrontendDistRoot)\portal\browser\**\*" />
+      <FrontendReceptionFiles Include="$(FrontendDistRoot)\reception\browser\**\*" />
 
       <ResolvedFileToPublish Include="@(FrontendPublicFiles)">
         <RelativePath>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
@@ -47,6 +48,11 @@
 
       <ResolvedFileToPublish Include="@(FrontendPortalFiles)">
         <RelativePath>wwwroot\portal\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <ResolvedFileToPublish Include="@(FrontendReceptionFiles)">
+        <RelativePath>wwwroot\reception\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
     </ItemGroup>

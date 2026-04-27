@@ -1,0 +1,188 @@
+<div class="page-header">
+  <h1 class="page-title">Walk-up</h1>
+  @if (editionContext.activeEdition(); as edition) {
+    <p class="page-subtitle">{{ edition.name }}</p>
+  }
+</div>
+
+<!-- Steg-indikator -->
+<div class="steps">
+  <div class="step" [class.step--active]="step() === 'person'" [class.step--done]="step() !== 'person'">
+    <span class="step-num">1</span><span class="step-label">Person</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="step" [class.step--active]="step() === 'tickettype'" [class.step--done]="step() === 'confirm' || step() === 'done'">
+    <span class="step-num">2</span><span class="step-label">Biljett</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="step" [class.step--active]="step() === 'confirm'" [class.step--done]="step() === 'done'">
+    <span class="step-num">3</span><span class="step-label">Bekräfta</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="step" [class.step--active]="step() === 'done'">
+    <span class="step-num">4</span><span class="step-label">Klar</span>
+  </div>
+</div>
+
+<!-- Steg 1: Sök eller skapa person -->
+@if (step() === 'person') {
+  @if (!showCreateForm()) {
+    <div class="search-bar">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Sök på namn eller e-post</mat-label>
+        <input matInput [formControl]="searchControl" autocomplete="off" />
+        @if (searching()) {
+          <mat-spinner matSuffix diameter="20"></mat-spinner>
+        }
+      </mat-form-field>
+    </div>
+
+    @if (noSearchResults()) {
+      <p class="hint-text">Ingen träff – skapa ett nytt konto nedan.</p>
+    }
+
+    @for (person of searchResults(); track person.personId) {
+      <mat-card class="person-card" (click)="selectExistingPerson(person)">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>person</mat-icon>
+          <mat-card-title>{{ person.name }}</mat-card-title>
+          <mat-card-subtitle>{{ person.email }}</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+    }
+
+    <button mat-stroked-button class="create-btn" (click)="showCreateForm.set(true)">
+      <mat-icon>person_add</mat-icon>
+      Skapa ny person
+    </button>
+  } @else {
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>Ny person</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="createForm" (ngSubmit)="submitCreatePerson()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Namn</mat-label>
+            <input matInput formControlName="name" autocomplete="off" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>E-post</mat-label>
+            <input matInput formControlName="email" type="email" autocomplete="off" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Telefon (valfritt)</mat-label>
+            <input matInput formControlName="phone" autocomplete="off" />
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-flat-button color="primary" type="submit"
+              [disabled]="createForm.invalid || creating()">
+              @if (creating()) { <mat-spinner diameter="20"></mat-spinner> }
+              @else { Skapa och välj }
+            </button>
+            <button mat-stroked-button type="button" (click)="showCreateForm.set(false)">Avbryt</button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+}
+
+<!-- Steg 2: Välj biljetttyp -->
+@if (step() === 'tickettype') {
+  <p class="step-context">Person: <strong>{{ selectedPerson()?.name }}</strong></p>
+
+  @if (loadingTicketTypes()) {
+    <div class="loading-row"><mat-spinner diameter="24"></mat-spinner><span>Laddar biljetttyper…</span></div>
+  } @else if (ticketTypes().length === 0) {
+    <p class="hint-text">Inga tillgängliga biljetttyper för denna upplaga.</p>
+  } @else {
+    <div class="ticket-type-grid">
+      @for (tt of ticketTypes(); track tt.id) {
+        <mat-card class="ticket-type-card" (click)="selectTicketType(tt)">
+          <mat-card-header>
+            <mat-card-title>{{ tt.name }}</mat-card-title>
+            <mat-card-subtitle>{{ tt.price === 0 ? 'Gratis' : tt.price + ' kr' }}</mat-card-subtitle>
+          </mat-card-header>
+          @if (tt.description) {
+            <mat-card-content>
+              <p class="tt-desc">{{ tt.description }}</p>
+            </mat-card-content>
+          }
+        </mat-card>
+      }
+    </div>
+  }
+
+  <button mat-stroked-button class="back-btn" (click)="backToPerson()">
+    <mat-icon>arrow_back</mat-icon> Tillbaka
+  </button>
+}
+
+<!-- Steg 3: Bekräfta -->
+@if (step() === 'confirm') {
+  <mat-card class="summary-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>receipt_long</mat-icon>
+      <mat-card-title>Bekräfta walk-up</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="summary-row">
+        <mat-icon>person</mat-icon>
+        <span>{{ selectedPerson()?.name }}</span>
+      </div>
+      <div class="summary-row">
+        <mat-icon>confirmation_number</mat-icon>
+        <span>{{ selectedTicketType()?.name }}</span>
+      </div>
+      <div class="summary-row">
+        <mat-icon>payments</mat-icon>
+        <span>{{ selectedTicketType()?.price === 0 ? 'Gratis' : selectedTicketType()?.price + ' kr – kontant/Swish' }}</span>
+      </div>
+
+      @if (registerError()) {
+        <p class="error-text">{{ registerError() }}</p>
+      }
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-flat-button color="primary"
+        (click)="register()" [disabled]="registering()">
+        @if (registering()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <ng-container>
+            <mat-icon>how_to_reg</mat-icon> Registrera och checka in
+          </ng-container>
+        }
+      </button>
+      <button mat-stroked-button (click)="backToTicketType()" [disabled]="registering()">
+        <mat-icon>arrow_back</mat-icon> Tillbaka
+      </button>
+    </mat-card-actions>
+  </mat-card>
+}
+
+<!-- Steg 4: Klar -->
+@if (step() === 'done') {
+  <mat-card class="done-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar class="done-icon">check_circle</mat-icon>
+      <mat-card-title>Incheckad!</mat-card-title>
+      <mat-card-subtitle>{{ selectedPerson()?.name }} har checkats in</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      @if (completedDescription()) {
+        <p class="perks-label">{{ completedDescription() }}</p>
+      }
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-flat-button color="primary" (click)="reset()">
+        <mat-icon>add</mat-icon>
+        Ny walk-up
+      </button>
+    </mat-card-actions>
+  </mat-card>
+}
