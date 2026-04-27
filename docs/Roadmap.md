@@ -119,3 +119,10 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - [ ] `R-CO08` Frontend admin: visa/justera godkänt antal, skicka inbjudningar, avbryta inbjudningar, ta bort medarrangörer
 
 **Implementationsordning:** R-CO03 → R-CO04 → R-CO05 → R-CO06 → R-CO07 → R-CO08
+
+
+## Diverse
+- Flytta ansvariga till Reception. De behöver olika info verktyg om ansvariga, bemanning och sessioner.
+- Personregister, ingen inlinehantering i listan. Gör detaljsida.
+- Ledning, ta bort huvudansvariga från edition. Man skall skapa egna ansvar och knyta till edition.
+- Bemanning, ta bort, redigera funktionär.

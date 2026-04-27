@@ -65,6 +65,10 @@
           <mat-icon matListItemIcon>supervisor_account</mat-icon>
           <span matListItemTitle>{{ NAV.responsibles }}</span>
         </a>
+        <a mat-list-item routerLink="persons/reception-staff" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>local_convenience_store</mat-icon>
+          <span matListItemTitle>{{ NAV.receptionStaff }}</span>
+        </a>        
       }
       
       <mat-divider />
@@ -111,10 +115,6 @@
         <a mat-list-item routerLink="staff-applications" routerLinkActive="active-link">
           <mat-icon matListItemIcon>assignment</mat-icon>
           <span matListItemTitle>{{ NAV.staffApplications }}</span>
-        </a>
-        <a mat-list-item routerLink="persons/reception-staff" routerLinkActive="active-link">
-          <mat-icon matListItemIcon>local_convenience_store</mat-icon>
-          <span matListItemTitle>{{ NAV.receptionStaff }}</span>
         </a>
       }
       <mat-divider />
