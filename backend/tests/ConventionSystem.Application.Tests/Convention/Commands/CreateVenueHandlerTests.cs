@@ -1,4 +1,5 @@
 ﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateVenue;
 using ConventionSystem.Domain.Convention.Ids;
@@ -89,7 +90,7 @@ public class CreateVenueHandlerTests
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new CreateVenueCommand(edition.Id.Value, "Sal", "Byggnad", null), default));
     }
 }

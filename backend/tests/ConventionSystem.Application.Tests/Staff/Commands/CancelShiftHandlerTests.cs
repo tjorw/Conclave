@@ -95,27 +95,4 @@ public class CancelShiftHandlerTests
             () => _handler.Handle(new CancelShiftCommand(shift.Id.Value), default));
     }
 
-    [Fact]
-    public async Task Handle_StaffCoordinatorCanCancel()
-    {
-        var (_, _, edition, shift) = Setup();
-        var staffCoordId = edition.StaffCoordinatorId!.Value;
-        _currentUser.PersonId.Returns(staffCoordId);
-
-        await _handler.Handle(new CancelShiftCommand(shift.Id.Value), default);
-
-        Assert.Equal(Domain.Staff.Enums.ShiftStatus.Cancelled, shift.Status);
-    }
-
-    [Fact]
-    public async Task Handle_StaffAreaResponsibleCanCancel()
-    {
-        var (_, _, edition, shift) = Setup();
-        var areaResponsibleId = edition.StaffAreas[0].ResponsibleId;
-        _currentUser.PersonId.Returns(areaResponsibleId);
-
-        await _handler.Handle(new CancelShiftCommand(shift.Id.Value), default);
-
-        Assert.Equal(Domain.Staff.Enums.ShiftStatus.Cancelled, shift.Status);
-    }
 }

@@ -1,4 +1,5 @@
 ﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.UpdateEdition;
 using ConventionSystem.Domain.Convention.Ids;
@@ -88,7 +89,7 @@ public class UpdateEditionHandlerTests
         var nonAdmin = convention.CreatePerson("NonAdmin", "na@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new UpdateEditionCommand(
                 edition.Id.Value, "Namn",
                 new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3),

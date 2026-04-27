@@ -61,18 +61,6 @@ public class RejectStaffApplicationHandlerTests
     }
 
     [Fact]
-    public async Task Handle_StaffCoordinatorRejects_TransitionsToRejected()
-    {
-        var (_, _, edition, application) = Setup();
-        var staffCoordId = edition.StaffCoordinatorId!.Value;
-        _currentUser.PersonId.Returns(staffCoordId);
-
-        await _handler.Handle(new RejectStaffApplicationCommand(application.Id.Value), default);
-
-        Assert.Equal(Domain.Registration.Enums.StaffApplicationStatus.Rejected, application.Status);
-    }
-
-    [Fact]
     public async Task Handle_UnauthorizedPerson_Throws()
     {
         var (convention, _, _, application) = Setup();

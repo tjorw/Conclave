@@ -1,4 +1,5 @@
 ﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CloseRegistration;
 using ConventionSystem.Domain.Convention.Enums;
@@ -109,7 +110,7 @@ public class CloseRegistrationHandlerTests
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new CloseRegistrationCommand(edition.Id.Value, RegistrationType.Staff), default));
     }
 

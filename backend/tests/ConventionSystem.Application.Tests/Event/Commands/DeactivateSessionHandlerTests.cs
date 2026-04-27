@@ -27,7 +27,7 @@ public class DeactivateSessionHandlerTests
         _handler = new DeactivateSessionHandler(_eventRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
-    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person responsible,
+    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person admin,
              Domain.Convention.Aggregates.Edition edition, Domain.Event.Aggregates.Event ev,
              SessionId sessionId) Setup()
     {
@@ -56,14 +56,14 @@ public class DeactivateSessionHandlerTests
         _editionRepo.GetByIdWithCategoriesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
 
-        return (convention, eventCoord, edition, ev, session.Id);
+        return (convention, admin, edition, ev, session.Id);
     }
 
     [Fact]
     public async Task Handle_ValidCommand_SessionBecomesInactive()
     {
-        var (_, responsible, _, ev, sessionId) = Setup();
-        _currentUser.PersonId.Returns(responsible.Id);
+        var (_, admin, _, ev, sessionId) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new DeactivateSessionCommand(ev.Id.Value, sessionId.Value), default);
 
@@ -73,9 +73,9 @@ public class DeactivateSessionHandlerTests
     [Fact]
     public async Task Handle_ValidCommand_RaisesSessionDeactivatedEvent()
     {
-        var (_, responsible, _, ev, sessionId) = Setup();
+        var (_, admin, _, ev, sessionId) = Setup();
         ev.ClearDomainEvents();
-        _currentUser.PersonId.Returns(responsible.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new DeactivateSessionCommand(ev.Id.Value, sessionId.Value), default);
 
@@ -85,10 +85,10 @@ public class DeactivateSessionHandlerTests
     [Fact]
     public async Task Handle_AlreadyInactive_Throws()
     {
-        var (_, responsible, _, ev, sessionId) = Setup();
-        ev.DeactivateSession(sessionId, responsible.Id);
+        var (_, admin, _, ev, sessionId) = Setup();
+        ev.DeactivateSession(sessionId, admin.Id);
         _eventRepo.GetByIdWithSessionsAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
-        _currentUser.PersonId.Returns(responsible.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<SessionAlreadyInactiveException>(
             () => _handler.Handle(new DeactivateSessionCommand(ev.Id.Value, sessionId.Value), default));

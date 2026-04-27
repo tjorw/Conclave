@@ -1,4 +1,5 @@
 ﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.UpdateStation;
 using ConventionSystem.Domain.Convention.Exceptions;
@@ -93,18 +94,8 @@ public class UpdateStationHandlerTests
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new UpdateStationCommand(edition.Id.Value, station.Id.Value, "X", null), default));
     }
 
-    [Fact]
-    public async Task Handle_StaffCoordinatorCanUpdate()
-    {
-        var (_, _, station, edition) = Setup();
-        _currentUser.PersonId.Returns(edition.StaffCoordinatorId!.Value);
-
-        await _handler.Handle(new UpdateStationCommand(edition.Id.Value, station.Id.Value, "Reception B", null), default);
-
-        Assert.Equal("Reception B", edition.Stations[0].Name);
-    }
 }

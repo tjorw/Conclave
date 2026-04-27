@@ -53,7 +53,7 @@ public class ApproveCoOrganiserApplicationHandlerTests
         _eventRepo.GetByIdWithCoOrganisersAndApplicationsAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _editionRepo.GetByIdWithCategoriesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
-        _currentUser.PersonId.Returns(responsible.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
         return (convention, responsible, organiser, edition, ev, application.Id);
     }

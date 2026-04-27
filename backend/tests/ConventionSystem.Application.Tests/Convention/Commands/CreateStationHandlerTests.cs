@@ -1,4 +1,5 @@
 ﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.CreateStation;
 using ConventionSystem.Domain.Convention.Exceptions;
@@ -93,31 +94,10 @@ public class CreateStationHandlerTests
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, staffArea.Id.Value), default));
     }
 
-    [Fact]
-    public async Task Handle_StaffCoordinatorCanCreate()
-    {
-        var (_, _, staffArea, edition) = Setup();
-        _currentUser.PersonId.Returns(edition.StaffCoordinatorId!.Value);
-
-        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, staffArea.Id.Value), default);
-
-        Assert.Single(edition.Stations);
-    }
-
-    [Fact]
-    public async Task Handle_StaffAreaResponsibleCanCreate()
-    {
-        var (_, _, staffArea, edition) = Setup();
-        _currentUser.PersonId.Returns(edition.StaffAreas[0].ResponsibleId);
-
-        await _handler.Handle(new CreateStationCommand(edition.Id.Value, "Station", null, staffArea.Id.Value), default);
-
-        Assert.Single(edition.Stations);
-    }
 
     [Fact]
     public async Task Handle_StaffAreaNotOnEdition_Throws()

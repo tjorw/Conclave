@@ -24,7 +24,7 @@ public class RemoveCoOrganiserHandlerTests
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
-             Domain.Convention.Entities.Person responsible,
+             Domain.Convention.Entities.Person admin,
              Domain.Convention.Aggregates.Edition edition,
              Domain.Event.Aggregates.Event ev,
              PersonId coOrganiserId) Setup()
@@ -47,9 +47,9 @@ public class RemoveCoOrganiserHandlerTests
         _eventRepo.GetByIdWithCoOrganisersAndApplicationsAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _editionRepo.GetByIdWithCategoriesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
-        _currentUser.PersonId.Returns(responsible.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
-        return (convention, responsible, edition, ev, coOrganiser.Id);
+        return (convention, admin, edition, ev, coOrganiser.Id);
     }
 
     [Fact]

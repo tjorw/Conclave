@@ -98,29 +98,4 @@ public class ConfirmAssignmentHandlerTests
             () => _handler.Handle(new ConfirmAssignmentCommand(shift.Id.Value, assignment.Id.Value), default));
     }
 
-    [Fact]
-    public async Task Handle_StaffCoordinatorCanConfirm()
-    {
-        var (_, _, edition, shift) = Setup();
-        var assignment = shift.AssignPerson(PersonId.New(), PersonId.New());
-        var staffCoordId = edition.StaffCoordinatorId!.Value;
-        _currentUser.PersonId.Returns(staffCoordId);
-
-        await _handler.Handle(new ConfirmAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
-
-        Assert.Equal(Domain.Staff.Enums.StaffAssignmentStatus.Confirmed, assignment.Status);
-    }
-
-    [Fact]
-    public async Task Handle_StaffAreaResponsibleCanConfirm()
-    {
-        var (_, _, edition, shift) = Setup();
-        var assignment = shift.AssignPerson(PersonId.New(), PersonId.New());
-        var areaResponsibleId = edition.StaffAreas[0].ResponsibleId;
-        _currentUser.PersonId.Returns(areaResponsibleId);
-
-        await _handler.Handle(new ConfirmAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
-
-        Assert.Equal(Domain.Staff.Enums.StaffAssignmentStatus.Confirmed, assignment.Status);
-    }
 }

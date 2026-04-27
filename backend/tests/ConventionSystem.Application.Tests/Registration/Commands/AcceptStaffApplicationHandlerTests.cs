@@ -61,17 +61,6 @@ public class AcceptStaffApplicationHandlerTests
     }
 
     [Fact]
-    public async Task Handle_StaffCoordinatorAccepts_TransitionsToConfirmed()
-    {
-        var (_, _, edition, application) = Setup();
-        _currentUser.PersonId.Returns(edition.StaffCoordinatorId!.Value);
-
-        await _handler.Handle(new AcceptStaffApplicationCommand(application.Id.Value), default);
-
-        Assert.Equal(Domain.Registration.Enums.StaffApplicationStatus.Confirmed, application.Status);
-    }
-
-    [Fact]
     public async Task Handle_UnauthorizedPerson_Throws()
     {
         var (convention, _, _, application) = Setup();

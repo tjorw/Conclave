@@ -10,7 +10,7 @@ public static class ApplicationAuthorization
     public static void EnsureConventionAdmin(ConventionAggregate convention, PersonId performedById, string message)
     {
         if (!convention.IsAdministrator(performedById))
-            throw new InvalidOperationException(message);
+            throw new ForbiddenException(message);
     }
 
     public static void EnsureReceptionAccess(

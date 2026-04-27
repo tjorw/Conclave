@@ -26,7 +26,7 @@ public class UpdateSessionHandlerTests
         _handler = new UpdateSessionHandler(_eventRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
-    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person responsible,
+    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person admin,
              Domain.Convention.Aggregates.Edition edition, Domain.Event.Aggregates.Event ev,
              VenueId venueId, SessionId sessionId) Setup()
     {
@@ -39,14 +39,14 @@ public class UpdateSessionHandlerTests
         var period = new DatePeriod(new DateOnly(2027, 3, 1), new DateOnly(2027, 3, 3));
         var edition = convention.CreateEdition("Konvent 2027", period, staffCoord.Id, eventCoord.Id);
         edition.Publish(admin.Id);
-        var category = edition.CreateCategory("Rollspel", eventCoord.Id);
+        var category = edition.CreateCategory("Rollspel", admin.Id);
         var venue = edition.CreateVenue("Sal A", "Byggnad 1");
 
         var ev = new Domain.Event.Aggregates.Event(EventId.New(), edition.Id, category.Id, organiser.Id);
         ev.EditTitle("Rollspel");
         ev.EditDescription("Beskrivning");
         ev.SubmitForReview();
-        ev.Approve(eventCoord.Id);
+        ev.Approve(admin.Id);
         var session = ev.CreateSession(venue.Id,
             new Domain.Event.ValueObjects.TimeSlot(
                 new DateTime(2027, 3, 1, 10, 0, 0),
@@ -57,14 +57,14 @@ public class UpdateSessionHandlerTests
         _editionRepo.GetByIdWithCategoriesAndVenuesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
 
-        return (convention, eventCoord, edition, ev, venue.Id, session.Id);
+        return (convention, admin, edition, ev, venue.Id, session.Id);
     }
 
     [Fact]
     public async Task Handle_ValidCommand_UpdatesSession()
     {
-        var (_, responsible, _, ev, venueId, sessionId) = Setup();
-        _currentUser.PersonId.Returns(responsible.Id);
+        var (_, admin, _, ev, venueId, sessionId) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new UpdateSessionCommand(
             ev.Id.Value, sessionId.Value, venueId.Value,
@@ -81,8 +81,8 @@ public class UpdateSessionHandlerTests
     [Fact]
     public async Task Handle_SessionNotFound_Throws()
     {
-        var (_, responsible, _, ev, venueId, _) = Setup();
-        _currentUser.PersonId.Returns(responsible.Id);
+        var (_, admin, _, ev, venueId, _) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<SessionNotFoundException>(() =>
             _handler.Handle(new UpdateSessionCommand(
@@ -95,8 +95,8 @@ public class UpdateSessionHandlerTests
     [Fact]
     public async Task Handle_VenueNotOnEdition_Throws()
     {
-        var (_, responsible, _, ev, _, sessionId) = Setup();
-        _currentUser.PersonId.Returns(responsible.Id);
+        var (_, admin, _, ev, _, sessionId) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(new UpdateSessionCommand(

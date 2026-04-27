@@ -57,7 +57,7 @@ public class AssignStaffTicketHandlerTests
                 t.PersonId == setup.staffMember.Id &&
                 t.EditionId == setup.edition.Id &&
                 t.TicketTypeId == ticketTypeId &&
-                t.AssignedById == setup.staffCoord.Id &&
+                t.AssignedById == setup.admin.Id &&
                 t.Status == TicketStatus.Reserved));
         await _ticketRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -68,7 +68,7 @@ public class AssignStaffTicketHandlerTests
         var setup = Setup();
         var oldTypeId = TicketTypeId.New();
         var newTypeId = TicketTypeId.New();
-        var currentTicket = new Ticket(TicketId.New(), oldTypeId, setup.staffMember.Id, setup.edition.Id, setup.staffCoord.Id);
+        var currentTicket = new Ticket(TicketId.New(), oldTypeId, setup.staffMember.Id, setup.edition.Id, setup.admin.Id);
         var newTicketType = new TicketType(newTypeId, setup.edition.Id, "Funktionär VIP", 500, TicketTypeCategory.Staff);
 
         _ticketRepo.ListActiveStaffTicketsAsync(setup.edition.Id, Arg.Any<IReadOnlyCollection<PersonId>>(), Arg.Any<CancellationToken>())
@@ -118,7 +118,7 @@ public class AssignStaffTicketHandlerTests
     {
         var setup = Setup();
         var ticketTypeId = TicketTypeId.New();
-        var currentTicket = new Ticket(TicketId.New(), ticketTypeId, setup.staffMember.Id, setup.edition.Id, setup.staffCoord.Id);
+        var currentTicket = new Ticket(TicketId.New(), ticketTypeId, setup.staffMember.Id, setup.edition.Id, setup.admin.Id);
         var ticketType = new TicketType(ticketTypeId, setup.edition.Id, "Funktionär", 0, TicketTypeCategory.Staff);
 
         _ticketRepo.ListActiveStaffTicketsAsync(setup.edition.Id, Arg.Any<IReadOnlyCollection<PersonId>>(), Arg.Any<CancellationToken>())
@@ -139,7 +139,7 @@ public class AssignStaffTicketHandlerTests
     public async Task Handle_NullTicketType_RevokesCurrentWithoutCreatingNew()
     {
         var setup = Setup();
-        var currentTicket = new Ticket(TicketId.New(), TicketTypeId.New(), setup.staffMember.Id, setup.edition.Id, setup.staffCoord.Id);
+        var currentTicket = new Ticket(TicketId.New(), TicketTypeId.New(), setup.staffMember.Id, setup.edition.Id, setup.admin.Id);
 
         _ticketRepo.ListActiveStaffTicketsAsync(setup.edition.Id, Arg.Any<IReadOnlyCollection<PersonId>>(), Arg.Any<CancellationToken>())
             .Returns([currentTicket]);
@@ -183,7 +183,7 @@ public class AssignStaffTicketHandlerTests
             null), default));
     }
 
-    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Aggregates.Edition edition, Domain.Convention.Entities.Person staffCoord, Domain.Convention.Entities.Person staffMember) Setup(bool staffCoordCurrentUser = true)
+    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Aggregates.Edition edition, Domain.Convention.Entities.Person admin, Domain.Convention.Entities.Person staffMember) Setup(bool staffCoordCurrentUser = true)
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
         var admin = convention.RegisterPerson("Admin", "admin@example.com");
@@ -201,8 +201,8 @@ public class AssignStaffTicketHandlerTests
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
         _personRepo.GetByIdAsync(staffMember.Id, Arg.Any<CancellationToken>()).Returns(staffMember);
-        _currentUser.PersonId.Returns(staffCoordCurrentUser ? staffCoord.Id : outsider.Id);
+        _currentUser.PersonId.Returns(staffCoordCurrentUser ? admin.Id : outsider.Id);
 
-        return (convention, edition, staffCoord, staffMember);
+        return (convention, edition, admin, staffMember);
     }
 }

@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.RemoveEdition;
 using ConventionSystem.Domain.Convention.Ids;
@@ -44,13 +45,13 @@ public class RemoveEditionHandlerTests
     }
 
     [Fact]
-    public async Task Handle_PerformerNotAdmin_ThrowsInvalidOperationException()
+    public async Task Handle_PerformerNotAdmin_ThrowsInvalidForbiddenException()
     {
         var (convention, _, edition) = Setup();
         var nonAdmin = convention.CreatePerson("Non Admin", "nonadmin@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new RemoveEditionCommand(edition.Id.Value), default));
     }
 

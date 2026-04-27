@@ -1,4 +1,5 @@
 ﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.UpdateCategory;
 using ConventionSystem.Domain.Convention.Ids;
@@ -87,7 +88,7 @@ public class UpdateCategoryHandlerTests
         var nonAdmin = convention.CreatePerson("NonAdmin", "na@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new UpdateCategoryCommand(
                 edition.Id.Value, Guid.NewGuid(), "Namn", null, null, Guid.NewGuid()), default));
     }

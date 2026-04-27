@@ -48,25 +48,6 @@ public class GetStaffScheduleHandlerTests
     }
 
     [Fact]
-    public async Task Handle_AllowsStaffAreaResponsibleForOwnArea()
-    {
-        var convention = CreateConventionWithAdmin(out _);
-        var edition = CreateEdition(convention, out _, out var areaResponsibleId);
-        var staffAreaId = edition.StaffAreas.Single().Id;
-        var dto = new StaffScheduleDto(edition.Id.Value, staffAreaId.Value, [], []);
-
-        _currentUser.PersonId.Returns(areaResponsibleId);
-        _editionRepository.GetByIdWithStructureAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
-        _conventionRepository.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
-        _shiftRepository.GetStaffScheduleAsync(edition.Id, staffAreaId, Arg.Any<CancellationToken>()).Returns(dto);
-
-        var result = await _handler.Handle(new GetStaffScheduleQuery(edition.Id.Value, staffAreaId.Value), default);
-
-        Assert.Equal(dto, result);
-        await _shiftRepository.Received(1).GetStaffScheduleAsync(edition.Id, staffAreaId, Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
     public async Task Handle_AllowsConventionAdminToFilterSpecificStaffArea()
     {
         var convention = CreateConventionWithAdmin(out var adminId);

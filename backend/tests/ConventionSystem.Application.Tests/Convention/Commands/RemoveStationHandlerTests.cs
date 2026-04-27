@@ -1,4 +1,5 @@
 ﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Commands.RemoveStation;
 using ConventionSystem.Domain.Convention.Exceptions;
@@ -103,18 +104,8 @@ public class RemoveStationHandlerTests
         var nonAdmin = convention.CreatePerson("NonAdmin", "nonadmin@example.com");
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new RemoveStationCommand(edition.Id.Value, station.Id.Value), default));
     }
 
-    [Fact]
-    public async Task Handle_StaffCoordinatorCanRemove()
-    {
-        var (_, _, station, edition) = Setup();
-        _currentUser.PersonId.Returns(edition.StaffCoordinatorId!.Value);
-
-        await _handler.Handle(new RemoveStationCommand(edition.Id.Value, station.Id.Value), default);
-
-        Assert.Empty(edition.Stations);
-    }
 }

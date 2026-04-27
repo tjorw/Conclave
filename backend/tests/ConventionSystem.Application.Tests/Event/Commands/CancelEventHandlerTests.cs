@@ -26,7 +26,7 @@ public class CancelEventHandlerTests
         _handler = new CancelEventHandler(_eventRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
-    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person responsible,
+    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person admin,
              Domain.Convention.Aggregates.Edition edition, Domain.Event.Aggregates.Event ev) Setup()
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
@@ -46,14 +46,14 @@ public class CancelEventHandlerTests
         _editionRepo.GetByIdWithCategoriesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
 
-        return (convention, eventCoord, edition, ev);
-    }
+        return (convention, admin, edition, ev);
+        }
 
     [Fact]
     public async Task Handle_CategoryResponsible_EventBecomesCancelled()
     {
-        var (_, responsible, _, ev) = Setup();
-        _currentUser.PersonId.Returns(responsible.Id);
+        var (_, admin, _, ev) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new CancelEventCommand(ev.Id.Value), default);
 
@@ -63,9 +63,9 @@ public class CancelEventHandlerTests
     [Fact]
     public async Task Handle_ValidCommand_RaisesEventCancelledEvent()
     {
-        var (_, responsible, _, ev) = Setup();
+        var (_, admin, _, ev) = Setup();
         ev.ClearDomainEvents();
-        _currentUser.PersonId.Returns(responsible.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new CancelEventCommand(ev.Id.Value), default);
 
@@ -75,10 +75,10 @@ public class CancelEventHandlerTests
     [Fact]
     public async Task Handle_AlreadyCancelled_Throws()
     {
-        var (_, responsible, _, ev) = Setup();
-        ev.CancelEvent(responsible.Id);
+        var (_, admin, _, ev) = Setup();
+        ev.CancelEvent(admin.Id);
         _eventRepo.GetByIdAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
-        _currentUser.PersonId.Returns(responsible.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<EventAlreadyCancelledException>(
             () => _handler.Handle(new CancelEventCommand(ev.Id.Value), default));

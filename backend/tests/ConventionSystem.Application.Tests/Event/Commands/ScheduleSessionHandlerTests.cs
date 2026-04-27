@@ -25,7 +25,7 @@ public class ScheduleSessionHandlerTests
         _handler = new ScheduleSessionHandler(_eventRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
-    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person responsible,
+    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person admin,
              Domain.Convention.Aggregates.Edition edition, Domain.Event.Aggregates.Event ev,
              VenueId venueId) Setup()
     {
@@ -45,20 +45,20 @@ public class ScheduleSessionHandlerTests
         ev.EditTitle("Rollspel");
         ev.EditDescription("Beskrivning");
         ev.SubmitForReview();
-        ev.Approve(eventCoord.Id);
+        ev.Approve(admin.Id);
 
         _eventRepo.GetByIdWithSessionsAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _editionRepo.GetByIdWithCategoriesAndVenuesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
 
-        return (convention, eventCoord, edition, ev, venue.Id);
+        return (convention, admin, edition, ev, venue.Id);
     }
 
     [Fact]
     public async Task Handle_ValidCommand_ReturnsSessionId()
     {
-        var (_, responsible, _, ev, venueId) = Setup();
-        _currentUser.PersonId.Returns(responsible.Id);
+        var (_, admin, _, ev, venueId) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         var id = await _handler.Handle(new ScheduleSessionCommand(
             ev.Id.Value, venueId.Value,
@@ -72,9 +72,9 @@ public class ScheduleSessionHandlerTests
     [Fact]
     public async Task Handle_ValidCommand_RaisesSessionCreatedEvent()
     {
-        var (_, responsible, _, ev, venueId) = Setup();
+        var (_, admin, _, ev, venueId) = Setup();
         ev.ClearDomainEvents();
-        _currentUser.PersonId.Returns(responsible.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new ScheduleSessionCommand(
             ev.Id.Value, venueId.Value,
@@ -88,8 +88,8 @@ public class ScheduleSessionHandlerTests
     [Fact]
     public async Task Handle_VenueNotOnEdition_Throws()
     {
-        var (_, responsible, _, ev, _) = Setup();
-        _currentUser.PersonId.Returns(responsible.Id);
+        var (_, admin, _, ev, _) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(new ScheduleSessionCommand(

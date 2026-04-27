@@ -25,7 +25,7 @@ public class RejectVersionHandlerTests
         _handler = new RejectVersionHandler(_eventRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
-    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person responsible,
+    private (Domain.Convention.Aggregates.Convention convention, Domain.Convention.Entities.Person admin,
              Domain.Convention.Aggregates.Edition edition, Domain.Event.Aggregates.Event ev) Setup()
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
@@ -48,14 +48,14 @@ public class RejectVersionHandlerTests
         _editionRepo.GetByIdWithCategoriesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
 
-        return (convention, eventCoord, edition, ev);
+        return (convention, admin, edition, ev);
     }
 
     [Fact]
     public async Task Handle_ValidCommand_EventReturnsToDraft()
     {
-        var (_, responsible, _, ev) = Setup();
-        _currentUser.PersonId.Returns(responsible.Id);
+        var (_, admin, _, ev) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new RejectVersionCommand(ev.Id.Value, "Behöver förbättras."), default);
 
@@ -65,8 +65,8 @@ public class RejectVersionHandlerTests
     [Fact]
     public async Task Handle_ValidCommand_CommentIsAdded()
     {
-        var (_, responsible, _, ev) = Setup();
-        _currentUser.PersonId.Returns(responsible.Id);
+        var (_, admin, _, ev) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new RejectVersionCommand(ev.Id.Value, "Behöver förbättras."), default);
 
@@ -77,9 +77,9 @@ public class RejectVersionHandlerTests
     [Fact]
     public async Task Handle_ValidCommand_RaisesEventRejectedEvent()
     {
-        var (_, responsible, _, ev) = Setup();
+        var (_, admin, _, ev) = Setup();
         ev.ClearDomainEvents();
-        _currentUser.PersonId.Returns(responsible.Id);
+        _currentUser.PersonId.Returns(admin.Id);
 
         await _handler.Handle(new RejectVersionCommand(ev.Id.Value, "Kommentar."), default);
 
@@ -89,8 +89,8 @@ public class RejectVersionHandlerTests
     [Fact]
     public async Task Handle_EmptyComment_Throws()
     {
-        var (_, responsible, _, ev) = Setup();
-        _currentUser.PersonId.Returns(responsible.Id);
+        var (_, admin, _, ev) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(new RejectVersionCommand(ev.Id.Value, "  "), default));

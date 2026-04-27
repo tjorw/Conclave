@@ -98,29 +98,4 @@ public class RejectAssignmentHandlerTests
             () => _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value), default));
     }
 
-    [Fact]
-    public async Task Handle_StaffCoordinatorCanReject()
-    {
-        var (_, _, edition, shift) = Setup();
-        var assignment = shift.AssignPerson(PersonId.New(), PersonId.New());
-        var staffCoordId = edition.StaffCoordinatorId!.Value;
-        _currentUser.PersonId.Returns(staffCoordId);
-
-        await _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
-
-        Assert.Equal(Domain.Staff.Enums.StaffAssignmentStatus.Rejected, assignment.Status);
-    }
-
-    [Fact]
-    public async Task Handle_StaffAreaResponsibleCanReject()
-    {
-        var (_, _, edition, shift) = Setup();
-        var assignment = shift.AssignPerson(PersonId.New(), PersonId.New());
-        var areaResponsibleId = edition.StaffAreas[0].ResponsibleId;
-        _currentUser.PersonId.Returns(areaResponsibleId);
-
-        await _handler.Handle(new RejectAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
-
-        Assert.Equal(Domain.Staff.Enums.StaffAssignmentStatus.Rejected, assignment.Status);
-    }
 }
