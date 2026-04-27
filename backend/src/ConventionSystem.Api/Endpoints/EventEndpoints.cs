@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Event.Commands.AddCoOrganiser;
+using ConventionSystem.Application.Event.Commands.RemoveCoOrganiser;
 using ConventionSystem.Application.Event.Commands.AddEventComment;
 using ConventionSystem.Application.Event.Commands.AcknowledgeEventComment;
 using ConventionSystem.Application.Event.Commands.ApproveCoOrganiserApplication;
@@ -213,6 +214,13 @@ public static class EventEndpoints
             async (Guid eventId, Guid applicationId, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new CancelCoOrganiserApplicationCommand(eventId, applicationId), ct);
+                return Results.NoContent();
+            });
+
+        groups.Admin.MapDelete("/events/{eventId:guid}/co-organisers/{personId:guid}",
+            async (Guid eventId, Guid personId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveCoOrganiserCommand(eventId, personId), ct);
                 return Results.NoContent();
             });
     }

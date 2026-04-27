@@ -129,6 +129,12 @@ export class EventService {
     );
   }
 
+  removeCoOrganiser(eventId: string, personId: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/co-organisers/${personId}`
+    );
+  }
+
   addEventComment(eventId: string, comment: string) {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/events/${eventId}/comments`,

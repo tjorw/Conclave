@@ -82,6 +82,11 @@ public sealed class CoOrganiserEmailRequiredException()
         "E-postadress för medarrangör måste anges.",
         "coorganiser_email_required");
 
+public sealed class CoOrganiserNotFoundException()
+    : DomainRuleViolationException(
+        "Medarrangören hittades inte.",
+        "coorganiser_not_found");
+
 public sealed class SessionInactiveCannotEditException()
     : DomainRuleViolationException(
         "Kan inte redigera en inaktiv session.",

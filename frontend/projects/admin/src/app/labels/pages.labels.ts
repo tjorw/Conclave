@@ -12,6 +12,7 @@ export const EVENT_DETAIL = {
   noComments:              'Inga obehandlade kommentarer.',
   detailsTab:              'Detaljer',
   scheduleTab:             'Schema',
+  coOrganisersTab:         'Medarrangörer',
   titlePlaceholder:        'Evenemangets titel',
   descriptionPlaceholder:  'Beskriv evenemanget…',
   dropInPlaceholder:       'Beskriv hur drop-in fungerar',

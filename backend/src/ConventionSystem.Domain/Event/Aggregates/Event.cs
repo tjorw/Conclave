@@ -344,6 +344,15 @@ public sealed class Event : AggregateRoot
         return email.Trim().ToUpperInvariant();
     }
 
+    public void RemoveCoOrganiser(PersonId personId, PersonId removedById)
+    {
+        var coOrganiser = _coOrganisers.FirstOrDefault(c => c.PersonId == personId)
+            ?? throw new CoOrganiserNotFoundException();
+
+        _coOrganisers.Remove(coOrganiser);
+        RaiseDomainEvent(new CoOrganiserRemoved(Id, personId, removedById, DateTimeOffset.UtcNow));
+    }
+
     public bool IsOrganiser(PersonId personId)
         => LeadOrganiserId == personId || _coOrganisers.Any(c => c.PersonId == personId);
 }

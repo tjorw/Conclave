@@ -567,6 +567,23 @@ export class EventDetailComponent implements OnInit {
     });
   }
 
+  removeCoOrganiser(personId: string): void {
+    const ev = this.event();
+    if (!ev || this.saving()) return;
+
+    this.openConfirm({
+      title: 'Ta bort medarrangör',
+      message: 'Är du säker på att du vill ta bort medarrangören från evenemanget?',
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+      this.saving.set(true);
+      this.svc.removeCoOrganiser(ev.id, personId).subscribe({
+        next: () => { this.saving.set(false); this.reload(); },
+        error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, 'Kunde inte ta bort medarrangören')); },
+      });
+    });
+  }
+
   registrationLabel(type: string): string {
     return REGISTRATION_KIND_LABEL[type] ?? type;
   }

@@ -70,6 +70,12 @@ public record CoOrganiserApplicationCancelled(
     PersonId CancelledById,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
+public record CoOrganiserRemoved(
+    EventId EventId,
+    PersonId PersonId,
+    PersonId RemovedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public record SessionCreated(
     EventId EventId,
     SessionId SessionId,
