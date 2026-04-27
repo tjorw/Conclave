@@ -69,3 +69,28 @@ html, body {
 
 .no-pad { padding: 0; overflow-x: auto; }
 .muted { color: #999; }
+
+.sort-header {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  text-transform: inherit;
+  letter-spacing: inherit;
+
+  mat-icon {
+    color: #bbb;
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+  }
+
+  &:hover mat-icon { color: #777; }
+}

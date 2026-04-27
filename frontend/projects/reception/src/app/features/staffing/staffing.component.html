@@ -1,0 +1,121 @@
+<div class="page-header">
+  <h1 class="page-title">Bemanning</h1>
+  <p class="page-subtitle">
+    @if (editionContext.activeEdition(); as e) {
+      Bemanningsschema för <strong>{{ e.name }}</strong>
+    } @else {
+      Ingen aktiv upplaga hittades
+    }
+  </p>
+</div>
+
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else if (editionContext.activeEdition()) {
+
+  <!-- Filtreringsrad -->
+  <div class="action-bar">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput placeholder="Sök område eller station…" (input)="onSearch($event)" />
+    </mat-form-field>
+
+    @if (areaOptions().length > 0) {
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filter-field">
+        <mat-select [value]="areaFilter()" (selectionChange)="areaFilter.set($event.value); selectedShiftId.set(null)">
+          <mat-option value="all">Alla områden</mat-option>
+          @for (area of areaOptions(); track area.id) {
+            <mat-option [value]="area.id">{{ area.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+
+    <span class="spacer"></span>
+
+    <mat-button-toggle-group [value]="viewMode()" (change)="setViewMode($event.value)">
+      <mat-button-toggle value="timeline"><mat-icon>view_timeline</mat-icon> Tidslinje</mat-button-toggle>
+      <mat-button-toggle value="table"><mat-icon>table_rows</mat-icon> Tabell</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <!-- Tidslinje -->
+  @if (viewMode() === 'timeline') {
+    <mat-card class="timeline-card">
+      <mat-card-content class="no-pad">
+        <app-staff-timeline
+          [schedule]="filteredSchedule()"
+          [editionStart]="editionContext.activeEdition()?.start ?? null"
+          [editionEnd]="editionContext.activeEdition()?.end ?? null"
+          [selectedShiftId]="selectedShiftId()"
+          (shiftSelected)="onShiftSelected($event)" />
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Tabellvy -->
+  @if (viewMode() === 'table') {
+    <mat-card>
+      <mat-card-content class="no-pad">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th><button type="button" class="sort-header" (click)="setSort('area')">Område <mat-icon>{{ sortIcon('area') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setSort('station')">Station <mat-icon>{{ sortIcon('station') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setSort('responsible')">Ansvarig <mat-icon>{{ sortIcon('responsible') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setSort('start')">Start <mat-icon>{{ sortIcon('start') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setSort('end')">Slut <mat-icon>{{ sortIcon('end') }}</mat-icon></button></th>
+              <th>Bemanning</th>
+              <th><button type="button" class="sort-header" (click)="setSort('staffing')">Status <mat-icon>{{ sortIcon('staffing') }}</mat-icon></button></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of sortedShiftRows(); track row.shift.shiftId) {
+              <tr [class.selected-row]="selectedShiftId() === row.shift.shiftId"
+                  class="clickable-row"
+                  (click)="onShiftSelected(row.shift.shiftId)">
+                <td>{{ row.areaName }}</td>
+                <td>{{ row.stationName }}</td>
+                <td class="muted">{{ row.responsibleName || '–' }}</td>
+                <td>{{ row.shift.start | date:'EEE HH:mm':'':'sv' }}</td>
+                <td>{{ formatTime(row.shift.end) }}</td>
+                <td>{{ row.shift.activeAssignmentCount }}/{{ row.shift.minPersons }}–{{ row.shift.maxPersons }}</td>
+                <td><span [class]="staffingClass(row.shift.staffingStatus)">{{ row.staffingLabel }}</span></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="empty-cell">Inga pass matchar det valda urvalet.</td></tr>
+            }
+          </tbody>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Detaljpanel för valt pass -->
+  @if (selectedShift(); as sel) {
+    <mat-card class="detail-panel">
+      <mat-card-content>
+        <div class="detail-header">
+          <span class="detail-title">{{ sel.areaName }} · {{ sel.stationName }}</span>
+          <button mat-icon-button (click)="selectedShiftId.set(null)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <dl class="detail-list">
+          <dt>Ansvarig</dt>
+          <dd>{{ sel.responsibleName || '–' }}</dd>
+          <dt>Tid</dt>
+          <dd>{{ sel.shift.start | date:'EEE d MMM, HH:mm':'':'sv' }} – {{ formatTime(sel.shift.end) }}</dd>
+          <dt>Bemanning</dt>
+          <dd>{{ sel.shift.activeAssignmentCount }} / {{ sel.shift.minPersons }}–{{ sel.shift.maxPersons }} personer</dd>
+          <dt>Status</dt>
+          <dd><span [class]="staffingClass(sel.shift.staffingStatus)">{{ sel.staffingLabel }}</span></dd>
+        </dl>
+      </mat-card-content>
+    </mat-card>
+  }
+}

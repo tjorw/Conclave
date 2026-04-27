@@ -1,4 +1,6 @@
-﻿using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
+using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Queries;
 using ConventionSystem.Application.Convention.Queries.ListEditionResponsibles;
 using ConventionSystem.Domain.Convention.Ids;
@@ -9,15 +11,16 @@ namespace ConventionSystem.Application.Tests.Convention.Queries;
 public class ListEditionResponsiblesHandlerTests
 {
     private readonly IEditionRepository _repo = Substitute.For<IEditionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly ListEditionResponsiblesHandler _handler;
 
     public ListEditionResponsiblesHandlerTests()
     {
-        _handler = new ListEditionResponsiblesHandler(_repo);
+        _handler = new ListEditionResponsiblesHandler(_repo, _currentUser);
     }
 
     [Fact]
-    public async Task Handle_DelegatesTo_GetResponsiblesByEditionIdAsync()
+    public async Task Handle_Admin_DelegatesTo_GetResponsiblesByEditionIdAsync()
     {
         var editionId = Guid.NewGuid();
         var personId = Guid.NewGuid();
@@ -26,6 +29,7 @@ public class ListEditionResponsiblesHandlerTests
             new("Bemanningskoordinator", personId, "Erik Lund", "erik@example.com"),
             new("Evenemangskoordinator", null, null, null),
         };
+        _currentUser.IsAdmin.Returns(true);
         _repo.GetResponsiblesByEditionIdAsync(new EditionId(editionId), Arg.Any<CancellationToken>())
             .Returns(expected);
 
@@ -37,7 +41,37 @@ public class ListEditionResponsiblesHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ReturnsMinimumTwoRows_ForCoordinatorPositions()
+    public async Task Handle_ReceptionStaff_ReturnsResponsibles()
+    {
+        var editionId = Guid.NewGuid();
+        var expected = new List<EditionResponsibleDto>
+        {
+            new("Bemanningskoordinator", null, null, null),
+        };
+        _currentUser.IsAdmin.Returns(false);
+        _currentUser.IsReception.Returns(true);
+        _repo.GetResponsiblesByEditionIdAsync(Arg.Any<EditionId>(), Arg.Any<CancellationToken>())
+            .Returns(expected);
+
+        var result = await _handler.Handle(new ListEditionResponsiblesQuery(editionId), default);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public async Task Handle_Unauthorized_ThrowsForbiddenException()
+    {
+        _currentUser.IsAdmin.Returns(false);
+        _currentUser.IsReception.Returns(false);
+
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            _handler.Handle(new ListEditionResponsiblesQuery(Guid.NewGuid()), default));
+
+        await _repo.DidNotReceiveWithAnyArgs().GetResponsiblesByEditionIdAsync(default!, default);
+    }
+
+    [Fact]
+    public async Task Handle_Admin_ReturnsMinimumTwoRows_ForCoordinatorPositions()
     {
         var editionId = Guid.NewGuid();
         var expected = new List<EditionResponsibleDto>
@@ -45,6 +79,7 @@ public class ListEditionResponsiblesHandlerTests
             new("Bemanningskoordinator", null, null, null),
             new("Evenemangskoordinator", null, null, null),
         };
+        _currentUser.IsAdmin.Returns(true);
         _repo.GetResponsiblesByEditionIdAsync(Arg.Any<EditionId>(), Arg.Any<CancellationToken>())
             .Returns(expected);
 

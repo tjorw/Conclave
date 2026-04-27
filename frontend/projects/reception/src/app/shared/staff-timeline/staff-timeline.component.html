@@ -1,0 +1,83 @@
+@if (!hasRows()) {
+  <div class="st-empty">
+    <mat-icon>groups</mat-icon>
+    <span>Inga bemanningspass att visa i schemat ännu.</span>
+  </div>
+} @else {
+  <div class="st-scroll">
+    <div class="st-header" [style.padding-left.px]="STATION_LABEL_WIDTH">
+      <div class="st-days" [style.width.px]="totalWidth()">
+        @for (seg of daySegments(); track seg.label + ':' + seg.left) {
+          <div class="st-day" [style.left.px]="seg.left" [style.width.px]="seg.width">
+            {{ seg.label }}
+          </div>
+        }
+      </div>
+      <div class="st-hours" [style.width.px]="totalWidth()">
+        @for (marker of hourMarkers(); track marker.left) {
+          <div class="st-hour-tick" [style.left.px]="marker.left">
+            <span>{{ marker.label }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="st-body">
+      @for (row of rows(); track row.stationId; let i = $index) {
+        <div class="st-row" [style.height.px]="ROW_HEIGHT">
+          <div class="st-station-label"
+            [style.width.px]="STATION_LABEL_WIDTH"
+            [style.height.px]="ROW_HEIGHT">
+            @if (isFirstRowInArea(i)) {
+              <div class="st-area-name">{{ row.areaName }}</div>
+              <div class="st-area-meta">Ansvarig: {{ row.responsibleName ?? 'Okänd' }}</div>
+            }
+            <div class="st-station-name">{{ row.stationName }}</div>
+            @if (row.stationDescription) {
+              <div class="st-station-meta">{{ row.stationDescription }}</div>
+            }
+          </div>
+
+          <div class="st-track" [style.width.px]="totalWidth()" [style.height.px]="ROW_HEIGHT">
+            @for (marker of hourMarkers(); track marker.left) {
+              <div class="st-grid-line" [style.left.px]="marker.left"></div>
+            }
+            @for (block of row.shifts; track block.shift.shiftId) {
+              <div class="st-block"
+                role="button"
+                tabindex="0"
+                [class.selected]="selectedShiftId() === block.shift.shiftId"
+                [class]="block.staffingClass"
+                [style.left.px]="block.left"
+                [style.width.px]="block.width"
+                [title]="
+                  (block.shift.responsibleName ?? block.shift.responsibleId) + ' ' +
+                  formatTime(block.shift.start) + '-' + formatTime(block.shift.end) + ' • ' +
+                  block.staffingLabel
+                "
+                (click)="selectShift(block.shift.shiftId)"
+                (keydown.enter)="selectShift(block.shift.shiftId)"
+                (keydown.space)="selectShift(block.shift.shiftId); $event.preventDefault()">
+                <span class="st-block-title">{{ block.shift.responsibleName ?? block.shift.responsibleId }}</span>
+                <span class="st-block-time">{{ formatTime(block.shift.start) }}-{{ formatTime(block.shift.end) }}</span>
+                <span class="st-block-meta">
+                  Bemanning {{ block.shift.activeAssignmentCount }}/{{ block.shift.minPersons }}-{{ block.shift.maxPersons }}
+                  · {{ block.staffingLabel }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="st-legend">
+    <span class="st-legend-dot is-unstaffed">Obemannat</span>
+    <span class="st-legend-dot is-under-min">Under min</span>
+    <span class="st-legend-dot is-within">Inom behov</span>
+    <span class="st-legend-dot is-full">Fullbemannat</span>
+    <span class="st-legend-dot is-over-max">Över max</span>
+    <span class="st-legend-dot is-cancelled">Inställt</span>
+  </div>
+}

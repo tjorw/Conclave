@@ -1,0 +1,137 @@
+<div class="page-header">
+  <h1 class="page-title">Evenemang</h1>
+  <p class="page-subtitle">
+    @if (editionContext.activeEdition(); as e) {
+      Schemalagda sessioner för <strong>{{ e.name }}</strong>
+    } @else {
+      Ingen aktiv upplaga hittades
+    }
+  </p>
+</div>
+
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else if (editionContext.activeEdition()) {
+
+  <!-- Filtreringsrad -->
+  <div class="action-bar">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput placeholder="Sök evenemang eller lokal…" (input)="onSearch($event)" />
+    </mat-form-field>
+
+    @if (categoryOptions().length > 0) {
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filter-field">
+        <mat-select [value]="categoryFilter()" (selectionChange)="categoryFilter.set($event.value)">
+          <mat-option value="all">Alla kategorier</mat-option>
+          @for (cat of categoryOptions(); track cat.id) {
+            <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+
+    <span class="spacer"></span>
+
+    <mat-button-toggle-group [value]="viewMode()" (change)="setViewMode($event.value)">
+      <mat-button-toggle value="timeline"><mat-icon>view_timeline</mat-icon> Tidslinje</mat-button-toggle>
+      <mat-button-toggle value="table"><mat-icon>table_rows</mat-icon> Tabell</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <!-- Dagväljare -->
+  @if (dayOptions().length > 0) {
+    <div class="day-tabs">
+      @for (d of dayOptions(); track d) {
+        <button type="button" class="day-tab" [class.active]="day() === d" (click)="setDay(d)">
+          {{ formatDayLabel(d) }}
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Tidslinje -->
+  @if (viewMode() === 'timeline') {
+    <mat-card class="timeline-card">
+      <mat-card-content class="no-pad">
+        <app-event-timeline
+          [sessions]="filteredSessions()"
+          [venues]="edition()?.venues ?? []"
+          [editionStart]="edition()?.start ?? null"
+          [editionEnd]="edition()?.end ?? null"
+          [scheduleDays]="edition()?.scheduleDays ?? []"
+          (sessionSelected)="onTimelineSessionSelected($event)" />
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Tabellvy -->
+  @if (viewMode() === 'table') {
+    <mat-card>
+      <mat-card-content class="no-pad">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th><button type="button" class="sort-header" (click)="setSort('event')">Evenemang <mat-icon>{{ sortIcon('event') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setSort('venue')">Lokal <mat-icon>{{ sortIcon('venue') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setSort('start')">Start <mat-icon>{{ sortIcon('start') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setSort('end')">Slut <mat-icon>{{ sortIcon('end') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="setSort('seats')">Platser <mat-icon>{{ sortIcon('seats') }}</mat-icon></button></th>
+              <th>Kategori</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of sessionRows(); track row.session.sessionId) {
+              <tr [class.selected-row]="selectedSessionId() === row.session.sessionId"
+                  class="clickable-row"
+                  (click)="onTableRowSelected(row.session.sessionId)">
+                <td><strong>{{ row.session.eventTitle }}</strong></td>
+                <td>{{ row.venueName }}</td>
+                <td>{{ row.session.start | date:'EEE HH:mm':'':'sv' }}</td>
+                <td>{{ formatTime(row.session.end) }}</td>
+                <td>{{ row.session.maxSeats }}</td>
+                <td class="muted">{{ row.eventSummary?.categoryName || '–' }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="empty-cell">Inga sessioner matchar det valda urvalet.</td></tr>
+            }
+          </tbody>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Detaljpanel för vald session -->
+  @if (selectedSession(); as sel) {
+    <mat-card class="detail-panel">
+      <mat-card-content>
+        <div class="detail-header">
+          <span class="detail-title">{{ sel.session.eventTitle }}</span>
+          <button mat-icon-button (click)="selectedSessionId.set(null)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <dl class="detail-list">
+          <dt>Lokal</dt>
+          <dd>{{ sel.venue?.name ?? '–' }}@if (sel.venue?.building) { · {{ sel.venue!.building }}}</dd>
+          <dt>Tid</dt>
+          <dd>{{ sel.session.start | date:'EEE d MMM, HH:mm':'':'sv' }} – {{ formatTime(sel.session.end) }}</dd>
+          <dt>Platser</dt>
+          <dd>{{ sel.session.maxSeats }}</dd>
+          @if (sel.eventSummary?.categoryName) {
+            <dt>Kategori</dt>
+            <dd>{{ sel.eventSummary!.categoryName }}</dd>
+          }
+          @if (sel.eventSummary?.leadOrganiserName) {
+            <dt>Arrangör</dt>
+            <dd>{{ sel.eventSummary!.leadOrganiserName }}</dd>
+          }
+        </dl>
+      </mat-card-content>
+    </mat-card>
+  }
+}

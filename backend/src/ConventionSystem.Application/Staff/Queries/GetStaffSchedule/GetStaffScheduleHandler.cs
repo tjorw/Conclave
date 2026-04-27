@@ -31,7 +31,8 @@ public sealed class GetStaffScheduleHandler(
 
             if (!context.Convention.IsAdministrator(currentUser.PersonId)
                 && !context.Edition.IsStaffCoordinator(currentUser.PersonId)
-                && !context.Edition.IsStaffAreaResponsible(staffAreaId, currentUser.PersonId))
+                && !context.Edition.IsStaffAreaResponsible(staffAreaId, currentUser.PersonId)
+                && !currentUser.IsReception)
             {
                 throw new ForbiddenException("Utföraren har inte behörighet att visa detta bemanningsschema.");
             }
@@ -40,7 +41,8 @@ public sealed class GetStaffScheduleHandler(
         }
 
         if (!context.Convention.IsAdministrator(currentUser.PersonId)
-            && !context.Edition.IsStaffCoordinator(currentUser.PersonId))
+            && !context.Edition.IsStaffCoordinator(currentUser.PersonId)
+            && !currentUser.IsReception)
         {
             throw new ForbiddenException("Utföraren har inte behörighet att visa detta bemanningsschema.");
         }

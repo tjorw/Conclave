@@ -1,0 +1,68 @@
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  .search-field { width: 260px; }
+  .filter-field { width: 220px; }
+  .spacer { flex: 1 1 auto; }
+}
+
+.timeline-card {
+  margin-bottom: 16px;
+}
+
+.clickable-row { cursor: pointer; }
+
+.selected-row td { background: #fff3e0 !important; }
+
+.detail-panel {
+  margin-top: 16px;
+  border-left: 4px solid #f57c00;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.detail-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4a2e00;
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 6px 12px;
+  margin: 0;
+  font-size: 0.875rem;
+
+  dt {
+    font-weight: 600;
+    color: #666;
+    align-self: start;
+  }
+
+  dd { margin: 0; color: #333; }
+}
+
+.chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.chip-red    { background: #ffebee; color: #c62828; }
+.chip-orange { background: #fff3e0; color: #e65100; }
+.chip-green  { background: #e8f5e9; color: #2e7d32; }
+.chip-blue   { background: #e3f2fd; color: #1565c0; }
+.chip-purple { background: #f3e5f5; color: #6a1b9a; }
+.chip-grey   { background: #f5f5f5; color: #757575; }

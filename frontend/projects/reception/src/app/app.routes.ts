@@ -35,6 +35,21 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/walkup/walkup.component').then(m => m.WalkupComponent),
       },
+      {
+        path: 'responsibles',
+        loadComponent: () =>
+          import('./features/responsibles/responsibles.component').then(m => m.ResponsiblesComponent),
+      },
+      {
+        path: 'events',
+        loadComponent: () =>
+          import('./features/events/events.component').then(m => m.EventsComponent),
+      },
+      {
+        path: 'staffing',
+        loadComponent: () =>
+          import('./features/staffing/staffing.component').then(m => m.StaffingComponent),
+      },
       { path: '', redirectTo: 'checkin', pathMatch: 'full' },
     ],
   },

@@ -86,6 +86,45 @@ public class GetStaffScheduleHandlerTests
     }
 
     [Fact]
+    public async Task Handle_ReceptionStaff_AllowsEditionScope()
+    {
+        var convention = CreateConventionWithAdmin(out _);
+        var edition = CreateEdition(convention, out _, out _);
+        var dto = new StaffScheduleDto(edition.Id.Value, null, [], []);
+
+        _currentUser.PersonId.Returns(PersonId.New());
+        _currentUser.IsReception.Returns(true);
+        _editionRepository.GetByIdWithStructureAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
+        _conventionRepository.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
+        _shiftRepository.GetStaffScheduleAsync(edition.Id, null, Arg.Any<CancellationToken>()).Returns(dto);
+
+        var result = await _handler.Handle(new GetStaffScheduleQuery(edition.Id.Value), default);
+
+        Assert.Equal(dto, result);
+        await _shiftRepository.Received(1).GetStaffScheduleAsync(edition.Id, null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_ReceptionStaff_AllowsAreaFilter()
+    {
+        var convention = CreateConventionWithAdmin(out _);
+        var edition = CreateEdition(convention, out _, out _);
+        var staffAreaId = edition.StaffAreas.Single().Id;
+        var dto = new StaffScheduleDto(edition.Id.Value, staffAreaId.Value, [], []);
+
+        _currentUser.PersonId.Returns(PersonId.New());
+        _currentUser.IsReception.Returns(true);
+        _editionRepository.GetByIdWithStructureAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
+        _conventionRepository.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
+        _shiftRepository.GetStaffScheduleAsync(edition.Id, staffAreaId, Arg.Any<CancellationToken>()).Returns(dto);
+
+        var result = await _handler.Handle(new GetStaffScheduleQuery(edition.Id.Value, staffAreaId.Value), default);
+
+        Assert.Equal(dto, result);
+        await _shiftRepository.Received(1).GetStaffScheduleAsync(edition.Id, staffAreaId, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Handle_RejectsEditionScopeForStaffAreaResponsible()
     {
         var convention = CreateConventionWithAdmin(out _);

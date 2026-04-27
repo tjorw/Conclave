@@ -299,13 +299,6 @@ public static class EditionEndpoints
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListEditionStaffQuery(editionId), ct)));
 
-        editions.MapGet("/responsibles",
-            async (Guid editionId, ISender sender, CancellationToken ct) =>
-                Results.Ok(await sender.Send(new ListEditionResponsiblesQuery(editionId), ct)));
-
-        editions.MapGet("/sessions",
-            async (Guid editionId, ISender sender, CancellationToken ct) =>
-                Results.Ok(await sender.Send(new GetEditionSessionsQuery(editionId), ct)));
 
         editions.MapGet("/export",
             async (Guid editionId, bool? includeEvents, bool? includeTicketTypes, ISender sender, CancellationToken ct) =>
@@ -318,6 +311,14 @@ public static class EditionEndpoints
                 var bytes = JsonSerializer.SerializeToUtf8Bytes(export.Document, ExportJsonOptions);
                 return Results.File(bytes, "application/json", export.FileName);
             });
+
+        groups.Authenticated.MapGet("/editions/{editionId:guid}/responsibles",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListEditionResponsiblesQuery(editionId), ct)));
+
+        groups.Authenticated.MapGet("/editions/{editionId:guid}/sessions",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetEditionSessionsQuery(editionId), ct)));
 
         groups.Authenticated.MapGet("/editions/{editionId:guid}/staff-schedule",
             async (Guid editionId, Guid? staffAreaId, ISender sender, CancellationToken ct) =>
