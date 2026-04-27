@@ -140,7 +140,7 @@ public sealed class EditionExportReadService(ConventionDbContext db) : IEditionE
                 .OrderBy(c => c.Name)
                 .Select(c => new ExportCategoryDto(
                     c.Name,
-                    c.Description,
+                    c.PublicDescription,
                     personEmails.GetValueOrDefault(c.ResponsibleId)))
                 .ToList(),
             includeEvents
