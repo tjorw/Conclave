@@ -93,3 +93,29 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - `environment.ts` konfigureras med rätt `conventionId` och `apiBaseUrl`
 - Admin-konto skapas via `CreateConventionCommand` + `UserManager`
 - Välkomstmejl med inloggningsuppgifter för konventets admin
+
+
+## Medarrangörer – inbjudningsflöde (R-CO)
+
+**Arbetsflöde:**
+1. Arrangören anger önskat antal medarrangörer på sitt evenemang.
+2. Admin justerar och godkänner antalet medarrangörer innan eventet publiceras.
+3. Admin kan alltid ändra antalet, även efter publicering.
+4. Arrangören kan inte skapa fler aktiva inbjudningar än det godkända antalet.
+5. Arrangör eller admin skapar inbjudningar (unik inbjudningskod).
+6. Inbjuden person loggar in och löser in koden → blir medarrangör, inbjudan stängs.
+7. Arrangör eller admin kan avbryta inbjudningar och ta bort medarrangörer.
+8. Admin kan skicka inbjudningar direkt utan att arrangören initierar.
+
+**Implementationsstatus:**
+
+- [x] `R-CO01` Domänentitet `CoOrganiserInvitation` med livscykel (aktiv → inlöst / avbruten)
+- [x] `R-CO02` Application commands + handlers: `SetCoOrganiserCount`, `AdjustCoOrganiserLimit`, `CreateCoOrganiserInvitation`, `CancelCoOrganiserInvitation`, `RedeemCoOrganiserInvitation`
+- [ ] `R-CO03` Domänaggregatets metoder: `SetCoOrganiserCount` och `AdjustCoOrganiserLimit` är enkla property-uppdateringar utan egna domänhändelser (samma mönster som att redigera grunduppgifter); `CreateInvitation`, `CancelInvitation` och `RedeemInvitation` höjer domänhändelser – aggregatet saknar samtliga dessa metoder trots att handlers är skrivna
+- [ ] `R-CO04` EF Core-konfiguration för `CoOrganiserInvitation` och limit-fältet på `Event`; databasmigration
+- [ ] `R-CO05` API-endpoints för det nya flödet (set count, adjust limit, create/cancel/redeem invitation)
+- [ ] `R-CO06` Ta bort gammalt ansökningsflöde: `AddCoOrganiser`, `ApproveCoOrganiserApplication`, `RejectCoOrganiserApplication`, `CancelCoOrganiserApplication` – commands, handlers, endpoints och frontend
+- [ ] `R-CO07` Frontend publik (min-sida/evenemang): arrangören anger önskat antal och hanterar egna inbjudningar (skapa, avbryta)
+- [ ] `R-CO08` Frontend admin: visa/justera godkänt antal, skicka inbjudningar, avbryta inbjudningar, ta bort medarrangörer
+
+**Implementationsordning:** R-CO03 → R-CO04 → R-CO05 → R-CO06 → R-CO07 → R-CO08
