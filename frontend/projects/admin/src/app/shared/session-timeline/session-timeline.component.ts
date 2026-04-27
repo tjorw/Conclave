@@ -184,9 +184,9 @@ export class SessionTimelineComponent {
     return this.venues().filter(v => ownVenueIds.has(v.id));
   });
 
-  // Conflicts: set of sessionIds that overlap with the draft block
-  private readonly conflictingSessionIds = computed((): Set<string> => {
-    const d = this.draft();
+  // Sessions that overlap with the current draft block (controls banner + draft label)
+  private readonly draftConflictIds = computed((): Set<string> => {
+    const d           = this.draft();
     const editVenueId = this.editingVenueId();
     if (!d?.start || !d?.end || !editVenueId) return new Set();
 
@@ -204,7 +204,43 @@ export class SessionTimelineComponent {
     return ids;
   });
 
-  readonly hasConflict = computed(() => this.conflictingSessionIds().size > 0);
+  // Existing sessions that overlap with the current event's other saved sessions (controls block coloring)
+  private readonly existingConflictIds = computed((): Set<string> => {
+    const currentEventId = this.currentEventId();
+    if (!currentEventId) return new Set();
+
+    const draftSessionId = this.draft()?.sessionId;
+    const active         = this.sessions().filter(s => s.status === 'Active');
+    const ids            = new Set<string>();
+
+    const ownSessions = active.filter(
+      s => s.eventId === currentEventId && s.sessionId !== draftSessionId,
+    );
+    for (const own of ownSessions) {
+      const ownStart = new Date(own.start).getTime();
+      const ownEnd   = new Date(own.end).getTime();
+      for (const other of active) {
+        if (other.sessionId === own.sessionId || other.venueId !== own.venueId) continue;
+        if (ownStart < new Date(other.end).getTime() && ownEnd > new Date(other.start).getTime()) {
+          ids.add(own.sessionId);
+          ids.add(other.sessionId);
+        }
+      }
+    }
+    return ids;
+  });
+
+  // Union used for block coloring
+  private readonly conflictingSessionIds = computed((): Set<string> => {
+    const draft    = this.draftConflictIds();
+    const existing = this.existingConflictIds();
+    if (draft.size === 0) return existing;
+    if (existing.size === 0) return draft;
+    return new Set([...draft, ...existing]);
+  });
+
+  // True only when the draft itself is conflicting – drives banner and draft label
+  readonly hasConflict = computed(() => this.draftConflictIds().size > 0);
 
   // All session blocks, grouped by venueId
   private readonly sessionBlocksByVenue = computed(() => {

@@ -168,6 +168,12 @@ export class EventDetailComponent implements OnInit {
     (this.event()?.comments ?? []).filter(c => c.requiresHandling && c.status !== 'Responded' && c.status !== 'Acknowledged')
   );
 
+  readonly editingSession = computed(() => {
+    const id = this.editingSessionId();
+    if (!id) return null;
+    return this.event()?.sessions.find(s => s.id === id) ?? null;
+  });
+
   readonly coOrganiserApplications = computed(() =>
     [...(this.event()?.coOrganiserApplications ?? [])].sort((a, b) => {
       if (a.status === 'Pending' && b.status !== 'Pending') return -1;
@@ -315,6 +321,12 @@ export class EventDetailComponent implements OnInit {
     this.sessionForm.reset({ maxSeats: 20, startType: 'FixedTime' });
   }
 
+  closePanels(): void {
+    this.editingSessionId.set(null);
+    this.showAddSessionForm.set(false);
+    this.sessionForm.reset({ maxSeats: 20, startType: 'FixedTime' });
+  }
+
   scheduleSession(): void {
     const ev = this.event();
     if (!ev || this.sessionForm.invalid || this.saving()) return;
@@ -343,7 +355,7 @@ export class EventDetailComponent implements OnInit {
     if (!ev || this.saving()) return;
     this.saving.set(true);
     this.svc.deactivateSession(ev.id, sessionId).subscribe({
-      next: () => { this.saving.set(false); this.reload(); this.refreshEditionSessions(); },
+      next: () => { this.saving.set(false); this.closePanels(); this.reload(); this.refreshEditionSessions(); },
       error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.deactivateSession)); },
     });
   }
