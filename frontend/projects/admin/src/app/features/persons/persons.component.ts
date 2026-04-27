@@ -11,7 +11,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   ConventionService,
   EditionOrganiserDto,
-  EditionResponsibleDto,
   EditionStaffMemberDto,
   EditionVisitorDto,
   PersonDto,
@@ -70,15 +69,14 @@ export class PersonsComponent implements OnInit {
 
   private loadEditionRoles(editionId: string): void {
     this.rolesLoading.set(true);
-    let pending = 4;
+    let pending = 3;
     let visitors: EditionVisitorDto[] = [];
     let organisers: EditionOrganiserDto[] = [];
     let staff: EditionStaffMemberDto[] = [];
-    let responsibles: EditionResponsibleDto[] = [];
 
     const tryBuild = () => {
       if (--pending === 0) {
-        this.editionRolesMap.set(this.buildRoleMap(visitors, organisers, staff, responsibles));
+        this.editionRolesMap.set(this.buildRoleMap(visitors, organisers, staff));
         this.rolesLoading.set(false);
       }
     };
@@ -86,14 +84,12 @@ export class PersonsComponent implements OnInit {
     this.svc.listEditionVisitors(editionId).subscribe({ next: v => { visitors = v; tryBuild(); }, error: tryBuild });
     this.svc.listEditionOrganisers(editionId).subscribe({ next: o => { organisers = o; tryBuild(); }, error: tryBuild });
     this.svc.listEditionStaff(editionId).subscribe({ next: s => { staff = s; tryBuild(); }, error: tryBuild });
-    this.svc.listEditionResponsibles(editionId).subscribe({ next: r => { responsibles = r; tryBuild(); }, error: tryBuild });
   }
 
   private buildRoleMap(
     visitors: EditionVisitorDto[],
     organisers: EditionOrganiserDto[],
     staff: EditionStaffMemberDto[],
-    responsibles: EditionResponsibleDto[]
   ): Map<string, string[]> {
     const map = new Map<string, Set<string>>();
     const add = (pid: string, role: string) => {
@@ -104,14 +100,6 @@ export class PersonsComponent implements OnInit {
     for (const v of visitors)   add(v.personId, PERSON_EDITION_ROLE.visitor);
     for (const o of organisers) add(o.personId, PERSON_EDITION_ROLE.organiser);
     for (const s of staff)      add(s.personId, PERSON_EDITION_ROLE.staff);
-    for (const r of responsibles) {
-      if (!r.personId) continue;
-      if (r.position === 'Bemanningskoordinator' || r.position === 'Evenemangskoordinator') {
-        add(r.personId, PERSON_EDITION_ROLE.coordinator);
-      } else if (r.position.startsWith('Funktionsområdesansvarig') || r.position.startsWith('Kategoriansvarig')) {
-        add(r.personId, PERSON_EDITION_ROLE.responsible);
-      }
-    }
 
     return new Map([...map.entries()].map(([k, v]) => [k, [...v]]));
   }

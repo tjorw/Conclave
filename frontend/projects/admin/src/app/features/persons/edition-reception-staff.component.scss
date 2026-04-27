@@ -1,10 +1,6 @@
 .action-bar {
-  display: flex;
-  align-items: center;
   gap: 16px;
-  margin-bottom: 16px;
 
-  .search-field { width: 300px; }
   .add-btn { margin-left: auto; }
 }
 
@@ -12,14 +8,6 @@
   margin-bottom: 16px;
 }
 
-.add-form {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-top: 8px;
-}
-
-.form-field-full { width: 100%; }
 
 .person-info {
   display: flex;
@@ -48,13 +36,6 @@
   }
 }
 
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-top: 4px;
-}
-
 .confirm-remove {
   display: flex;
   align-items: center;
@@ -62,8 +43,6 @@
   font-size: 0.85rem;
   white-space: nowrap;
 }
-
-.muted { color: #999; }
 
 .no-edition {
   opacity: 0.6;

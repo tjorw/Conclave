@@ -122,18 +122,7 @@
 
 // ── Edit form ─────────────────────────────────────────────────────────────────
 
-.edit-form {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .form-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: flex-start;
-
   mat-form-field {
     flex: 1;
     min-width: 180px;

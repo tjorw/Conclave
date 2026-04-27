@@ -111,11 +111,6 @@ export const routes: Routes = [
           import('./features/persons/edition-staff.component').then(m => m.EditionStaffComponent),
       },
       {
-        path: 'persons/responsibles',
-        loadComponent: () =>
-          import('./features/persons/edition-responsibles.component').then(m => m.EditionResponsiblesComponent),
-      },
-      {
         path: 'persons/reception-staff',
         loadComponent: () =>
           import('./features/persons/edition-reception-staff.component').then(m => m.EditionReceptionStaffComponent),
