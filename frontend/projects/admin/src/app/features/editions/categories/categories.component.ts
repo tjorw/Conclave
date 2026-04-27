@@ -58,7 +58,7 @@ export class CategoriesComponent implements OnInit {
   sortedCategories(categories: CategoryDto[]): CategoryDto[] {
     return sortBy(categories, this.sort(), {
       name: (c) => c.name,
-      description: (c) => c.description ?? '',
+      description: (c) => c.publicDescription ?? '',
       responsible: (c) => this.personName(c.responsibleId),
     });
   }

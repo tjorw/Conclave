@@ -45,7 +45,7 @@
           @for (c of sortedCategories(edition()?.categories ?? []); track c.id) {
             <tr class="navigable-row" (click)="openDetail(c.id)">
               <td>{{ c.name }}</td>
-              <td class="muted">{{ c.description || '–' }}</td>
+              <td class="muted">{{ c.publicDescription || '–' }}</td>
               <td>{{ personName(c.responsibleId) }}</td>
               <td class="row-actions">
                 <mat-icon class="row-indicator">chevron_right</mat-icon>

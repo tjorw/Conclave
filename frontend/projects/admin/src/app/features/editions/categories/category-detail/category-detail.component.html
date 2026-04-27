@@ -23,10 +23,8 @@
           <mat-label>Namn</mat-label>
           <input matInput formControlName="name" />
         </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Beskrivning</mat-label>
-          <input matInput formControlName="description" />
-        </mat-form-field>
+        <lib-markdown-editor formControlName="organizerInstructions" label="Instruktioner till arrangören" [rows]="6" />
+        <lib-markdown-editor formControlName="publicDescription" label="Publik beskrivning" [rows]="6" />
         <mat-form-field appearance="outline">
           <mat-label>Ansvarig</mat-label>
           <mat-select formControlName="responsibleId">

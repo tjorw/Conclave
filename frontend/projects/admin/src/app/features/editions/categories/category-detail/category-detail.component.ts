@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { ConventionService, EditionDto, PersonDto, toContextErrorMessage } from 'shared';
+import { ConventionService, EditionDto, MarkdownEditorComponent, PersonDto, toContextErrorMessage } from 'shared';
 import { ERROR } from '../../../../labels/errors.labels';
 import { EDITION_DETAIL } from '../../../../labels/pages.labels';
 import {
@@ -30,6 +30,7 @@ import {
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    MarkdownEditorComponent,
   ],
   templateUrl: './category-detail.component.html',
   styleUrl: './category-detail.component.scss',
@@ -55,7 +56,8 @@ export class CategoryDetailComponent implements OnInit {
 
   readonly form = this.fb.group({
     name: ['', Validators.required],
-    description: [''],
+    organizerInstructions: [''],
+    publicDescription: [''],
     responsibleId: ['', Validators.required],
   });
 
@@ -80,7 +82,8 @@ export class CategoryDetailComponent implements OnInit {
           if (category) {
             this.form.setValue({
               name: category.name,
-              description: category.description ?? '',
+              organizerInstructions: category.organizerInstructions ?? '',
+              publicDescription: category.publicDescription ?? '',
               responsibleId: category.responsibleId,
             });
           } else {
@@ -104,7 +107,8 @@ export class CategoryDetailComponent implements OnInit {
     const v = this.form.value;
     const payload = {
       name: v.name!,
-      description: v.description || null,
+      organizerInstructions: v.organizerInstructions || null,
+      publicDescription: v.publicDescription || null,
       responsibleId: v.responsibleId!,
     };
     this.saving.set(true);
