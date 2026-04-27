@@ -122,7 +122,5 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 
 ## Diverse
-- Flytta ansvariga till Reception. De behöver olika info verktyg om ansvariga, bemanning och sessioner.
-- Personregister, ingen inlinehantering i listan. Gör detaljsida.
 - Ledning, ta bort huvudansvariga från edition. Man skall skapa egna ansvar och knyta till edition.
 - Bemanning, ta bort, redigera funktionär.

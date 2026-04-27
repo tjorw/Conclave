@@ -120,6 +120,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/persons/edition-reception-staff.component').then(m => m.EditionReceptionStaffComponent),
       },
+      {
+        path: 'persons/:personId',
+        loadComponent: () =>
+          import('./features/persons/person-detail/person-detail.component').then(m => m.PersonDetailComponent),
+      },
 
       // ── Evenemang ────────────────────────────────────────────────────────────
       {

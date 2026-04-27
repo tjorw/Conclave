@@ -39,42 +39,11 @@
     </button>
   }
   <span class="spacer"></span>
-  <button mat-flat-button color="primary" (click)="toggleCreateForm()">
+  <button mat-flat-button color="primary" (click)="openNew()">
     <mat-icon>add</mat-icon>
     Skapa person
   </button>
 </div>
-
-@if (showCreateForm()) {
-  <mat-card class="create-card">
-    <mat-card-header>
-      <mat-card-title>Skapa ny person</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <form [formGroup]="createForm" class="form-row">
-        <mat-form-field appearance="outline">
-          <mat-label>{{ FIELD.name }} *</mat-label>
-          <input matInput formControlName="name" [placeholder]="PLACEHOLDER.fullName" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ FIELD.email }} *</mat-label>
-          <input matInput formControlName="email" type="email" [placeholder]="PLACEHOLDER.emailExample" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>{{ FIELD.phone }}</mat-label>
-          <input matInput formControlName="phone" [placeholder]="PLACEHOLDER.optional" />
-        </mat-form-field>
-      </form>
-    </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-button type="button" (click)="toggleCreateForm()">{{ ACTION.cancel }}</button>
-      <button mat-flat-button color="primary" (click)="create()"
-        [disabled]="createForm.invalid || saving()">
-        @if (saving()) { <mat-spinner diameter="18" /> } @else { {{ ACTION.create }} }
-      </button>
-    </mat-card-actions>
-  </mat-card>
-}
 
 @if (loading()) {
   <div class="spinner-center"><mat-spinner /></div>
@@ -95,7 +64,7 @@
         </thead>
         <tbody>
           @for (person of sortedFilteredPersons(); track person.id) {
-            <tr [class.inactive-row]="!person.isActive">
+            <tr class="navigable-row" [class.inactive-row]="!person.isActive" (click)="openDetail(person.id)">
               <td><strong>{{ person.name }}</strong></td>
               <td>{{ person.email }}</td>
               <td>{{ person.phone ?? '–' }}</td>
@@ -124,81 +93,9 @@
                 }
               </td>
               <td class="row-actions">
-                @if (editingPerson()?.id === person.id) {
-                  <button mat-icon-button color="primary" (click)="saveEdit()"
-                    [disabled]="editForm.invalid || saving()" [matTooltip]="TOOLTIP.save">
-                    <mat-icon>check</mat-icon>
-                  </button>
-                  <button mat-icon-button (click)="cancelEdit()" [matTooltip]="TOOLTIP.cancel">
-                    <mat-icon>close</mat-icon>
-                  </button>
-                } @else {
-                  <button mat-icon-button (click)="startEdit(person)" [matTooltip]="TOOLTIP.edit">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  @if (person.isActive) {
-                    <button mat-icon-button color="warn" (click)="deactivate(person)"
-                      [matTooltip]="TOOLTIP.deactivate" [disabled]="saving()">
-                      <mat-icon>person_off</mat-icon>
-                    </button>
-                  } @else {
-                    <button mat-icon-button (click)="reactivate(person)"
-                      [matTooltip]="TOOLTIP.reactivate" [disabled]="saving()">
-                      <mat-icon>person</mat-icon>
-                    </button>
-                  }
-                  @if (person.hasAccount) {
-                    <button mat-icon-button (click)="sendResetLink(person)"
-                      [matTooltip]="TOOLTIP.sendResetLink" [disabled]="saving()">
-                      <mat-icon>key</mat-icon>
-                    </button>
-                    @if (person.isLocked) {
-                      <button mat-icon-button color="primary" (click)="toggleLock(person)"
-                        [matTooltip]="TOOLTIP.unlockAccount" [disabled]="saving()">
-                        <mat-icon>lock_open</mat-icon>
-                      </button>
-                    } @else {
-                      <button mat-icon-button color="warn" (click)="toggleLock(person)"
-                        [matTooltip]="TOOLTIP.lockAccount" [disabled]="saving()">
-                        <mat-icon>lock</mat-icon>
-                      </button>
-                    }
-                  }
-                  @if (person.isAdmin) {
-                    <button mat-icon-button color="warn" (click)="removeAdmin(person)"
-                      [matTooltip]="person.id === currentPersonId() ? TOOLTIP.removeSelfAdmin : TOOLTIP.removeAdmin"
-                      [disabled]="saving() || person.id === currentPersonId()">
-                      <mat-icon>shield</mat-icon>
-                    </button>
-                  } @else {
-                    <button mat-icon-button color="primary" (click)="makeAdmin(person)"
-                      [matTooltip]="TOOLTIP.makeAdmin" [disabled]="saving()">
-                      <mat-icon>admin_panel_settings</mat-icon>
-                    </button>
-                  }
-                }
+                <mat-icon class="row-indicator">chevron_right</mat-icon>
               </td>
             </tr>
-            @if (editingPerson()?.id === person.id) {
-              <tr class="edit-row">
-                <td colspan="7">
-                  <form [formGroup]="editForm" (ngSubmit)="saveEdit()" class="form-row">
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                      <mat-label>{{ FIELD.name }}</mat-label>
-                      <input matInput formControlName="name" />
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                      <mat-label>{{ FIELD.email }}</mat-label>
-                      <input matInput formControlName="email" type="email" />
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                      <mat-label>{{ FIELD.phone }}</mat-label>
-                      <input matInput formControlName="phone" />
-                    </mat-form-field>
-                  </form>
-                </td>
-              </tr>
-            }
           } @empty {
             <tr>
               <td colspan="7" class="empty-cell">

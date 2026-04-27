@@ -1,0 +1,118 @@
+<div class="page-header">
+  <a class="back-link" (click)="navigateBack()" style="cursor: pointer">
+    <mat-icon>arrow_back</mat-icon> Personer
+  </a>
+  <h1 class="page-title">{{ isNew() ? 'Skapa person' : (person()?.name ?? '…') }}</h1>
+</div>
+
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else {
+  <mat-card class="detail-card">
+    <mat-card-header>
+      <mat-card-title>Kontaktuppgifter</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="save()" class="detail-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Namn *</mat-label>
+          <input matInput formControlName="name" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>E-post *</mat-label>
+          <input matInput formControlName="email" type="email" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Telefon</mat-label>
+          <input matInput formControlName="phone" />
+        </mat-form-field>
+        <div class="form-actions">
+          <button mat-button type="button" (click)="navigateBack()">{{ ACTION.cancel }}</button>
+          <button mat-flat-button color="primary" type="submit"
+            [disabled]="form.invalid || saving()">
+            @if (saving()) {
+              <mat-spinner diameter="18" />
+            } @else {
+              {{ isNew() ? ACTION.create : ACTION.saveChanges }}
+            }
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  @if (!isNew() && person(); as p) {
+    <mat-card class="detail-card">
+      <mat-card-header>
+        <mat-card-title>Konto och behörigheter</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="status-section">
+        <div class="status-row">
+          <span class="status-label">Status</span>
+          @if (p.isActive) {
+            <span class="chip chip-green">{{ CHIP.active }}</span>
+            <button mat-stroked-button color="warn" (click)="deactivate()" [disabled]="saving()">
+              <mat-icon>person_off</mat-icon>
+              Avaktivera
+            </button>
+          } @else {
+            <span class="chip chip-grey">{{ CHIP.inactive }}</span>
+            <button mat-stroked-button (click)="reactivate()" [disabled]="saving()">
+              <mat-icon>person</mat-icon>
+              Återaktivera
+            </button>
+          }
+        </div>
+
+        <mat-divider />
+
+        <div class="status-row">
+          <span class="status-label">Admin</span>
+          @if (p.isAdmin) {
+            <span class="chip chip-blue">{{ CHIP.admin }}</span>
+            <button mat-stroked-button color="warn"
+              (click)="removeAdmin()"
+              [disabled]="saving() || p.id === currentPersonId()"
+              [matTooltip]="p.id === currentPersonId() ? TOOLTIP.removeSelfAdmin : ''">
+              <mat-icon>shield</mat-icon>
+              Ta bort admin
+            </button>
+          } @else {
+            <button mat-stroked-button color="primary" (click)="makeAdmin()" [disabled]="saving()">
+              <mat-icon>admin_panel_settings</mat-icon>
+              Gör till admin
+            </button>
+          }
+        </div>
+
+        @if (p.hasAccount) {
+          <mat-divider />
+          <div class="status-row">
+            <span class="status-label">Konto</span>
+            @if (p.isLocked) {
+              <span class="chip chip-red">{{ CHIP.locked }}</span>
+              <button mat-stroked-button color="primary" (click)="toggleLock()" [disabled]="saving()">
+                <mat-icon>lock_open</mat-icon>
+                Lås upp
+              </button>
+            } @else {
+              <span class="chip chip-green">{{ CHIP.hasAccount }}</span>
+              <button mat-stroked-button color="warn" (click)="toggleLock()" [disabled]="saving()">
+                <mat-icon>lock</mat-icon>
+                Lås konto
+              </button>
+            }
+            <button mat-stroked-button (click)="sendResetLink()" [disabled]="saving()">
+              <mat-icon>key</mat-icon>
+              Skicka återställningslänk
+            </button>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+}
