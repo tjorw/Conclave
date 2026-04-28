@@ -72,6 +72,30 @@ public sealed class StaffApplication : AggregateRoot
         _staffAreaPreferences.Remove(preference);
     }
 
+    public void UpdateInterestDescription(string interestDescription)
+    {
+        if (string.IsNullOrWhiteSpace(interestDescription))
+            throw new ArgumentException("Intressebeskrivning får inte vara tom.", nameof(interestDescription));
+
+        InterestDescription = interestDescription.Trim();
+    }
+
+    public void ReplaceAvailabilities(IEnumerable<(DateTime From, DateTime To)> availabilities)
+    {
+        _availabilities.Clear();
+
+        foreach (var availability in availabilities)
+            AddAvailability(availability.From, availability.To);
+    }
+
+    public void ReplaceStaffAreaPreferences(IEnumerable<StaffAreaId> staffAreaIds)
+    {
+        _staffAreaPreferences.Clear();
+
+        foreach (var staffAreaId in staffAreaIds.Distinct())
+            AddStaffAreaPreference(staffAreaId);
+    }
+
     public void Accept(PersonId performedById)
     {
         if (Status != StaffApplicationStatus.Received && Status != StaffApplicationStatus.UnderReview)

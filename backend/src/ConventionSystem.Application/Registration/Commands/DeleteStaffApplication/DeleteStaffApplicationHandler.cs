@@ -5,33 +5,31 @@ using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Domain.Registration.Ids;
 
-namespace ConventionSystem.Application.Registration.Commands.RemoveAvailability;
+namespace ConventionSystem.Application.Registration.Commands.DeleteStaffApplication;
 
-public sealed class RemoveAvailabilityHandler(
+public sealed class DeleteStaffApplicationHandler(
     IStaffApplicationRepository staffApplicationRepository,
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : CommandHandler<RemoveAvailabilityCommand>
+    : CommandHandler<DeleteStaffApplicationCommand>
 {
-    protected override async Task ExecuteAsync(RemoveAvailabilityCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(DeleteStaffApplicationCommand command, CancellationToken ct)
     {
         var applicationId = new StaffApplicationId(command.StaffApplicationId);
-        var availabilityId = new AvailabilityId(command.AvailabilityId);
 
-        var context = await StaffApplicationContextLoader.LoadWithDetailsAsync(
+        var context = await StaffApplicationContextLoader.LoadAsync(
             staffApplicationRepository,
             editionRepository,
             conventionRepository,
             applicationId,
             ct);
-        ApplicationAuthorization.EnsureConventionAdminOrOwner(
-            context.Convention,
-            context.Application.PersonId,
-            currentUser.PersonId,
-            "Du har inte behörighet att uppdatera den här personalansökan.");
 
-        context.Application.RemoveAvailability(availabilityId);
-        await staffApplicationRepository.SaveAsync(ct);
+        ApplicationAuthorization.EnsureConventionAdmin(
+            context.Convention,
+            currentUser.PersonId,
+            "Endast administratörer kan ta bort personalansökningar.");
+
+        await staffApplicationRepository.DeleteAsync(context.Application, ct);
     }
 }

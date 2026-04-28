@@ -1,4 +1,5 @@
 using ConventionSystem.Application.Common.Contexts;
+using ConventionSystem.Application.Common.Authorization;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
@@ -11,7 +12,8 @@ namespace ConventionSystem.Application.Registration.Commands.AddStaffAreaPrefere
 public sealed class AddStaffAreaPreferenceHandler(
     IStaffApplicationRepository staffApplicationRepository,
     IEditionRepository editionRepository,
-    IConventionRepository conventionRepository)
+    IConventionRepository conventionRepository,
+    ICurrentUser currentUser)
     : CommandHandler<AddStaffAreaPreferenceCommand>
 {
     protected override async Task ExecuteAsync(AddStaffAreaPreferenceCommand command, CancellationToken ct)
@@ -25,6 +27,11 @@ public sealed class AddStaffAreaPreferenceHandler(
             conventionRepository,
             applicationId,
             ct);
+        ApplicationAuthorization.EnsureConventionAdminOrOwner(
+            context.Convention,
+            context.Application.PersonId,
+            currentUser.PersonId,
+            "Du har inte behörighet att uppdatera den här personalansökan.");
 
         var edition = await editionRepository.GetByIdWithStructureAsync(context.Application.EditionId, ct)
             ?? throw new ResourceNotFoundException("Upplaga", context.Application.EditionId.Value.ToString());

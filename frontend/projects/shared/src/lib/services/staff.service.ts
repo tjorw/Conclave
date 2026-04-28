@@ -69,6 +69,28 @@ export class StaffService {
     );
   }
 
+  getStaffApplication(applicationId: string) {
+    return this.http.get<StaffApplicationSummaryDto>(
+      `${this.env.apiBaseUrl}/staff-applications/${applicationId}`
+    );
+  }
+
+  updateApplication(
+    applicationId: string,
+    body: { interestDescription: string; availabilities: Array<{ from: string; to: string }>; staffAreaIds: string[] }
+  ) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/staff-applications/${applicationId}`,
+      body
+    );
+  }
+
+  deleteApplication(applicationId: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/staff-applications/${applicationId}`
+    );
+  }
+
   getStaffSchedule(editionId: string, staffAreaId?: string | null) {
     return this.http.get<StaffScheduleDto>(
       `${this.env.apiBaseUrl}/editions/${editionId}/staff-schedule`,

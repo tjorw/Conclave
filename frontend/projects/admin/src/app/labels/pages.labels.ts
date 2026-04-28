@@ -149,9 +149,9 @@ export const ERROR_PAGE = {
   },
 } as const;
 export const STAFF_TIMELINE = {
-  empty:           'Inga bemanningspass att visa i schemat ännu.',
+  empty:           'Inga funktioneringspass att visa i schemat ännu.',
   areaResponsible: 'Ansvarig',
-  staffing:        'Bemanning',
+  staffing:        'Funktionering',
   legendUnstaffed: 'Obemannat',
   legendUnderMin:  'Under min',
   legendWithin:    'Inom behov',
@@ -161,12 +161,12 @@ export const STAFF_TIMELINE = {
 } as const;
 
 export const STAFFING_OVERVIEW = {
-  title:            'Bemanningsschema',
-  subtitle:         'Överblick över pass, stationer och bemanningsläge för den valda upplagan.',
+  title:            'Funktioneringsschema',
+  subtitle:         'Överblick över pass, stationer och funktioneringsläge för den valda upplagan.',
   dayFilter:        'Dag',
   areaFilter:       'Funktionsområde',
   stationFilter:    'Station',
-  statusFilter:     'Bemanningsläge',
+  statusFilter:     'Funktioneringsläge',
   allOption:        'Alla',
   timelineView:     'Tidslinjevy',
   tableView:        'Tabellvy',
@@ -178,7 +178,7 @@ export const STAFFING_OVERVIEW = {
   startColumn:      'Start',
   endColumn:        'Slut',
   responsibleColumn:'Ansvarig',
-  staffingColumn:   'Bemanning',
+  staffingColumn:   'Funktionering',
   statusColumn:     'Läge',
   openAreaAction:   'Öppna område',
   selectedShift:    'Valt pass',
@@ -190,7 +190,7 @@ export const STAFFING_OVERVIEW = {
   cancelShiftAction: 'Ställ in pass',
   editShiftAction: 'Redigera pass',
   updateShiftTitle: 'Uppdatera pass',
-  updateShiftHint: 'Planerade pass kan flyttas mellan stationer och få ny ansvarig, tid och bemanning.',
+  updateShiftHint: 'Planerade pass kan flyttas mellan stationer och få ny ansvarig, tid och funktionering.',
   updateShiftAction: 'Spara ändringar',
   assignmentsTitle: 'Tilldelningar',
   assignmentPersonColumn: 'Person',

@@ -1,7 +1,7 @@
 @if (!hasRows()) {
   <div class="st-empty">
     <mat-icon>groups</mat-icon>
-    <span>Inga bemanningspass att visa i schemat ännu.</span>
+    <span>Inga funktioneringspass att visa i schemat ännu.</span>
   </div>
 } @else {
   <div class="st-scroll">
@@ -61,7 +61,7 @@
                 <span class="st-block-title">{{ block.shift.responsibleName ?? block.shift.responsibleId }}</span>
                 <span class="st-block-time">{{ formatTime(block.shift.start) }}-{{ formatTime(block.shift.end) }}</span>
                 <span class="st-block-meta">
-                  Bemanning {{ block.shift.activeAssignmentCount }}/{{ block.shift.minPersons }}-{{ block.shift.maxPersons }}
+                  Funktionering {{ block.shift.activeAssignmentCount }}/{{ block.shift.minPersons }}-{{ block.shift.maxPersons }}
                   · {{ block.staffingLabel }}
                 </span>
               </div>

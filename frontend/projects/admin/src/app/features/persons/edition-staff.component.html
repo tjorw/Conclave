@@ -2,7 +2,7 @@
   <h1 class="page-title">Funktionärer</h1>
   <p class="page-subtitle">
     @if (editionContext.activeEdition(); as e) {
-      Godkända funktionärer för <strong>{{ e.name }}</strong>
+      Funktionärer och ansökningar för <strong>{{ e.name }}</strong>
     } @else {
       Välj en upplaga i verktygsfältet
     }
@@ -14,7 +14,7 @@
 }
 
 @if (!editionContext.activeEdition()) {
-  <p class="no-edition">Välj en upplaga för att visa funktionärer.</p>
+  <p class="no-edition">Välj en upplaga för att visa funktionärer och ansökningar.</p>
 } @else if (loading()) {
   <div class="spinner-center"><mat-spinner /></div>
 } @else {
@@ -60,7 +60,7 @@
               <mat-label>{{ FIELD.name }}</mat-label>
               <input matInput formControlName="name" [placeholder]="PLACEHOLDER.nameExample"
                 (input)="addNameInput.set($any($event.target).value)" />
-              <mat-hint>Personen finns inte i registret – ange namn för att skapa.</mat-hint>
+              <mat-hint>Personen finns inte i registret, ange namn för att skapa.</mat-hint>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="form-field-half">
@@ -76,8 +76,7 @@
 
           <div class="form-actions">
             <button type="button" mat-button (click)="cancelAddForm()">{{ ACTION.cancel }}</button>
-            <button type="submit" mat-flat-button color="primary"
-              [disabled]="addFormInvalid() || addSaving()">
+            <button type="submit" mat-flat-button color="primary" [disabled]="addFormInvalid() || addSaving()">
               @if (addSaving()) {
                 <mat-spinner diameter="18" />
               } @else {
@@ -90,66 +89,97 @@
     </mat-card>
   }
 
-  <mat-card>
+  <mat-card class="content-card">
     <mat-card-content class="no-pad">
       <table class="data-table">
         <thead>
           <tr>
-            <th><button type="button" class="sort-header" (click)="setSort('name')">Namn <mat-icon>{{ sortIcon('name') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('email')">E-post <mat-icon>{{ sortIcon('email') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('phone')">Telefon <mat-icon>{{ sortIcon('phone') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('status')">Status <mat-icon>{{ sortIcon('status') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('person')">Person <mat-icon>{{ applicationSortIcon('person') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('interest')">Intressebeskrivning <mat-icon>{{ applicationSortIcon('interest') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('staffAreas')">Funktionsområden <mat-icon>{{ applicationSortIcon('staffAreas') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('availability')">Tillgänglighet <mat-icon>{{ applicationSortIcon('availability') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('created')">Inskickad <mat-icon>{{ applicationSortIcon('created') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="setApplicationSort('status')">Status <mat-icon>{{ applicationSortIcon('status') }}</mat-icon></button></th>
             @if (hasStaffTicketTypes()) {
               <th>Funktionärsbiljett</th>
-              <th></th>
             }
+            <th class="actions-col"></th>
           </tr>
         </thead>
         <tbody>
-          @for (s of sortedFiltered(); track s.personId) {
-            <tr>
-              <td><strong>{{ s.personName }}</strong></td>
-              <td>{{ s.email }}</td>
-              <td class="muted">{{ s.phone || '–' }}</td>
-              <td class="muted">{{ applicationStatusLabel(s.applicationStatus) }}</td>
+          @for (app of sortedFilteredApplications(); track app.id) {
+            <tr class="navigable-row" (click)="openApplicationDetail(app.id)">
+              <td><strong>{{ app.personName ?? app.personId }}</strong></td>
+              <td class="description-cell">{{ app.interestDescription }}</td>
+              <td>
+                @for (areaId of app.staffAreaPreferenceIds; track areaId) {
+                  <span class="chip chip-grey station-chip">{{ staffAreaName(areaId) }}</span>
+                }
+                @if (app.staffAreaPreferenceIds.length === 0) {
+                  <span class="muted-text">-</span>
+                }
+              </td>
+              <td class="availability-cell">
+                @for (av of app.availabilities; track av.start) {
+                  <span class="availability-slot">{{ formatAvailability(av.start, av.end) }}</span>
+                }
+                @if (app.availabilities.length === 0) {
+                  <span class="muted-text">-</span>
+                }
+              </td>
+              <td>{{ app.createdAt | date:'yyyy-MM-dd' }}</td>
+              <td>
+                <span [class]="applicationStatusChipClass(app.status)">
+                  {{ applicationStatusLabel(app.status) }}
+                </span>
+              </td>
               @if (hasStaffTicketTypes()) {
-                <td class="ticket-cell">
-                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>{{ currentTicketLabel(s.personId) }}</mat-label>
-                    <mat-select
-                      [value]="ticketSelection()[s.personId] ?? null"
-                      (selectionChange)="setTicketSelection(s.personId, $event.value)">
-                      <mat-option [value]="null">Ingen biljett</mat-option>
-                      @for (ticketType of staffTicketTypes(); track ticketType.id) {
-                        <mat-option [value]="ticketType.id">
-                          {{ ticketType.name }} · {{ ticketTypePriceLabel(ticketType.price) }}
-                        </mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </td>
-                <td class="action-cell">
-                  <button
-                    mat-stroked-button
-                    type="button"
-                    (click)="saveTicket(s.personId)"
-                    [disabled]="savingPersonId() !== null">
-                    @if (savingPersonId() === s.personId) {
-                      <mat-spinner diameter="18" />
-                    } @else {
-                      Spara
-                    }
-                  </button>
+                <td class="ticket-cell" (click)="$event.stopPropagation()">
+                  @if (canManageTicket(app.status)) {
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic" (click)="$event.stopPropagation()">
+                      <mat-label>{{ currentTicketLabel(app.personId) }}</mat-label>
+                      <mat-select
+                        [value]="ticketSelection()[app.personId] ?? null"
+                        [disabled]="savingPersonId() !== null"
+                        (selectionChange)="updateTicket(app.personId, $event.value)">
+                        <mat-option [value]="null">Ingen biljett</mat-option>
+                        @for (ticketType of staffTicketTypes(); track ticketType.id) {
+                          <mat-option [value]="ticketType.id">
+                            {{ ticketType.name }} · {{ ticketTypePriceLabel(ticketType.price) }}
+                          </mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  } @else {
+                    <span class="muted-text">-</span>
+                  }
                 </td>
               }
+              <td class="row-actions">
+                @if (canReview(app.status)) {
+                  <button mat-icon-button color="primary"
+                    (click)="acceptApplication(app, $event)"
+                    [matTooltip]="TOOLTIP.accept"
+                    [disabled]="savingApplicationId() !== null">
+                    <mat-icon>check_circle</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn"
+                    (click)="rejectApplication(app, $event)"
+                    [matTooltip]="TOOLTIP.reject"
+                    [disabled]="savingApplicationId() !== null">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                }
+                <mat-icon class="row-indicator">chevron_right</mat-icon>
+              </td>
             </tr>
           } @empty {
             <tr>
-              <td [attr.colspan]="hasStaffTicketTypes() ? 6 : 4" class="empty-cell">
+              <td [attr.colspan]="hasStaffTicketTypes() ? 8 : 7" class="empty-cell">
                 @if (searchQuery()) {
-                  Inga funktionärer matchar sökningen.
+                  Inga funktionärer eller ansökningar matchar sökningen.
                 } @else {
-                  Inga godkända funktionärer för denna upplaga.
+                  Inga funktionärsposter för denna upplaga.
                 }
               </td>
             </tr>

@@ -13,6 +13,16 @@ public static class ApplicationAuthorization
             throw new ForbiddenException(message);
     }
 
+    public static void EnsureConventionAdminOrOwner(
+        ConventionAggregate convention,
+        PersonId ownerId,
+        PersonId performedById,
+        string message)
+    {
+        if (!convention.IsAdministrator(performedById) && ownerId != performedById)
+            throw new ForbiddenException(message);
+    }
+
     public static void EnsureReceptionAccess(
         ConventionAggregate convention,
         EditionAggregate edition,

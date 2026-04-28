@@ -1,0 +1,32 @@
+.detail-card {
+  max-width: 860px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.edit-section {
+  display: grid;
+  gap: 8px;
+}
+
+.edit-label {
+  font-weight: 600;
+}
+
+.checkbox-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choice-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  background: var(--c-surface);
+}

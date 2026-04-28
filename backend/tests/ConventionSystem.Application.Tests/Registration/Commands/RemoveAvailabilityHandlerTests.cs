@@ -2,6 +2,7 @@ using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.RemoveAvailability;
+using ConventionSystem.Application.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Registration.Aggregates;
@@ -15,11 +16,12 @@ public class RemoveAvailabilityHandlerTests
     private readonly IStaffApplicationRepository _applicationRepo = Substitute.For<IStaffApplicationRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly RemoveAvailabilityHandler _handler;
 
     public RemoveAvailabilityHandlerTests()
     {
-        _handler = new RemoveAvailabilityHandler(_applicationRepo, _editionRepo, _conventionRepo);
+        _handler = new RemoveAvailabilityHandler(_applicationRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     [Fact]
@@ -33,6 +35,7 @@ public class RemoveAvailabilityHandlerTests
         _applicationRepo.GetByIdWithDetailsAsync(application.Id, Arg.Any<CancellationToken>()).Returns(application);
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
+        _currentUser.PersonId.Returns(application.PersonId);
 
         await _handler.Handle(new RemoveAvailabilityCommand(application.Id.Value, availability.Id.Value), default);
 
@@ -48,6 +51,23 @@ public class RemoveAvailabilityHandlerTests
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new RemoveAvailabilityCommand(Guid.NewGuid(), Guid.NewGuid()), default));
+    }
+
+    [Fact]
+    public async Task Handle_NotOwnerOrAdmin_Throws()
+    {
+        var (application, edition, convention) = CreateApplicationContext();
+        var availability = application.AddAvailability(
+            new DateTime(2027, 3, 1, 10, 0, 0),
+            new DateTime(2027, 3, 1, 18, 0, 0));
+
+        _applicationRepo.GetByIdWithDetailsAsync(application.Id, Arg.Any<CancellationToken>()).Returns(application);
+        _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
+        _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
+        _currentUser.PersonId.Returns(PersonId.New());
+
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            _handler.Handle(new RemoveAvailabilityCommand(application.Id.Value, availability.Id.Value), default));
     }
 
     private static (StaffApplication application, Domain.Convention.Aggregates.Edition edition, Domain.Convention.Aggregates.Convention convention)

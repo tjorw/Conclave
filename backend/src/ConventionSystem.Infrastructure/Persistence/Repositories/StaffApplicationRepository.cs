@@ -17,7 +17,26 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
     public Task<StaffApplication?> GetByIdWithDetailsAsync(StaffApplicationId id, CancellationToken ct = default)
         => db.StaffApplications
             .Include(a => a.Availabilities)
+            .Include(a => a.StaffAreaPreferences)
             .FirstOrDefaultAsync(a => a.Id == id, ct);
+
+    public async Task<StaffApplicationSummaryDto?> GetSummaryByIdAsync(StaffApplicationId id, CancellationToken ct = default)
+    {
+        var application = await db.StaffApplications
+            .Include(a => a.StaffAreaPreferences)
+            .Include(a => a.Availabilities)
+            .FirstOrDefaultAsync(a => a.Id == id, ct);
+
+        if (application is null)
+            return null;
+
+        var personName = await db.Persons
+            .Where(p => p.Id == application.PersonId)
+            .Select(p => p.Name)
+            .FirstOrDefaultAsync(ct);
+
+        return ToSummaryDto(application, personName);
+    }
 
     public Task<bool> HasActiveApplicationAsync(PersonId personId, EditionId editionId, CancellationToken ct = default)
         => db.StaffApplications.AnyAsync(
@@ -55,18 +74,9 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
             .Where(p => personIds.Contains(p.Id))
             .ToDictionaryAsync(p => p.Id, p => p.Name, ct);
 
-        return applications.Select(a => new StaffApplicationSummaryDto(
-            a.Id.Value,
-            a.PersonId.Value,
-            personNames.GetValueOrDefault(a.PersonId),
-            a.InterestDescription,
-            a.Status.ToString(),
-            a.CreatedAt,
-            a.StaffAreaPreferences.Select(p => p.StaffAreaId.Value).ToList(),
-            a.Availabilities.OrderBy(av => av.TimeSlot.Start)
-                            .Select(av => new StaffApplicationAvailabilityDto(av.TimeSlot.Start, av.TimeSlot.End))
-                            .ToList()
-        )).ToList();
+        return applications
+            .Select(a => ToSummaryDto(a, personNames.GetValueOrDefault(a.PersonId)))
+            .ToList();
     }
 
     public async Task<IReadOnlyList<EditionStaffMemberDto>> ListApprovedByEditionIdAsync(EditionId editionId, CancellationToken ct = default)
@@ -86,7 +96,7 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
         return applications.Select(a =>
         {
             personMap.TryGetValue(a.PersonId, out var p);
-            return new EditionStaffMemberDto(a.PersonId.Value, p?.Name ?? "", p?.Email ?? "", p?.Phone, a.Status.ToString());
+            return new EditionStaffMemberDto(a.Id.Value, a.PersonId.Value, p?.Name ?? "", p?.Email ?? "", p?.Phone, a.Status.ToString());
         }).ToList();
     }
 
@@ -96,6 +106,25 @@ public sealed class StaffApplicationRepository(ConventionDbContext db) : IStaffA
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task DeleteAsync(StaffApplication application, CancellationToken ct = default)
+    {
+        db.StaffApplications.Remove(application);
+        await db.SaveChangesAsync(ct);
+    }
+
     public Task SaveAsync(CancellationToken ct = default)
         => db.SaveChangesAsync(ct);
+
+    private static StaffApplicationSummaryDto ToSummaryDto(StaffApplication application, string? personName)
+        => new(
+            application.Id.Value,
+            application.PersonId.Value,
+            personName,
+            application.InterestDescription,
+            application.Status.ToString(),
+            application.CreatedAt,
+            application.StaffAreaPreferences.Select(p => p.StaffAreaId.Value).ToList(),
+            application.Availabilities.OrderBy(av => av.TimeSlot.Start)
+                .Select(av => new StaffApplicationAvailabilityDto(av.TimeSlot.Start, av.TimeSlot.End))
+                .ToList());
 }

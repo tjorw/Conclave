@@ -2,6 +2,7 @@ using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.RemoveStaffAreaPreference;
+using ConventionSystem.Application.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Registration.Aggregates;
@@ -15,11 +16,12 @@ public class RemoveStaffAreaPreferenceHandlerTests
     private readonly IStaffApplicationRepository _applicationRepo = Substitute.For<IStaffApplicationRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly RemoveStaffAreaPreferenceHandler _handler;
 
     public RemoveStaffAreaPreferenceHandlerTests()
     {
-        _handler = new RemoveStaffAreaPreferenceHandler(_applicationRepo, _editionRepo, _conventionRepo);
+        _handler = new RemoveStaffAreaPreferenceHandler(_applicationRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (StaffApplication application, StaffAreaId staffAreaId) SetupWithPreference()
@@ -41,6 +43,7 @@ public class RemoveStaffAreaPreferenceHandlerTests
         _applicationRepo.GetByIdWithDetailsAsync(application.Id, Arg.Any<CancellationToken>()).Returns(application);
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
+        _currentUser.PersonId.Returns(application.PersonId);
 
         return (application, staffArea.Id);
     }
@@ -64,5 +67,15 @@ public class RemoveStaffAreaPreferenceHandlerTests
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new RemoveStaffAreaPreferenceCommand(Guid.NewGuid(), Guid.NewGuid()), default));
+    }
+
+    [Fact]
+    public async Task Handle_NotOwnerOrAdmin_Throws()
+    {
+        var (application, staffAreaId) = SetupWithPreference();
+        _currentUser.PersonId.Returns(PersonId.New());
+
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            _handler.Handle(new RemoveStaffAreaPreferenceCommand(application.Id.Value, staffAreaId.Value), default));
     }
 }

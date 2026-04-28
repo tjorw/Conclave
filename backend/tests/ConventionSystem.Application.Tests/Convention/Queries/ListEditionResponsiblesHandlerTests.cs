@@ -26,7 +26,7 @@ public class ListEditionResponsiblesHandlerTests
         var personId = Guid.NewGuid();
         var expected = new List<EditionResponsibleDto>
         {
-            new("Bemanningskoordinator", personId, "Erik Lund", "erik@example.com"),
+            new("Funktioneringskoordinator", personId, "Erik Lund", "erik@example.com"),
             new("Evenemangskoordinator", null, null, null),
         };
         _currentUser.IsAdmin.Returns(true);
@@ -46,7 +46,7 @@ public class ListEditionResponsiblesHandlerTests
         var editionId = Guid.NewGuid();
         var expected = new List<EditionResponsibleDto>
         {
-            new("Bemanningskoordinator", null, null, null),
+            new("Funktioneringskoordinator", null, null, null),
         };
         _currentUser.IsAdmin.Returns(false);
         _currentUser.IsReception.Returns(true);
@@ -76,7 +76,7 @@ public class ListEditionResponsiblesHandlerTests
         var editionId = Guid.NewGuid();
         var expected = new List<EditionResponsibleDto>
         {
-            new("Bemanningskoordinator", null, null, null),
+            new("Funktioneringskoordinator", null, null, null),
             new("Evenemangskoordinator", null, null, null),
         };
         _currentUser.IsAdmin.Returns(true);
@@ -86,7 +86,7 @@ public class ListEditionResponsiblesHandlerTests
         var result = await _handler.Handle(new ListEditionResponsiblesQuery(editionId), default);
 
         Assert.Equal(2, result.Count);
-        Assert.Contains(result, r => r.Position == "Bemanningskoordinator");
+        Assert.Contains(result, r => r.Position == "Funktioneringskoordinator");
         Assert.Contains(result, r => r.Position == "Evenemangskoordinator");
     }
 }

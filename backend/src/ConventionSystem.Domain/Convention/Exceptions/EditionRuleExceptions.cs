@@ -14,7 +14,7 @@ public sealed class EditionAlreadyDraftException()
 
 public sealed class EditionStaffCoordinatorRequiredException()
     : DomainRuleViolationException(
-        "Upplagan måste ha en bemanningskoordinator innan den kan publiceras.",
+        "Upplagan måste ha en funktioneringskoordinator innan den kan publiceras.",
         "edition_staff_coordinator_required");
 
 public sealed class EditionEventCoordinatorRequiredException()

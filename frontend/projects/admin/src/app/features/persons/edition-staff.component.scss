@@ -8,6 +8,47 @@
   margin-bottom: 16px;
 }
 
+.content-card {
+  margin-top: 0;
+}
+
+.description-cell {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.station-chip {
+  margin-right: 4px;
+  font-size: .75rem;
+}
+
+.availability-cell {
+  min-width: 160px;
+}
+
+.availability-slot {
+  display: block;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  color: var(--c-text-medium);
+}
+
+.muted-text {
+  color: var(--c-text-faint);
+  font-size: 0.875rem;
+}
+
+.row-actions {
+  white-space: nowrap;
+  width: 72px;
+  text-align: right;
+}
+
+.row-indicator {
+  color: var(--c-text-faint);
+}
 
 .matched-person-info {
   display: flex;

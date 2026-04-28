@@ -26,9 +26,9 @@ public sealed class CreateEditionHandler(
 
         var staffCoordinatorId = new PersonId(command.StaffCoordinatorId);
         var staffCoordinator = await personRepository.GetByIdAsync(staffCoordinatorId, ct)
-            ?? throw new InvalidOperationException($"Bemanningskoordinator '{command.StaffCoordinatorId}' hittades inte.");
+            ?? throw new InvalidOperationException($"Funktioneringskoordinator '{command.StaffCoordinatorId}' hittades inte.");
         if (staffCoordinator.ConventionId != conventionId)
-            throw new InvalidOperationException("Bemanningskoordinatorn tillhor inte denna konvention.");
+            throw new InvalidOperationException("Funktioneringskoordinatorn tillhor inte denna konvention.");
 
         var eventCoordinatorId = new PersonId(command.EventCoordinatorId);
         var eventCoordinator = await personRepository.GetByIdAsync(eventCoordinatorId, ct)

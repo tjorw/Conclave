@@ -13,6 +13,7 @@ using ConventionSystem.Application.Registration.Commands.ConfirmVisitorRegistrat
 using ConventionSystem.Application.Registration.Commands.CreatePromotionCode;
 using ConventionSystem.Application.Registration.Commands.CreateTicketType;
 using ConventionSystem.Application.Registration.Commands.DeactivatePromotionCode;
+using ConventionSystem.Application.Registration.Commands.DeleteStaffApplication;
 using ConventionSystem.Application.Registration.Commands.DeleteTicketType;
 using ConventionSystem.Application.Registration.Commands.IssueTicket;
 using ConventionSystem.Application.Registration.Commands.RedeemPromotionCode;
@@ -25,6 +26,7 @@ using ConventionSystem.Application.Registration.Commands.RevokeTicket;
 using ConventionSystem.Application.Registration.Commands.SubmitStaffApplication;
 using ConventionSystem.Application.Registration.Commands.SubmitVisitorRegistration;
 using ConventionSystem.Application.Registration.Commands.UnwatchSession;
+using ConventionSystem.Application.Registration.Commands.UpdateStaffApplication;
 using ConventionSystem.Application.Registration.Commands.WalkupRegister;
 using ConventionSystem.Application.Registration.Commands.CreateWalkupPerson;
 using ConventionSystem.Application.Registration.Queries.ListVisitorTicketTypesForWalkup;
@@ -46,6 +48,7 @@ using ConventionSystem.Application.Registration.Queries.ListPromotionCodeRedempt
 using ConventionSystem.Application.Registration.Queries.ListPromotionCodes;
 using ConventionSystem.Application.Registration.Queries.ListTicketTypes;
 using ConventionSystem.Application.Registration.Queries.ListVisitorRegistrations;
+using ConventionSystem.Application.Staff.Queries.GetStaffApplication;
 using ConventionSystem.Application.Staff.Queries.ListStaffApplications;
 using ConventionSystem.Domain.Registration.Enums;
 using ConventionSystem.Application.Common;
@@ -414,6 +417,31 @@ public static class RegistrationEndpoints
         groups.Admin.MapGet("/editions/{editionId:guid}/staff-applications",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListStaffApplicationsQuery(editionId), ct)));
+
+        groups.Admin.MapGet("/staff-applications/{applicationId:guid}",
+            async (Guid applicationId, ISender sender, CancellationToken ct) =>
+            {
+                var result = await sender.Send(new GetStaffApplicationQuery(applicationId), ct);
+                return result is null ? Results.NotFound() : Results.Ok(result);
+            });
+
+        groups.Admin.MapPut("/staff-applications/{applicationId:guid}",
+            async (Guid applicationId, UpdateStaffApplicationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateStaffApplicationCommand(
+                    applicationId,
+                    request.InterestDescription,
+                    request.Availabilities.Select(a => new UpdateStaffApplicationAvailability(a.From, a.To)).ToList(),
+                    request.StaffAreaIds), ct);
+                return Results.NoContent();
+            });
+
+        groups.Admin.MapDelete("/staff-applications/{applicationId:guid}",
+            async (Guid applicationId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new DeleteStaffApplicationCommand(applicationId), ct);
+                return Results.NoContent();
+            });
     }
 }
 
@@ -443,3 +471,8 @@ public record AddAvailabilityRequest(DateTime From, DateTime To);
 public record StaffAreaPreferenceRequest(Guid StaffAreaId);
 public record RegisterForSessionRequest(Guid TicketId);
 public record AddStaffMemberRequest(string Name, string Email, string? Phone, string? Note);
+public record UpdateStaffApplicationRequest(
+    string InterestDescription,
+    IReadOnlyList<UpdateStaffApplicationAvailabilityRequest> Availabilities,
+    IReadOnlyList<Guid> StaffAreaIds);
+public record UpdateStaffApplicationAvailabilityRequest(DateTime From, DateTime To);

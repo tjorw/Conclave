@@ -214,7 +214,7 @@ export class MyStaffComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Kunde inte läsa bemanningsinformation just nu.');
+        this.error.set('Kunde inte läsa funktioneringsinformation just nu.');
         this.loading.set(false);
       },
     });

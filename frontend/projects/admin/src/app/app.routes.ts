@@ -111,6 +111,11 @@ export const routes: Routes = [
           import('./features/persons/edition-staff.component').then(m => m.EditionStaffComponent),
       },
       {
+        path: 'persons/staff/:applicationId',
+        loadComponent: () =>
+          import('./features/staffing/staff-application-detail/staff-application-detail.component').then(m => m.StaffApplicationDetailComponent),
+      },
+      {
         path: 'persons/reception-staff',
         loadComponent: () =>
           import('./features/persons/edition-reception-staff.component').then(m => m.EditionReceptionStaffComponent),
@@ -158,8 +163,13 @@ export const routes: Routes = [
       },
       {
         path: 'staff-applications',
+        redirectTo: 'persons/staff',
+        pathMatch: 'full',
+      },
+      {
+        path: 'staff-applications/:applicationId',
         loadComponent: () =>
-          import('./features/staffing/staff-applications.component').then(m => m.StaffApplicationsComponent),
+          import('./features/staffing/staff-application-detail/staff-application-detail.component').then(m => m.StaffApplicationDetailComponent),
       },
 
       // ── Besökare ─────────────────────────────────────────────────────────────

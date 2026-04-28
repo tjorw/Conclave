@@ -32,7 +32,7 @@ public sealed class GetStaffScheduleHandler(
             if (!context.Convention.IsAdministrator(currentUser.PersonId)
                 && !currentUser.IsReception)
             {
-                throw new ForbiddenException("Utföraren har inte behörighet att visa detta bemanningsschema.");
+                throw new ForbiddenException("Utföraren har inte behörighet att visa detta funktioneringsschema.");
             }
 
             return await shiftRepository.GetStaffScheduleAsync(editionId, staffAreaId, ct);
@@ -42,7 +42,7 @@ public sealed class GetStaffScheduleHandler(
             && !context.Edition.IsStaffCoordinator(currentUser.PersonId)
             && !currentUser.IsReception)
         {
-            throw new ForbiddenException("Utföraren har inte behörighet att visa detta bemanningsschema.");
+            throw new ForbiddenException("Utföraren har inte behörighet att visa detta funktioneringsschema.");
         }
 
         return await shiftRepository.GetStaffScheduleAsync(editionId, null, ct);

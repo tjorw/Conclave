@@ -142,7 +142,7 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
 
         var result = new List<EditionResponsibleDto>
         {
-            new("Bemanningskoordinator",
+            new("Funktioneringskoordinator",
                 edition.StaffCoordinatorId?.Value,
                 edition.StaffCoordinatorId.HasValue ? GetName(edition.StaffCoordinatorId.Value) : null,
                 edition.StaffCoordinatorId.HasValue ? GetEmail(edition.StaffCoordinatorId.Value) : null),

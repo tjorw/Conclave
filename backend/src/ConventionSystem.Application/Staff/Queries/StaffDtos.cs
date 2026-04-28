@@ -34,6 +34,7 @@ public record StaffAssignmentDto(
     DateTimeOffset AssignedAt);
 
 public record EditionStaffMemberDto(
+    Guid ApplicationId,
     Guid PersonId,
     string PersonName,
     string Email,

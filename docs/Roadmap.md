@@ -123,7 +123,6 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 ## Diverse
 - Ledning, ta bort huvudansvariga från edition. Man skall skapa egna ansvar och knyta till edition.
-- Bemanning, ta bort, redigera funktionär.
 - ligger säkerhet på rätt ställer?
 - api: en facad per klient istället för aggregat?
 - kommer api och client routes att krocka?

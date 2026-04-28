@@ -67,6 +67,8 @@ export const ERROR = {
   fetchStaffApplications: 'Kunde inte hämta funktionärsansökningar',
   acceptApplication:      'Kunde inte acceptera ansökan',
   rejectApplication:      'Kunde inte avslå ansökan',
+  updateApplication:      'Kunde inte uppdatera ansökan',
+  deleteApplication:      'Kunde inte ta bort ansökan',
   createShift:            'Kunde inte skapa pass',
   saveShift:              'Kunde inte uppdatera passet',
   cancelShift:            'Kunde inte ställa in passet',

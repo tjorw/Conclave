@@ -100,6 +100,7 @@ export interface EditionOrganiserDto {
 }
 
 export interface EditionStaffMemberDto {
+  applicationId: string;
   personId: string;
   personName: string;
   email: string;

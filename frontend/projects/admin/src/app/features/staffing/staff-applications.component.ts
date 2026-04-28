@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -24,6 +25,7 @@ type StaffApplicationSortKey = 'person' | 'interest' | 'staffAreas' | 'availabil
   standalone: true,
   imports: [
     DatePipe,
+    RouterLink,
     MatButtonModule,
     MatButtonToggleModule,
     MatCardModule,
@@ -52,12 +54,12 @@ export class StaffApplicationsComponent {
 
   readonly filteredApplications = computed(() => {
     const filter = this.statusFilter();
-    const apps   = this.applications();
+    const apps = this.applications();
     switch (filter) {
-      case 'pending':  return apps.filter(a => a.status === 'Received' || a.status === 'UnderReview');
+      case 'pending': return apps.filter(a => a.status === 'Received' || a.status === 'UnderReview');
       case 'accepted': return apps.filter(a => a.status === 'Confirmed' || a.status === 'Assigned');
       case 'rejected': return apps.filter(a => a.status === 'Rejected');
-      default:         return apps;
+      default: return apps;
     }
   });
 
@@ -72,14 +74,18 @@ export class StaffApplicationsComponent {
     })
   );
 
-  readonly pendingCount  = computed(() => this.applications().filter(a => a.status === 'Received' || a.status === 'UnderReview').length);
+  readonly pendingCount = computed(() => this.applications().filter(a => a.status === 'Received' || a.status === 'UnderReview').length);
   readonly acceptedCount = computed(() => this.applications().filter(a => a.status === 'Confirmed' || a.status === 'Assigned').length);
   readonly rejectedCount = computed(() => this.applications().filter(a => a.status === 'Rejected').length);
 
   constructor() {
     effect(() => {
       const summary = this.editionCtx.activeEdition();
-      if (!summary) { this.loading.set(false); return; }
+      if (!summary) {
+        this.loading.set(false);
+        return;
+      }
+
       this.loadPage(summary.id);
     });
   }
@@ -94,14 +100,21 @@ export class StaffApplicationsComponent {
     });
 
     this.svc.listStaffApplications(editionId).subscribe({
-      next: apps => { this.applications.set(apps); this.loading.set(false); },
-      error: () => { this.error.set(ERROR.fetchStaffApplications); this.loading.set(false); },
+      next: apps => {
+        this.applications.set(apps);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set(ERROR.fetchStaffApplications);
+        this.loading.set(false);
+      },
     });
   }
 
   private reloadApplications(): void {
     const summary = this.editionCtx.activeEdition();
     if (!summary) return;
+
     this.svc.listStaffApplications(summary.id).subscribe({
       next: apps => this.applications.set(apps),
       error: () => this.error.set(ERROR.fetchStaffApplications),
@@ -118,19 +131,49 @@ export class StaffApplicationsComponent {
 
   accept(app: StaffApplicationSummaryDto): void {
     if (this.saving()) return;
+
     this.saving.set(true);
     this.svc.acceptApplication(app.id).subscribe({
-      next: () => { this.saving.set(false); this.reloadApplications(); },
-      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.acceptApplication)); },
+      next: () => {
+        this.saving.set(false);
+        this.reloadApplications();
+      },
+      error: err => {
+        this.saving.set(false);
+        this.error.set(toErrorMessage(err, ERROR.acceptApplication));
+      },
     });
   }
 
   reject(app: StaffApplicationSummaryDto): void {
     if (this.saving()) return;
+
     this.saving.set(true);
     this.svc.rejectApplication(app.id).subscribe({
-      next: () => { this.saving.set(false); this.reloadApplications(); },
-      error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.rejectApplication)); },
+      next: () => {
+        this.saving.set(false);
+        this.reloadApplications();
+      },
+      error: err => {
+        this.saving.set(false);
+        this.error.set(toErrorMessage(err, ERROR.rejectApplication));
+      },
+    });
+  }
+
+  remove(app: StaffApplicationSummaryDto): void {
+    if (this.saving() || !confirm(`Ta bort ansökan för ${app.personName ?? app.personId}?`)) return;
+
+    this.saving.set(true);
+    this.svc.deleteApplication(app.id).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.reloadApplications();
+      },
+      error: err => {
+        this.saving.set(false);
+        this.error.set(toErrorMessage(err, ERROR.deleteApplication));
+      },
     });
   }
 
@@ -155,8 +198,9 @@ export class StaffApplicationsComponent {
     const e = new Date(end);
     const sameDay = s.toDateString() === e.toDateString();
     const dateStr = s.toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' });
-    const sTime   = s.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-    const eTime   = e.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+    const sTime = s.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+    const eTime = e.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+
     return sameDay
       ? `${dateStr} ${sTime}-${eTime}`
       : `${dateStr} ${sTime} - ${e.toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' })} ${eTime}`;

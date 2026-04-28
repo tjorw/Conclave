@@ -2,6 +2,7 @@ using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.AddStaffAreaPreference;
+using ConventionSystem.Application.Common;
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
@@ -16,11 +17,12 @@ public class AddStaffAreaPreferenceHandlerTests
     private readonly IStaffApplicationRepository _applicationRepo = Substitute.For<IStaffApplicationRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
+    private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly AddStaffAreaPreferenceHandler _handler;
 
     public AddStaffAreaPreferenceHandlerTests()
     {
-        _handler = new AddStaffAreaPreferenceHandler(_applicationRepo, _editionRepo, _conventionRepo);
+        _handler = new AddStaffAreaPreferenceHandler(_applicationRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (StaffApplication application, Domain.Convention.Aggregates.Edition edition, StaffAreaId staffAreaId, Domain.Convention.Aggregates.Convention convention)
@@ -44,6 +46,7 @@ public class AddStaffAreaPreferenceHandlerTests
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _editionRepo.GetByIdWithStructureAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
+        _currentUser.PersonId.Returns(application.PersonId);
 
         return (application, edition, staffArea.Id, convention);
     }
@@ -77,5 +80,16 @@ public class AddStaffAreaPreferenceHandlerTests
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(
             () => _handler.Handle(new AddStaffAreaPreferenceCommand(Guid.NewGuid(), Guid.NewGuid()), default));
+    }
+
+    [Fact]
+    public async Task Handle_NotOwnerOrAdmin_Throws()
+    {
+        var (application, _, staffAreaId, convention) = Setup();
+        _currentUser.PersonId.Returns(PersonId.New());
+        _conventionRepo.GetByIdAsync(Arg.Any<ConventionId>(), Arg.Any<CancellationToken>()).Returns(convention);
+
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            _handler.Handle(new AddStaffAreaPreferenceCommand(application.Id.Value, staffAreaId.Value), default));
     }
 }

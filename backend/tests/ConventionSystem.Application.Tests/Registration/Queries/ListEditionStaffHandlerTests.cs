@@ -22,8 +22,8 @@ public class ListEditionStaffHandlerTests
         var editionId = Guid.NewGuid();
         var expected = new List<EditionStaffMemberDto>
         {
-            new(Guid.NewGuid(), "Bo Nilsson", "bo@example.com", null, "Confirmed"),
-            new(Guid.NewGuid(), "Cecilia Berg", "cecilia@example.com", "070-123456", "Assigned"),
+            new(Guid.NewGuid(), Guid.NewGuid(), "Bo Nilsson", "bo@example.com", null, "Confirmed"),
+            new(Guid.NewGuid(), Guid.NewGuid(), "Cecilia Berg", "cecilia@example.com", "070-123456", "Assigned"),
         };
         _repo.ListApprovedByEditionIdAsync(new EditionId(editionId), Arg.Any<CancellationToken>())
             .Returns(expected);

@@ -1,0 +1,75 @@
+<div class="page-header">
+  <a class="back-link" (click)="navigateBack()" style="cursor: pointer">
+    <mat-icon>arrow_back</mat-icon> Funktionärer
+  </a>
+  <h1 class="page-title">{{ title() }}</h1>
+  @if (application(); as app) {
+    <p class="page-subtitle">
+      <span [class]="applicationStatusChipClass(app.status)">{{ applicationStatusLabel(app.status) }}</span>
+      · inskickad {{ app.createdAt | date:'yyyy-MM-dd' }}
+    </p>
+  }
+</div>
+
+@if (error()) {
+  <div class="error-banner">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="spinner-center"><mat-spinner /></div>
+} @else if (application()) {
+  <mat-card class="detail-card">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="save()" class="detail-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Intressebeskrivning</mat-label>
+          <textarea matInput rows="4" formControlName="interestDescription"></textarea>
+        </mat-form-field>
+
+        <div class="edit-section">
+          <div class="edit-label">Funktionsområden</div>
+          <div class="checkbox-grid">
+            @for (area of edition()?.staffAreas ?? []; track area.id) {
+              <label class="choice-chip">
+                <input
+                  type="checkbox"
+                  [checked]="isStaffAreaSelected(area.id)"
+                  (change)="toggleStaffArea(area.id, $any($event.target).checked)" />
+                <span>{{ area.name }}</span>
+              </label>
+            }
+          </div>
+        </div>
+
+        <div class="edit-section">
+          <div class="edit-label">Tillgänglighet</div>
+          <div class="checkbox-grid">
+            @for (day of availabilityDays(); track day.date) {
+              <label class="choice-chip">
+                <input
+                  type="checkbox"
+                  [checked]="isAvailabilityDateSelected(day.date)"
+                  (change)="toggleAvailabilityDate(day.date, $any($event.target).checked)" />
+                <span>{{ day.label }}</span>
+              </label>
+            }
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button mat-stroked-button type="button" class="danger-action" color="warn" (click)="remove()" [disabled]="saving()">
+            Ta bort ansökan
+          </button>
+          <button mat-button type="button" (click)="navigateBack()" [disabled]="saving()">Avbryt</button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+            @if (saving()) {
+              <mat-spinner diameter="18" />
+            } @else {
+              Spara ändringar
+            }
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+}

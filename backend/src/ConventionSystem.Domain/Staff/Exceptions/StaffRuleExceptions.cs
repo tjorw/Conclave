@@ -9,7 +9,7 @@ public sealed class ShiftCannotAssignInCurrentStateException()
 
 public sealed class ShiftAlreadyFullyStaffedException()
     : DomainRuleViolationException(
-        "Passet har redan nått maximal bemanning.",
+        "Passet har redan nått maximal funktionering.",
         "shift_already_fully_staffed");
 
 public sealed class PersonAlreadyAssignedToShiftException()

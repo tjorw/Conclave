@@ -190,7 +190,7 @@ export class StaffingComponent {
 
     this.staffSvc.getStaffSchedule(editionId).subscribe({
       next: sched => { this.schedule.set(sched); this.loading.set(false); },
-      error: () => { this.error.set('Kunde inte hämta bemanningsschema.'); this.loading.set(false); },
+      error: () => { this.error.set('Kunde inte hämta funktioneringsschema.'); this.loading.set(false); },
     });
   }
 }

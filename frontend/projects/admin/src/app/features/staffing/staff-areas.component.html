@@ -12,7 +12,7 @@
 @if (loading()) {
   <div class="spinner-center"><mat-spinner diameter="48" /></div>
 } @else if (!editionCtx.activeEdition()) {
-  <p class="muted-info">Välj en upplaga i verktygsfältet för att se bemanningsschemat.</p>
+  <p class="muted-info">Välj en upplaga i verktygsfältet för att se funktioneringsschemat.</p>
 } @else {
   @if (error()) {
     <div class="error-banner">{{ error() }}</div>
