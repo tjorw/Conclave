@@ -32,6 +32,10 @@ import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
 
 type StaffingSortKey = 'area' | 'station' | 'start' | 'end' | 'responsible' | 'staffing' | 'status';
 type ViewMode = 'timeline' | 'table';
+type SelectedShiftDetailView = 'assignments' | 'personTimeline';
+
+const PERSON_TIMELINE_PX_PER_MIN = 2;
+const PERSON_TIMELINE_MIN_WIDTH = 320;
 
 interface StaffingTableRow {
   areaId: string;
@@ -44,9 +48,25 @@ interface StaffingTableRow {
 interface StaffCandidate {
   personId: string;
   personName: string;
-  applicationStatus: string | null;
   warnings: string[];
   canAssign: boolean;
+}
+
+interface PersonTimelineShiftBlock {
+  shiftId: string;
+  areaName: string;
+  stationName: string;
+  start: string;
+  end: string;
+  left: number;
+  width: number;
+  isSelected: boolean;
+}
+
+interface PersonTimelineRow {
+  personId: string;
+  personName: string;
+  shifts: PersonTimelineShiftBlock[];
 }
 
 @Component({
@@ -94,6 +114,7 @@ export class StaffAreasComponent {
   readonly viewMode = signal<ViewMode>('timeline');
   readonly selectedShiftId = signal<string | null>(null);
   readonly selectedShiftDetail = signal<ShiftDto | null>(null);
+  readonly selectedShiftDetailView = signal<SelectedShiftDetailView>('assignments');
   readonly shiftLoading = signal(false);
   readonly creatingShift = signal(false);
   readonly editingShift = signal(false);
@@ -254,6 +275,11 @@ export class StaffAreasComponent {
     this.assignCandidates().find(candidate => candidate.personId === this.assignForm.controls.personId.value) ?? null
   );
 
+  readonly selectedCandidateApplication = computed(() => {
+    const personId = this.selectedCandidate()?.personId;
+    return personId ? this.applicationForPerson(personId) ?? null : null;
+  });
+
   readonly assignCandidates = computed<StaffCandidate[]>(() => {
     const selected = this.selectedShift();
     const shift = this.selectedShiftDetail();
@@ -262,6 +288,7 @@ export class StaffAreasComponent {
     }
 
     return this.staff()
+      .filter(person => this.isApprovedStaffCandidate(person.personId))
       .map(person => {
         const warnings = this.personWarnings(person.personId, selected);
         const alreadyAssigned = shift.assignments.some(assignment =>
@@ -275,7 +302,6 @@ export class StaffAreasComponent {
         return {
           personId: person.personId,
           personName: person.personName,
-          applicationStatus: this.applicationForPerson(person.personId)?.status ?? null,
           warnings,
           canAssign: !alreadyAssigned,
         };
@@ -297,6 +323,102 @@ export class StaffAreasComponent {
       assignment,
       warnings: this.personWarnings(assignment.personId, selected, detail.id),
     }));
+  });
+
+  readonly personTimelineRange = computed(() => {
+    const selected = this.selectedShift();
+    if (!selected) {
+      return null;
+    }
+
+    const day = selected.shift.start.slice(0, 10);
+    return {
+      from: this.scheduleBoundaryDate(day, 'start'),
+      to: this.scheduleBoundaryDate(day, 'end'),
+    };
+  });
+
+  readonly personTimelineWidth = computed(() => {
+    const range = this.personTimelineRange();
+    if (!range) {
+      return PERSON_TIMELINE_MIN_WIDTH;
+    }
+
+    return Math.max(
+      (range.to.getTime() - range.from.getTime()) / 60000 * PERSON_TIMELINE_PX_PER_MIN,
+      PERSON_TIMELINE_MIN_WIDTH
+    );
+  });
+
+  readonly personTimelineHourMarkers = computed(() => {
+    const range = this.personTimelineRange();
+    if (!range) {
+      return [];
+    }
+
+    const markers: { label: string; left: number }[] = [];
+    const cursor = new Date(range.from);
+
+    if (cursor.getMinutes() !== 0) {
+      cursor.setHours(cursor.getHours() + 1, 0, 0, 0);
+    }
+
+    while (cursor <= range.to) {
+      markers.push({
+        label: `${cursor.getHours().toString().padStart(2, '0')}:00`,
+        left: (cursor.getTime() - range.from.getTime()) / 60000 * PERSON_TIMELINE_PX_PER_MIN,
+      });
+      cursor.setHours(cursor.getHours() + 1);
+    }
+
+    return markers;
+  });
+
+  readonly personTimelineRows = computed<PersonTimelineRow[]>(() => {
+    const selected = this.selectedShift();
+    const detail = this.selectedShiftDetail();
+    const range = this.personTimelineRange();
+    if (!selected || !detail || !range) {
+      return [];
+    }
+
+    const allRows = this.allRows();
+    const shiftsById = new Map<string, ShiftDto>(
+      Object.values(this.shiftDetails()).map(shift => [shift.id, shift])
+    );
+    shiftsById.set(detail.id, detail);
+
+    return detail.assignments
+      .filter(assignment => this.isActiveAssignment(assignment.status))
+      .map(assignment => ({
+        personId: assignment.personId,
+        personName: assignment.personName ?? assignment.personId,
+        shifts: Array.from(shiftsById.values())
+          .filter(shift =>
+            shift.assignments.some(candidate =>
+              candidate.personId === assignment.personId && this.isActiveAssignment(candidate.status)
+            ) &&
+            this.shiftIntersectsRange(shift, range.from, range.to)
+          )
+          .sort((left, right) => left.start.localeCompare(right.start))
+          .map(shift => {
+            const row = allRows.find(candidate => candidate.shift.shiftId === shift.id);
+            const start = Math.max(new Date(shift.start).getTime(), range.from.getTime());
+            const end = Math.min(new Date(shift.end).getTime(), range.to.getTime());
+
+            return {
+              shiftId: shift.id,
+              areaName: row?.areaName ?? '',
+              stationName: row?.stationName ?? shift.stationId,
+              start: shift.start,
+              end: shift.end,
+              left: (start - range.from.getTime()) / 60000 * PERSON_TIMELINE_PX_PER_MIN,
+              width: Math.max((end - start) / 60000 * PERSON_TIMELINE_PX_PER_MIN, 24),
+              isSelected: shift.id === detail.id,
+            };
+          }),
+      }))
+      .sort((left, right) => left.personName.localeCompare(right.personName, 'sv'));
   });
 
   private loadStaff(editionId: string): void {
@@ -350,6 +472,7 @@ export class StaffAreasComponent {
         this.creatingShift.set(false);
         this.editingShift.set(false);
         this.selectedShiftId.set(previousShiftId);
+        this.selectedShiftDetailView.set('assignments');
         this.selectedShiftDetail.set(null);
         this.assignForm.reset({ personId: '' });
         this.editShiftForm.reset({
@@ -419,13 +542,19 @@ export class StaffAreasComponent {
     if (this.selectedShiftId() === shiftId) {
       this.selectedShiftId.set(null);
       this.selectedShiftDetail.set(null);
+      this.selectedShiftDetailView.set('assignments');
       this.assignForm.reset({ personId: '' });
       this.editingShift.set(false);
       return;
     }
 
     this.selectedShiftId.set(shiftId);
+    this.selectedShiftDetailView.set('assignments');
     this.loadSelectedShift(shiftId, true);
+  }
+
+  setSelectedShiftDetailView(value: SelectedShiftDetailView): void {
+    this.selectedShiftDetailView.set(value);
   }
 
   openCreateShift(): void {
@@ -646,6 +775,35 @@ export class StaffAreasComponent {
     return `${shift.activeAssignmentCount}/${shift.minPersons}-${shift.maxPersons}`;
   }
 
+  applicationPreferenceNames(personId: string): string[] {
+    const ids = this.applicationForPerson(personId)?.staffAreaPreferenceIds ?? [];
+    const areas = this.schedule()?.staffAreas ?? [];
+
+    return ids.map(id => areas.find(area => area.staffAreaId === id)?.name ?? id);
+  }
+
+  applicationAvailabilitySummary(personId: string): string[] {
+    const availabilities = this.applicationForPerson(personId)?.availabilities ?? [];
+    return availabilities.map(availability => this.formatAvailability(availability.start, availability.end));
+  }
+
+  applicationInterestDescription(personId: string): string | null {
+    const value = this.applicationForPerson(personId)?.interestDescription?.trim();
+    return value ? value : null;
+  }
+
+  applicationSummaryChips(personId: string): string[] {
+    const chips: string[] = [];
+    chips.push(...this.applicationPreferenceNames(personId));
+    chips.push(...this.applicationAvailabilitySummary(personId));
+
+    return chips;
+  }
+
+  hasApplicationSummary(personId: string): boolean {
+    return !!this.applicationInterestDescription(personId) || this.applicationSummaryChips(personId).length > 0;
+  }
+
   get shiftMin(): string | undefined {
     const day = this.selectedDay();
     const scheduleDay = this.schedule()?.scheduleDays.find(d => d.date === day);
@@ -710,6 +868,35 @@ export class StaffAreasComponent {
   private parseDateOnly(value: string): Date {
     const [year, month, day] = value.split('-').map(Number);
     return new Date(year, (month ?? 1) - 1, day ?? 1);
+  }
+
+  private scheduleBoundaryDate(day: string, boundary: 'start' | 'end'): Date {
+    const scheduleDay = this.schedule()?.scheduleDays.find(candidate => candidate.date === day);
+    const [hours, minutes] = (
+      boundary === 'start'
+        ? scheduleDay?.startTime ?? '00:00'
+        : scheduleDay?.endTime ?? '23:59'
+    ).split(':').map(Number);
+    const date = this.parseDateOnly(day);
+    date.setHours(hours, minutes ?? 0, 0, 0);
+    return date;
+  }
+
+  private formatAvailability(start: string, end: string): string {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const sameDay = startDate.toDateString() === endDate.toDateString();
+    const dateLabel = startDate.toLocaleDateString('sv-SE', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+    const startTime = startDate.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+    const endTime = endDate.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+
+    return sameDay
+      ? `${dateLabel} ${startTime}-${endTime}`
+      : `${dateLabel} ${startTime} - ${endDate.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })} ${endTime}`;
   }
 
   private syncCreateShiftPrefill(forceReset = false): void {
@@ -838,6 +1025,11 @@ export class StaffAreasComponent {
     return this.applications().find(application => application.personId === personId);
   }
 
+  private isApprovedStaffCandidate(personId: string): boolean {
+    const status = this.applicationForPerson(personId)?.status;
+    return status === 'Confirmed' || status === 'Assigned';
+  }
+
   private isAvailableForShift(application: StaffApplicationSummaryDto, shift: StaffScheduleShiftDto): boolean {
     const shiftStart = new Date(shift.start).getTime();
     const shiftEnd = new Date(shift.end).getTime();
@@ -873,5 +1065,13 @@ export class StaffAreasComponent {
 
   private shiftsOverlap(left: Pick<ShiftDto, 'start' | 'end'>, right: Pick<ShiftDto, 'start' | 'end'>): boolean {
     return new Date(left.start) < new Date(right.end) && new Date(left.end) > new Date(right.start);
+  }
+
+  private shiftIntersectsRange(
+    shift: Pick<ShiftDto, 'start' | 'end'>,
+    from: Date,
+    to: Date,
+  ): boolean {
+    return new Date(shift.start) < to && new Date(shift.end) > from;
   }
 }

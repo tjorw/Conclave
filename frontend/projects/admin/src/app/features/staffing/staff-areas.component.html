@@ -278,23 +278,39 @@
 
             <div class="detail-grid">
               <section class="detail-section">
-                <div class="detail-section-title">{{ PAGE.assignmentsTitle }}</div>
-                <table class="data-table inner-table">
-                  <thead>
-                    <tr>
-                      <th>{{ PAGE.assignmentPersonColumn }}</th>
-                      <th>{{ PAGE.assignmentStatusColumn }}</th>
-                      <th>{{ PAGE.assignmentAssignedColumn }}</th>
-                      <th>{{ PAGE.assignmentWarningsColumn }}</th>
-                      <th class="actions-col"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (row of assignmentRows(); track row.assignment.id) {
+                <div class="detail-section-header">
+                  <div class="detail-section-title">
+                    @if (selectedShiftDetailView() === 'assignments') {
+                      {{ PAGE.assignmentsTitle }}
+                    } @else {
+                      {{ PAGE.personTimelineTitle }}
+                    }
+                  </div>
+
+                  <mat-button-toggle-group
+                    class="detail-view-toggle"
+                    [value]="selectedShiftDetailView()"
+                    (change)="setSelectedShiftDetailView($event.value)">
+                    <mat-button-toggle value="assignments">{{ PAGE.assignmentsView }}</mat-button-toggle>
+                    <mat-button-toggle value="personTimeline">{{ PAGE.personTimelineView }}</mat-button-toggle>
+                  </mat-button-toggle-group>
+                </div>
+
+                @if (selectedShiftDetailView() === 'assignments') {
+                  <table class="data-table inner-table">
+                    <thead>
                       <tr>
-                        <td>{{ row.assignment.personName ?? row.assignment.personId }}</td>
-                        <td><span class="chip chip-grey">{{ assignmentStatusLabel(row.assignment.status) }}</span></td>
-                        <td>{{ row.assignment.assignedAt | date:'yyyy-MM-dd HH:mm' }}</td>
+                        <th>{{ PAGE.assignmentPersonColumn }}</th>
+                        <th>{{ PAGE.assignmentStatusColumn }}</th>
+                        <th>{{ PAGE.assignmentWarningsColumn }}</th>
+                        <th class="actions-col"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of assignmentRows(); track row.assignment.id) {
+                        <tr>
+                          <td>{{ row.assignment.personName ?? row.assignment.personId }}</td>
+                          <td><span class="chip chip-grey">{{ assignmentStatusLabel(row.assignment.status) }}</span></td>
                         <td>
                           <div class="warning-list compact">
                             @for (warning of row.warnings; track warning) {
@@ -303,28 +319,93 @@
                               <span class="ok-chip">{{ PAGE.noWarnings }}</span>
                             }
                           </div>
-                        </td>
-                        <td class="row-actions">
-                          @if (row.assignment.status === 'Assigned') {
-                            <button mat-icon-button color="primary" (click)="confirmAssignment(row.assignment.id)" [disabled]="saving()" [matTooltip]="PAGE.confirmAssignmentAction">
-                              <mat-icon>check</mat-icon>
-                            </button>
-                            <button mat-icon-button color="warn" (click)="rejectAssignment(row.assignment.id)" [disabled]="saving()" [matTooltip]="PAGE.rejectAssignmentAction">
-                              <mat-icon>close</mat-icon>
-                            </button>
+                          @if (hasApplicationSummary(row.assignment.personId)) {
+                            <div class="application-summary compact">
+                              <div class="application-summary-label">{{ PAGE.applicationCommentLabel }}</div>
+                              @if (applicationInterestDescription(row.assignment.personId); as interest) {
+                                <p class="application-summary-text">{{ interest }}</p>
+                              }
+                              @if (applicationSummaryChips(row.assignment.personId).length > 0) {
+                                <div class="application-chip-list">
+                                  @for (chip of applicationSummaryChips(row.assignment.personId); track chip) {
+                                    <span class="chip chip-grey">{{ chip }}</span>
+                                  }
+                                </div>
+                              }
+                            </div>
                           }
-                          @if (row.assignment.status === 'Confirmed') {
-                            <button mat-icon-button color="warn" (click)="cancelAssignment(row.assignment.id)" [disabled]="saving()" [matTooltip]="PAGE.cancelAssignmentAction">
-                              <mat-icon>person_remove</mat-icon>
-                            </button>
-                          }
                         </td>
-                      </tr>
-                    } @empty {
-                      <tr><td colspan="5" class="empty-cell">{{ PAGE.noAssignments }}</td></tr>
-                    }
-                  </tbody>
-                </table>
+                          <td class="row-actions">
+                            @if (row.assignment.status === 'Assigned') {
+                              <button mat-icon-button color="primary" (click)="confirmAssignment(row.assignment.id)" [disabled]="saving()" [matTooltip]="PAGE.confirmAssignmentAction">
+                                <mat-icon>check</mat-icon>
+                              </button>
+                              <button mat-icon-button color="warn" (click)="rejectAssignment(row.assignment.id)" [disabled]="saving()" [matTooltip]="PAGE.rejectAssignmentAction">
+                                <mat-icon>close</mat-icon>
+                              </button>
+                            }
+                            @if (row.assignment.status === 'Confirmed') {
+                              <button mat-icon-button color="warn" (click)="cancelAssignment(row.assignment.id)" [disabled]="saving()" [matTooltip]="PAGE.cancelAssignmentAction">
+                                <mat-icon>person_remove</mat-icon>
+                              </button>
+                            }
+                          </td>
+                        </tr>
+                      } @empty {
+                        <tr><td colspan="5" class="empty-cell">{{ PAGE.noAssignments }}</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                } @else {
+                  <p class="detail-hint">{{ PAGE.personTimelineHint }}</p>
+
+                  @if (personTimelineRows().length === 0) {
+                    <p class="muted-info">{{ PAGE.noPersonTimeline }}</p>
+                  } @else {
+                    <div class="person-timeline">
+                      <div class="person-timeline-scroll">
+                        <div class="person-timeline-header">
+                          <div class="person-timeline-label-column"></div>
+                          <div class="person-timeline-hours" [style.width.px]="personTimelineWidth()">
+                            @for (marker of personTimelineHourMarkers(); track marker.left) {
+                              <div class="person-timeline-hour" [style.left.px]="marker.left">{{ marker.label }}</div>
+                            }
+                          </div>
+                        </div>
+
+                        <div class="person-timeline-body">
+                          @for (row of personTimelineRows(); track row.personId) {
+                            <div class="person-timeline-row">
+                              <div class="person-timeline-person">
+                                <div class="person-timeline-person-name">{{ row.personName }}</div>
+                              </div>
+
+                              <div class="person-timeline-track" [style.width.px]="personTimelineWidth()">
+                                @for (marker of personTimelineHourMarkers(); track marker.left) {
+                                  <div class="person-timeline-grid-line" [style.left.px]="marker.left"></div>
+                                }
+
+                                @for (shift of row.shifts; track shift.shiftId) {
+                                  <button
+                                    type="button"
+                                    class="person-timeline-block"
+                                    [class.is-selected]="shift.isSelected"
+                                    [style.left.px]="shift.left"
+                                    [style.width.px]="shift.width"
+                                    [title]="shift.stationName + ' ' + (shift.start | date:'HH:mm') + '-' + (shift.end | date:'HH:mm')"
+                                    (click)="selectShift(shift.shiftId)">
+                                    <span class="person-timeline-block-title">{{ shift.stationName }}</span>
+                                    <span class="person-timeline-block-meta">{{ shift.start | date:'HH:mm' }}-{{ shift.end | date:'HH:mm' }}</span>
+                                  </button>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                }
               </section>
 
               @if (detail.status !== 'Cancelled') {
@@ -355,7 +436,6 @@
                   @if (selectedCandidate(); as candidate) {
                     <div class="selected-candidate-card">
                       <div class="selected-candidate-title">{{ candidate.personName }}</div>
-                      <div class="selected-candidate-meta">{{ PAGE.applicationStatusLabel }} {{ applicationStatusLabel(candidate.applicationStatus) }}</div>
                       <div class="warning-list">
                         @for (warning of candidate.warnings; track warning) {
                           <span class="warning-chip">{{ warning }}</span>
@@ -363,6 +443,22 @@
                           <span class="ok-chip">{{ PAGE.noWarnings }}</span>
                         }
                       </div>
+
+                      @if (selectedCandidateApplication(); as application) {
+                        <div class="application-summary">
+                          <div class="application-summary-label">{{ PAGE.applicationCommentLabel }}</div>
+                          @if (applicationInterestDescription(candidate.personId); as interest) {
+                            <p class="application-summary-text">{{ interest }}</p>
+                          }
+                          @if (applicationSummaryChips(candidate.personId).length > 0) {
+                            <div class="application-chip-list">
+                              @for (chip of applicationSummaryChips(candidate.personId); track chip) {
+                                <span class="chip chip-grey">{{ chip }}</span>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
                     </div>
                   }
 
@@ -371,12 +467,24 @@
                       <div class="candidate-row" [class.candidate-row-disabled]="!candidate.canAssign">
                         <div>
                           <div class="candidate-name">{{ candidate.personName }}</div>
-                          <div class="candidate-meta">{{ PAGE.applicationStatusLabel }} {{ applicationStatusLabel(candidate.applicationStatus) }}</div>
                           <div class="warning-list compact">
                             @for (warning of candidate.warnings; track warning) {
                               <span class="warning-chip">{{ warning }}</span>
                             } @empty {
                               <span class="ok-chip">{{ PAGE.noWarnings }}</span>
+                            }
+                          </div>
+                          <div class="application-summary compact">
+                            <div class="application-summary-label">{{ PAGE.applicationCommentLabel }}</div>
+                            @if (applicationInterestDescription(candidate.personId); as interest) {
+                              <p class="application-summary-text">{{ interest }}</p>
+                            }
+                            @if (applicationSummaryChips(candidate.personId).length > 0) {
+                              <div class="application-chip-list">
+                                @for (chip of applicationSummaryChips(candidate.personId); track chip) {
+                                  <span class="chip chip-grey">{{ chip }}</span>
+                                }
+                              </div>
                             }
                           </div>
                         </div>
