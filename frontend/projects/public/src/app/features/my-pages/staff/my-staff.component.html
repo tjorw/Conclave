@@ -26,14 +26,15 @@
       </section>
 
       <section class="card shift-card">
-        <h2>Tilldelade pass</h2>
+        <h2>Mina pass</h2>
         @if (assignedShifts().length === 0) {
-          <p class="empty-text">Du har inga tilldelade pass ännu.</p>
+          <p class="empty-text">Du har inga pass ännu.</p>
         } @else {
           <div class="shift-list">
             @for (shift of assignedShifts(); track shift.shiftId) {
               <article class="shift-item">
                 <h3>{{ shift.stationName }}</h3>
+                <p>{{ shiftRoleLabel(shift.role) }}</p>
                 <p>{{ displayDate(shift.start) }}</p>
                 <p>{{ displayTime(shift.start) }} - {{ displayTime(shift.end) }}</p>
               </article>

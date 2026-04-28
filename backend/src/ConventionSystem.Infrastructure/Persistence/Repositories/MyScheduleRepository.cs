@@ -67,9 +67,10 @@ public sealed class MyScheduleRepository(ConventionDbContext db) : IMyScheduleRe
             .Include(s => s.Assignments)
             .Where(s => stationIds.Contains(s.StationId)
                      && s.Status != ShiftStatus.Cancelled
-                     && s.Assignments.Any(a => a.PersonId == personId
-                         && (a.Status == StaffAssignmentStatus.Assigned
-                          || a.Status == StaffAssignmentStatus.Confirmed)))
+                     && (s.ResponsibleId == personId
+                      || s.Assignments.Any(a => a.PersonId == personId
+                          && (a.Status == StaffAssignmentStatus.Assigned
+                           || a.Status == StaffAssignmentStatus.Confirmed))))
             .ToListAsync(ct);
 
         var usedStationIds = shifts.Select(s => s.StationId).ToHashSet();
@@ -83,6 +84,7 @@ public sealed class MyScheduleRepository(ConventionDbContext db) : IMyScheduleRe
             .Select(s => new MyAssignedShiftSummaryDto(
                 s.Id.Value,
                 stationNameMap.GetValueOrDefault(s.StationId) ?? "",
+                s.ResponsibleId == personId ? "Responsible" : "Assigned",
                 s.TimeSlot.Start,
                 s.TimeSlot.End))
             .OrderBy(x => x.Start)

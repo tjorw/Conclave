@@ -30,9 +30,10 @@ public sealed class ReceptionScheduleRepository(ConventionDbContext db) : IRecep
             .Include(s => s.Assignments)
             .Where(s => stationIds.Contains(s.StationId)
                      && s.Status != ShiftStatus.Cancelled
-                     && s.Assignments.Any(a => a.PersonId == personId
-                         && (a.Status == StaffAssignmentStatus.Assigned
-                          || a.Status == StaffAssignmentStatus.Confirmed)))
+                     && (s.ResponsibleId == personId
+                      || s.Assignments.Any(a => a.PersonId == personId
+                          && (a.Status == StaffAssignmentStatus.Assigned
+                           || a.Status == StaffAssignmentStatus.Confirmed))))
             .OrderBy(s => s.TimeSlot.Start)
             .ToListAsync(ct);
 
@@ -64,6 +65,7 @@ public sealed class ReceptionScheduleRepository(ConventionDbContext db) : IRecep
                     && (a.Status == StaffAssignmentStatus.Assigned
                      || a.Status == StaffAssignmentStatus.Confirmed))
                 ?.Status.ToString() ?? shift.Status.ToString();
+            var role = shift.ResponsibleId == personId ? "Responsible" : "Assigned";
 
             return new PersonShiftItemDto(
                 shift.Id.Value,
@@ -72,7 +74,8 @@ public sealed class ReceptionScheduleRepository(ConventionDbContext db) : IRecep
                 DateOnly.FromDateTime(shift.TimeSlot.Start),
                 shift.TimeSlot.Start,
                 shift.TimeSlot.End,
-                assignmentStatus);
+                assignmentStatus,
+                role);
         }).ToList();
     }
 

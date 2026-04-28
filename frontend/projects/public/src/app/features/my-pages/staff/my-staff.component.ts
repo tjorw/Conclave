@@ -181,6 +181,10 @@ export class MyStaffComponent implements OnInit {
     }).format(new Date(value));
   }
 
+  shiftRoleLabel(role: string): string {
+    return role === 'Responsible' ? 'Ansvarig' : 'Tilldelad';
+  }
+
   private loadState(): void {
     const editionId = this.editionSvc.editionId();
     if (!editionId) {

@@ -106,7 +106,7 @@ public class ShiftTests
 
         shift.CancelAssignment(assignment.Id, PersonId.New());
 
-        Assert.Equal(StaffAssignmentStatus.Cancelled, assignment.Status);
+        Assert.Empty(shift.Assignments);
         Assert.Single(shift.DomainEvents.OfType<AssignmentCancelled>());
     }
 
@@ -117,7 +117,9 @@ public class ShiftTests
         var assignment = shift.AssignPerson(PersonId.New(), PersonId.New());
         shift.RejectAssignment(assignment.Id);
 
-        Assert.Throws<RejectedAssignmentCannotBeCancelledException>(() => shift.CancelAssignment(assignment.Id, PersonId.New()));
+        shift.CancelAssignment(assignment.Id, PersonId.New());
+
+        Assert.Empty(shift.Assignments);
     }
 
     [Fact]
@@ -184,5 +186,6 @@ public class ShiftTests
         var newAssignment = shift.AssignPerson(personId, PersonId.New());
 
         Assert.NotNull(newAssignment);
+        Assert.Single(shift.Assignments);
     }
 }

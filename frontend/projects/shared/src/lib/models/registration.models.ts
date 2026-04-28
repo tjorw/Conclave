@@ -172,6 +172,7 @@ export interface MyOrganiserSessionSummaryDto {
 export interface MyAssignedShiftSummaryDto {
   shiftId: string;
   stationName: string;
+  role: string;
   start: string;
   end: string;
 }

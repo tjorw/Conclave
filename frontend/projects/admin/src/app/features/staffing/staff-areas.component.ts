@@ -66,6 +66,7 @@ interface PersonTimelineShiftBlock {
 interface PersonTimelineRow {
   personId: string;
   personName: string;
+  role: 'responsible' | 'assigned';
   shifts: PersonTimelineShiftBlock[];
 }
 
@@ -388,16 +389,27 @@ export class StaffAreasComponent {
     );
     shiftsById.set(detail.id, detail);
 
-    return detail.assignments
-      .filter(assignment => this.isActiveAssignment(assignment.status))
-      .map(assignment => ({
-        personId: assignment.personId,
+    const participants = new Map<string, { personName: string; role: 'responsible' | 'assigned' }>();
+    participants.set(detail.responsibleId, {
+      personName: detail.responsibleName ?? detail.responsibleId,
+      role: 'responsible',
+    });
+
+    for (const assignment of detail.assignments.filter(candidate => this.isActiveAssignment(candidate.status))) {
+      participants.set(assignment.personId, {
         personName: assignment.personName ?? assignment.personId,
+        role: participants.get(assignment.personId)?.role ?? 'assigned',
+      });
+    }
+
+    return Array.from(participants.entries())
+      .map(([personId, participant]) => ({
+        personId,
+        personName: participant.personName,
+        role: participant.role,
         shifts: Array.from(shiftsById.values())
           .filter(shift =>
-            shift.assignments.some(candidate =>
-              candidate.personId === assignment.personId && this.isActiveAssignment(candidate.status)
-            ) &&
+            this.personParticipatesInShift(personId, shift) &&
             this.shiftIntersectsRange(shift, range.from, range.to)
           )
           .sort((left, right) => left.start.localeCompare(right.start))
@@ -418,6 +430,7 @@ export class StaffAreasComponent {
             };
           }),
       }))
+      .filter(row => row.shifts.length > 0)
       .sort((left, right) => left.personName.localeCompare(right.personName, 'sv'));
   });
 
@@ -775,6 +788,10 @@ export class StaffAreasComponent {
     return `${shift.activeAssignmentCount}/${shift.minPersons}-${shift.maxPersons}`;
   }
 
+  personTimelineRoleLabel(role: 'responsible' | 'assigned'): string {
+    return role === 'responsible' ? this.PAGE.personTimelineResponsibleRole : this.PAGE.personTimelineAssignedRole;
+  }
+
   applicationPreferenceNames(personId: string): string[] {
     const ids = this.applicationForPerson(personId)?.staffAreaPreferenceIds ?? [];
     const areas = this.schedule()?.staffAreas ?? [];
@@ -1052,10 +1069,15 @@ export class StaffAreasComponent {
         shift.id !== selectedShiftId &&
         shift.id !== excludeShiftId &&
         shift.status !== 'Cancelled' &&
-        shift.assignments.some(assignment =>
-          assignment.personId === personId && this.isActiveAssignment(assignment.status)
-        ) &&
+        this.personParticipatesInShift(personId, shift) &&
         this.shiftsOverlap(currentShift, shift)
+      );
+  }
+
+  private personParticipatesInShift(personId: string, shift: ShiftDto): boolean {
+    return shift.responsibleId === personId ||
+      shift.assignments.some(assignment =>
+        assignment.personId === personId && this.isActiveAssignment(assignment.status)
       );
   }
 

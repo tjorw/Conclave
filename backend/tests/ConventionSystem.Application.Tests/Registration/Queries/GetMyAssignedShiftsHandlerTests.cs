@@ -25,7 +25,7 @@ public class GetMyAssignedShiftsHandlerTests
         var editionId = Guid.NewGuid();
         var expected = new List<MyAssignedShiftSummaryDto>
         {
-            new(Guid.NewGuid(), "Entré", DateTime.UtcNow, DateTime.UtcNow.AddHours(3)),
+            new(Guid.NewGuid(), "Entré", "Responsible", DateTime.UtcNow, DateTime.UtcNow.AddHours(3)),
         };
 
         _currentUser.PersonId.Returns(personId);

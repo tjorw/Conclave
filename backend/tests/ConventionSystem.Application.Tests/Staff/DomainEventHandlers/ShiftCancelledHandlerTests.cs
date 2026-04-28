@@ -38,7 +38,7 @@ public class ShiftCancelledHandlerTests
 
         await _handler.Handle(new ShiftCancelled(shift.Id, shift.StationId, performedById, DateTimeOffset.UtcNow), default);
 
-        Assert.All(shift.Assignments, a => Assert.Equal(StaffAssignmentStatus.Cancelled, a.Status));
+        Assert.Empty(shift.Assignments);
     }
 
     [Fact]

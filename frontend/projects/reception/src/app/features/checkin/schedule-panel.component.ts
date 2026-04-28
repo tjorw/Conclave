@@ -32,4 +32,11 @@ export class SchedulePanelComponent {
     };
     return map[status] ?? status;
   }
+  roleLabel(role: string): string {
+    const map: Record<string, string> = {
+      Responsible: 'Ansvarig',
+      Assigned: 'Tilldelad',
+    };
+    return map[role] ?? role;
+  }
 }

@@ -13,7 +13,8 @@ public record PersonShiftItemDto(
     DateOnly Date,
     DateTime Start,
     DateTime End,
-    string Status);
+    string Status,
+    string Role);
 
 public record PersonSessionItemDto(
     Guid SessionId,

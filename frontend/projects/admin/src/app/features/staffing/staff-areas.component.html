@@ -378,6 +378,7 @@
                             <div class="person-timeline-row">
                               <div class="person-timeline-person">
                                 <div class="person-timeline-person-name">{{ row.personName }}</div>
+                                <div class="selected-shift-meta">{{ personTimelineRoleLabel(row.role) }}</div>
                               </div>
 
                               <div class="person-timeline-track" [style.width.px]="personTimelineWidth()">

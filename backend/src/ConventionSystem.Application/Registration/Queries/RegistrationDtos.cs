@@ -95,6 +95,7 @@ public record MyOrganiserSessionSummaryDto(
 public record MyAssignedShiftSummaryDto(
     Guid ShiftId,
     string StationName,
+    string Role,
     DateTime Start,
     DateTime End);
 

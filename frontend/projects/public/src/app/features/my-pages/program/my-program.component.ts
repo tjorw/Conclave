@@ -111,7 +111,7 @@ export class MyProgramComponent implements OnInit {
     const shifts = this.assignedShifts().map<MyScheduleItemDto>(shift => ({
       sessionId: null,
       shiftId: shift.shiftId,
-      title: shift.stationName,
+      title: `${shift.stationName} (${this.shiftRoleLabel(shift.role)})`,
       start: shift.start,
       end: shift.end,
       locationName: shift.stationName,
@@ -257,6 +257,10 @@ export class MyProgramComponent implements OnInit {
 
   scheduleTypeLabel(type: string): string {
     return SCHEDULE_TYPE_LABEL[type] ?? type;
+  }
+
+  shiftRoleLabel(role: string): string {
+    return role === 'Responsible' ? 'Ansvarig' : 'Tilldelad';
   }
 
   hasConflict(item: MyScheduleItemDto): boolean {
@@ -407,6 +411,7 @@ export class MyProgramComponent implements OnInit {
       .map(item => ({
         shiftId: typeof item['shiftId'] === 'string' ? item['shiftId'] : '',
         stationName: typeof item['stationName'] === 'string' ? item['stationName'] : '',
+        role: typeof item['role'] === 'string' ? item['role'] : 'Assigned',
         start: typeof item['start'] === 'string' ? item['start'] : '',
         end: typeof item['end'] === 'string' ? item['end'] : '',
       }))

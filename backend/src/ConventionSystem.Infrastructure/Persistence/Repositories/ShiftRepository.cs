@@ -46,7 +46,7 @@ public sealed class ShiftRepository(ConventionDbContext db) : IShiftRepository
             s.TimeSlot.End,
             s.StaffingRequirement.MinPersons,
             s.StaffingRequirement.MaxPersons,
-            s.Assignments.Count(a => a.Status is not (StaffAssignmentStatus.Cancelled or StaffAssignmentStatus.Rejected)),
+            GetEffectiveActiveStaffingCount(s),
             s.Status.ToString())).ToList();
     }
 
@@ -154,8 +154,7 @@ public sealed class ShiftRepository(ConventionDbContext db) : IShiftRepository
                         shiftsByStation.GetValueOrDefault(station.Id, [])
                             .Select(shift =>
                             {
-                                var activeAssignmentCount = shift.Assignments.Count(a =>
-                                    a.Status is not (StaffAssignmentStatus.Cancelled or StaffAssignmentStatus.Rejected));
+                                var activeAssignmentCount = GetEffectiveActiveStaffingCount(shift);
                                 var confirmedAssignmentCount = shift.Assignments.Count(a =>
                                     a.Status == StaffAssignmentStatus.Confirmed);
 
@@ -195,6 +194,17 @@ public sealed class ShiftRepository(ConventionDbContext db) : IShiftRepository
         if (activeAssignmentCount == maxPersons)
             return "Full";
         return "WithinRequirement";
+    }
+
+    private static int GetEffectiveActiveStaffingCount(Shift shift)
+    {
+        var activeAssignmentCount = shift.Assignments.Count(a =>
+            a.Status is not (StaffAssignmentStatus.Cancelled or StaffAssignmentStatus.Rejected));
+        var responsibleAlreadyAssigned = shift.Assignments.Any(a =>
+            a.PersonId == shift.ResponsibleId &&
+            a.Status is not (StaffAssignmentStatus.Cancelled or StaffAssignmentStatus.Rejected));
+
+        return activeAssignmentCount + (responsibleAlreadyAssigned ? 0 : 1);
     }
 
     public Task SaveAsync(CancellationToken ct = default)

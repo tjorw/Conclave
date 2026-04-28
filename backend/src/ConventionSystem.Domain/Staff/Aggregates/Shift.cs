@@ -69,7 +69,7 @@ public sealed class Shift : AggregateRoot
     public void CancelAssignment(StaffAssignmentId assignmentId, PersonId performedById)
     {
         var assignment = GetAssignment(assignmentId);
-        assignment.Cancel();
+        _assignments.Remove(assignment);
         RaiseDomainEvent(new AssignmentCancelled(assignmentId, Id, assignment.PersonId, performedById, DateTimeOffset.UtcNow));
     }
 

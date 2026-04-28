@@ -36,7 +36,7 @@ public class GetPersonScheduleForReceptionHandlerTests
         var shifts = new List<PersonShiftItemDto>
         {
             new(Guid.NewGuid(), "Reception", "Entré", new DateOnly(2026, 7, 4),
-                now, now.AddHours(4), "Confirmed"),
+                now, now.AddHours(4), "Confirmed", "Assigned"),
         };
         var sessions = new List<PersonSessionItemDto>
         {
@@ -101,9 +101,9 @@ public class GetPersonScheduleForReceptionHandlerTests
         var shifts = new List<PersonShiftItemDto>
         {
             new(Guid.NewGuid(), "Info", "Infodisk", new DateOnly(2026, 7, 4),
-                day1, day1.AddHours(3), "Confirmed"),
+                day1, day1.AddHours(3), "Confirmed", "Assigned"),
             new(Guid.NewGuid(), "Info", "Infodisk", new DateOnly(2026, 7, 5),
-                day2, day2.AddHours(4), "Assigned"),
+                day2, day2.AddHours(4), "Assigned", "Responsible"),
         };
 
         _currentUser.PersonId.Returns(receptionStaffId);

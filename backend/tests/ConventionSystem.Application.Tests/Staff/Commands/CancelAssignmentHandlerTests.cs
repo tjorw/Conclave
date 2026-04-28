@@ -60,7 +60,7 @@ public class CancelAssignmentHandlerTests
 
         await _handler.Handle(new CancelAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
 
-        Assert.Equal(Domain.Staff.Enums.StaffAssignmentStatus.Cancelled, assignment.Status);
+        Assert.Empty(shift.Assignments);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class CancelAssignmentHandlerTests
 
         await _handler.Handle(new CancelAssignmentCommand(shift.Id.Value, assignment.Id.Value), default);
 
-        Assert.Equal(Domain.Staff.Enums.StaffAssignmentStatus.Cancelled, assignment.Status);
+        Assert.Empty(shift.Assignments);
     }
 
     [Fact]

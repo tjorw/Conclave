@@ -40,6 +40,7 @@ export interface PersonShiftItemDto {
   start: string;
   end: string;
   status: string;
+  role: string;
 }
 
 export interface PersonSessionItemDto {

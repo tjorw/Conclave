@@ -112,14 +112,22 @@ describe('StaffAreasComponent', () => {
       getShift: vi.fn((shiftId: string) => of({
         id: shiftId,
         stationId: shiftId === 'shift-1' ? 'station-1' : 'station-2',
-        responsibleId: 'resp-1',
-        responsibleName: 'Ansvarig',
-        start: '2027-03-01T09:00:00',
-        end: '2027-03-01T11:00:00',
-        minPersons: 1,
-        maxPersons: 2,
+        responsibleId: shiftId === 'shift-1' ? 'resp-1' : 'resp-2',
+        responsibleName: shiftId === 'shift-1' ? 'Anna' : 'Bertil',
+        start: shiftId === 'shift-1' ? '2027-03-01T09:00:00' : '2027-03-01T12:00:00',
+        end: shiftId === 'shift-1' ? '2027-03-01T11:00:00' : '2027-03-01T14:00:00',
+        minPersons: shiftId === 'shift-1' ? 1 : 2,
+        maxPersons: shiftId === 'shift-1' ? 2 : 3,
         status: 'Planned',
-        assignments: [],
+        assignments: shiftId === 'shift-2'
+          ? [{
+              id: 'assignment-1',
+              personId: 'staff-1',
+              personName: 'Funktionär 1',
+              status: 'Confirmed',
+              assignedAt: '2027-03-01T08:00:00',
+            }]
+          : [],
       })),
       listStaffApplications: vi.fn(() => of([])),
       createShift: vi.fn(),
@@ -175,5 +183,34 @@ describe('StaffAreasComponent', () => {
     const statuses = component.tableRows().map(row => component.staffingStatusLabel(row.shift.staffingStatus));
 
     expect(statuses).toEqual(['Obemannat']);
+  });
+
+  it('includes the responsible person in the selected shift person timeline', () => {
+    component.selectedShiftId.set('shift-2');
+    component.selectedShiftDetail.set({
+      id: 'shift-2',
+      stationId: 'station-2',
+      responsibleId: 'resp-2',
+      responsibleName: 'Bertil',
+      start: '2027-03-01T12:00:00',
+      end: '2027-03-01T14:00:00',
+      minPersons: 2,
+      maxPersons: 3,
+      status: 'Planned',
+      assignments: [{
+        id: 'assignment-1',
+        personId: 'staff-1',
+        personName: 'Funktionär 1',
+        status: 'Confirmed',
+        assignedAt: '2027-03-01T08:00:00',
+      }],
+    });
+
+    const rows = component.personTimelineRows();
+
+    expect(rows.map(row => ({ personId: row.personId, role: row.role }))).toEqual([
+      { personId: 'resp-2', role: 'responsible' },
+      { personId: 'staff-1', role: 'assigned' },
+    ]);
   });
 });
