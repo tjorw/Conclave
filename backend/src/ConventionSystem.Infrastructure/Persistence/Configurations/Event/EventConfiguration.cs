@@ -192,32 +192,11 @@ public sealed class CoOrganiserInvitationConfiguration : IEntityTypeConfiguratio
             .HasMaxLength(50)
             .HasColumnName("code");
 
-        builder.Property(i => i.Status)
-            .HasConversion<string>()
-            .HasMaxLength(50)
-            .HasColumnName("status");
-
         builder.Property(i => i.CreatedById)
             .HasConversion(id => id.Value, value => new PersonId(value))
             .HasColumnName("created_by_id");
 
         builder.Property(i => i.CreatedAt).HasColumnName("created_at");
-
-        builder.Property(i => i.RedeemedById)
-            .HasConversion(
-                id => id.HasValue ? id.Value.Value : (Guid?)null,
-                value => value.HasValue ? new PersonId(value.Value) : (PersonId?)null)
-            .HasColumnName("redeemed_by_id");
-
-        builder.Property(i => i.RedeemedAt).HasColumnName("redeemed_at");
-
-        builder.Property(i => i.CancelledById)
-            .HasConversion(
-                id => id.HasValue ? id.Value.Value : (Guid?)null,
-                value => value.HasValue ? new PersonId(value.Value) : (PersonId?)null)
-            .HasColumnName("cancelled_by_id");
-
-        builder.Property(i => i.CancelledAt).HasColumnName("cancelled_at");
 
         builder.HasIndex(i => i.EventId).HasDatabaseName("IX_co_organiser_invitations_event_id");
         builder.HasIndex(i => i.Code).IsUnique().HasDatabaseName("IX_co_organiser_invitations_code");

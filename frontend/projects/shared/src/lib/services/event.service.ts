@@ -124,6 +124,13 @@ export class EventService {
     );
   }
 
+  redeemCoOrganiserInvitation(code: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/co-organiser-invitations/redeem`,
+      { code }
+    );
+  }
+
   addEventComment(eventId: string, comment: string) {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/events/${eventId}/comments`,

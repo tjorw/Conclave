@@ -285,7 +285,7 @@ public sealed class Event : AggregateRoot
     {
         EnsureNotCancelled();
 
-        if (GetActiveInvitationCount() >= CoOrganiserLimit)
+        if (GetActiveInvitationCount() + _coOrganisers.Count >= CoOrganiserLimit)
             throw new CoOrganiserLimitExceededException();
 
         var normalizedEmail = NormalizeEmail(email);
@@ -308,8 +308,7 @@ public sealed class Event : AggregateRoot
     public void CancelInvitation(CoOrganiserInvitationId invitationId, PersonId cancelledById)
     {
         var invitation = GetInvitationById(invitationId);
-
-        invitation.Cancel(cancelledById);
+        _coOrganiserInvitations.Remove(invitation);
         RaiseDomainEvent(new CoOrganiserInvitationCancelled(invitationId, Id, cancelledById, DateTimeOffset.UtcNow));
     }
 
@@ -320,19 +319,17 @@ public sealed class Event : AggregateRoot
         if (invitation.NormalizedEmail != NormalizeEmail(redeemerEmail))
             throw new CoOrganiserInvitationEmailMismatchException();
 
-        invitation.Redeem(redeemedById);
+        _coOrganiserInvitations.Remove(invitation);
         var coOrganiser = AddCoOrganiser(redeemedById);
         RaiseDomainEvent(new CoOrganiserInvitationRedeemed(invitation.Id, Id, redeemedById, DateTimeOffset.UtcNow));
         return coOrganiser;
     }
 
     private int GetActiveInvitationCount()
-        => _coOrganiserInvitations.Count(i => i.Status == CoOrganiserInvitationStatus.Active);
+        => _coOrganiserInvitations.Count;
 
     private bool HasActiveInvitationFor(string normalizedEmail)
-        => _coOrganiserInvitations.Any(i =>
-            i.NormalizedEmail == normalizedEmail &&
-            i.Status == CoOrganiserInvitationStatus.Active);
+        => _coOrganiserInvitations.Any(i => i.NormalizedEmail == normalizedEmail);
 
     private CoOrganiserInvitation GetInvitationById(CoOrganiserInvitationId invitationId)
         => _coOrganiserInvitations.FirstOrDefault(i => i.Id == invitationId)

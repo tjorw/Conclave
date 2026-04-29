@@ -1,5 +1,4 @@
 export type EventStatus = 'Draft' | 'UnderReview' | 'Published' | 'Cancelled';
-export type CoOrganiserInvitationStatus = 'Active' | 'Redeemed' | 'Cancelled';
 export type EventCommentStatus = 'New' | 'InProgress' | 'Responded' | 'Acknowledged';
 export type SessionStatus = 'Active' | 'Inactive';
 export type StartType = 'FixedTime' | 'Rolling' | 'Tournament';
@@ -51,17 +50,17 @@ export interface CoOrganiserDto {
 export interface CoOrganiserInvitationDto {
   id: string;
   email: string;
-  status: CoOrganiserInvitationStatus;
   createdAt: string;
-  redeemedAt: string | null;
 }
 
 export interface SessionDto {
   id: string;
   venueId: string;
+  venueName: string | null;
   start: string;
   end: string;
   maxSeats: number;
+  registrationCount: number;
   startType: StartType;
   status: SessionStatus;
 }

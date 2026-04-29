@@ -282,7 +282,6 @@
               <thead>
                 <tr>
                   <th>E-post</th>
-                  <th>Status</th>
                   <th>Skickad</th>
                   <th></th>
                 </tr>
@@ -291,26 +290,17 @@
                 @for (inv of e.coOrganiserInvitations; track inv.id) {
                   <tr>
                     <td>{{ inv.email }}</td>
-                    <td>
-                      <span [class]="inv.status === 'Active' ? 'chip chip-orange' : 'chip chip-grey'">
-                        @if (inv.status === 'Active') { Väntande }
-                        @else if (inv.status === 'Redeemed') { Inlöst }
-                        @else { Avbruten }
-                      </span>
-                    </td>
                     <td>{{ inv.createdAt | date:'yyyy-MM-dd' }}</td>
                     <td class="action-cell">
-                      @if (inv.status === 'Active') {
-                        <button mat-icon-button color="warn" matTooltip="Avbryt inbjudan"
-                          [disabled]="invitationCancelling() !== null"
-                          (click)="cancelCoOrganiserInvitation(inv.id)">
-                          @if (invitationCancelling() === inv.id) {
-                            <mat-spinner diameter="18" />
-                          } @else {
-                            <mat-icon>cancel</mat-icon>
-                          }
-                        </button>
-                      }
+                      <button mat-icon-button color="warn" matTooltip="Avbryt inbjudan"
+                        [disabled]="invitationCancelling() !== null"
+                        (click)="cancelCoOrganiserInvitation(inv.id)">
+                        @if (invitationCancelling() === inv.id) {
+                          <mat-spinner diameter="18" />
+                        } @else {
+                          <mat-icon>cancel</mat-icon>
+                        }
+                      </button>
                     </td>
                   </tr>
                 }

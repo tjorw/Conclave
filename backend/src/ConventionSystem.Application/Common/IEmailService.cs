@@ -28,4 +28,5 @@ public interface IEmailService
         string temporaryPassword,
         string loginLink,
         CancellationToken ct = default);
+    Task SendCoOrganiserInvitationAsync(string toEmail, string code, CancellationToken ct = default);
 }

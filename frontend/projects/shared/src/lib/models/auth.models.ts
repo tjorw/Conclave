@@ -29,6 +29,7 @@ export function getLoginReasonMessage(reason: string | null): string | null {
 }
 
 export interface RegisterRequest {
+  name: string;
   email: string;
   password: string;
 }

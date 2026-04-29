@@ -1,0 +1,27 @@
+<div class="auth-page">
+  <div class="auth-card">
+
+    @if (loading()) {
+      <div class="centered">
+        <mat-spinner diameter="40" />
+        <p>Accepterar inbjudan…</p>
+      </div>
+    } @else if (success()) {
+      <div class="success-banner">
+        <h1>Du är nu medarrangör!</h1>
+        <p>Inbjudan accepterad. Du hittar evenemanget under dina evenemang.</p>
+        <a mat-flat-button routerLink="/my-pages/events" class="submit-btn full-width">Mina evenemang</a>
+      </div>
+    } @else if (errorMessage()) {
+      <h1>Inbjudan kunde inte accepteras</h1>
+      <p class="muted">{{ errorMessage() }}</p>
+      <p class="footer-link"><a routerLink="/">Tillbaka till startsidan</a></p>
+    } @else if (!isLoggedIn) {
+      <h1>Acceptera inbjudan</h1>
+      <p>Du har blivit inbjuden som medarrangör. Logga in eller registrera dig för att acceptera inbjudan.</p>
+      <a mat-flat-button routerLink="/login" [queryParams]="loginQueryParams" class="submit-btn full-width">Logga in</a>
+      <p class="footer-link">Inget konto? <a routerLink="/register">Registrera dig</a></p>
+    }
+
+  </div>
+</div>

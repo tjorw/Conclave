@@ -138,66 +138,93 @@
       </section>
     }
 
-    @if (canManageInvitations) {
+    @if (canSeeCoOrganiserSection) {
       <section class="card">
         <h2>Medarrangörer</h2>
 
-        <p class="help-text">
-          Du har angett att du vill ha
-          <strong>{{ ev.coOrganiserCount }}</strong> medarrangör{{ ev.coOrganiserCount === 1 ? '' : 'er' }}.
-          @if (ev.coOrganiserLimit > 0) {
-            Godkänt antal: <strong>{{ ev.coOrganiserLimit }}</strong>.
-          } @else {
-            Gränsen har inte fastställts av admin ännu.
-          }
-        </p>
-
-        @if (invitationState().error) {
-          <div class="error-banner">{{ invitationState().error }}</div>
-        }
-        @if (invitationState().saved) {
-          <div class="success-inline">Inbjudan skickad.</div>
-        }
-
-        @if (ev.coOrganiserLimit > 0 && activeInvitations().length < ev.coOrganiserLimit) {
-          <form [formGroup]="invitationForm" (ngSubmit)="createInvitation()" class="invitation-form">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>E-postadress till inbjuden medarrangör</mat-label>
-              <input matInput formControlName="email" type="email" />
-            </mat-form-field>
-            <button mat-flat-button class="save-btn" type="submit"
-                    [disabled]="invitationForm.invalid || invitationState().saving">
-              @if (invitationState().saving) { <mat-spinner diameter="18" /> } @else { Skicka inbjudan }
-            </button>
-          </form>
-        } @else if (ev.coOrganiserLimit === 0) {
-          <p class="help-text">Du kan skicka inbjudningar när admin har fastställt godkänt antal.</p>
-        } @else {
-          <p class="help-text">Alla godkända inbjudningsplatser är utnyttjade.</p>
-        }
-
-        @if (ev.coOrganiserInvitations.length > 0) {
-          <h3>Skickade inbjudningar</h3>
-          @for (inv of ev.coOrganiserInvitations; track inv.id) {
+        @if (ev.coOrganisers.length > 0) {
+          @for (co of ev.coOrganisers; track co.personId) {
             <div class="request-item">
               <div class="request-info">
-                <span class="request-desc">{{ inv.email }}</span>
-                <span class="request-meta">
-                  {{ inv.createdAt | date:'yyyy-MM-dd' }} ·
-                  @if (inv.status === 'Active') { Väntande }
-                  @else if (inv.status === 'Redeemed') { Inlöst }
-                  @else { Avbruten }
-                </span>
+                <span class="request-desc">{{ co.personName ?? co.personId }}</span>
               </div>
-              @if (inv.status === 'Active') {
+            </div>
+          }
+        } @else {
+          <p class="help-text">Inga medarrangörer ännu.</p>
+        }
+
+        @if (canManageInvitations) {
+          <p class="help-text">
+            Du har angett att du vill ha
+            <strong>{{ ev.coOrganiserCount }}</strong> medarrangör{{ ev.coOrganiserCount === 1 ? '' : 'er' }}.
+            @if (ev.coOrganiserLimit > 0) {
+              Godkänt antal: <strong>{{ ev.coOrganiserLimit }}</strong>.
+            } @else {
+              Gränsen har inte fastställts av admin ännu.
+            }
+          </p>
+
+          @if (invitationState().error) {
+            <div class="error-banner">{{ invitationState().error }}</div>
+          }
+          @if (invitationState().saved) {
+            <div class="success-inline">Inbjudan skickad.</div>
+          }
+
+          @if (ev.coOrganiserLimit > 0 && ev.coOrganisers.length + activeInvitations().length < ev.coOrganiserLimit) {
+            <form [formGroup]="invitationForm" (ngSubmit)="createInvitation()" class="invitation-form">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>E-postadress till inbjuden medarrangör</mat-label>
+                <input matInput formControlName="email" type="email" />
+              </mat-form-field>
+              <button mat-flat-button class="save-btn" type="submit"
+                      [disabled]="invitationForm.invalid || invitationState().saving">
+                @if (invitationState().saving) { <mat-spinner diameter="18" /> } @else { Skicka inbjudan }
+              </button>
+            </form>
+          } @else if (ev.coOrganiserLimit === 0) {
+            <p class="help-text">Du kan skicka inbjudningar när admin har fastställt godkänt antal.</p>
+          } @else {
+            <p class="help-text">Alla godkända platser är utnyttjade.</p>
+          }
+
+          @if (activeInvitations().length > 0) {
+            <h3>Väntande inbjudningar</h3>
+            @for (inv of activeInvitations(); track inv.id) {
+              <div class="request-item">
+                <div class="request-info">
+                  <span class="request-desc">{{ inv.email }}</span>
+                  <span class="request-meta">Skickad {{ inv.createdAt | date:'yyyy-MM-dd' }}</span>
+                </div>
                 <button mat-stroked-button color="warn" class="action-btn"
                         (click)="cancelInvitation(inv.id)"
                         [disabled]="invitationState().cancelling !== null">
                   @if (invitationState().cancelling === inv.id) { <mat-spinner diameter="18" /> } @else { Avbryt }
                 </button>
-              }
-            </div>
+              </div>
+            }
           }
+        }
+      </section>
+    }
+
+    @if (canSeeCoOrganiserSection && (event()?.sessions?.length ?? 0) > 0) {
+      <section class="card">
+        <h2>Sessioner</h2>
+        @for (session of event()?.sessions ?? []; track session.id) {
+          <div class="request-item">
+            <div class="request-info">
+              <span class="request-desc">
+                {{ session.start | date:'yyyy-MM-dd HH:mm' }} – {{ session.end | date:'HH:mm' }}
+                @if (session.venueName) { · {{ session.venueName }} }
+              </span>
+              <span class="request-meta">
+                {{ session.registrationCount }} / {{ session.maxSeats }} anmälda ·
+                {{ sessionStatusLabel[session.status] || session.status }}
+              </span>
+            </div>
+          </div>
         }
       </section>
     }

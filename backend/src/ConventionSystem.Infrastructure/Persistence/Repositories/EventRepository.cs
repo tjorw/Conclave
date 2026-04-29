@@ -1,8 +1,10 @@
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Queries;
+using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Event.Ids;
+using ConventionSystem.Domain.Registration.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConventionSystem.Infrastructure.Persistence.Repositories;
@@ -113,6 +115,22 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .Select(c => new { c.Name, c.ResponsibleId, c.OrganizerInstructions })
             .FirstOrDefaultAsync(ct);
 
+        var sessionIds = ev.Sessions.Select(s => s.Id).ToList();
+        var venueIds = ev.Sessions.Select(s => s.VenueId).Distinct().ToList();
+
+        var venueNames = await db.Set<Venue>()
+            .Where(v => venueIds.Contains(v.Id))
+            .ToDictionaryAsync(v => v.Id.Value, v => v.Name, ct);
+
+        var registrationCounts = sessionIds.Count > 0
+            ? await db.SessionRegistrations
+                .Where(r => sessionIds.Contains(r.SessionId)
+                         && r.Status == SessionRegistrationStatus.Confirmed)
+                .GroupBy(r => r.SessionId)
+                .Select(g => new { SessionId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.SessionId.Value, x => x.Count, ct)
+            : new Dictionary<Guid, int>();
+
         var personIds = new List<PersonId> { ev.LeadOrganiserId };
         personIds.AddRange(ev.CoOrganisers.Select(c => c.PersonId));
         if (category is not null) personIds.Add(category.ResponsibleId);
@@ -153,8 +171,11 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
                 personNames.GetValueOrDefault(c.PersonId.Value))).ToList(),
             ev.Sessions.Select(s => new SessionDto(
                 s.Id.Value, s.VenueId.Value,
+                venueNames.GetValueOrDefault(s.VenueId.Value),
                 s.TimeSlot.Start, s.TimeSlot.End,
-                s.MaxSeats, s.StartType.ToString(), s.Status.ToString())).ToList(),
+                s.MaxSeats,
+                registrationCounts.GetValueOrDefault(s.Id.Value),
+                s.StartType.ToString(), s.Status.ToString())).ToList(),
             ev.Comments.Select(c => new EventCommentDto(
                 c.Id.Value,
                 c.AuthorId.Value,
@@ -174,9 +195,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             ev.CoOrganiserInvitations.Select(i => new CoOrganiserInvitationDto(
                 i.Id.Value,
                 i.Email,
-                i.Status.ToString(),
-                i.CreatedAt,
-                i.RedeemedAt)).ToList());
+                i.CreatedAt)).ToList());
     }
 
     public async Task<IReadOnlyList<EventSummaryDto>> ListByEditionAndOrganiserAsync(

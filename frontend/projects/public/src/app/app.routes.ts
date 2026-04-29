@@ -42,6 +42,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'accept-invitation',
+        loadComponent: () =>
+          import('./features/accept-invitation/accept-invitation.component').then(
+            m => m.AcceptInvitationComponent
+          ),
+      },
+      {
         path: 'forgot-password',
         loadComponent: () =>
           import('./features/forgot-password/forgot-password.component').then(

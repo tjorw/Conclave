@@ -68,6 +68,11 @@ internal static class EmailTemplates
             "Byt lösenord efter första inloggningen.\n\n" +
             "Vänliga hälsningar,\nConclave");
 
+    public static (string Subject, string Body) CoOrganiserInvitation(string inviteLink)
+        => (
+            "Du har blivit inbjuden som medarrangör",
+            $"Hej!\n\nDu har blivit inbjuden som medarrangör på ett evenemang.\n\nKlicka på länken nedan för att acceptera inbjudan:\n{inviteLink}\n\nOm du inte har ett konto ännu kan du registrera dig via länken ovan.\n\nVänliga hälsningar,\nKonventteamet");
+
     public static (string Subject, string Body) TenantProvisionedWelcome(
         string organizationName,
         string subdomain,
@@ -75,14 +80,14 @@ internal static class EmailTemplates
         string temporaryPassword,
         string loginLink)
         => (
-            $"VÃ¤lkommen till Conclave Admin - {organizationName}",
+            $"Välkommen till Conclave Admin - {organizationName}",
             "Hej!\n\n" +
-            $"Ditt konvent '{organizationName}' har nu provisionerats med subdomÃ¤nen '{subdomain}'.\n" +
-            "Du kan logga in som konventsadmin via lÃ¤nken nedan:\n" +
+            $"Ditt konvent '{organizationName}' har nu provisionerats med subdomänen '{subdomain}'.\n" +
+            "Du kan logga in som konventsadmin via länken nedan:\n" +
             $"{loginLink}\n\n" +
-            "Dina inloggningsuppgifter Ã¤r:\n" +
+            "Dina inloggningsuppgifter är:\n" +
             $"E-post: {toEmail}\n" +
-            $"LÃ¶senord: {temporaryPassword}\n\n" +
-            "Byt lÃ¶senord efter fÃ¶rsta inloggningen.\n\n" +
-            "VÃ¤nliga hÃ¤lsningar,\nConclave");
+            $"Lösenord: {temporaryPassword}\n\n" +
+            "Byt lösenord efter första inloggningen.\n\n" +
+            "Vänliga hälsningar,\nConclave");
 }

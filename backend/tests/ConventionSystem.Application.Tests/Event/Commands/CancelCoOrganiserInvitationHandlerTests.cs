@@ -5,7 +5,6 @@ using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.CancelCoOrganiserInvitation;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
-using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Event.Ids;
 using NSubstitute;
 
@@ -51,19 +50,19 @@ public class CancelCoOrganiserInvitationHandlerTests
     }
 
     [Fact]
-    public async Task Handle_LeadOrganiser_CancelsInvitation()
+    public async Task Handle_LeadOrganiser_RemovesInvitation()
     {
         var (ev, _, _) = Setup();
         var invitation = ev.CreateInvitation("invite@example.com", PersonId.New());
 
         await _handler.Handle(new CancelCoOrganiserInvitationCommand(ev.Id.Value, invitation.Id.Value), default);
 
-        Assert.Equal(CoOrganiserInvitationStatus.Cancelled, invitation.Status);
+        Assert.Empty(ev.CoOrganiserInvitations);
         await _eventRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task Handle_Admin_CancelsInvitation()
+    public async Task Handle_Admin_RemovesInvitation()
     {
         var (ev, admin, _) = Setup();
         var invitation = ev.CreateInvitation("invite@example.com", PersonId.New());
@@ -71,7 +70,7 @@ public class CancelCoOrganiserInvitationHandlerTests
 
         await _handler.Handle(new CancelCoOrganiserInvitationCommand(ev.Id.Value, invitation.Id.Value), default);
 
-        Assert.Equal(CoOrganiserInvitationStatus.Cancelled, invitation.Status);
+        Assert.Empty(ev.CoOrganiserInvitations);
     }
 
     [Fact]

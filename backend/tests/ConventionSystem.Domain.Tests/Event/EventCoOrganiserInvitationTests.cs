@@ -88,7 +88,7 @@ public class EventCoOrganiserInvitationTests
     }
 
     [Fact]
-    public void CreateInvitation_ActiveInvitationsAtLimit_ThrowsCoOrganiserLimitExceededException()
+    public void CreateInvitation_InvitationsAtLimit_ThrowsCoOrganiserLimitExceededException()
     {
         var ev = CreateEventWithLimit(1);
         ev.CreateInvitation("first@example.com", PersonId.New());
@@ -98,7 +98,19 @@ public class EventCoOrganiserInvitationTests
     }
 
     [Fact]
-    public void CreateInvitation_DuplicateActiveEmail_ThrowsCoOrganiserAlreadyInvitedException()
+    public void CreateInvitation_ExistingCoOrganiserCountedInLimit_ThrowsCoOrganiserLimitExceededException()
+    {
+        var ev = CreateEventWithLimit(1);
+        var email = "redeemer@example.com";
+        var invitation = ev.CreateInvitation(email, PersonId.New());
+        ev.RedeemInvitation(invitation.Code, email, PersonId.New());
+
+        Assert.Throws<CoOrganiserLimitExceededException>(() =>
+            ev.CreateInvitation("second@example.com", PersonId.New()));
+    }
+
+    [Fact]
+    public void CreateInvitation_DuplicateEmail_ThrowsCoOrganiserAlreadyInvitedException()
     {
         var ev = CreateEventWithLimit(5);
         ev.CreateInvitation("test@example.com", PersonId.New());
@@ -116,7 +128,7 @@ public class EventCoOrganiserInvitationTests
 
         var second = ev.CreateInvitation("test@example.com", PersonId.New());
 
-        Assert.Equal(2, ev.CoOrganiserInvitations.Count);
+        Assert.Single(ev.CoOrganiserInvitations);
         Assert.NotEqual(first.Id, second.Id);
     }
 
@@ -131,16 +143,14 @@ public class EventCoOrganiserInvitationTests
     }
 
     [Fact]
-    public void CancelInvitation_ActiveInvitation_SetsStatusCancelled()
+    public void CancelInvitation_ExistingInvitation_RemovesIt()
     {
         var ev = CreateEventWithLimit(3);
         var invitation = ev.CreateInvitation("test@example.com", PersonId.New());
-        var cancelledBy = PersonId.New();
 
-        ev.CancelInvitation(invitation.Id, cancelledBy);
+        ev.CancelInvitation(invitation.Id, PersonId.New());
 
-        Assert.Equal(Domain.Event.Enums.CoOrganiserInvitationStatus.Cancelled, invitation.Status);
-        Assert.Equal(cancelledBy, invitation.CancelledById);
+        Assert.Empty(ev.CoOrganiserInvitations);
     }
 
     [Fact]
@@ -153,29 +163,30 @@ public class EventCoOrganiserInvitationTests
     }
 
     [Fact]
-    public void CancelInvitation_AlreadyCancelled_ThrowsCoOrganiserInvitationNotActiveException()
+    public void CancelInvitation_AlreadyCancelled_ThrowsCoOrganiserInvitationNotFoundException()
     {
         var ev = CreateEventWithLimit(3);
         var invitation = ev.CreateInvitation("test@example.com", PersonId.New());
         ev.CancelInvitation(invitation.Id, PersonId.New());
 
-        Assert.Throws<CoOrganiserInvitationNotActiveException>(() =>
+        Assert.Throws<CoOrganiserInvitationNotFoundException>(() =>
             ev.CancelInvitation(invitation.Id, PersonId.New()));
     }
 
     [Fact]
-    public void RedeemInvitation_ValidCodeAndEmail_AddsCoOrganiser()
+    public void RedeemInvitation_ValidCodeAndEmail_RemovesInvitationAndAddsCoOrganiser()
     {
         var ev = CreateEventWithLimit(3);
         var redeemerEmail = "redeemer@example.com";
-        var invitation = ev.CreateInvitation(redeemerEmail, PersonId.New());
+        ev.CreateInvitation(redeemerEmail, PersonId.New());
         var redeemerId = PersonId.New();
 
-        var coOrganiser = ev.RedeemInvitation(invitation.Code, redeemerEmail, redeemerId);
+        var coOrganiser = ev.RedeemInvitation(
+            ev.CoOrganiserInvitations[0].Code, redeemerEmail, redeemerId);
 
         Assert.Equal(redeemerId, coOrganiser.PersonId);
         Assert.Single(ev.CoOrganisers);
-        Assert.Equal(Domain.Event.Enums.CoOrganiserInvitationStatus.Redeemed, invitation.Status);
+        Assert.Empty(ev.CoOrganiserInvitations);
     }
 
     [Fact]
@@ -198,14 +209,14 @@ public class EventCoOrganiserInvitationTests
     }
 
     [Fact]
-    public void RedeemInvitation_AlreadyRedeemed_ThrowsCoOrganiserInvitationNotActiveException()
+    public void RedeemInvitation_AlreadyRedeemed_ThrowsInvalidInvitationCodeException()
     {
         var ev = CreateEventWithLimit(3);
         var email = "test@example.com";
         var invitation = ev.CreateInvitation(email, PersonId.New());
         ev.RedeemInvitation(invitation.Code, email, PersonId.New());
 
-        Assert.Throws<CoOrganiserInvitationNotActiveException>(() =>
+        Assert.Throws<InvalidInvitationCodeException>(() =>
             ev.RedeemInvitation(invitation.Code, email, PersonId.New()));
     }
 

@@ -497,14 +497,6 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTimeOffset?>("CancelledAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnName("cancelled_at");
-
-                    b.Property<Guid?>("CancelledById")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("cancelled_by_id");
-
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -534,20 +526,6 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .HasMaxLength(320)
                         .HasColumnType("nvarchar(320)")
                         .HasColumnName("normalized_email");
-
-                    b.Property<DateTimeOffset?>("RedeemedAt")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnName("redeemed_at");
-
-                    b.Property<Guid?>("RedeemedById")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("redeemed_by_id");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("status");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier")

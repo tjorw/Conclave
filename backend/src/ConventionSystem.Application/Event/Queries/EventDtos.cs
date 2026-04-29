@@ -59,9 +59,7 @@ public record EventDto(
 public record CoOrganiserInvitationDto(
     Guid Id,
     string Email,
-    string Status,
-    DateTimeOffset CreatedAt,
-    DateTimeOffset? RedeemedAt);
+    DateTimeOffset CreatedAt);
 
 public record CoOrganiserDto(
     Guid PersonId,
@@ -70,9 +68,11 @@ public record CoOrganiserDto(
 public record SessionDto(
     Guid Id,
     Guid VenueId,
+    string? VenueName,
     DateTime Start,
     DateTime End,
     int MaxSeats,
+    int RegistrationCount,
     string StartType,
     string Status);
 

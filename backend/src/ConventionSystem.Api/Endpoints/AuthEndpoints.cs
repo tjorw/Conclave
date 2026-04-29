@@ -217,7 +217,7 @@ public static class AuthEndpoints
 
             if (convention is not null)
             {
-                var person = convention.RegisterPerson(string.Empty, request.Email);
+                var person = convention.RegisterPerson(request.Name.Trim(), request.Email);
                 await personRepo.AddAndSaveAsync(person, ct);
                 user.PersonId = person.Id.Value;
                 await userManager.UpdateAsync(user);
@@ -388,7 +388,7 @@ public static class AuthEndpoints
 }
 
 public record LoginRequest(string Email, string Password);
-public record RegisterRequest(string Email, string Password);
+public record RegisterRequest(string Name, string Email, string Password);
 public record ConfirmEmailRequest(string Email, string Token, Guid? TenantId = null);
 public record ResendConfirmationRequest(string Email);
 public record ForgotPasswordRequest(string Email);

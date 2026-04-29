@@ -30,6 +30,7 @@ export class RegisterComponent {
   readonly success = signal(false);
 
   readonly form = this.fb.group({
+    name:     ['', [Validators.required]],
     email:    ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
@@ -38,8 +39,8 @@ export class RegisterComponent {
     if (this.form.invalid || this.loading()) return;
     this.loading.set(true);
     this.error.set(null);
-    const { email, password } = this.form.getRawValue();
-    this.auth.register({ email: email!, password: password! }).subscribe({
+    const { name, email, password } = this.form.getRawValue();
+    this.auth.register({ name: name!, email: email!, password: password! }).subscribe({
       next: () => {
         this.loading.set(false);
         this.success.set(true);

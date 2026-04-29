@@ -1,10 +1,11 @@
 using System.Text.Json;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Infrastructure.Persistence;
+using Microsoft.Extensions.Configuration;
 
 namespace ConventionSystem.Infrastructure.Email;
 
-public sealed class OutboxEmailService(ConventionDbContext db) : IEmailService
+public sealed class OutboxEmailService(ConventionDbContext db, IConfiguration configuration) : IEmailService
 {
     public Task SendVisitorRegistrationConfirmedAsync(string toEmail, string toName, CancellationToken ct = default)
     {
@@ -77,6 +78,14 @@ public sealed class OutboxEmailService(ConventionDbContext db) : IEmailService
     {
         var (subject, body) = EmailTemplates.TenantSignupWelcome(organizationName, subdomain, temporaryPassword, confirmLink);
         return EnqueueAsync(toEmail, toName, subject, body, ct);
+    }
+
+    public Task SendCoOrganiserInvitationAsync(string toEmail, string code, CancellationToken ct = default)
+    {
+        var frontendUrl = configuration["App:FrontendUrl"] ?? "http://localhost:4201";
+        var inviteLink = $"{frontendUrl}/accept-invitation?code={Uri.EscapeDataString(code)}";
+        var (subject, body) = EmailTemplates.CoOrganiserInvitation(inviteLink);
+        return EnqueueAsync(toEmail, string.Empty, subject, body, ct);
     }
 
     public Task SendTenantProvisionedWelcomeAsync(

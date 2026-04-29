@@ -82,6 +82,7 @@ export class MyEventDetailComponent implements OnInit {
   readonly statusChip  = EVENT_STATUS_CHIP;
   readonly regKindLabel = REGISTRATION_KIND_LABEL;
   readonly commentStatusLabel = EVENT_COMMENT_STATUS_LABEL;
+  readonly sessionStatusLabel: Record<string, string> = { Active: 'Aktiv', Inactive: 'Inaktiv' };
 
   readonly registrationTypes = [
     { value: 'DropIn',          label: 'Drop-in' },
@@ -139,13 +140,22 @@ export class MyEventDetailComponent implements OnInit {
     return this.event()?.leadOrganiserId === this.currentPersonId;
   }
 
-  get canManageInvitations(): boolean {
+  get isCoOrganiser(): boolean {
+    return this.event()?.coOrganisers.some(c => c.personId === this.currentPersonId) ?? false;
+  }
+
+  get canSeeCoOrganiserSection(): boolean {
     const status = this.event()?.status;
-    return this.isLeadOrganiser && (status === 'Draft' || status === 'UnderReview' || status === 'Published');
+    return (this.isLeadOrganiser || this.isCoOrganiser) &&
+      (status === 'Draft' || status === 'UnderReview' || status === 'Published');
+  }
+
+  get canManageInvitations(): boolean {
+    return this.isLeadOrganiser && this.canSeeCoOrganiserSection;
   }
 
   readonly activeInvitations = computed(() =>
-    this.event()?.coOrganiserInvitations.filter(i => i.status === 'Active') ?? []
+    this.event()?.coOrganiserInvitations ?? []
   );
 
   get canCommentOnPublishedEvent(): boolean {

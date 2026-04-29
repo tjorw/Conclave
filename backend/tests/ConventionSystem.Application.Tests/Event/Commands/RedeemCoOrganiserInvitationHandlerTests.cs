@@ -5,7 +5,6 @@ using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Commands.RedeemCoOrganiserInvitation;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
-using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Ids;
 using NSubstitute;
@@ -59,7 +58,7 @@ public class RedeemCoOrganiserInvitationHandlerTests
         await _handler.Handle(new RedeemCoOrganiserInvitationCommand(code), default);
 
         Assert.Single(ev.CoOrganisers);
-        Assert.Equal(CoOrganiserInvitationStatus.Redeemed, ev.CoOrganiserInvitations[0].Status);
+        Assert.Empty(ev.CoOrganiserInvitations);
         await _eventRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
 

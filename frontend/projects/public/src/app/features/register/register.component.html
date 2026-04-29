@@ -16,6 +16,11 @@
 
       <form [formGroup]="form" (ngSubmit)="register()">
         <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Namn</mat-label>
+          <input matInput type="text" formControlName="name" autocomplete="name" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
           <mat-label>E-postadress</mat-label>
           <input matInput type="email" formControlName="email" autocomplete="email" />
         </mat-form-field>

@@ -132,11 +132,6 @@ public sealed class EventCannotBeDeletedException()
         "Arrangemanget kan bara tas bort om det är i utkastläge eller inställt.",
         "event_cannot_be_deleted");
 
-public sealed class CoOrganiserInvitationNotActiveException()
-    : DomainRuleViolationException(
-        "Inbjudan är inte längre aktiv.",
-        "coorganiser_invitation_not_active");
-
 public sealed class CoOrganiserInvitationNotFoundException()
     : DomainRuleViolationException(
         "Inbjudan hittades inte.",

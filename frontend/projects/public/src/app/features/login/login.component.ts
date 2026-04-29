@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpErrorResponse } from '@angular/common/http';
 import { catchError, of, switchMap } from 'rxjs';
 import { AuthService, getLoginReasonMessage } from 'shared';
+import { AcceptInvitationComponent } from '../accept-invitation/accept-invitation.component';
 
 @Component({
   selector: 'app-login',
@@ -51,9 +52,16 @@ export class LoginComponent {
     ).subscribe({
       next: profile => {
         this.loading.set(false);
+
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
         if (returnUrl && returnUrl.startsWith('/')) {
           void this.router.navigateByUrl(returnUrl);
+          return;
+        }
+
+        const pendingCode = sessionStorage.getItem(AcceptInvitationComponent.SESSION_KEY);
+        if (pendingCode) {
+          void this.router.navigate(['/accept-invitation'], { queryParams: { code: pendingCode } });
           return;
         }
 
