@@ -43,33 +43,6 @@ public record EventCancelled(
     PersonId ResponsibleId,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
-public record CoOrganiserApplicationSubmitted(
-    CoOrganiserApplicationId ApplicationId,
-    EventId EventId,
-    string Email,
-    PersonId RequestedById,
-    DateTimeOffset OccurredAt) : IDomainEvent;
-
-public record CoOrganiserApplicationApproved(
-    CoOrganiserApplicationId ApplicationId,
-    EventId EventId,
-    PersonId PersonId,
-    PersonId ReviewedById,
-    DateTimeOffset OccurredAt) : IDomainEvent;
-
-public record CoOrganiserApplicationRejected(
-    CoOrganiserApplicationId ApplicationId,
-    EventId EventId,
-    PersonId ReviewedById,
-    string? Comment,
-    DateTimeOffset OccurredAt) : IDomainEvent;
-
-public record CoOrganiserApplicationCancelled(
-    CoOrganiserApplicationId ApplicationId,
-    EventId EventId,
-    PersonId CancelledById,
-    DateTimeOffset OccurredAt) : IDomainEvent;
-
 public record CoOrganiserRemoved(
     EventId EventId,
     PersonId PersonId,

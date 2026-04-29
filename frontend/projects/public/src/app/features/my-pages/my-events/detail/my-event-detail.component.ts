@@ -37,12 +37,6 @@ type CommentState = {
   error: string | null;
 };
 
-type CoOrganiserState = {
-  saving: boolean;
-  cancelling: boolean;
-  saved: boolean;
-  error: string | null;
-};
 
 @Component({
   selector: 'app-my-event-detail',
@@ -75,8 +69,6 @@ export class MyEventDetailComponent implements OnInit {
   readonly event         = signal<EventDto | null>(null);
   readonly draftState    = signal<DraftState>({ operation: null, saved: false, error: null, actionError: null });
   readonly commentState  = signal<CommentState>({ adding: false, acknowledging: false, saved: false, error: null });
-  readonly coOrganiserState = signal<CoOrganiserState>({ saving: false, cancelling: false, saved: false, error: null });
-
   readonly statusLabel = EVENT_STATUS_LABEL;
   readonly statusChip  = EVENT_STATUS_CHIP;
   readonly regKindLabel = REGISTRATION_KIND_LABEL;
@@ -98,12 +90,6 @@ export class MyEventDetailComponent implements OnInit {
 
   readonly commentForm = this.fb.group({
     text: ['', [Validators.required, Validators.minLength(5)]],
-  });
-
-  readonly coOrganiserForm = this.fb.group({
-    email:   ['', [Validators.required, Validators.email]],
-    name:    [''],
-    message: [''],
   });
 
   get eventId(): string {
@@ -137,21 +123,6 @@ export class MyEventDetailComponent implements OnInit {
 
   get canCommentOnPublishedEvent(): boolean {
     return this.event()?.status === 'Published';
-  }
-
-  get canNominateCoOrganiser(): boolean {
-    const ev = this.event();
-    return !!ev && ev.leadOrganiserId === this.currentPersonId && ev.status !== 'Cancelled';
-  }
-
-  coOrganiserStatusLabel(status: string): string {
-    switch (status) {
-      case 'Pending': return 'Väntar på godkännande';
-      case 'Approved': return 'Godkänd';
-      case 'Rejected': return 'Avslagen';
-      case 'Cancelled': return 'Återkallad';
-      default: return status;
-    }
   }
 
   ngOnInit(): void {
@@ -292,52 +263,4 @@ export class MyEventDetailComponent implements OnInit {
     });
   }
 
-  nominateCoOrganiser(): void {
-    const ev = this.event();
-    if (!ev || this.coOrganiserForm.invalid || this.coOrganiserState().saving) return;
-
-    const { email, name, message } = this.coOrganiserForm.getRawValue();
-    this.coOrganiserState.set({ saving: true, cancelling: false, saved: false, error: null });
-    this.eventSvc.addCoOrganiserApplication(
-      ev.id,
-      email!,
-      name || null,
-      message || null
-    ).subscribe({
-      next: () => {
-        this.coOrganiserState.set({ saving: false, cancelling: false, saved: true, error: null });
-        this.coOrganiserForm.reset({ email: '', name: '', message: '' });
-        this.loadEvent();
-      },
-      error: err => {
-        this.coOrganiserState.set({
-          saving: false,
-          cancelling: false,
-          saved: false,
-          error: toErrorMessage(err, 'Kunde inte lägga till medarrangören.'),
-        });
-      },
-    });
-  }
-
-  cancelCoOrganiserApplication(applicationId: string): void {
-    const ev = this.event();
-    if (!ev || this.coOrganiserState().cancelling) return;
-
-    this.coOrganiserState.set({ saving: false, cancelling: true, saved: false, error: null });
-    this.eventSvc.cancelCoOrganiserApplication(ev.id, applicationId).subscribe({
-      next: () => {
-        this.coOrganiserState.set({ saving: false, cancelling: false, saved: false, error: null });
-        this.loadEvent();
-      },
-      error: err => {
-        this.coOrganiserState.set({
-          saving: false,
-          cancelling: false,
-          saved: false,
-          error: toErrorMessage(err, 'Kunde inte återkalla medarrangören.'),
-        });
-      },
-    });
-  }
 }

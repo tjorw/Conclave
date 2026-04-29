@@ -69,12 +69,6 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
             .HasForeignKey("EventId")
             .IsRequired();
 
-        builder.HasMany(e => e.CoOrganiserApplications)
-            .WithOne()
-            .HasForeignKey(a => a.EventId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasMany(e => e.Comments)
             .WithOne()
             .HasForeignKey(c => c.EventId)
@@ -92,7 +86,6 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
 
         builder.Navigation(e => e.Sessions).HasField("_sessions");
         builder.Navigation(e => e.CoOrganisers).HasField("_coOrganisers");
-        builder.Navigation(e => e.CoOrganiserApplications).HasField("_coOrganiserApplications");
         builder.Navigation(e => e.CoOrganiserInvitations).HasField("_coOrganiserInvitations");
         builder.Navigation(e => e.Comments).HasField("_comments");
 
@@ -117,74 +110,6 @@ public sealed class CoOrganiserConfiguration : IEntityTypeConfiguration<CoOrgani
             .HasColumnName("person_id");
 
         builder.Property(c => c.AddedAt).HasColumnName("added_at");
-    }
-}
-
-public sealed class CoOrganiserApplicationConfiguration : IEntityTypeConfiguration<CoOrganiserApplication>
-{
-    public void Configure(EntityTypeBuilder<CoOrganiserApplication> builder)
-    {
-        builder.ToTable("co_organiser_applications");
-
-        builder.HasKey(a => a.Id);
-        builder.Property(a => a.Id)
-            .HasConversion(id => id.Value, value => new CoOrganiserApplicationId(value))
-            .ValueGeneratedNever();
-
-        builder.Property(a => a.EventId)
-            .HasConversion(id => id.Value, value => new EventId(value))
-            .HasColumnName("event_id");
-
-        builder.Property(a => a.Email)
-            .HasMaxLength(320)
-            .HasColumnName("email");
-
-        builder.Property(a => a.NormalizedEmail)
-            .HasMaxLength(320)
-            .HasColumnName("normalized_email");
-
-        builder.Property(a => a.Name)
-            .HasMaxLength(200)
-            .HasColumnName("name");
-
-        builder.Property(a => a.Message)
-            .HasMaxLength(1000)
-            .HasColumnName("message");
-
-        builder.Property(a => a.Status)
-            .HasConversion<string>()
-            .HasMaxLength(50)
-            .HasColumnName("status");
-
-        builder.Property(a => a.RequestedById)
-            .HasConversion(id => id.Value, value => new PersonId(value))
-            .HasColumnName("requested_by_id");
-
-        builder.Property(a => a.RequestedAt)
-            .HasColumnName("requested_at");
-
-        builder.Property(a => a.ReviewedById)
-            .HasConversion(
-                id => id.HasValue ? id.Value.Value : (Guid?)null,
-                value => value.HasValue ? new PersonId(value.Value) : (PersonId?)null)
-            .HasColumnName("reviewed_by_id");
-
-        builder.Property(a => a.ReviewedAt)
-            .HasColumnName("reviewed_at");
-
-        builder.Property(a => a.ReviewComment)
-            .HasMaxLength(1000)
-            .HasColumnName("review_comment");
-
-        builder.Property(a => a.ApprovedPersonId)
-            .HasConversion(
-                id => id.HasValue ? id.Value.Value : (Guid?)null,
-                value => value.HasValue ? new PersonId(value.Value) : (PersonId?)null)
-            .HasColumnName("approved_person_id");
-
-        builder.HasIndex(a => a.EventId).HasDatabaseName("IX_co_organiser_applications_event_id");
-        builder.HasIndex(a => new { a.EventId, a.NormalizedEmail, a.Status })
-            .HasDatabaseName("IX_co_organiser_applications_event_email_status");
     }
 }
 

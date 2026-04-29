@@ -44,7 +44,7 @@ public class RemoveCoOrganiserHandlerTests
         var coOrganiser = convention.CreatePerson("Medarrangör", "co@example.com");
         ev.AddCoOrganiser(coOrganiser.Id);
 
-        _eventRepo.GetByIdWithCoOrganisersAndApplicationsAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _eventRepo.GetByIdWithCoOrganisersAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _editionRepo.GetByIdWithCategoriesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
         _currentUser.PersonId.Returns(admin.Id);

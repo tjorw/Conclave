@@ -20,7 +20,7 @@ public sealed class RemoveCoOrganiserHandler(
     {
         var performedById = currentUser.PersonId;
 
-        var ev = await eventRepository.GetByIdWithCoOrganisersAndApplicationsAsync(new EventId(command.EventId), ct)
+        var ev = await eventRepository.GetByIdWithCoOrganisersAsync(new EventId(command.EventId), ct)
             ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());
 
         var context = await EditionContextLoader.LoadWithCategoriesAsync(

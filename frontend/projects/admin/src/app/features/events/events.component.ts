@@ -78,9 +78,6 @@ export class EventsComponent {
     if (f === 'PendingComments') {
       return this.events().filter(e => e.pendingCommentCount > 0);
     }
-    if (f === 'PendingCoOrganisers') {
-      return this.events().filter(e => e.pendingCoOrganiserApplicationCount > 0);
-    }
     return f === 'All' ? this.events() : this.events().filter(e => e.status === f);
   });
 
@@ -91,7 +88,6 @@ export class EventsComponent {
       organiser: e => e.leadOrganiserName ?? '',
       sessions: e => e.sessionCount,
       comments: e => e.pendingCommentCount,
-      coOrganisers: e => e.pendingCoOrganiserApplicationCount,
       status: e => this.statusLabel(e.status),
     })
   );
@@ -105,7 +101,6 @@ export class EventsComponent {
       draft:       all.filter(e => e.status === 'Draft').length,
       cancelled:   all.filter(e => e.status === 'Cancelled').length,
       pendingComments: all.filter(e => e.pendingCommentCount > 0).length,
-      pendingCoOrganisers: all.filter(e => e.pendingCoOrganiserApplicationCount > 0).length,
     };
   });
 

@@ -92,24 +92,6 @@ public sealed class OutboxEmailService(ConventionDbContext db) : IEmailService
         return EnqueueAsync(toEmail, toName, subject, body, ct);
     }
 
-    public Task SendCoOrganiserApplicationReceivedAsync(string toEmail, string eventTitle, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.CoOrganiserApplicationReceived(eventTitle);
-        return EnqueueAsync(toEmail, toEmail, subject, body, ct);
-    }
-
-    public Task SendCoOrganiserApplicationApprovedAsync(string toEmail, string toName, string eventTitle, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.CoOrganiserApplicationApproved(eventTitle);
-        return EnqueueAsync(toEmail, toName, subject, body, ct);
-    }
-
-    public Task SendCoOrganiserApplicationRejectedAsync(string toEmail, string toName, string eventTitle, string? comment, CancellationToken ct = default)
-    {
-        var (subject, body) = EmailTemplates.CoOrganiserApplicationRejected(eventTitle, comment);
-        return EnqueueAsync(toEmail, toName, subject, body, ct);
-    }
-
     private async Task EnqueueAsync(string toEmail, string toName, string subject, string body, CancellationToken ct)
     {
         var payload = JsonSerializer.Serialize(new EmailPayload(toEmail, toName, subject, body));

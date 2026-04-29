@@ -1,9 +1,6 @@
-using ConventionSystem.Application.Event.Commands.AddCoOrganiser;
 using ConventionSystem.Application.Event.Commands.RemoveCoOrganiser;
 using ConventionSystem.Application.Event.Commands.AddEventComment;
 using ConventionSystem.Application.Event.Commands.AcknowledgeEventComment;
-using ConventionSystem.Application.Event.Commands.ApproveCoOrganiserApplication;
-using ConventionSystem.Application.Event.Commands.CancelCoOrganiserApplication;
 using ConventionSystem.Application.Event.Commands.ChangeCategory;
 using ConventionSystem.Application.Event.Commands.ApproveVersion;
 using ConventionSystem.Application.Event.Commands.CancelEvent;
@@ -13,7 +10,6 @@ using ConventionSystem.Application.Event.Commands.DeactivateSession;
 using ConventionSystem.Application.Event.Commands.UpdateSession;
 using ConventionSystem.Application.Event.Commands.EditEventDraft;
 using ConventionSystem.Application.Event.Commands.RejectVersion;
-using ConventionSystem.Application.Event.Commands.RejectCoOrganiserApplication;
 using ConventionSystem.Application.Event.Commands.ReturnToDraft;
 using ConventionSystem.Application.Event.Commands.RespondToEventComment;
 using ConventionSystem.Application.Event.Commands.ScheduleSession;
@@ -71,14 +67,6 @@ public static class EventEndpoints
                 await sender.Send(
                     new EditEventDraftCommand(eventId, request.Title, request.Description,
                         request.RegistrationType, request.DropInRules, request.ScheduleRequestText), ct);
-                return Results.NoContent();
-            });
-
-        // UC-EV005 – Lägg till medarrangör
-        events.MapPost("/co-organisers",
-            async (Guid eventId, AddCoOrganiserRequest request, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new AddCoOrganiserCommand(eventId, request.Email, request.Name, request.Message, request.ConventionId), ct);
                 return Results.NoContent();
             });
 
@@ -233,27 +221,6 @@ public static class EventEndpoints
                 return Results.NoContent();
             });
 
-        events.MapPost("/co-organiser-applications/{applicationId:guid}/approve",
-            async (Guid eventId, Guid applicationId, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new ApproveCoOrganiserApplicationCommand(eventId, applicationId), ct);
-                return Results.NoContent();
-            });
-
-        events.MapPost("/co-organiser-applications/{applicationId:guid}/reject",
-            async (Guid eventId, Guid applicationId, RejectCoOrganiserApplicationRequest request, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new RejectCoOrganiserApplicationCommand(eventId, applicationId, request.Comment), ct);
-                return Results.NoContent();
-            });
-
-        events.MapDelete("/co-organiser-applications/{applicationId:guid}",
-            async (Guid eventId, Guid applicationId, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new CancelCoOrganiserApplicationCommand(eventId, applicationId), ct);
-                return Results.NoContent();
-            });
-
         groups.Admin.MapDelete("/events/{eventId:guid}/co-organisers/{personId:guid}",
             async (Guid eventId, Guid personId, ISender sender, CancellationToken ct) =>
             {
@@ -276,9 +243,7 @@ public record ApproveVersionRequest(IReadOnlyList<ApproveOrganizerTicketAssignme
 public record ApproveOrganizerTicketAssignmentRequest(Guid PersonId, Guid? TicketTypeId);
 public record ChangeCategoryRequest(Guid CategoryId);
 public record EditEventDraftRequest(string Title, string Description, RegistrationType RegistrationType, string? DropInRules, string? ScheduleRequestText);
-public record AddCoOrganiserRequest(string Email, string? Name, string? Message, Guid ConventionId);
 public record RejectVersionRequest(string Comment);
-public record RejectCoOrganiserApplicationRequest(string? Comment);
 public record AddEventCommentRequest(string Comment);
 public record RespondToEventCommentRequest(string Response);
 public record ScheduleSessionRequest(Guid VenueId, DateTime StartTime, DateTime EndTime, int MaxSeats, StartType StartType);

@@ -23,12 +23,6 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .Include(e => e.CoOrganisers)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
-    public Task<Domain.Event.Aggregates.Event?> GetByIdWithCoOrganisersAndApplicationsAsync(EventId id, CancellationToken ct = default)
-        => db.Events
-            .Include(e => e.CoOrganisers)
-            .Include(e => e.CoOrganiserApplications)
-            .FirstOrDefaultAsync(e => e.Id == id, ct);
-
     public Task<Domain.Event.Aggregates.Event?> GetByIdWithInvitationsAsync(EventId id, CancellationToken ct = default)
         => db.Events
             .Include(e => e.CoOrganiserInvitations)
@@ -67,7 +61,6 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
         var events = await db.Events
             .Include(e => e.Sessions)
             .Include(e => e.Comments)
-            .Include(e => e.CoOrganiserApplications)
             .Where(e => e.EditionId == id)
             .ToListAsync(ct);
 
@@ -91,7 +84,6 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             string.IsNullOrEmpty(e.Title) ? null : e.Title,
             e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active),
             e.Comments.Count(c => c.RequiresHandling && (c.Status == EventCommentStatus.New || c.Status == EventCommentStatus.InProgress)),
-            e.CoOrganiserApplications.Count(a => a.Status == Domain.Event.Enums.CoOrganiserApplicationStatus.Pending),
             e.Description ?? "",
             e.Sessions.Select(s => new SessionSummaryDto(
                 s.Id.Value,
@@ -110,7 +102,6 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
         var ev = await db.Events
             .Include(e => e.Sessions)
             .Include(e => e.CoOrganisers)
-            .Include(e => e.CoOrganiserApplications)
             .Include(e => e.Comments)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
@@ -159,18 +150,6 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             ev.CoOrganisers.Select(c => new CoOrganiserDto(
                 c.PersonId.Value,
                 personNames.GetValueOrDefault(c.PersonId.Value))).ToList(),
-            ev.CoOrganiserApplications.Select(a => new CoOrganiserApplicationDto(
-                a.Id.Value,
-                a.Email,
-                a.Name,
-                a.Message,
-                a.Status.ToString(),
-                a.RequestedById.Value,
-                a.RequestedAt,
-                a.ReviewedById?.Value,
-                a.ReviewedAt,
-                a.ReviewComment,
-                a.ApprovedPersonId?.Value)).ToList(),
             ev.Sessions.Select(s => new SessionDto(
                 s.Id.Value, s.VenueId.Value,
                 s.TimeSlot.Start, s.TimeSlot.End,
@@ -197,7 +176,6 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
         var events = await db.Events
             .Include(e => e.Sessions)
             .Include(e => e.CoOrganisers)
-            .Include(e => e.CoOrganiserApplications)
             .Include(e => e.Comments)
             .Where(e => e.EditionId == editionId &&
                         (e.LeadOrganiserId == organiserId ||
@@ -219,7 +197,6 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             string.IsNullOrEmpty(e.Title) ? null : e.Title,
             e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active),
             e.Comments.Count(c => c.RequiresHandling && (c.Status == EventCommentStatus.New || c.Status == EventCommentStatus.InProgress)),
-            e.CoOrganiserApplications.Count(a => a.Status == Domain.Event.Enums.CoOrganiserApplicationStatus.Pending),
             e.Description ?? "",
             e.Sessions.Select(s => new SessionSummaryDto(
                 s.Id.Value,

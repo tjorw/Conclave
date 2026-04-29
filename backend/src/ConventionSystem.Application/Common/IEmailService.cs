@@ -28,7 +28,4 @@ public interface IEmailService
         string temporaryPassword,
         string loginLink,
         CancellationToken ct = default);
-    Task SendCoOrganiserApplicationReceivedAsync(string toEmail, string eventTitle, CancellationToken ct = default);
-    Task SendCoOrganiserApplicationApprovedAsync(string toEmail, string toName, string eventTitle, CancellationToken ct = default);
-    Task SendCoOrganiserApplicationRejectedAsync(string toEmail, string toName, string eventTitle, string? comment, CancellationToken ct = default);
 }

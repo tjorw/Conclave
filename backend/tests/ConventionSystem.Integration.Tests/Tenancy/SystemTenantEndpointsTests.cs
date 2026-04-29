@@ -618,9 +618,6 @@ file sealed class CapturingEmailService : IEmailService
         return Task.CompletedTask;
     }
 
-    public Task SendCoOrganiserApplicationReceivedAsync(string toEmail, string eventTitle, CancellationToken ct = default) => Task.CompletedTask;
-    public Task SendCoOrganiserApplicationApprovedAsync(string toEmail, string toName, string eventTitle, CancellationToken ct = default) => Task.CompletedTask;
-    public Task SendCoOrganiserApplicationRejectedAsync(string toEmail, string toName, string eventTitle, string? comment, CancellationToken ct = default) => Task.CompletedTask;
 }
 
 file sealed record ProvisionedWelcomeEmail(

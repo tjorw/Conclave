@@ -1,6 +1,5 @@
 export type EventStatus = 'Draft' | 'UnderReview' | 'Published' | 'Cancelled';
 export type EventCommentStatus = 'New' | 'InProgress' | 'Responded' | 'Acknowledged';
-export type CoOrganiserApplicationStatus = 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
 export type SessionStatus = 'Active' | 'Inactive';
 export type StartType = 'FixedTime' | 'Rolling' | 'Tournament';
 export type RegistrationType = 'DropIn' | 'PreRegistration' | 'Combined';
@@ -16,7 +15,6 @@ export interface EventSummaryDto {
   title: string | null;
   sessionCount: number;
   pendingCommentCount: number;
-  pendingCoOrganiserApplicationCount: number;
 }
 
 export interface EventDto {
@@ -37,7 +35,6 @@ export interface EventDto {
   dropInRules: string | null;
   coOrganiserIds: string[];
   coOrganisers: CoOrganiserDto[];
-  coOrganiserApplications: CoOrganiserApplicationDto[];
   sessions: SessionDto[];
   comments: EventCommentDto[];
 }
@@ -45,20 +42,6 @@ export interface EventDto {
 export interface CoOrganiserDto {
   personId: string;
   personName: string | null;
-}
-
-export interface CoOrganiserApplicationDto {
-  id: string;
-  email: string;
-  name: string | null;
-  message: string | null;
-  status: CoOrganiserApplicationStatus;
-  requestedById: string;
-  requestedAt: string;
-  reviewedById: string | null;
-  reviewedAt: string | null;
-  reviewComment: string | null;
-  approvedPersonId: string | null;
 }
 
 export interface SessionDto {

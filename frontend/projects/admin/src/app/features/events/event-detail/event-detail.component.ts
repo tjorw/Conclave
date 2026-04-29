@@ -94,7 +94,6 @@ export class EventDetailComponent implements OnInit {
   readonly showAddSessionForm    = signal(false);
   readonly editingSessionId      = signal<string | null>(null);
   readonly commentResponses      = signal<Record<string, string>>({});
-  readonly coOrganiserReviewComments = signal<Record<string, string>>({});
   readonly showTimeline          = signal(false);
   readonly editionSessions       = signal<EditionSessionDto[]>([]);
   readonly timelineLoading       = signal(false);
@@ -173,14 +172,6 @@ export class EventDetailComponent implements OnInit {
     if (!id) return null;
     return this.event()?.sessions.find(s => s.id === id) ?? null;
   });
-
-  readonly coOrganiserApplications = computed(() =>
-    [...(this.event()?.coOrganiserApplications ?? [])].sort((a, b) => {
-      if (a.status === 'Pending' && b.status !== 'Pending') return -1;
-      if (a.status !== 'Pending' && b.status === 'Pending') return 1;
-      return new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime();
-    })
-  );
 
   readonly commentStatusLabel = EVENT_COMMENT_STATUS_LABEL;
 
@@ -517,64 +508,6 @@ export class EventDetailComponent implements OnInit {
       error: err => {
         this.saving.set(false);
         this.error.set(toErrorMessage(err, ERROR.respondToComment));
-      },
-    });
-  }
-
-  coOrganiserStatusLabel(status: string): string {
-    switch (status) {
-      case 'Pending': return 'Väntar';
-      case 'Approved': return 'Godkänd';
-      case 'Rejected': return 'Avslagen';
-      case 'Cancelled': return 'Återkallad';
-      default: return status;
-    }
-  }
-
-  coOrganiserReviewComment(applicationId: string): string {
-    return this.coOrganiserReviewComments()[applicationId] ?? '';
-  }
-
-  setCoOrganiserReviewComment(applicationId: string, value: string): void {
-    this.coOrganiserReviewComments.update(map => ({ ...map, [applicationId]: value }));
-  }
-
-  approveCoOrganiserApplication(applicationId: string): void {
-    const ev = this.event();
-    if (!ev || this.saving()) return;
-
-    this.saving.set(true);
-    this.svc.approveCoOrganiserApplication(ev.id, applicationId).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.reload();
-      },
-      error: err => {
-        this.saving.set(false);
-        this.error.set(toErrorMessage(err, 'Kunde inte godkänna medarrangören'));
-      },
-    });
-  }
-
-  rejectCoOrganiserApplication(applicationId: string): void {
-    const ev = this.event();
-    if (!ev || this.saving()) return;
-
-    const comment = this.coOrganiserReviewComment(applicationId).trim();
-    this.saving.set(true);
-    this.svc.rejectCoOrganiserApplication(ev.id, applicationId, comment || null).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.coOrganiserReviewComments.update(map => {
-          const next = { ...map };
-          delete next[applicationId];
-          return next;
-        });
-        this.reload();
-      },
-      error: err => {
-        this.saving.set(false);
-        this.error.set(toErrorMessage(err, 'Kunde inte avslå medarrangören'));
       },
     });
   }

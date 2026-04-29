@@ -14,7 +14,6 @@ public sealed class Event : AggregateRoot
 {
     private readonly List<Session> _sessions = [];
     private readonly List<CoOrganiser> _coOrganisers = [];
-    private readonly List<CoOrganiserApplication> _coOrganiserApplications = [];
     private readonly List<CoOrganiserInvitation> _coOrganiserInvitations = [];
     private readonly List<EventComment> _comments = [];
 
@@ -34,7 +33,6 @@ public sealed class Event : AggregateRoot
 
     public IReadOnlyList<Session> Sessions => _sessions.AsReadOnly();
     public IReadOnlyList<CoOrganiser> CoOrganisers => _coOrganisers.AsReadOnly();
-    public IReadOnlyList<CoOrganiserApplication> CoOrganiserApplications => _coOrganiserApplications.AsReadOnly();
     public IReadOnlyList<CoOrganiserInvitation> CoOrganiserInvitations => _coOrganiserInvitations.AsReadOnly();
     public IReadOnlyList<EventComment> Comments => _comments.AsReadOnly();
 
@@ -250,96 +248,6 @@ public sealed class Event : AggregateRoot
         var coOrganiser = new CoOrganiser(personId);
         _coOrganisers.Add(coOrganiser);
         return coOrganiser;
-    }
-
-    public CoOrganiserApplication SubmitCoOrganiserApplication(
-        string email,
-        string? name,
-        string? message,
-        PersonId requestedById,
-        string? leadOrganiserEmail = null)
-    {
-        EnsureNotCancelled();
-        if (requestedById != LeadOrganiserId)
-            throw new UnauthorizedAccessException("Endast huvudarrangören kan föreslå medarrangörer.");
-
-        var normalizedEmail = NormalizeEmail(email);
-        if (leadOrganiserEmail is not null && NormalizeEmail(leadOrganiserEmail) == normalizedEmail)
-            throw new LeadOrganiserCannotBeCoOrganiserException();
-        if (_coOrganiserApplications.Any(a =>
-                a.NormalizedEmail == normalizedEmail && a.Status == CoOrganiserApplicationStatus.Pending))
-            throw new CoOrganiserApplicationAlreadyPendingException();
-
-        var application = new CoOrganiserApplication(
-            CoOrganiserApplicationId.New(),
-            Id,
-            email.Trim(),
-            normalizedEmail,
-            name,
-            message,
-            requestedById);
-        _coOrganiserApplications.Add(application);
-        RaiseDomainEvent(new CoOrganiserApplicationSubmitted(
-            application.Id,
-            Id,
-            application.Email,
-            requestedById,
-            DateTimeOffset.UtcNow));
-        return application;
-    }
-
-    public CoOrganiser ApproveCoOrganiserApplication(
-        CoOrganiserApplicationId applicationId,
-        PersonId personId,
-        PersonId reviewedById)
-    {
-        var application = _coOrganiserApplications.FirstOrDefault(a => a.Id == applicationId)
-            ?? throw new CoOrganiserApplicationNotFoundException();
-
-        application.Approve(personId, reviewedById);
-        var coOrganiser = AddCoOrganiser(personId);
-        RaiseDomainEvent(new CoOrganiserApplicationApproved(
-            application.Id,
-            Id,
-            personId,
-            reviewedById,
-            DateTimeOffset.UtcNow));
-        return coOrganiser;
-    }
-
-    public void RejectCoOrganiserApplication(
-        CoOrganiserApplicationId applicationId,
-        PersonId reviewedById,
-        string? comment)
-    {
-        var application = _coOrganiserApplications.FirstOrDefault(a => a.Id == applicationId)
-            ?? throw new CoOrganiserApplicationNotFoundException();
-
-        application.Reject(reviewedById, comment);
-        RaiseDomainEvent(new CoOrganiserApplicationRejected(
-            application.Id,
-            Id,
-            reviewedById,
-            application.ReviewComment,
-            DateTimeOffset.UtcNow));
-    }
-
-    public void CancelCoOrganiserApplication(
-        CoOrganiserApplicationId applicationId,
-        PersonId cancelledById)
-    {
-        if (cancelledById != LeadOrganiserId)
-            throw new UnauthorizedAccessException("Endast huvudarrangören kan återkalla medarrangörsansökningar.");
-
-        var application = _coOrganiserApplications.FirstOrDefault(a => a.Id == applicationId)
-            ?? throw new CoOrganiserApplicationNotFoundException();
-
-        application.Cancel();
-        RaiseDomainEvent(new CoOrganiserApplicationCancelled(
-            application.Id,
-            Id,
-            cancelledById,
-            DateTimeOffset.UtcNow));
     }
 
     private static string NormalizeEmail(string email)

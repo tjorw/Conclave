@@ -133,68 +133,6 @@
       </section>
     }
 
-    <section class="card">
-      <h2>Medarrangörer</h2>
-
-      <div class="request-list">
-        @for (application of ev.coOrganiserApplications; track application.id) {
-          <div class="request-item">
-            <div class="request-info">
-              <span class="request-desc">{{ application.name || application.email }}</span>
-              <span class="request-meta">
-                {{ application.email }} ·
-                {{ coOrganiserStatusLabel(application.status) }}
-                · {{ application.requestedAt | date:'yyyy-MM-dd HH:mm' }}
-              </span>
-              @if (application.reviewComment) {
-                <span class="request-meta">{{ application.reviewComment }}</span>
-              }
-            </div>
-            @if (canNominateCoOrganiser && application.status === 'Pending') {
-              <button mat-stroked-button class="action-btn" type="button"
-                      (click)="cancelCoOrganiserApplication(application.id)"
-                      [disabled]="coOrganiserState().cancelling">
-                Återkalla
-              </button>
-            }
-          </div>
-        } @empty {
-          <p class="no-requests">Inga medarrangörer föreslagna ännu.</p>
-        }
-      </div>
-
-      @if (coOrganiserState().error) {
-        <div class="error-banner">{{ coOrganiserState().error }}</div>
-      }
-      @if (coOrganiserState().saved) {
-        <div class="success-inline">Medarrangör skickad för godkännande.</div>
-      }
-
-      @if (canNominateCoOrganiser) {
-        <form [formGroup]="coOrganiserForm" (ngSubmit)="nominateCoOrganiser()">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>E-post</mat-label>
-            <input matInput type="email" formControlName="email" />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Namn (valfritt)</mat-label>
-            <input matInput formControlName="name" />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Meddelande (valfritt)</mat-label>
-            <textarea matInput formControlName="message" rows="2"></textarea>
-          </mat-form-field>
-
-          <button mat-flat-button class="save-btn" type="submit"
-                  [disabled]="coOrganiserForm.invalid || coOrganiserState().saving">
-            @if (coOrganiserState().saving) { <mat-spinner diameter="18" /> } @else { Lägg till för godkännande }
-          </button>
-        </form>
-      }
-    </section>
-
     @if (canCommentOnPublishedEvent) {
       <section class="card">
         <h2>Föreslå ändring</h2>
