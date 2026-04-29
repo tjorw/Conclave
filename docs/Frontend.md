@@ -1,8 +1,8 @@
 # Frontend-arkitektur
 
 Dokumentet beskriver de principer, mönster och konventioner som gäller för
-frontend-implementationen. Admin-appen och den publika appen hålls separata och
-kan skilja sig åt.
+frontend-implementationen. Admin, public, portal och reception hålls separata
+och kan skilja sig åt.
 
 ---
 
@@ -10,7 +10,7 @@ kan skilja sig åt.
 
 | Beslut | Val | Motivering |
 |--------|-----|------------|
-| Workspace | Angular monorepo (en workspace, två appar + ett bibliotek) | Delar API-typer, interceptors och auth-tjänst |
+| Workspace | Angular monorepo (en workspace, fyra appar + ett bibliotek) | Delar API-typer, interceptors och auth-tjänst |
 | UI-komponenter | Angular Material | Vältestat, tillgänglighetsanpassat, snabb development |
 | Styling | Angular Material theming + SCSS | Material för admin, konventionsthema via CSS-variabler för publik vy |
 | State | Angular Signals + services | Tillräckligt för MVP, undviker NgRx-overhead |
@@ -18,7 +18,7 @@ kan skilja sig åt.
 | HTTP | Angular HttpClient med interceptors | Centraliserad header-hantering |
 | Routing | Standalone components, lazy-loaded feature-moduler | Modern Angular-stil, snabbare initial laddning |
 
-**Konventionskontext per deploy** – `admin` och `public` laddar aktuell konvention från `GET /convention` vid app-start och använder det ID:t för konventionsscopade API-URL:er. `environment.conventionId` finns kvar som fallback för specialfall och för `portal`, men är inte längre huvudkällan i de tenantbundna klienterna.
+**Konventionskontext per deploy** – `admin`, `public` och `reception` laddar aktuell konvention från `GET /convention` vid app-start och använder det ID:t för konventionsscopade API-URL:er. `environment.conventionId` finns kvar som fallback för specialfall och för `portal`, men är inte längre huvudkällan i de tenantbundna klienterna.
 
 ### Appar i frontend-monorepon
 
@@ -27,8 +27,10 @@ kan skilja sig åt.
 | `admin` | 4200 | Konventionsadministration per tenant | `ConventionAdministrator` |
 | `public` | 4201 | Besökarfrontend per tenant | Publik + inloggad |
 | `portal` | 4202 | Systemadmin – tenant-provisioning | `SystemAdmin` |
+| `reception` | 4203 | Receptionsdisk, biljettuthämtning och walk-up | `ReceptionStaff` eller `ConventionAdministrator` |
 
 `portal`-appen lever på `system.conclave.se`, autentiserar via systemadmin-login och har aldrig tillgång till tenant-scopad data. Den använder samma `shared`-bibliotek som de övriga apparna men har ingen tenant-interceptor.
+`reception`-appen är tenant-scopad, använder samma konventions- och tenant-interceptors som `admin`/`public`, och är optimerad för receptionsflöden.
 
 ---
 

@@ -17,7 +17,9 @@ function Get-ExpectedPageMetadata {
         @{ Path = "/admin/";      Title = "Admin";    BaseHref = "/admin/" },
         @{ Path = "/admin/login"; Title = "Admin";    BaseHref = "/admin/" },
         @{ Path = "/portal/";     Title = "Portal";   BaseHref = "/portal/" },
-        @{ Path = "/portal/login";Title = "Portal";   BaseHref = "/portal/" }
+        @{ Path = "/portal/login";Title = "Portal";   BaseHref = "/portal/" },
+        @{ Path = "/reception/";  Title = "Conclave Receptionen"; BaseHref = "/reception/" },
+        @{ Path = "/reception/checkin"; Title = "Conclave Receptionen"; BaseHref = "/reception/" }
     )
 }
 

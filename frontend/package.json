@@ -12,11 +12,12 @@
     "build:demo": "npm run build:admin:prod && npm run build:public:prod && npm run build:portal:prod && npm run build:reception:prod",
     "watch": "ng build --watch --configuration development",
     "test": "npm run test:all",
-    "test:all": "ng test shared --watch=false && ng test admin --watch=false && ng test public --watch=false && ng test portal --watch=false",
+    "test:all": "ng test shared --watch=false && ng test admin --watch=false && ng test public --watch=false && ng test portal --watch=false && ng test reception --watch=false",
     "test:shared": "ng test shared --watch=false",
     "test:admin": "ng test admin --watch=false",
     "test:public": "ng test public --watch=false",
-    "test:portal": "ng test portal --watch=false"
+    "test:portal": "ng test portal --watch=false",
+    "test:reception": "ng test reception --watch=false"
   },
   "private": true,
   "packageManager": "npm@11.6.2",

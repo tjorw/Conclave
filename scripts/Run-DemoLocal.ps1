@@ -173,6 +173,7 @@ try {
     Write-Host "Public : $baseUrlTrimmed/"
     Write-Host "Admin  : $baseUrlTrimmed/admin/"
     Write-Host "Portal : $baseUrlTrimmed/portal/"
+    Write-Host "Reception: $baseUrlTrimmed/reception/"
     Write-Host "Email  : $EmailProvider"
 
     $outputLog = Join-Path $publishPath "run-demo-stdout.log"

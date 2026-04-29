@@ -53,7 +53,7 @@ public static class EventEndpoints
             async (Guid editionId, CreateEventRequest request, ISender sender, CancellationToken ct) =>
             {
                 var id = await sender.Send(
-                    new CreateEventCommand(editionId, request.CategoryId, request.LeadOrganiserId, request.ConventionId), ct);
+                    new CreateEventCommand(editionId, request.CategoryId, request.LeadOrganiserId), ct);
                 return Results.Created($"/events/{id}", new { id });
             });
 
@@ -230,7 +230,7 @@ public static class EventEndpoints
     }
 }
 
-public record CreateEventRequest(Guid CategoryId, Guid LeadOrganiserId, Guid ConventionId);
+public record CreateEventRequest(Guid CategoryId, Guid LeadOrganiserId);
 public record ApproveVersionRequest(IReadOnlyList<ApproveOrganizerTicketAssignmentRequest>? OrganizerTicketAssignments = null);
 public record ApproveOrganizerTicketAssignmentRequest(Guid PersonId, Guid? TicketTypeId);
 public record ChangeCategoryRequest(Guid CategoryId);

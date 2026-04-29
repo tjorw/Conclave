@@ -1,4 +1,5 @@
-﻿using ConventionSystem.Application.Common.Exceptions;
+using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Enums;
@@ -10,7 +11,8 @@ namespace ConventionSystem.Application.Event.Commands.CreateEvent;
 public sealed class CreateEventHandler(
     IEventRepository eventRepository,
     IEditionRepository editionRepository,
-    IPersonRepository personRepository)
+    IPersonRepository personRepository,
+    ICurrentUser currentUser)
     : ICommandHandler<CreateEventCommand, Guid>
 {
     public async Task<Guid> Handle(CreateEventCommand command, CancellationToken ct)
@@ -18,7 +20,9 @@ public sealed class CreateEventHandler(
         var editionId = new EditionId(command.EditionId);
         var categoryId = new CategoryId(command.CategoryId);
         var leadOrganiserId = new PersonId(command.LeadOrganiserId);
-        var conventionId = new ConventionId(command.ConventionId);
+
+        if (!currentUser.IsAdmin && leadOrganiserId != currentUser.PersonId)
+            throw new UnauthorizedAccessException("Utföraren kan bara skapa evenemang åt sig själv.");
 
         var edition = await editionRepository.GetByIdWithCategoriesAsync(editionId, ct)
             ?? throw new ResourceNotFoundException("Upplaga", command.EditionId.ToString());
@@ -30,8 +34,8 @@ public sealed class CreateEventHandler(
             throw new InvalidOperationException("Kategorin hittades inte på denna upplaga.");
 
         var person = await personRepository.GetByIdAsync(leadOrganiserId, ct)
-            ?? throw new ResourceNotFoundException("Person", command.LeadOrganiserId.ToString());
-        if (person.ConventionId != conventionId)
+            ?? throw new ResourceNotFoundException("Person", leadOrganiserId.Value.ToString());
+        if (person.ConventionId != edition.ConventionId)
             throw new InvalidOperationException("Personen tillhör inte denna konvention.");
 
         var ev = new Domain.Event.Aggregates.Event(EventId.New(), editionId, categoryId, leadOrganiserId);

@@ -1448,13 +1448,15 @@ Arrangör (person registrerad i konventionen)
 - Kategorin finns på upplagan
 
 ## Flöde
-1. Arrangören anger EditionId, CategoryId och sitt PersonId
+1. Arrangören anger EditionId, CategoryId och sitt PersonId. Administratör kan ange en annan huvudarrangör.
 2. Systemet skapar ett Event-aggregat med status Utkast
 3. Systemet returnerar det nya EventId
 
 ## Affärsregler
 - Upplagan måste vara publicerad
 - Kategorin måste tillhöra upplagan
+- Huvudarrangören måste vara den inloggade personen, utom när utföraren är administratör
+- API:t tar inte emot `ConventionId` från request body; personens konvention valideras mot upplagans faktiska `ConventionId`
 
 ## Domänhändelser
 - `EventCreated { eventId, editionId, categoryId, leadOrganiserId, occurredAt }`
@@ -1464,99 +1466,71 @@ Arrangör (person registrerad i konventionen)
 - [x] Event sparas med tomma innehållsfält (titel, beskrivning) redo att redigeras
 - [x] Skapande på en opublicerad upplaga returnerar ett valideringsfel
 - [x] Skapande med okänd kategori returnerar ett valideringsfel
+- [x] Icke-admin kan inte skapa evenemang åt annan `LeadOrganiserId`
+- [x] `ConventionId` tas inte från request body
 - [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC-EV002 – Redigera evenemangsutkast
+# UC-EV002 – Redigera evenemangsinnehåll
 
 ## Sammanfattning
 Arrangören uppdaterar titel, beskrivning och registreringstyp på evenemanget.
 
 ## Aktör
-Huvudarrangör eller medarrangör
+Inloggad användare i arrangörsflödet
 
 ## Förutsättningar
-- Evenemanget finns och har status Utkast
-- Utföraren är huvud- eller medarrangör
+- Evenemanget finns
+- Evenemanget är inte inställt
 
 ## Flöde
-1. Arrangören anger EventId, titel, beskrivning, registreringstyp (och eventuella drop-in-regler)
+1. Användaren anger EventId, titel, beskrivning, registreringstyp, eventuella drop-in-regler, schemaönskemålstext och önskat antal medarrangörer
 2. Systemet uppdaterar fälten direkt på Event-aggregatet
 3. Systemet sparar ändringen
 
 ## Affärsregler
-- Redigering är bara möjlig när evenemanget är i Utkast-läge
+- Inställda evenemang är skrivskyddade
 - Titel och beskrivning får inte vara tomma
-- DropInRules krävs om registreringstyp är DropIn eller Combined
 
 ## Domänhändelser
 - Inga
 
 ## Acceptanskriterier
 - [x] Titel, beskrivning och registreringstyp uppdateras på evenemanget
-- [x] Redigering av ett evenemang i granskning eller publicerat returnerar ett valideringsfel
+- [x] Schemaönskemålstext och önskat antal medarrangörer uppdateras på evenemanget
+- [x] Redigering av ett inställt evenemang returnerar ett valideringsfel
 - [x] Tom titel returnerar ett valideringsfel
 - [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 
-# UC-EV003 – Lägg till sessionönskemål
+# UC-EV003 – Uppdatera schemaönskemål
 
 ## Sammanfattning
-Arrangören lägger till ett önskemål om sessionstid och format i utkastet – en önskelista som kategoriansvarig kan (men inte måste) följa vid schemaläggningen.
+Arrangören beskriver eller rensar önskemål om sessionstid, format och andra schemaförutsättningar som fri text på evenemanget. Det är en önskelista som kategoriansvarig kan (men inte måste) följa vid schemaläggningen.
 
 ## Aktör
-Huvudarrangör eller medarrangör
+Inloggad användare i arrangörsflödet
 
 ## Förutsättningar
-- Evenemanget finns och har status Utkast
+- Evenemanget finns
+- Evenemanget är inte inställt
 
 ## Flöde
-1. Arrangören anger EventId, beskrivning, önskad duration (minuter), antal platser och starttyp
-2. Systemet lägger till ett SessionRequest på evenemanget
-3. Systemet returnerar det nya SessionRequestId
-
-## Affärsregler
-- SessionRequest kan bara läggas till när evenemanget har status Utkast
-- Duration måste vara > 0
-
-## Domänhändelser
-- Inga
-
-## Acceptanskriterier
-- [x] SessionRequest sparas på evenemanget med korrekt data
-- [x] Tillägg när evenemang inte är i Utkast-status returnerar ett valideringsfel
-- [x] Kommandohanteraren har ett tillhörande enhetstest
-
----
-
-# UC-EV004 – Ta bort sessionönskemål
-
-## Sammanfattning
-Arrangören tar bort ett sessionönskemål från utkastet.
-
-## Aktör
-Huvudarrangör eller medarrangör
-
-## Förutsättningar
-- Evenemanget finns och har status Utkast
-- SessionRequest med angivet id finns på evenemanget
-
-## Flöde
-1. Arrangören anger EventId och SessionRequestId
-2. Systemet tar bort önskemålet från evenemanget
+1. Användaren anger EventId och schemaönskemålstext
+2. Systemet uppdaterar `ScheduleRequestText` på evenemanget. Tom eller whitespace-only text sparas som `null`
 3. Systemet sparar ändringen
 
 ## Affärsregler
-- Borttagning är bara möjlig när evenemanget har status Utkast
+- Inställda evenemang är skrivskyddade
 
 ## Domänhändelser
 - Inga
 
 ## Acceptanskriterier
-- [x] SessionRequest tas bort från evenemanget
-- [x] Borttagning av ett icke-existerande önskemål returnerar ett valideringsfel
+- [x] Schemaönskemålstext sparas på evenemanget
+- [x] Tom text rensar schemaönskemålet
 - [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
@@ -2970,6 +2944,10 @@ Systemet samlar alla avvikelser och returnerar dem efter att upplagan skapats. I
 - [x] Upplagan skapas med status `Draft`
 
 ---
+
+# Planerade teamflöden
+
+UC-TM001–UC-TM004 beskriver planerad funktionalitet för laganmälningar. De är inte implementerade i nuvarande domänmodell.
 
 # UC-TM001 – Konfigurera laganmälning på evenemang
 

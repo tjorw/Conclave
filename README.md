@@ -9,7 +9,7 @@ System för att administrera, annonsera, registrera och driva hobbymässor (tabl
 | Backend | [.NET 9](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview), C# – Clean Architecture med DDD |
 | ORM | [Entity Framework Core 9](https://learn.microsoft.com/en-us/ef/core/) |
 | Databas | SQL Server – en databas per deploy (`dbo` för domändata, `identity` för ASP.NET Identity) |
-| Frontend | [Angular 21](https://angular.dev/) – admin-app + publik vy, standalone components, signals |
+| Frontend | [Angular 21](https://angular.dev/) – admin, publik vy, portal och reception, standalone components, signals |
 | UI-bibliotek | [Angular Material 21](https://material.angular.io/) (Material Design 3) |
 | Auth | [ASP.NET Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity) med JWT |
 | API | REST, [Minimal API](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/overview) |
@@ -52,12 +52,14 @@ Det kommandot bygger klienterna som en del av publish-steget och kopierar dem ti
 - `backend/artifacts/demo-publish/wwwroot/` för `public`
 - `backend/artifacts/demo-publish/wwwroot/admin/` för `admin`
 - `backend/artifacts/demo-publish/wwwroot/portal/` för `portal`
+- `backend/artifacts/demo-publish/wwwroot/reception/` för `reception`
 
 Det betyder att paketeringen för Demo nu kan verifieras lokalt utan separat frontend-buildsteg. Den publicerade API-instansen är också förberedd att servera:
 
 - `public` från `/`
 - `admin` från `/admin/*`
 - `portal` från `/portal/*`
+- `reception` från `/reception/*`
 
 SPA-fallbacks aktiveras bara när `wwwroot` faktiskt finns, så vanlig `dotnet run` i utvecklingsläge påverkas inte av demo-hostingen.
 
@@ -70,7 +72,7 @@ För att smoke-testa den publicerade artifacten finns också ett script:
 Det scriptet:
 
 - startar den publicerade API-artifacten lokalt
-- verifierar `public`, `admin` och `portal` inklusive klientrutter
+- verifierar `public`, `admin`, `portal` och `reception` inklusive klientrutter
 - kontrollerar att ett frontend-asset laddar
 - verifierar att en skyddad API-route fortfarande beter sig som API och inte som SPA-fallback
 - stänger sedan ner processen igen
@@ -103,6 +105,7 @@ powershell -ExecutionPolicy Bypass -File scripts/Run-DemoLocal.ps1
 - `http://localhost:5099/`
 - `http://localhost:5099/admin/`
 - `http://localhost:5099/portal/`
+- `http://localhost:5099/reception/`
 
 Scriptet sätter bland annat:
 
@@ -429,11 +432,19 @@ Kör tester per app när du vill begränsa körningen:
 ```bash
 # Endast admin
 cd frontend
-npm run test -- admin
+npm run test:admin
 
 # Endast public
 cd frontend
-npm run test -- public
+npm run test:public
+
+# Endast portal
+cd frontend
+npm run test:portal
+
+# Endast reception
+cd frontend
+npm run test:reception
 ```
 
 Tips: kör med watch-läge under utveckling för snabb återkoppling.
@@ -448,11 +459,19 @@ Watch-läge per app:
 ```bash
 # Endast admin
 cd frontend
-npm run test -- admin --watch
+npx ng test admin --watch
 
 # Endast public
 cd frontend
-npm run test -- public --watch
+npx ng test public --watch
+
+# Endast portal
+cd frontend
+npx ng test portal --watch
+
+# Endast reception
+cd frontend
+npx ng test reception --watch
 ```
 
 Testnivåer och minimikrav för frontend-PR:er beskrivs i
@@ -485,7 +504,8 @@ Testnivåer och minimikrav för frontend-PR:er beskrivs i
 │   └── projects/
 │       ├── admin/       # Admin-app – rollbaserad, port 4200 (Angular Material)
 │       ├── public/      # Publik vy – konventionsbrandad, port 4201 (Angular Material)
-│       ├── reception/   # Receptionsapp – receptionsdisk, tablett-optimerad, port 4202 (Angular Material)
+│       ├── portal/      # Systemportal – tenant-provisioning, port 4202 (Angular Material)
+│       ├── reception/   # Receptionsapp – receptionsdisk, tablett-optimerad, port 4203 (Angular Material)
 │       └── shared/      # Delat bibliotek: API-typer, tjänster, auth, interceptors
 └── docs/
     ├── Backend.md      # Arkitekturprinciper och kodmönster per lager
@@ -522,14 +542,14 @@ Hanterar livscykeln för ett evenemang (rollspel, brädspel, föreläsning etc.)
 | Typ | Namn |
 |---|---|
 | Aggregate root | `Event` |
-| Entiteter | `Session`, `SessionRequest`, `CoOrganiser`, `EventComment`, `TeamSessionAssignment` |
+| Entiteter | `Session`, `CoOrganiser`, `CoOrganiserInvitation`, `EventComment` |
 | Value objects | `TimeSlot` |
 
 **Viktiga regler:**
-- Innehållsfälten (titel, beskrivning, registreringstyp) och sessionönskemål lagras direkt på `Event` och är redigerbara i `Draft`-status
-- `SessionRequest` har ingen koppling till `Session` – kategoriansvarig äger schemat och behöver inte följa requests
-- `Event.RegistrationMode: Individual | Team` styr om besökare anmäler sig individuellt till sessioner eller om lag anmäler sig till hela evenemanget
-- Vid `Team`: arrangören tilldelar bekräftade lag till specifika sessioner via `TeamSessionAssignment`; besökare kan inte välja session själv
+- Innehållsfälten (titel, beskrivning, registreringstyp), drop-in-regler och schemaönskemålstext lagras direkt på `Event`
+- `ScheduleRequestText` är arrangörens fria önskemål till schemaarbetet; kategoriansvarig äger ändå de faktiska `Session`-posterna
+- `Event.RegistrationType: DropIn | PreRegistration | Combined` styr om besökare kan droppa in, föranmäla sig eller båda
+- Laganmälningar (`RegistrationMode`, `Team`, `TeamEventRegistration`, `TeamSessionAssignment`) är roadmap och inte implementerat i nuvarande modell
 
 **Livscykel:** `Draft` → `UnderReview` → `Published` (eller `Cancelled`)
 
@@ -539,17 +559,12 @@ Hanterar registreringstyperna: besöksregistrering (vill gå på konventionen), 
 
 | Typ | Namn |
 |---|---|
-| Aggregate roots | `VisitorRegistration`, `SessionRegistration`, `StaffApplication`, `Ticket`, `PromotionCode`, `Team`, `TeamEventRegistration` |
-| Entiteter | `Availability`, `StationPreference`, `TicketType`, `TicketPerk`, `PromotionCodeRedemption`, `TeamMember` |
+| Aggregate roots | `VisitorRegistration`, `SessionRegistration`, `StaffApplication`, `Ticket`, `PromotionCode` |
+| Entiteter | `Availability`, `StationPreference`, `TicketType`, `TicketPerk`, `PromotionCodeRedemption` |
 | Value objects | `DiscountType` |
 | Domain service | `RegistrationRuleService` (validerar platser, biljetter och promotionkoder) |
 
-**Laganmälan:**
-- `Team` är Edition-scoped och äger sina `TeamMember`s (varje medlem har ett namn och ett valfritt `PersonId` för att koppla till tidsschemat)
-- En `TeamMember` med `PersonId` ser tilldelade sessioner i sitt tidschema via query-projektion
-- Captainen (bokningskontakt) måste ha en giltig biljett; övriga lagmedlemmar behöver inte ha det
-- `TeamEventRegistration` har livscykeln `Pending → Confirmed | Cancelled`; arranggören bekräftar eller nekar
-- Sessionsvisning i tidsschemat sker via query, inte via extra `SessionRegistration`-poster
+**Laganmälan:** Ej implementerat ännu. Se `docs/Roadmap.md` och UC-TM001–UC-TM004 i `docs/UseCases.md` för planerade teamflöden.
 
 ### Staff
 

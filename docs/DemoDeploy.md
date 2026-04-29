@@ -10,6 +10,7 @@ Demo-instansen kör:
 - `public` på `/`
 - `admin` på `/admin/`
 - `portal` på `/portal/`
+- `reception` på `/reception/`
 - en SQL Server-databas för både domändata och identity
 
 Runtime-profilen är `Demo`.
@@ -33,6 +34,7 @@ Artifacten innehåller då:
 - `wwwroot/` för `public`
 - `wwwroot/admin/` för `admin`
 - `wwwroot/portal/` för `portal`
+- `wwwroot/reception/` för `reception`
 
 ## Obligatoriska miljövariabler
 
@@ -167,7 +169,7 @@ För snabb verifiering finns:
 Scriptet:
 
 - startar artifacten lokalt
-- verifierar `/`, `/admin/`, `/portal/`
+- verifierar `/`, `/admin/`, `/portal/`, `/reception/`
 - verifierar klientrutter
 - verifierar att minst ett frontend-asset laddar
 - verifierar att en backend-route inte fångas av SPA-fallback
@@ -179,13 +181,15 @@ Efter deploy ska följande verifieras manuellt:
 1. Root-URL laddar `public`.
 2. `/admin/` laddar admin-klienten.
 3. `/portal/` laddar portal-klienten.
-4. En klientrutt under `/admin/` fungerar via refresh.
-5. En klientrutt under `/portal/` fungerar via refresh.
-6. Databasen har migrerats utan fel.
-7. Demo-data finns i instansen.
-8. Admin-login fungerar med seedad demo-användare om demo-seeding används.
-9. Portalens system-login fungerar om systemadmin finns provisionerad.
-10. Ett API-anrop svarar som API och inte som HTML-fallback.
+4. `/reception/` laddar reception-klienten.
+5. En klientrutt under `/admin/` fungerar via refresh.
+6. En klientrutt under `/portal/` fungerar via refresh.
+7. En klientrutt under `/reception/` fungerar via refresh.
+8. Databasen har migrerats utan fel.
+9. Demo-data finns i instansen.
+10. Admin-login fungerar med seedad demo-användare om demo-seeding används.
+11. Portalens system-login fungerar om systemadmin finns provisionerad.
+12. Ett API-anrop svarar som API och inte som HTML-fallback.
 
 ## Felsökning
 

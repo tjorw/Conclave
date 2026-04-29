@@ -201,6 +201,7 @@ Multitenancy tillför en tredje app till frontend-monorepon:
 | `admin` | 4200 | Konventionsadministration per tenant | `ConventionAdministrator` |
 | `public` | 4201 | Besökarfrontend per tenant | Publik + inloggad |
 | `portal` | 4202 | Systemadmin – tenant-provisioning | `SystemAdmin` |
+| `reception` | 4203 | Receptionsdisk, biljettuthämtning och walk-up | `ReceptionStaff` eller `ConventionAdministrator` |
 
 `portal`-appen är fristående, lever på `system.conclave.se`, och använder samma `shared`-bibliotek som de andra apparna. Den autentiserar via systemadmin-login och har aldrig tillgång till tenant-scopad data.
 
