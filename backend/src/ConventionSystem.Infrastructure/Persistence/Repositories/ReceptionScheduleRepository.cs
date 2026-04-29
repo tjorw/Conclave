@@ -29,7 +29,6 @@ public sealed class ReceptionScheduleRepository(ConventionDbContext db) : IRecep
         var shifts = await db.Shifts
             .Include(s => s.Assignments)
             .Where(s => stationIds.Contains(s.StationId)
-                     && s.Status != ShiftStatus.Cancelled
                      && (s.ResponsibleId == personId
                       || s.Assignments.Any(a => a.PersonId == personId
                           && (a.Status == StaffAssignmentStatus.Assigned
@@ -64,7 +63,7 @@ public sealed class ReceptionScheduleRepository(ConventionDbContext db) : IRecep
                 .FirstOrDefault(a => a.PersonId == personId
                     && (a.Status == StaffAssignmentStatus.Assigned
                      || a.Status == StaffAssignmentStatus.Confirmed))
-                ?.Status.ToString() ?? shift.Status.ToString();
+                ?.Status.ToString() ?? string.Empty;
             var role = shift.ResponsibleId == personId ? "Responsible" : "Assigned";
 
             return new PersonShiftItemDto(

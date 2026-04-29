@@ -2,9 +2,8 @@ import { EditionScheduleDayDto } from './convention.models';
 import { StaffApplicationStatus } from './registration.models';
 export type { StaffApplicationStatus };
 
-export type ShiftStatus = 'Planned' | 'InProgress' | 'Cancelled' | 'Completed';
 export type StaffAssignmentStatus = 'Assigned' | 'Confirmed' | 'Rejected' | 'Cancelled';
-export type StaffingStatus = 'Cancelled' | 'Unstaffed' | 'UnderMin' | 'OverMax' | 'Full' | 'WithinRequirement';
+export type StaffingStatus = 'Unstaffed' | 'UnderMin' | 'OverMax' | 'Full' | 'WithinRequirement';
 
 export interface ShiftSummaryDto {
   id: string;
@@ -16,7 +15,6 @@ export interface ShiftSummaryDto {
   minPersons: number;
   maxPersons: number;
   activeAssignmentCount: number;
-  status: ShiftStatus;
 }
 
 export interface ShiftDto {
@@ -28,7 +26,6 @@ export interface ShiftDto {
   end: string;
   minPersons: number;
   maxPersons: number;
-  status: ShiftStatus;
   assignments: StaffAssignmentDto[];
 }
 
@@ -90,6 +87,5 @@ export interface StaffScheduleShiftDto {
   maxPersons: number;
   activeAssignmentCount: number;
   confirmedAssignmentCount: number;
-  status: ShiftStatus;
   staffingStatus: StaffingStatus;
 }

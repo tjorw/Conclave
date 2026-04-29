@@ -5,16 +5,16 @@ using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Domain.Staff.Ids;
 
-namespace ConventionSystem.Application.Staff.Commands.CancelShift;
+namespace ConventionSystem.Application.Staff.Commands.DeleteShift;
 
-public sealed class CancelShiftHandler(
+public sealed class DeleteShiftHandler(
     IShiftRepository shiftRepository,
     IEditionRepository editionRepository,
     IConventionRepository conventionRepository,
     ICurrentUser currentUser)
-    : CommandHandler<CancelShiftCommand>
+    : CommandHandler<DeleteShiftCommand>
 {
-    protected override async Task ExecuteAsync(CancelShiftCommand command, CancellationToken ct)
+    protected override async Task ExecuteAsync(DeleteShiftCommand command, CancellationToken ct)
     {
         var shiftId = new ShiftId(command.ShiftId);
         var performedById = currentUser.PersonId;
@@ -25,8 +25,7 @@ public sealed class CancelShiftHandler(
             conventionRepository,
             shiftId,
             ct);
-        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan avboka pass.");
-        context.Shift.Cancel(performedById);
-        await shiftRepository.SaveAsync(ct);
+        ApplicationAuthorization.EnsureConventionAdmin(context.Convention, performedById, "Endast administratörer kan ta bort pass.");
+        await shiftRepository.DeleteAndSaveAsync(context.Shift, ct);
     }
 }

@@ -1,8 +1,8 @@
 using ConventionSystem.Application.Staff.Commands.AssignPersonToShift;
 using ConventionSystem.Application.Staff.Commands.CancelAssignment;
-using ConventionSystem.Application.Staff.Commands.CancelShift;
 using ConventionSystem.Application.Staff.Commands.ConfirmAssignment;
 using ConventionSystem.Application.Staff.Commands.CreateShift;
+using ConventionSystem.Application.Staff.Commands.DeleteShift;
 using ConventionSystem.Application.Staff.Commands.RejectAssignment;
 using ConventionSystem.Application.Staff.Commands.UpdateShift;
 using ConventionSystem.Application.Staff.Queries.GetShift;
@@ -64,10 +64,10 @@ public static class ShiftEndpoints
                 return Results.NoContent();
             });
 
-        shifts.MapPost("/cancel",
+        shifts.MapDelete("/",
             async (Guid shiftId, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new CancelShiftCommand(shiftId), ct);
+                await sender.Send(new DeleteShiftCommand(shiftId), ct);
                 return Results.NoContent();
             });
 

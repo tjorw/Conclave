@@ -2,7 +2,7 @@ using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
-using ConventionSystem.Application.Staff.Commands.CancelShift;
+using ConventionSystem.Application.Staff.Commands.DeleteShift;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Staff.Aggregates;
@@ -12,17 +12,17 @@ using NSubstitute;
 
 namespace ConventionSystem.Application.Tests.Staff.Commands;
 
-public class CancelShiftHandlerTests
+public class DeleteShiftHandlerTests
 {
     private readonly IShiftRepository _shiftRepo = Substitute.For<IShiftRepository>();
     private readonly IEditionRepository _editionRepo = Substitute.For<IEditionRepository>();
     private readonly IConventionRepository _conventionRepo = Substitute.For<IConventionRepository>();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
-    private readonly CancelShiftHandler _handler;
+    private readonly DeleteShiftHandler _handler;
 
-    public CancelShiftHandlerTests()
+    public DeleteShiftHandlerTests()
     {
-        _handler = new CancelShiftHandler(_shiftRepo, _editionRepo, _conventionRepo, _currentUser);
+        _handler = new DeleteShiftHandler(_shiftRepo, _editionRepo, _conventionRepo, _currentUser);
     }
 
     private (Domain.Convention.Aggregates.Convention convention,
@@ -53,25 +53,14 @@ public class CancelShiftHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ValidCommand_CancelsShift()
+    public async Task Handle_ValidCommand_DeletesShift()
     {
         var (_, admin, _, shift) = Setup();
         _currentUser.PersonId.Returns(admin.Id);
 
-        await _handler.Handle(new CancelShiftCommand(shift.Id.Value), default);
+        await _handler.Handle(new DeleteShiftCommand(shift.Id.Value), default);
 
-        Assert.Equal(Domain.Staff.Enums.ShiftStatus.Cancelled, shift.Status);
-    }
-
-    [Fact]
-    public async Task Handle_ValidCommand_CallsSave()
-    {
-        var (_, admin, _, shift) = Setup();
-        _currentUser.PersonId.Returns(admin.Id);
-
-        await _handler.Handle(new CancelShiftCommand(shift.Id.Value), default);
-
-        await _shiftRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
+        await _shiftRepo.Received(1).DeleteAndSaveAsync(shift, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -81,7 +70,7 @@ public class CancelShiftHandlerTests
             .Returns((Shift?)null);
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(
-            () => _handler.Handle(new CancelShiftCommand(Guid.NewGuid()), default));
+            () => _handler.Handle(new DeleteShiftCommand(Guid.NewGuid()), default));
     }
 
     [Fact]
@@ -92,7 +81,6 @@ public class CancelShiftHandlerTests
         _currentUser.PersonId.Returns(nonAdmin.Id);
 
         await Assert.ThrowsAsync<ForbiddenException>(
-            () => _handler.Handle(new CancelShiftCommand(shift.Id.Value), default));
+            () => _handler.Handle(new DeleteShiftCommand(shift.Id.Value), default));
     }
-
 }

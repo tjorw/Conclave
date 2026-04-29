@@ -43,7 +43,7 @@ public sealed class EditionExportReadService(ConventionDbContext db) : IEditionE
             ? []
             : await db.Shifts
                 .AsNoTracking()
-                .Where(s => stationIds.Contains(s.StationId) && s.Status != ShiftStatus.Cancelled)
+                .Where(s => stationIds.Contains(s.StationId))
                 .OrderBy(s => s.TimeSlot.Start)
                 .ThenBy(s => s.TimeSlot.End)
                 .ToListAsync(ct);

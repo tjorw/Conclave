@@ -17,6 +17,12 @@ public sealed class ShiftRepository(ConventionDbContext db) : IShiftRepository
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task DeleteAndSaveAsync(Shift shift, CancellationToken ct = default)
+    {
+        db.Shifts.Remove(shift);
+        await db.SaveChangesAsync(ct);
+    }
+
     public Task<Shift?> GetByIdAsync(ShiftId id, CancellationToken ct = default)
         => db.Shifts.FirstOrDefaultAsync(s => s.Id == id, ct);
 
@@ -46,8 +52,7 @@ public sealed class ShiftRepository(ConventionDbContext db) : IShiftRepository
             s.TimeSlot.End,
             s.StaffingRequirement.MinPersons,
             s.StaffingRequirement.MaxPersons,
-            GetEffectiveActiveStaffingCount(s),
-            s.Status.ToString())).ToList();
+            GetEffectiveActiveStaffingCount(s))).ToList();
     }
 
     public async Task<ShiftDto?> GetProjectedByIdAsync(ShiftId id, CancellationToken ct = default)
@@ -73,7 +78,6 @@ public sealed class ShiftRepository(ConventionDbContext db) : IShiftRepository
             shift.TimeSlot.End,
             shift.StaffingRequirement.MinPersons,
             shift.StaffingRequirement.MaxPersons,
-            shift.Status.ToString(),
             shift.Assignments.Select(a => new StaffAssignmentDto(
                 a.Id.Value,
                 a.PersonId.Value,
@@ -169,9 +173,7 @@ public sealed class ShiftRepository(ConventionDbContext db) : IShiftRepository
                                     shift.StaffingRequirement.MaxPersons,
                                     activeAssignmentCount,
                                     confirmedAssignmentCount,
-                                    shift.Status.ToString(),
                                     GetStaffingStatus(
-                                        shift.Status,
                                         activeAssignmentCount,
                                         shift.StaffingRequirement.MinPersons,
                                         shift.StaffingRequirement.MaxPersons));
@@ -181,10 +183,8 @@ public sealed class ShiftRepository(ConventionDbContext db) : IShiftRepository
                 .ToList());
     }
 
-    private static string GetStaffingStatus(ShiftStatus shiftStatus, int activeAssignmentCount, int minPersons, int maxPersons)
+    private static string GetStaffingStatus(int activeAssignmentCount, int minPersons, int maxPersons)
     {
-        if (shiftStatus == ShiftStatus.Cancelled)
-            return "Cancelled";
         if (activeAssignmentCount == 0)
             return "Unstaffed";
         if (activeAssignmentCount < minPersons)

@@ -8,6 +8,7 @@ namespace ConventionSystem.Application.Staff.Abstractions;
 public interface IShiftRepository
 {
     Task AddAndSaveAsync(Shift shift, CancellationToken ct = default);
+    Task DeleteAndSaveAsync(Shift shift, CancellationToken ct = default);
     Task<Shift?> GetByIdAsync(ShiftId id, CancellationToken ct = default);
     Task<Shift?> GetByIdWithAssignmentsAsync(ShiftId id, CancellationToken ct = default);
     Task<IReadOnlyList<ShiftSummaryDto>> ListByStationIdAsync(StationId id, CancellationToken ct = default);

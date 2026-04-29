@@ -39,10 +39,6 @@ public sealed class ShiftConfiguration : IEntityTypeConfiguration<Shift>
             sr.Property(r => r.MaxPersons).HasColumnName("max_persons");
         });
 
-        builder.Property(s => s.Status)
-            .HasConversion<string>()
-            .HasMaxLength(50);
-
         builder.HasMany(s => s.Assignments)
             .WithOne()
             .HasForeignKey("ShiftId")

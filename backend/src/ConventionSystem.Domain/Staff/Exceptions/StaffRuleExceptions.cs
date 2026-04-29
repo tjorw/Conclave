@@ -2,11 +2,6 @@ using ConventionSystem.Domain.Common;
 
 namespace ConventionSystem.Domain.Staff.Exceptions;
 
-public sealed class ShiftCannotAssignInCurrentStateException()
-    : DomainRuleViolationException(
-        "Kan bara tilldela personal till planerade eller pågående pass.",
-        "shift_cannot_assign_in_current_state");
-
 public sealed class ShiftAlreadyFullyStaffedException()
     : DomainRuleViolationException(
         "Passet har redan nått maximal funktionering.",
@@ -16,11 +11,6 @@ public sealed class PersonAlreadyAssignedToShiftException()
     : DomainRuleViolationException(
         "Personen är redan aktiv tilldelad detta pass.",
         "person_already_assigned_to_shift");
-
-public sealed class ShiftCanOnlyBeCancelledWhenPlannedException()
-    : DomainRuleViolationException(
-        "Bara planerade pass kan ställas in.",
-        "shift_can_only_be_cancelled_when_planned");
 
 public sealed class StaffAssignmentNotFoundException()
     : DomainRuleViolationException(
@@ -47,7 +37,3 @@ public sealed class RejectedAssignmentCannotBeCancelledException()
         "En avvisad tilldelning kan inte avbokas.",
         "rejected_assignment_cannot_be_cancelled");
 
-public sealed class ShiftCanOnlyBeUpdatedWhenPlannedException()
-    : DomainRuleViolationException(
-        "Bara planerade pass kan uppdateras.",
-        "shift_can_only_be_updated_when_planned");

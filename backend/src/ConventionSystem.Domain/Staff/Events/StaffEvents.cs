@@ -11,12 +11,6 @@ public record PersonAssignedToShift(
     PersonId AssignedById,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
-public record ShiftCancelled(
-    ShiftId ShiftId,
-    StationId StationId,
-    PersonId PerformedById,
-    DateTimeOffset OccurredAt) : IDomainEvent;
-
 public record AssignmentConfirmed(
     StaffAssignmentId AssignmentId,
     ShiftId ShiftId,

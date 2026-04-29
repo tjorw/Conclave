@@ -66,7 +66,6 @@ public sealed class MyScheduleRepository(ConventionDbContext db) : IMyScheduleRe
         var shifts = await db.Shifts
             .Include(s => s.Assignments)
             .Where(s => stationIds.Contains(s.StationId)
-                     && s.Status != ShiftStatus.Cancelled
                      && (s.ResponsibleId == personId
                       || s.Assignments.Any(a => a.PersonId == personId
                           && (a.Status == StaffAssignmentStatus.Assigned

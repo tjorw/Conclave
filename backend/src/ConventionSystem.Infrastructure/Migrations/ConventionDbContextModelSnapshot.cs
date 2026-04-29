@@ -1113,11 +1113,6 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("station_id");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("tenant_id");
