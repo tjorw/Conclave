@@ -29,6 +29,18 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .Include(e => e.CoOrganiserApplications)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
+    public Task<Domain.Event.Aggregates.Event?> GetByIdWithCoOrganisersAndInvitationsAsync(EventId id, CancellationToken ct = default)
+        => db.Events
+            .Include(e => e.CoOrganisers)
+            .Include(e => e.CoOrganiserInvitations)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
+    public Task<Domain.Event.Aggregates.Event?> GetByInvitationCodeAsync(string code, CancellationToken ct = default)
+        => db.Events
+            .Include(e => e.CoOrganisers)
+            .Include(e => e.CoOrganiserInvitations)
+            .FirstOrDefaultAsync(e => e.CoOrganiserInvitations.Any(i => i.Code == code), ct);
+
     public Task<Domain.Event.Aggregates.Event?> GetByIdWithSessionsAsync(EventId id, CancellationToken ct = default)
         => db.Events
             .Include(e => e.Sessions)

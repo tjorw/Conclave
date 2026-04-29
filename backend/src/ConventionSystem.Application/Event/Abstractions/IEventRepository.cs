@@ -10,6 +10,8 @@ public interface IEventRepository
     Task<Domain.Event.Aggregates.Event?> GetByIdAsync(EventId id, CancellationToken ct = default);
     Task<Domain.Event.Aggregates.Event?> GetByIdWithCoOrganisersAsync(EventId id, CancellationToken ct = default);
     Task<Domain.Event.Aggregates.Event?> GetByIdWithCoOrganisersAndApplicationsAsync(EventId id, CancellationToken ct = default);
+    Task<Domain.Event.Aggregates.Event?> GetByIdWithCoOrganisersAndInvitationsAsync(EventId id, CancellationToken ct = default);
+    Task<Domain.Event.Aggregates.Event?> GetByInvitationCodeAsync(string code, CancellationToken ct = default);
     Task<Domain.Event.Aggregates.Event?> GetByIdWithSessionsAsync(EventId id, CancellationToken ct = default);
     Task<Domain.Event.Aggregates.Event?> GetByIdWithCommentsAsync(EventId id, CancellationToken ct = default);
     Task<Domain.Event.Aggregates.Event?> GetByIdWithCommentsAndCoOrganisersAsync(EventId id, CancellationToken ct = default);

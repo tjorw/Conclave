@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Entities;
@@ -14,6 +15,7 @@ public sealed class Event : AggregateRoot
     private readonly List<Session> _sessions = [];
     private readonly List<CoOrganiser> _coOrganisers = [];
     private readonly List<CoOrganiserApplication> _coOrganiserApplications = [];
+    private readonly List<CoOrganiserInvitation> _coOrganiserInvitations = [];
     private readonly List<EventComment> _comments = [];
 
     public EventId Id { get; private set; }
@@ -27,10 +29,13 @@ public sealed class Event : AggregateRoot
     public string? ScheduleRequestText { get; private set; }
     public RegistrationType RegistrationType { get; private set; }
     public string? DropInRules { get; private set; }
+    public int CoOrganiserCount { get; private set; }
+    public int CoOrganiserLimit { get; private set; }
 
     public IReadOnlyList<Session> Sessions => _sessions.AsReadOnly();
     public IReadOnlyList<CoOrganiser> CoOrganisers => _coOrganisers.AsReadOnly();
     public IReadOnlyList<CoOrganiserApplication> CoOrganiserApplications => _coOrganiserApplications.AsReadOnly();
+    public IReadOnlyList<CoOrganiserInvitation> CoOrganiserInvitations => _coOrganiserInvitations.AsReadOnly();
     public IReadOnlyList<EventComment> Comments => _comments.AsReadOnly();
 
     private Event() { }
@@ -351,6 +356,78 @@ public sealed class Event : AggregateRoot
 
         _coOrganisers.Remove(coOrganiser);
         RaiseDomainEvent(new CoOrganiserRemoved(Id, personId, removedById, DateTimeOffset.UtcNow));
+    }
+
+    public void SetCoOrganiserCount(int count)
+    {
+        EnsureNotCancelled();
+        if (count < 0)
+            throw new ArgumentException("Önskat antal medarrangörer kan inte vara negativt.", nameof(count));
+        CoOrganiserCount = count;
+    }
+
+    public void AdjustCoOrganiserLimit(int limit)
+    {
+        if (limit < 0)
+            throw new ArgumentException("Godkänt antal medarrangörer kan inte vara negativt.", nameof(limit));
+        CoOrganiserLimit = limit;
+    }
+
+    public CoOrganiserInvitation CreateInvitation(string email, PersonId createdById)
+    {
+        EnsureNotCancelled();
+
+        var activeCount = _coOrganiserInvitations.Count(i => i.Status == CoOrganiserInvitationStatus.Active);
+        if (activeCount >= CoOrganiserLimit)
+            throw new CoOrganiserLimitExceededException();
+
+        var normalizedEmail = NormalizeEmail(email);
+        if (_coOrganiserInvitations.Any(i => i.NormalizedEmail == normalizedEmail && i.Status == CoOrganiserInvitationStatus.Active))
+            throw new CoOrganiserAlreadyInvitedException();
+
+        var code = GenerateInvitationCode();
+        var invitation = new CoOrganiserInvitation(
+            CoOrganiserInvitationId.New(),
+            Id,
+            email.Trim(),
+            normalizedEmail,
+            code,
+            createdById);
+        _coOrganiserInvitations.Add(invitation);
+        RaiseDomainEvent(new CoOrganiserInvitationCreated(invitation.Id, Id, invitation.Email, invitation.Code, createdById, DateTimeOffset.UtcNow));
+        return invitation;
+    }
+
+    public void CancelInvitation(CoOrganiserInvitationId invitationId, PersonId cancelledById)
+    {
+        var invitation = _coOrganiserInvitations.FirstOrDefault(i => i.Id == invitationId)
+            ?? throw new CoOrganiserInvitationNotFoundException();
+
+        invitation.Cancel(cancelledById);
+        RaiseDomainEvent(new CoOrganiserInvitationCancelled(invitationId, Id, cancelledById, DateTimeOffset.UtcNow));
+    }
+
+    public CoOrganiser RedeemInvitation(string code, string redeemerEmail, PersonId redeemedById)
+    {
+        var invitation = _coOrganiserInvitations.FirstOrDefault(i => i.Code == code)
+            ?? throw new InvalidInvitationCodeException();
+
+        if (invitation.NormalizedEmail != NormalizeEmail(redeemerEmail))
+            throw new CoOrganiserInvitationEmailMismatchException();
+
+        invitation.Redeem(redeemedById);
+        var coOrganiser = AddCoOrganiser(redeemedById);
+        RaiseDomainEvent(new CoOrganiserInvitationRedeemed(invitation.Id, Id, redeemedById, DateTimeOffset.UtcNow));
+        return coOrganiser;
+    }
+
+    private static string GenerateInvitationCode()
+    {
+        var bytes = RandomNumberGenerator.GetBytes(16);
+        return Convert.ToBase64String(bytes)
+            .Replace('+', '-')
+            .Replace('/', '_')
+            .TrimEnd('=');
     }
 
     public bool IsOrganiser(PersonId personId)

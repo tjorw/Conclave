@@ -111,7 +111,7 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 - [x] `R-CO01` Domänentitet `CoOrganiserInvitation` med livscykel (aktiv → inlöst / avbruten)
 - [x] `R-CO02` Application commands + handlers: `SetCoOrganiserCount`, `AdjustCoOrganiserLimit`, `CreateCoOrganiserInvitation`, `CancelCoOrganiserInvitation`, `RedeemCoOrganiserInvitation`
-- [ ] `R-CO03` Domänaggregatets metoder: `SetCoOrganiserCount` och `AdjustCoOrganiserLimit` är enkla property-uppdateringar utan egna domänhändelser (samma mönster som att redigera grunduppgifter); `CreateInvitation`, `CancelInvitation` och `RedeemInvitation` höjer domänhändelser – aggregatet saknar samtliga dessa metoder trots att handlers är skrivna
+- [x] `R-CO03` Domänaggregatets metoder: `SetCoOrganiserCount` och `AdjustCoOrganiserLimit` är enkla property-uppdateringar utan egna domänhändelser (samma mönster som att redigera grunduppgifter); `CreateInvitation`, `CancelInvitation` och `RedeemInvitation` höjer domänhändelser – aggregatet saknar samtliga dessa metoder trots att handlers är skrivna
 - [ ] `R-CO04` EF Core-konfiguration för `CoOrganiserInvitation` och limit-fältet på `Event`; databasmigration
 - [ ] `R-CO05` API-endpoints för det nya flödet (set count, adjust limit, create/cancel/redeem invitation)
 - [ ] `R-CO06` Ta bort gammalt ansökningsflöde: `AddCoOrganiser`, `ApproveCoOrganiserApplication`, `RejectCoOrganiserApplication`, `CancelCoOrganiserApplication` – commands, handlers, endpoints och frontend
@@ -123,8 +123,5 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 ## Diverse
 - Ledning, ta bort huvudansvariga från edition. Man skall skapa egna ansvar och knyta till edition.
-- ligger säkerhet på rätt ställer?
-- api: en facad per klient istället för aggregat?
-- kommer api och client routes att krocka?
 - front end: gemensamma helpers, generaliseringar
 

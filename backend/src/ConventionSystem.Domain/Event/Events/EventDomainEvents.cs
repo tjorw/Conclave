@@ -87,3 +87,23 @@ public record SessionDeactivated(
     EventId EventId,
     PersonId PerformedById,
     DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record CoOrganiserInvitationCreated(
+    CoOrganiserInvitationId InvitationId,
+    EventId EventId,
+    string Email,
+    string Code,
+    PersonId CreatedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record CoOrganiserInvitationCancelled(
+    CoOrganiserInvitationId InvitationId,
+    EventId EventId,
+    PersonId CancelledById,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record CoOrganiserInvitationRedeemed(
+    CoOrganiserInvitationId InvitationId,
+    EventId EventId,
+    PersonId RedeemedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;

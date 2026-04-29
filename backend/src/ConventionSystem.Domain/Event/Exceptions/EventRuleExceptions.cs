@@ -146,3 +146,33 @@ public sealed class EventCannotBeDeletedException()
     : DomainRuleViolationException(
         "Arrangemanget kan bara tas bort om det är i utkastläge eller inställt.",
         "event_cannot_be_deleted");
+
+public sealed class CoOrganiserInvitationNotActiveException()
+    : DomainRuleViolationException(
+        "Inbjudan är inte längre aktiv.",
+        "coorganiser_invitation_not_active");
+
+public sealed class CoOrganiserInvitationNotFoundException()
+    : DomainRuleViolationException(
+        "Inbjudan hittades inte.",
+        "coorganiser_invitation_not_found");
+
+public sealed class CoOrganiserLimitExceededException()
+    : DomainRuleViolationException(
+        "Det finns inte utrymme för fler medarrangörsinbjudningar.",
+        "coorganiser_limit_exceeded");
+
+public sealed class CoOrganiserInvitationEmailMismatchException()
+    : DomainRuleViolationException(
+        "Din e-postadress matchar inte inbjudan.",
+        "coorganiser_invitation_email_mismatch");
+
+public sealed class InvalidInvitationCodeException()
+    : DomainRuleViolationException(
+        "Inbjudningskoden är ogiltig.",
+        "invalid_invitation_code");
+
+public sealed class CoOrganiserAlreadyInvitedException()
+    : DomainRuleViolationException(
+        "Det finns redan en aktiv inbjudan för denna e-postadress.",
+        "coorganiser_already_invited");
