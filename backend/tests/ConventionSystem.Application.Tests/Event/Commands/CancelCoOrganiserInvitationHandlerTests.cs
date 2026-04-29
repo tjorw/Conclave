@@ -42,7 +42,7 @@ public class CancelCoOrganiserInvitationHandlerTests
         var ev = new Domain.Event.Aggregates.Event(EventId.New(), edition.Id, category.Id, organiser.Id);
         ev.AdjustCoOrganiserLimit(3);
 
-        _eventRepo.GetByIdWithCoOrganisersAndInvitationsAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
+        _eventRepo.GetByIdWithInvitationsAsync(ev.Id, Arg.Any<CancellationToken>()).Returns(ev);
         _editionRepo.GetByIdAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
         _currentUser.PersonId.Returns(organiser.Id);

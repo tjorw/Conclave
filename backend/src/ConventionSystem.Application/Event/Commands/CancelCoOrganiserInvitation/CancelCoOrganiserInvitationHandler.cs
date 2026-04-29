@@ -17,7 +17,7 @@ public sealed class CancelCoOrganiserInvitationHandler(
 {
     protected override async Task ExecuteAsync(CancelCoOrganiserInvitationCommand command, CancellationToken ct)
     {
-        var ev = await eventRepository.GetByIdWithCoOrganisersAndInvitationsAsync(new EventId(command.EventId), ct)
+        var ev = await eventRepository.GetByIdWithInvitationsAsync(new EventId(command.EventId), ct)
             ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());
 
         var context = await EditionContextLoader.LoadAsync(editionRepository, conventionRepository, ev.EditionId, ct);

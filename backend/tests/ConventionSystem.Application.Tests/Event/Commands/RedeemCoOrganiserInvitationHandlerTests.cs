@@ -26,6 +26,7 @@ public class RedeemCoOrganiserInvitationHandlerTests
 
     private (Domain.Event.Aggregates.Event ev,
              Domain.Convention.Entities.Person redeemer,
+             Domain.Convention.Aggregates.Convention convention,
              string code) Setup()
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");
@@ -47,13 +48,13 @@ public class RedeemCoOrganiserInvitationHandlerTests
         _personRepo.GetByIdAsync(redeemer.Id, Arg.Any<CancellationToken>()).Returns(redeemer);
         _currentUser.PersonId.Returns(redeemer.Id);
 
-        return (ev, redeemer, invitation.Code);
+        return (ev, redeemer, convention, invitation.Code);
     }
 
     [Fact]
     public async Task Handle_ValidCodeAndEmail_AddsCoOrganiser()
     {
-        var (ev, _, code) = Setup();
+        var (ev, _, _, code) = Setup();
 
         await _handler.Handle(new RedeemCoOrganiserInvitationCommand(code), default);
 
@@ -67,7 +68,7 @@ public class RedeemCoOrganiserInvitationHandlerTests
     {
         Setup();
         _eventRepo.GetByInvitationCodeAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns((Domain.Event.Aggregates.Event?)null);
+            .Returns((Domain.Event.Aggregates.Event?) null);
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
             _handler.Handle(new RedeemCoOrganiserInvitationCommand("invalid-code"), default));
@@ -76,9 +77,8 @@ public class RedeemCoOrganiserInvitationHandlerTests
     [Fact]
     public async Task Handle_WrongEmail_ThrowsCoOrganiserInvitationEmailMismatchException()
     {
-        var (ev, redeemer, code) = Setup();
-        var otherPerson = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "X", "x")
-            .CreatePerson("Annan", "other@example.com");
+        var (ev, redeemer, convention, code) = Setup();
+        var otherPerson = convention.CreatePerson("Annan", "other@example.com");
         _personRepo.GetByIdAsync(redeemer.Id, Arg.Any<CancellationToken>()).Returns(otherPerson);
 
         await Assert.ThrowsAsync<CoOrganiserInvitationEmailMismatchException>(() =>

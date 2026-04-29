@@ -16,8 +16,6 @@ public class EventCoOrganiserInvitationTests
         return ev;
     }
 
-    // --- SetCoOrganiserCount ---
-
     [Fact]
     public void SetCoOrganiserCount_ValidValue_UpdatesCount()
     {
@@ -41,8 +39,6 @@ public class EventCoOrganiserInvitationTests
         Assert.Throws<ArgumentException>(() => ev.SetCoOrganiserCount(-1));
     }
 
-    // --- AdjustCoOrganiserLimit ---
-
     [Fact]
     public void AdjustCoOrganiserLimit_ValidValue_UpdatesLimit()
     {
@@ -57,8 +53,6 @@ public class EventCoOrganiserInvitationTests
         var ev = CreateEvent();
         Assert.Throws<ArgumentException>(() => ev.AdjustCoOrganiserLimit(-1));
     }
-
-    // --- CreateInvitation ---
 
     [Fact]
     public void CreateInvitation_WithinLimit_AddsInvitation()
@@ -136,8 +130,6 @@ public class EventCoOrganiserInvitationTests
             ev.CreateInvitation("test@example.com", PersonId.New()));
     }
 
-    // --- CancelInvitation ---
-
     [Fact]
     public void CancelInvitation_ActiveInvitation_SetsStatusCancelled()
     {
@@ -170,8 +162,6 @@ public class EventCoOrganiserInvitationTests
         Assert.Throws<CoOrganiserInvitationNotActiveException>(() =>
             ev.CancelInvitation(invitation.Id, PersonId.New()));
     }
-
-    // --- RedeemInvitation ---
 
     [Fact]
     public void RedeemInvitation_ValidCodeAndEmail_AddsCoOrganiser()
