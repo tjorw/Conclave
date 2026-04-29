@@ -26,7 +26,7 @@ import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../labels/ui.labels';
 import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
 
-type EventSortKey = 'title' | 'category' | 'organiser' | 'sessions' | 'comments' | 'coOrganisers' | 'status';
+type EventSortKey = 'title' | 'category' | 'organiser' | 'sessions' | 'comments' | 'status';
 
 @Component({
   selector: 'app-events',
