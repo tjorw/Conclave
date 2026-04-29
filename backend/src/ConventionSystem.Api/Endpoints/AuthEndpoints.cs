@@ -217,7 +217,8 @@ public static class AuthEndpoints
 
             if (convention is not null)
             {
-                var person = convention.RegisterPerson(request.Name.Trim(), request.Email);
+                var personName = request.Name?.Trim() ?? string.Empty;
+                var person = convention.RegisterPerson(personName, request.Email);
                 await personRepo.AddAndSaveAsync(person, ct);
                 user.PersonId = person.Id.Value;
                 await userManager.UpdateAsync(user);
