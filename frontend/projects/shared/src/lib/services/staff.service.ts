@@ -26,7 +26,7 @@ export class StaffService {
   }
 
   cancelShift(shiftId: string) {
-    return this.http.post<void>(`${this.env.apiBaseUrl}/shifts/${shiftId}/cancel`, {});
+    return this.http.delete<void>(`${this.env.apiBaseUrl}/shifts/${shiftId}`);
   }
 
   updateShift(shiftId: string, stationId: string, responsibleId: string, startTime: string, endTime: string, minPersons: number, maxPersons: number) {

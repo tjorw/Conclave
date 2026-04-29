@@ -52,7 +52,6 @@ describe('StaffAreasComponent', () => {
                 maxPersons: 2,
                 activeAssignmentCount: 0,
                 confirmedAssignmentCount: 0,
-                status: 'Planned',
                 staffingStatus: 'Unstaffed',
               },
             ],
@@ -82,7 +81,6 @@ describe('StaffAreasComponent', () => {
                 maxPersons: 3,
                 activeAssignmentCount: 1,
                 confirmedAssignmentCount: 0,
-                status: 'Planned',
                 staffingStatus: 'UnderMin',
               },
               {
@@ -96,7 +94,6 @@ describe('StaffAreasComponent', () => {
                 maxPersons: 2,
                 activeAssignmentCount: 2,
                 confirmedAssignmentCount: 2,
-                status: 'Planned',
                 staffingStatus: 'Full',
               },
             ],
@@ -118,7 +115,6 @@ describe('StaffAreasComponent', () => {
         end: shiftId === 'shift-1' ? '2027-03-01T11:00:00' : '2027-03-01T14:00:00',
         minPersons: shiftId === 'shift-1' ? 1 : 2,
         maxPersons: shiftId === 'shift-1' ? 2 : 3,
-        status: 'Planned',
         assignments: shiftId === 'shift-2'
           ? [{
               id: 'assignment-1',
@@ -196,7 +192,6 @@ describe('StaffAreasComponent', () => {
       end: '2027-03-01T14:00:00',
       minPersons: 2,
       maxPersons: 3,
-      status: 'Planned',
       assignments: [{
         id: 'assignment-1',
         personId: 'staff-1',

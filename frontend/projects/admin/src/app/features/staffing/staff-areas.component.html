@@ -202,15 +202,12 @@
               <div class="selected-shift-meta">
                 {{ selected.shift.responsibleName ?? selected.shift.responsibleId }} · {{ PAGE.staffingColumn }} {{ staffingSummary(selected.shift) }} · {{ staffingStatusLabel(selected.shift.staffingStatus) }}
               </div>
-              <div class="selected-shift-meta">
-                {{ PAGE.statusColumn }} {{ shiftStatusLabel(selected.shift.status) }}
-              </div>
             </div>
             <div class="selected-shift-actions">
               <button type="button" mat-stroked-button (click)="openEditShift()" [disabled]="saving() || !canEditSelectedShift()">
                 <mat-icon>edit</mat-icon> {{ PAGE.editShiftAction }}
               </button>
-              <button mat-stroked-button color="warn" (click)="cancelShift()" [disabled]="saving() || selected.shift.status === 'Cancelled'">
+              <button mat-stroked-button color="warn" (click)="cancelShift()" [disabled]="saving()">
                 <mat-icon>cancel</mat-icon> {{ PAGE.cancelShiftAction }}
               </button>
               <button mat-flat-button color="primary" (click)="navigateToArea(selected.areaId)">
@@ -409,8 +406,7 @@
                 }
               </section>
 
-              @if (detail.status !== 'Cancelled') {
-                <section class="detail-section">
+              <section class="detail-section">
                   <div class="detail-section-title">{{ PAGE.assignPersonTitle }}</div>
                   <p class="detail-hint">{{ PAGE.assignPersonHint }}</p>
 
@@ -495,8 +491,7 @@
                       </div>
                     }
                   </div>
-                </section>
-              }
+              </section>
             </div>
           }
         </mat-card-content>

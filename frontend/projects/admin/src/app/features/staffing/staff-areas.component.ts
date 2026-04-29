@@ -194,7 +194,7 @@ export class StaffAreasComponent {
   );
 
   readonly canCreateShift = computed(() => this.stationOptions().length > 0);
-  readonly canEditSelectedShift = computed(() => this.selectedShiftDetail()?.status === 'Planned');
+  readonly canEditSelectedShift = computed(() => this.selectedShiftDetail() !== null);
 
   readonly filteredSchedule = computed<StaffScheduleDto | null>(() => {
     const schedule = this.schedule();
@@ -581,7 +581,7 @@ export class StaffAreasComponent {
 
   openEditShift(): void {
     const shift = this.selectedShiftDetail();
-    if (!shift || shift.status !== 'Planned') {
+    if (!shift) {
       return;
     }
 
@@ -760,15 +760,6 @@ export class StaffAreasComponent {
       Confirmed: 'Bekräftad',
       Rejected: 'Nekad',
       Cancelled: 'Avbokad',
-    } as Record<string, string>)[status] ?? status;
-  }
-
-  shiftStatusLabel(status: string): string {
-    return ({
-      Planned: 'Planerat',
-      InProgress: 'Pågår',
-      Cancelled: 'Inställt',
-      Completed: 'Avslutat',
     } as Record<string, string>)[status] ?? status;
   }
 
@@ -1068,7 +1059,6 @@ export class StaffAreasComponent {
       .filter(shift =>
         shift.id !== selectedShiftId &&
         shift.id !== excludeShiftId &&
-        shift.status !== 'Cancelled' &&
         this.personParticipatesInShift(personId, shift) &&
         this.shiftsOverlap(currentShift, shift)
       );

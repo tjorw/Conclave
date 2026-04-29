@@ -92,7 +92,6 @@
               <th><button type="button" class="sort-header" (click)="setShiftSort('min')">Min <mat-icon>{{ shiftSortIcon('min') }}</mat-icon></button></th>
               <th><button type="button" class="sort-header" (click)="setShiftSort('max')">Max <mat-icon>{{ shiftSortIcon('max') }}</mat-icon></button></th>
               <th><button type="button" class="sort-header" (click)="setShiftSort('staffing')">Tilldelade <mat-icon>{{ shiftSortIcon('staffing') }}</mat-icon></button></th>
-              <th><button type="button" class="sort-header" (click)="setShiftSort('status')">Status <mat-icon>{{ shiftSortIcon('status') }}</mat-icon></button></th>
               <th class="actions-col"></th>
             </tr>
           </thead>
@@ -106,7 +105,6 @@
                 <td>{{ shift.minPersons }}</td>
                 <td>{{ shift.maxPersons }}</td>
                 <td>{{ shift.activeAssignmentCount }}</td>
-                <td><span class="chip chip-grey">{{ shiftStatusLabel(shift.status) }}</span></td>
                 <td class="row-actions" (click)="$event.stopPropagation()">
                   <mat-icon class="expand-icon">
                     {{ selectedShift()?.id === shift.id ? 'expand_less' : 'expand_more' }}
@@ -117,7 +115,7 @@
               <!-- Detaljpanel -->
               @if (selectedShift()?.id === shift.id) {
                 <tr class="detail-row">
-                  <td colspan="8">
+                  <td colspan="7">
                     @if (shiftLoading()) {
                       <div class="spinner-center"><mat-spinner diameter="32" /></div>
                     } @else if (selectedShift(); as s) {
@@ -125,7 +123,7 @@
 
                         <div class="shift-detail-actions">
                           <button mat-stroked-button color="warn" (click)="cancelShift(s.id)"
-                            [disabled]="saving() || s.status === 'Cancelled'">
+                            [disabled]="saving()">
                             <mat-icon>cancel</mat-icon> Ställ in pass
                           </button>
                         </div>
@@ -172,8 +170,7 @@
                         </table>
 
                         <!-- Tilldela person -->
-                        @if (s.status !== 'Cancelled') {
-                          <div class="assign-form">
+                        <div class="assign-form">
                             <form [formGroup]="assignForm" class="form-row">
                               <mat-form-field appearance="outline">
                                 <mat-label>Tilldela person</mat-label>
@@ -188,8 +185,7 @@
                                 Tilldela
                               </button>
                             </form>
-                          </div>
-                        }
+                        </div>
                       </div>
                     }
                   </td>
@@ -197,7 +193,7 @@
               }
             } @empty {
               @if (createShiftForStation() !== station.id) {
-                <tr><td colspan="8" class="empty-cell">Inga pass skapade.</td></tr>
+                <tr><td colspan="7" class="empty-cell">Inga pass skapade.</td></tr>
               }
             }
           </tbody>

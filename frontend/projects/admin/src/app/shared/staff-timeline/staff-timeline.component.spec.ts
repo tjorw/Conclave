@@ -36,7 +36,6 @@ describe('StaffTimelineComponent', () => {
                 maxPersons: 2,
                 activeAssignmentCount: 0,
                 confirmedAssignmentCount: 0,
-                status: 'Planned',
                 staffingStatus: 'Unstaffed',
               },
               {
@@ -50,7 +49,6 @@ describe('StaffTimelineComponent', () => {
                 maxPersons: 3,
                 activeAssignmentCount: 1,
                 confirmedAssignmentCount: 0,
-                status: 'Planned',
                 staffingStatus: 'UnderMin',
               },
               {
@@ -64,7 +62,6 @@ describe('StaffTimelineComponent', () => {
                 maxPersons: 2,
                 activeAssignmentCount: 2,
                 confirmedAssignmentCount: 2,
-                status: 'Planned',
                 staffingStatus: 'Full',
               },
             ],

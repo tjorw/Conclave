@@ -15,13 +15,13 @@ import { ERROR } from '../../../labels/errors.labels';
 import {
   ConventionService, DateTimeRangeComponent, EditionDto, EditionStaffMemberDto, ShiftDto, ShiftSummaryDto,
   StaffService, StaffAreaDto, StationDto,
-  ASSIGNMENT_STATUS_LABEL, SHIFT_STATUS_LABEL,
+  ASSIGNMENT_STATUS_LABEL,
   toErrorMessage,
 } from 'shared';
 import { MatDividerModule } from '@angular/material/divider';
 import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
 
-type ShiftSortKey = 'responsible' | 'start' | 'end' | 'min' | 'max' | 'staffing' | 'status';
+type ShiftSortKey = 'responsible' | 'start' | 'end' | 'min' | 'max' | 'staffing';
 type AssignmentSortKey = 'person' | 'status' | 'assigned';
 
 @Component({
@@ -160,7 +160,6 @@ export class StaffAreaDetailComponent {
       min: shift => shift.minPersons,
       max: shift => shift.maxPersons,
       staffing: shift => shift.activeAssignmentCount,
-      status: shift => this.shiftStatusLabel(shift.status),
     });
   }
 
@@ -344,10 +343,6 @@ export class StaffAreaDetailComponent {
 
   assignmentStatusLabel(status: string): string {
     return ASSIGNMENT_STATUS_LABEL[status] ?? status;
-  }
-
-  shiftStatusLabel(status: string): string {
-    return SHIFT_STATUS_LABEL[status] ?? status;
   }
 
   get shiftMin(): string | undefined { return this.edition()?.start.slice(0, 16); }
