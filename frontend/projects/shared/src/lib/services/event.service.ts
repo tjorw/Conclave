@@ -110,6 +110,13 @@ export class EventService {
     );
   }
 
+  adjustCoOrganiserLimit(eventId: string, limit: number) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/co-organiser-limit`,
+      { limit }
+    );
+  }
+
   createCoOrganiserInvitation(eventId: string, email: string) {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/events/${eventId}/co-organiser-invitations`,

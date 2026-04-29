@@ -103,6 +103,12 @@ export class EventDetailComponent implements OnInit {
   readonly organiserTicketAssignments = signal<OrganiserTicketAssignmentDto[]>([]);
   readonly organiserTicketSelection = signal<Record<string, string | null>>({});
 
+  readonly limitSaving         = signal(false);
+  readonly limitError          = signal<string | null>(null);
+  readonly invitationSaving    = signal(false);
+  readonly invitationCancelling = signal<string | null>(null);
+  readonly invitationError     = signal<string | null>(null);
+
   readonly rejectForm = this.fb.group({
     comment: ['', [Validators.required, Validators.minLength(5)]],
   });
@@ -113,6 +119,14 @@ export class EventDetailComponent implements OnInit {
     registrationType: ['DropIn', Validators.required],
     dropInRules:      [''],
     scheduleRequestText: [''],
+  });
+
+  readonly limitForm = this.fb.group({
+    limit: [0, [Validators.required, Validators.min(0)]],
+  });
+
+  readonly invitationForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
   });
 
   readonly sessionForm = this.fb.group({
@@ -474,6 +488,7 @@ export class EventDetailComponent implements OnInit {
       dropInRules:      e.dropInRules ?? '',
       scheduleRequestText: e.scheduleRequestText ?? '',
     });
+    this.limitForm.patchValue({ limit: e.coOrganiserLimit });
   }
 
   statusLabel(status: string): string {
@@ -509,6 +524,47 @@ export class EventDetailComponent implements OnInit {
         this.saving.set(false);
         this.error.set(toErrorMessage(err, ERROR.respondToComment));
       },
+    });
+  }
+
+  // ── Co-organiser invitations ────────────────────────────────────────────
+
+  adjustCoOrganiserLimit(): void {
+    const ev = this.event();
+    if (!ev || this.limitForm.invalid || this.limitSaving()) return;
+    const limit = this.limitForm.getRawValue().limit!;
+    this.limitSaving.set(true);
+    this.limitError.set(null);
+    this.svc.adjustCoOrganiserLimit(ev.id, limit).subscribe({
+      next: () => { this.limitSaving.set(false); this.reload(); },
+      error: err => { this.limitSaving.set(false); this.limitError.set(toErrorMessage(err, 'Kunde inte uppdatera gränsen.')); },
+    });
+  }
+
+  createCoOrganiserInvitation(): void {
+    const ev = this.event();
+    if (!ev || this.invitationForm.invalid || this.invitationSaving()) return;
+    const email = this.invitationForm.getRawValue().email!;
+    this.invitationSaving.set(true);
+    this.invitationError.set(null);
+    this.svc.createCoOrganiserInvitation(ev.id, email).subscribe({
+      next: () => {
+        this.invitationSaving.set(false);
+        this.invitationForm.reset({ email: '' });
+        this.reload();
+      },
+      error: err => { this.invitationSaving.set(false); this.invitationError.set(toErrorMessage(err, 'Kunde inte skicka inbjudan.')); },
+    });
+  }
+
+  cancelCoOrganiserInvitation(invitationId: string): void {
+    const ev = this.event();
+    if (!ev || this.invitationCancelling() !== null) return;
+    this.invitationCancelling.set(invitationId);
+    this.invitationError.set(null);
+    this.svc.cancelCoOrganiserInvitation(ev.id, invitationId).subscribe({
+      next: () => { this.invitationCancelling.set(null); this.reload(); },
+      error: err => { this.invitationCancelling.set(null); this.invitationError.set(toErrorMessage(err, 'Kunde inte avbryta inbjudan.')); },
     });
   }
 

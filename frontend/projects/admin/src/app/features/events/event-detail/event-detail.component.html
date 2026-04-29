@@ -223,9 +223,107 @@
     </mat-tab>
 
     <mat-tab [label]="PAGE.coOrganisersTab">
-      <mat-card class="content-card tab-card">
-        <mat-card-content>
 
+      <!-- Antal -->
+      <mat-card class="content-card tab-card">
+        <mat-card-header>
+          <mat-card-title>Antal medarrangörer</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="help-text">
+            Arrangören har angett önskat antal: <strong>{{ e.coOrganiserCount }}</strong>.
+          </p>
+          @if (limitError()) {
+            <div class="error-banner">{{ limitError() }}</div>
+          }
+          <div class="inline-row">
+            <form [formGroup]="limitForm" class="inline-row">
+              <mat-form-field appearance="outline" class="count-field">
+                <mat-label>Godkänt antal</mat-label>
+                <input matInput type="number" min="0" formControlName="limit" />
+              </mat-form-field>
+              <button mat-flat-button color="primary" (click)="adjustCoOrganiserLimit()"
+                [disabled]="limitForm.invalid || limitSaving()">
+                @if (limitSaving()) { <mat-spinner diameter="18" /> } @else { Spara gräns }
+              </button>
+            </form>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Inbjudningar -->
+      <mat-card class="content-card tab-card">
+        <mat-card-header>
+          <mat-card-title>Inbjudningar</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @if (invitationError()) {
+            <div class="error-banner">{{ invitationError() }}</div>
+          }
+
+          <form [formGroup]="invitationForm" (ngSubmit)="createCoOrganiserInvitation()" class="inline-row">
+            <mat-form-field appearance="outline" class="flex-grow">
+              <mat-label>E-postadress</mat-label>
+              <input matInput formControlName="email" type="email" />
+            </mat-form-field>
+            <button mat-flat-button color="primary" type="submit"
+              [disabled]="invitationForm.invalid || invitationSaving()">
+              @if (invitationSaving()) { <mat-spinner diameter="18" /> } @else { Skicka inbjudan }
+            </button>
+          </form>
+
+          @if (e.coOrganiserInvitations.length > 0) {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>E-post</th>
+                  <th>Status</th>
+                  <th>Skickad</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (inv of e.coOrganiserInvitations; track inv.id) {
+                  <tr>
+                    <td>{{ inv.email }}</td>
+                    <td>
+                      <span [class]="inv.status === 'Active' ? 'chip chip-orange' : 'chip chip-grey'">
+                        @if (inv.status === 'Active') { Väntande }
+                        @else if (inv.status === 'Redeemed') { Inlöst }
+                        @else { Avbruten }
+                      </span>
+                    </td>
+                    <td>{{ inv.createdAt | date:'yyyy-MM-dd' }}</td>
+                    <td class="action-cell">
+                      @if (inv.status === 'Active') {
+                        <button mat-icon-button color="warn" matTooltip="Avbryt inbjudan"
+                          [disabled]="invitationCancelling() !== null"
+                          (click)="cancelCoOrganiserInvitation(inv.id)">
+                          @if (invitationCancelling() === inv.id) {
+                            <mat-spinner diameter="18" />
+                          } @else {
+                            <mat-icon>cancel</mat-icon>
+                          }
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <p class="empty-state">Inga inbjudningar skickade.</p>
+          }
+
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Bekräftade medarrangörer -->
+      <mat-card class="content-card tab-card">
+        <mat-card-header>
+          <mat-card-title>Bekräftade medarrangörer</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
           @if (e.coOrganisers && e.coOrganisers.length > 0) {
             <table class="data-table">
               <thead>
@@ -249,11 +347,11 @@
               </tbody>
             </table>
           } @else {
-            <p class="empty-state">Inga godkända medarrangörer.</p>
+            <p class="empty-state">Inga bekräftade medarrangörer.</p>
           }
-
         </mat-card-content>
       </mat-card>
+
     </mat-tab>
 
     <mat-tab [label]="PAGE.scheduleTab">
