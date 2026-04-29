@@ -14,7 +14,6 @@ using ConventionSystem.Application.Event.Commands.ReturnToDraft;
 using ConventionSystem.Application.Event.Commands.RespondToEventComment;
 using ConventionSystem.Application.Event.Commands.ScheduleSession;
 using ConventionSystem.Application.Event.Commands.SubmitForReview;
-using ConventionSystem.Application.Event.Commands.SetCoOrganiserCount;
 using ConventionSystem.Application.Event.Commands.AdjustCoOrganiserLimit;
 using ConventionSystem.Application.Event.Commands.CreateCoOrganiserInvitation;
 using ConventionSystem.Application.Event.Commands.CancelCoOrganiserInvitation;
@@ -66,15 +65,8 @@ public static class EventEndpoints
             {
                 await sender.Send(
                     new EditEventDraftCommand(eventId, request.Title, request.Description,
-                        request.RegistrationType, request.DropInRules, request.ScheduleRequestText), ct);
-                return Results.NoContent();
-            });
-
-        // R-CO: Arrangören anger önskat antal medarrangörer
-        events.MapPut("/co-organiser-count",
-            async (Guid eventId, SetCoOrganiserCountRequest request, ISender sender, CancellationToken ct) =>
-            {
-                await sender.Send(new SetCoOrganiserCountCommand(eventId, request.Count), ct);
+                        request.RegistrationType, request.DropInRules, request.ScheduleRequestText,
+                        request.CoOrganiserCount), ct);
                 return Results.NoContent();
             });
 
@@ -242,13 +234,12 @@ public record CreateEventRequest(Guid CategoryId, Guid LeadOrganiserId, Guid Con
 public record ApproveVersionRequest(IReadOnlyList<ApproveOrganizerTicketAssignmentRequest>? OrganizerTicketAssignments = null);
 public record ApproveOrganizerTicketAssignmentRequest(Guid PersonId, Guid? TicketTypeId);
 public record ChangeCategoryRequest(Guid CategoryId);
-public record EditEventDraftRequest(string Title, string Description, RegistrationType RegistrationType, string? DropInRules, string? ScheduleRequestText);
+public record EditEventDraftRequest(string Title, string Description, RegistrationType RegistrationType, string? DropInRules, string? ScheduleRequestText, int CoOrganiserCount);
 public record RejectVersionRequest(string Comment);
 public record AddEventCommentRequest(string Comment);
 public record RespondToEventCommentRequest(string Response);
 public record ScheduleSessionRequest(Guid VenueId, DateTime StartTime, DateTime EndTime, int MaxSeats, StartType StartType);
 public record UpdateSessionRequest(Guid VenueId, DateTime StartTime, DateTime EndTime, int MaxSeats, StartType StartType);
-public record SetCoOrganiserCountRequest(int Count);
 public record AdjustCoOrganiserLimitRequest(int Limit);
 public record CreateCoOrganiserInvitationRequest(string Email);
 public record RedeemCoOrganiserInvitationRequest(string Code);

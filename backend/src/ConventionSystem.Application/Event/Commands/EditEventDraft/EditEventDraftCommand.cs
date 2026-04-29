@@ -8,4 +8,5 @@ public sealed record EditEventDraftCommand(
     string Description,
     RegistrationType RegistrationType,
     string? DropInRules,
-    string? ScheduleRequestText) : ICommand;
+    string? ScheduleRequestText,
+    int CoOrganiserCount) : ICommand;

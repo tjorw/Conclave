@@ -64,11 +64,12 @@ export class EventService {
     description: string,
     registrationType: string,
     dropInRules: string | null,
-    scheduleRequestText: string | null
+    scheduleRequestText: string | null,
+    coOrganiserCount: number
   ) {
     return this.http.put<void>(
       `${this.env.apiBaseUrl}/events/${eventId}`,
-      { title, description, registrationType, dropInRules, scheduleRequestText }
+      { title, description, registrationType, dropInRules, scheduleRequestText, coOrganiserCount }
     );
   }
 
@@ -100,13 +101,6 @@ export class EventService {
   removeCoOrganiser(eventId: string, personId: string) {
     return this.http.delete<void>(
       `${this.env.apiBaseUrl}/events/${eventId}/co-organisers/${personId}`
-    );
-  }
-
-  setCoOrganiserCount(eventId: string, count: number) {
-    return this.http.put<void>(
-      `${this.env.apiBaseUrl}/events/${eventId}/co-organiser-count`,
-      { count }
     );
   }
 

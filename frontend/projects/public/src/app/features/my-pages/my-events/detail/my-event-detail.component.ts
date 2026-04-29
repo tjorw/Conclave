@@ -90,11 +90,12 @@ export class MyEventDetailComponent implements OnInit {
   ];
 
   readonly draftForm = this.fb.group({
-    title:            ['', Validators.required],
-    description:      ['', Validators.required],
-    registrationType: ['DropIn', Validators.required],
-    dropInRules:      [''],
+    title:               ['', Validators.required],
+    description:         ['', Validators.required],
+    registrationType:    ['DropIn', Validators.required],
+    dropInRules:         [''],
     scheduleRequestText: [''],
+    coOrganiserCount:    [0, [Validators.required, Validators.min(0)]],
   });
 
   readonly commentForm = this.fb.group({
@@ -161,11 +162,12 @@ export class MyEventDetailComponent implements OnInit {
       next: ev => {
         this.event.set(ev);
         this.draftForm.patchValue({
-          title:            ev.title ?? '',
-          description:      ev.description ?? '',
-          registrationType: ev.registrationType ?? 'DropIn',
-          dropInRules:      ev.dropInRules ?? '',
+          title:               ev.title ?? '',
+          description:         ev.description ?? '',
+          registrationType:    ev.registrationType ?? 'DropIn',
+          dropInRules:         ev.dropInRules ?? '',
           scheduleRequestText: ev.scheduleRequestText ?? '',
+          coOrganiserCount:    ev.coOrganiserCount ?? 0,
         });
         this.loading.set(false);
       },
@@ -209,9 +211,9 @@ export class MyEventDetailComponent implements OnInit {
   }
 
   private updateDraftFromForm() {
-    const { title, description, registrationType, dropInRules, scheduleRequestText } = this.draftForm.getRawValue();
+    const { title, description, registrationType, dropInRules, scheduleRequestText, coOrganiserCount } = this.draftForm.getRawValue();
     return this.eventSvc.updateDraft(
-      this.eventId, title!, description!, registrationType!, dropInRules || null, scheduleRequestText || null
+      this.eventId, title!, description!, registrationType!, dropInRules || null, scheduleRequestText || null, coOrganiserCount ?? 0
     );
   }
 
@@ -264,24 +266,6 @@ export class MyEventDetailComponent implements OnInit {
           ...state,
           adding: false,
           error: toErrorMessage(err, 'Kunde inte skicka ändringsförslaget.'),
-        }));
-      },
-    });
-  }
-
-  setCoOrganiserCount(count: number): void {
-    if (this.draftState().operation !== null) return;
-    this.draftState.update(s => ({ ...s, operation: 'saving', actionError: null }));
-    this.eventSvc.setCoOrganiserCount(this.eventId, count).subscribe({
-      next: () => {
-        this.draftState.update(s => ({ ...s, operation: null }));
-        this.loadEvent();
-      },
-      error: err => {
-        this.draftState.update(s => ({
-          ...s,
-          operation: null,
-          actionError: toErrorMessage(err, 'Kunde inte uppdatera antal medarrangörer.'),
         }));
       },
     });

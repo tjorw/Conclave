@@ -34,12 +34,13 @@ public class EditEventDraftHandlerTests
 
         await _handler.Handle(
             new EditEventDraftCommand(ev.Id.Value, "Rollspel för nybörjare",
-                "En beskrivning", RegistrationType.PreRegistration, null, "Helst fredag kväll."), default);
+                "En beskrivning", RegistrationType.PreRegistration, null, "Helst fredag kväll.", 2), default);
 
         Assert.Equal("Rollspel för nybörjare", ev.Title);
         Assert.Equal("En beskrivning", ev.Description);
         Assert.Equal("Helst fredag kväll.", ev.ScheduleRequestText);
         Assert.Equal(RegistrationType.PreRegistration, ev.RegistrationType);
+        Assert.Equal(2, ev.CoOrganiserCount);
     }
 
     [Fact]
@@ -48,7 +49,7 @@ public class EditEventDraftHandlerTests
         var ev = CreateDraftEvent();
 
         await _handler.Handle(
-            new EditEventDraftCommand(ev.Id.Value, "Titel", "Beskrivning", RegistrationType.DropIn, "Öppen dörrpolicy", null), default);
+            new EditEventDraftCommand(ev.Id.Value, "Titel", "Beskrivning", RegistrationType.DropIn, "Öppen dörrpolicy", null, 0), default);
 
         await _eventRepo.Received(1).SaveAsync(Arg.Any<CancellationToken>());
     }
@@ -60,7 +61,7 @@ public class EditEventDraftHandlerTests
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             _handler.Handle(
-                new EditEventDraftCommand(ev.Id.Value, "  ", "Beskrivning", RegistrationType.PreRegistration, null, null), default));
+                new EditEventDraftCommand(ev.Id.Value, "  ", "Beskrivning", RegistrationType.PreRegistration, null, null, 0), default));
     }
 
     [Fact]
@@ -71,7 +72,7 @@ public class EditEventDraftHandlerTests
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
             _handler.Handle(
-                new EditEventDraftCommand(Guid.NewGuid(), "Titel", "Beskrivning", RegistrationType.PreRegistration, null, null), default));
+                new EditEventDraftCommand(Guid.NewGuid(), "Titel", "Beskrivning", RegistrationType.PreRegistration, null, null, 0), default));
     }
 
     [Fact]
@@ -82,6 +83,6 @@ public class EditEventDraftHandlerTests
 
         await Assert.ThrowsAsync<EventIsCancelledAndReadOnlyException>(() =>
             _handler.Handle(
-                new EditEventDraftCommand(ev.Id.Value, "Titel", "Beskrivning", RegistrationType.PreRegistration, null, null), default));
+                new EditEventDraftCommand(ev.Id.Value, "Titel", "Beskrivning", RegistrationType.PreRegistration, null, null, 0), default));
     }
 }
