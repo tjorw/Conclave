@@ -155,7 +155,7 @@
                                       <mat-icon>close</mat-icon>
                                     </button>
                                   }
-                                  @if (a.status === 'Confirmed') {
+                                  @if (a.status === 'Assigned' || a.status === 'Confirmed') {
                                     <button mat-icon-button color="warn" (click)="cancelAssignment(a.id)"
                                       matTooltip="Avboka" [disabled]="saving()">
                                       <mat-icon>person_remove</mat-icon>

@@ -45,7 +45,7 @@ public class DeleteShiftHandlerTests
         var requirement = new StaffingRequirement(1, 3);
         var shift = new Shift(ShiftId.New(), station.Id, admin.Id, timeSlot, requirement);
 
-        _shiftRepo.GetByIdAsync(shift.Id, Arg.Any<CancellationToken>()).Returns(shift);
+        _shiftRepo.GetByIdWithAssignmentsAsync(shift.Id, Arg.Any<CancellationToken>()).Returns(shift);
         _editionRepo.GetByStationIdAsync(station.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _conventionRepo.GetByIdAsync(convention.Id, Arg.Any<CancellationToken>()).Returns(convention);
 
@@ -82,5 +82,33 @@ public class DeleteShiftHandlerTests
 
         await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(new DeleteShiftCommand(shift.Id.Value), default));
+    }
+
+    [Fact]
+    public async Task Handle_ShiftWithActiveAssignments_CancelsAllBeforeDelete()
+    {
+        var (convention, admin, _, shift) = Setup();
+        var person1 = convention.CreatePerson("Person1", "p1@example.com");
+        var person2 = convention.CreatePerson("Person2", "p2@example.com");
+        shift.AssignPerson(person1.Id, admin.Id);
+        var assignment2 = shift.AssignPerson(person2.Id, admin.Id);
+        shift.ConfirmAssignment(assignment2.Id);
+        _currentUser.PersonId.Returns(admin.Id);
+
+        await _handler.Handle(new DeleteShiftCommand(shift.Id.Value), default);
+
+        Assert.Empty(shift.Assignments);
+        await _shiftRepo.Received(1).DeleteAndSaveAsync(shift, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_ShiftWithNoActiveAssignments_DeletesDirectly()
+    {
+        var (_, admin, _, shift) = Setup();
+        _currentUser.PersonId.Returns(admin.Id);
+
+        await _handler.Handle(new DeleteShiftCommand(shift.Id.Value), default);
+
+        await _shiftRepo.Received(1).DeleteAndSaveAsync(shift, Arg.Any<CancellationToken>());
     }
 }

@@ -121,6 +121,17 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 **Implementationsordning:** R-CO03 → R-CO04 → R-CO05 → R-CO06 → R-CO07 → R-CO08
 
 
+## Bemanningskorrigeringar (R-ST)
+
+Fel och saknad beteende identifierade vid livscykelanalys av passtilldelning.
+
+- [x] `R-ST01` **Frontend-bugg: Avboka-knapp saknas för Tilldelad-status** – `staff-area-detail` visar Avboka-knappen enbart när tilldelningen har status `Confirmed`, men UC-ST005 och domänlogiken tillåter avbokning från både `Assigned` och `Confirmed`. Fixa villkoret i rad 158–162 i `staff-area-detail.component.ts`.
+- [x] `R-ST02` **Saknad kaskad vid passinställning** – `DeleteShiftHandler` tar bort passet men avbokar inte aktiva tilldelningar. UC-ST006 kräver att alla `Assigned`- och `Confirmed`-tilldelningar auto-avbokas som sidoeffekt. Implementera `INotificationHandler<ShiftCancelled>` (eller motsvarande) som anropar `Shift.CancelAssignment` för varje aktiv tilldelning och sparar aggregatet.
+
+**Implementationsordning:** R-ST01 → R-ST02
+
+---
+
 ## Diverse
 - Ledning, ta bort huvudansvariga från edition. Man skall skapa egna ansvar och knyta till edition.
 - front end: gemensamma helpers, generaliseringar
