@@ -135,4 +135,6 @@ Fel och saknad beteende identifierade vid livscykelanalys av passtilldelning.
 ## Diverse
 - Ledning, ta bort huvudansvariga från edition. Man skall skapa egna ansvar och knyta till edition.
 - front end: gemensamma helpers, generaliseringar
-
+- reception, återkallade biljetter är sekundär info. eller skall de tas bort?
+- reception, statistiken är inte tillräcklig. skall också ha antal pass och vara uppdelat per dag.
+- reception, om man inte har qr-biljett (måste man kunna visa i public), så behövs något annat sätt att bekräfta biljetten.
