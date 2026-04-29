@@ -18,6 +18,11 @@ using ConventionSystem.Application.Event.Commands.ReturnToDraft;
 using ConventionSystem.Application.Event.Commands.RespondToEventComment;
 using ConventionSystem.Application.Event.Commands.ScheduleSession;
 using ConventionSystem.Application.Event.Commands.SubmitForReview;
+using ConventionSystem.Application.Event.Commands.SetCoOrganiserCount;
+using ConventionSystem.Application.Event.Commands.AdjustCoOrganiserLimit;
+using ConventionSystem.Application.Event.Commands.CreateCoOrganiserInvitation;
+using ConventionSystem.Application.Event.Commands.CancelCoOrganiserInvitation;
+using ConventionSystem.Application.Event.Commands.RedeemCoOrganiserInvitation;
 using ConventionSystem.Application.Event.Queries.GetEvent;
 using ConventionSystem.Application.Event.Queries.ListEvents;
 using ConventionSystem.Application.Event.Queries.ListMyEvents;
@@ -74,6 +79,38 @@ public static class EventEndpoints
             async (Guid eventId, AddCoOrganiserRequest request, ISender sender, CancellationToken ct) =>
             {
                 await sender.Send(new AddCoOrganiserCommand(eventId, request.Email, request.Name, request.Message, request.ConventionId), ct);
+                return Results.NoContent();
+            });
+
+        // R-CO: Arrangören anger önskat antal medarrangörer
+        events.MapPut("/co-organiser-count",
+            async (Guid eventId, SetCoOrganiserCountRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new SetCoOrganiserCountCommand(eventId, request.Count), ct);
+                return Results.NoContent();
+            });
+
+        // R-CO: Admin justerar godkänt antal medarrangörer
+        events.MapPut("/co-organiser-limit",
+            async (Guid eventId, AdjustCoOrganiserLimitRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new AdjustCoOrganiserLimitCommand(eventId, request.Limit), ct);
+                return Results.NoContent();
+            });
+
+        // R-CO: Skapa inbjudan
+        events.MapPost("/co-organiser-invitations",
+            async (Guid eventId, CreateCoOrganiserInvitationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new CreateCoOrganiserInvitationCommand(eventId, request.Email), ct);
+                return Results.NoContent();
+            });
+
+        // R-CO: Avbryt inbjudan
+        events.MapDelete("/co-organiser-invitations/{invitationId:guid}",
+            async (Guid eventId, Guid invitationId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new CancelCoOrganiserInvitationCommand(eventId, invitationId), ct);
                 return Results.NoContent();
             });
 
@@ -223,6 +260,14 @@ public static class EventEndpoints
                 await sender.Send(new RemoveCoOrganiserCommand(eventId, personId), ct);
                 return Results.NoContent();
             });
+
+        // R-CO: Lös in inbjudan
+        groups.Authenticated.MapPost("/co-organiser-invitations/redeem",
+            async (RedeemCoOrganiserInvitationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RedeemCoOrganiserInvitationCommand(request.Code), ct);
+                return Results.NoContent();
+            });
     }
 }
 
@@ -238,3 +283,7 @@ public record AddEventCommentRequest(string Comment);
 public record RespondToEventCommentRequest(string Response);
 public record ScheduleSessionRequest(Guid VenueId, DateTime StartTime, DateTime EndTime, int MaxSeats, StartType StartType);
 public record UpdateSessionRequest(Guid VenueId, DateTime StartTime, DateTime EndTime, int MaxSeats, StartType StartType);
+public record SetCoOrganiserCountRequest(int Count);
+public record AdjustCoOrganiserLimitRequest(int Limit);
+public record CreateCoOrganiserInvitationRequest(string Email);
+public record RedeemCoOrganiserInvitationRequest(string Code);
