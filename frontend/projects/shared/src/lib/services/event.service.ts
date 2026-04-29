@@ -103,6 +103,26 @@ export class EventService {
     );
   }
 
+  setCoOrganiserCount(eventId: string, count: number) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/co-organiser-count`,
+      { count }
+    );
+  }
+
+  createCoOrganiserInvitation(eventId: string, email: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/co-organiser-invitations`,
+      { email }
+    );
+  }
+
+  cancelCoOrganiserInvitation(eventId: string, invitationId: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/co-organiser-invitations/${invitationId}`
+    );
+  }
+
   addEventComment(eventId: string, comment: string) {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/events/${eventId}/comments`,

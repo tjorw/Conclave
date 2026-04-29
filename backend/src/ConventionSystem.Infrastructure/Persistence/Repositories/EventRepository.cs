@@ -103,6 +103,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .Include(e => e.Sessions)
             .Include(e => e.CoOrganisers)
             .Include(e => e.Comments)
+            .Include(e => e.CoOrganiserInvitations)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
         if (ev is null) return null;
@@ -167,7 +168,15 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
                 c.HandledAt,
                 c.AcknowledgedById?.Value,
                 c.AcknowledgedAt,
-                c.CreatedAt)).ToList());
+                c.CreatedAt)).ToList(),
+            ev.CoOrganiserCount,
+            ev.CoOrganiserLimit,
+            ev.CoOrganiserInvitations.Select(i => new CoOrganiserInvitationDto(
+                i.Id.Value,
+                i.Email,
+                i.Status.ToString(),
+                i.CreatedAt,
+                i.RedeemedAt)).ToList());
     }
 
     public async Task<IReadOnlyList<EventSummaryDto>> ListByEditionAndOrganiserAsync(

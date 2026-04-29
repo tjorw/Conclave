@@ -16,6 +16,7 @@ import {
   MarkdownEditorComponent,
   REGISTRATION_KIND_LABEL,
   toErrorMessage,
+  CoOrganiserInvitationDto,
 } from 'shared';
 import { MarkdownComponent } from 'ngx-markdown';
 import { switchMap } from 'rxjs';
@@ -33,6 +34,13 @@ type DraftState = {
 type CommentState = {
   adding: boolean;
   acknowledging: boolean;
+  saved: boolean;
+  error: string | null;
+};
+
+type InvitationState = {
+  saving: boolean;
+  cancelling: string | null;
   saved: boolean;
   error: string | null;
 };
@@ -68,7 +76,8 @@ export class MyEventDetailComponent implements OnInit {
   readonly loading       = signal(true);
   readonly event         = signal<EventDto | null>(null);
   readonly draftState    = signal<DraftState>({ operation: null, saved: false, error: null, actionError: null });
-  readonly commentState  = signal<CommentState>({ adding: false, acknowledging: false, saved: false, error: null });
+  readonly commentState     = signal<CommentState>({ adding: false, acknowledging: false, saved: false, error: null });
+  readonly invitationState  = signal<InvitationState>({ saving: false, cancelling: null, saved: false, error: null });
   readonly statusLabel = EVENT_STATUS_LABEL;
   readonly statusChip  = EVENT_STATUS_CHIP;
   readonly regKindLabel = REGISTRATION_KIND_LABEL;
@@ -90,6 +99,10 @@ export class MyEventDetailComponent implements OnInit {
 
   readonly commentForm = this.fb.group({
     text: ['', [Validators.required, Validators.minLength(5)]],
+  });
+
+  readonly invitationForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
   });
 
   get eventId(): string {
@@ -120,6 +133,19 @@ export class MyEventDetailComponent implements OnInit {
   get canDelete(): boolean {
     return this.event()?.status === 'Draft';
   }
+
+  get isLeadOrganiser(): boolean {
+    return this.event()?.leadOrganiserId === this.currentPersonId;
+  }
+
+  get canManageInvitations(): boolean {
+    const status = this.event()?.status;
+    return this.isLeadOrganiser && (status === 'Draft' || status === 'UnderReview' || status === 'Published');
+  }
+
+  readonly activeInvitations = computed(() =>
+    this.event()?.coOrganiserInvitations.filter(i => i.status === 'Active') ?? []
+  );
 
   get canCommentOnPublishedEvent(): boolean {
     return this.event()?.status === 'Published';
@@ -238,6 +264,62 @@ export class MyEventDetailComponent implements OnInit {
           ...state,
           adding: false,
           error: toErrorMessage(err, 'Kunde inte skicka ändringsförslaget.'),
+        }));
+      },
+    });
+  }
+
+  setCoOrganiserCount(count: number): void {
+    if (this.draftState().operation !== null) return;
+    this.draftState.update(s => ({ ...s, operation: 'saving', actionError: null }));
+    this.eventSvc.setCoOrganiserCount(this.eventId, count).subscribe({
+      next: () => {
+        this.draftState.update(s => ({ ...s, operation: null }));
+        this.loadEvent();
+      },
+      error: err => {
+        this.draftState.update(s => ({
+          ...s,
+          operation: null,
+          actionError: toErrorMessage(err, 'Kunde inte uppdatera antal medarrangörer.'),
+        }));
+      },
+    });
+  }
+
+  createInvitation(): void {
+    if (this.invitationForm.invalid || this.invitationState().saving) return;
+    this.invitationState.set({ saving: true, cancelling: null, saved: false, error: null });
+    const email = this.invitationForm.getRawValue().email!;
+    this.eventSvc.createCoOrganiserInvitation(this.eventId, email).subscribe({
+      next: () => {
+        this.invitationState.update(s => ({ ...s, saving: false, saved: true }));
+        this.invitationForm.reset({ email: '' });
+        this.loadEvent();
+      },
+      error: err => {
+        this.invitationState.update(s => ({
+          ...s,
+          saving: false,
+          error: toErrorMessage(err, 'Kunde inte skicka inbjudan.'),
+        }));
+      },
+    });
+  }
+
+  cancelInvitation(invitationId: string): void {
+    if (this.invitationState().cancelling !== null) return;
+    this.invitationState.update(s => ({ ...s, cancelling: invitationId, error: null }));
+    this.eventSvc.cancelCoOrganiserInvitation(this.eventId, invitationId).subscribe({
+      next: () => {
+        this.invitationState.update(s => ({ ...s, cancelling: null }));
+        this.loadEvent();
+      },
+      error: err => {
+        this.invitationState.update(s => ({
+          ...s,
+          cancelling: null,
+          error: toErrorMessage(err, 'Kunde inte avbryta inbjudan.'),
         }));
       },
     });

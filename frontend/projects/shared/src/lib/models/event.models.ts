@@ -1,4 +1,5 @@
 export type EventStatus = 'Draft' | 'UnderReview' | 'Published' | 'Cancelled';
+export type CoOrganiserInvitationStatus = 'Active' | 'Redeemed' | 'Cancelled';
 export type EventCommentStatus = 'New' | 'InProgress' | 'Responded' | 'Acknowledged';
 export type SessionStatus = 'Active' | 'Inactive';
 export type StartType = 'FixedTime' | 'Rolling' | 'Tournament';
@@ -37,11 +38,22 @@ export interface EventDto {
   coOrganisers: CoOrganiserDto[];
   sessions: SessionDto[];
   comments: EventCommentDto[];
+  coOrganiserCount: number;
+  coOrganiserLimit: number;
+  coOrganiserInvitations: CoOrganiserInvitationDto[];
 }
 
 export interface CoOrganiserDto {
   personId: string;
   personName: string | null;
+}
+
+export interface CoOrganiserInvitationDto {
+  id: string;
+  email: string;
+  status: CoOrganiserInvitationStatus;
+  createdAt: string;
+  redeemedAt: string | null;
 }
 
 export interface SessionDto {

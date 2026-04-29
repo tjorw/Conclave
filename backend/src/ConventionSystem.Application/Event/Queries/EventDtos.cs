@@ -51,7 +51,17 @@ public record EventDto(
     IReadOnlyList<Guid> CoOrganiserIds,
     IReadOnlyList<CoOrganiserDto> CoOrganisers,
     IReadOnlyList<SessionDto> Sessions,
-    IReadOnlyList<EventCommentDto> Comments);
+    IReadOnlyList<EventCommentDto> Comments,
+    int CoOrganiserCount,
+    int CoOrganiserLimit,
+    IReadOnlyList<CoOrganiserInvitationDto> CoOrganiserInvitations);
+
+public record CoOrganiserInvitationDto(
+    Guid Id,
+    string Email,
+    string Status,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? RedeemedAt);
 
 public record CoOrganiserDto(
     Guid PersonId,

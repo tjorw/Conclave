@@ -133,6 +133,85 @@
       </section>
     }
 
+    @if (canManageInvitations) {
+      <section class="card">
+        <h2>Medarrangörer</h2>
+
+        <p class="help-text">
+          Du har angett att du vill ha
+          <strong>{{ ev.coOrganiserCount }}</strong> medarrangör{{ ev.coOrganiserCount === 1 ? '' : 'er' }}.
+          @if (ev.coOrganiserLimit > 0) {
+            Godkänt antal: <strong>{{ ev.coOrganiserLimit }}</strong>.
+          } @else {
+            Gränsen har inte fastställts av admin ännu.
+          }
+        </p>
+
+        @if (isDraft) {
+          <form class="inline-count-form" (ngSubmit)="setCoOrganiserCount(ev.coOrganiserCount)">
+            <mat-form-field appearance="outline" class="count-field">
+              <mat-label>Önskat antal medarrangörer</mat-label>
+              <input matInput type="number" min="0" [value]="ev.coOrganiserCount"
+                     #countInput [disabled]="draftState().operation !== null" />
+            </mat-form-field>
+            <button mat-stroked-button type="button"
+                    (click)="setCoOrganiserCount(+countInput.value)"
+                    [disabled]="draftState().operation !== null">
+              Uppdatera
+            </button>
+          </form>
+        }
+
+        @if (invitationState().error) {
+          <div class="error-banner">{{ invitationState().error }}</div>
+        }
+        @if (invitationState().saved) {
+          <div class="success-inline">Inbjudan skickad.</div>
+        }
+
+        @if (ev.coOrganiserLimit > 0 && activeInvitations().length < ev.coOrganiserLimit) {
+          <form [formGroup]="invitationForm" (ngSubmit)="createInvitation()" class="invitation-form">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>E-postadress till inbjuden medarrangör</mat-label>
+              <input matInput formControlName="email" type="email" />
+            </mat-form-field>
+            <button mat-flat-button class="save-btn" type="submit"
+                    [disabled]="invitationForm.invalid || invitationState().saving">
+              @if (invitationState().saving) { <mat-spinner diameter="18" /> } @else { Skicka inbjudan }
+            </button>
+          </form>
+        } @else if (ev.coOrganiserLimit === 0) {
+          <p class="help-text">Du kan skicka inbjudningar när admin har fastställt godkänt antal.</p>
+        } @else {
+          <p class="help-text">Alla godkända inbjudningsplatser är utnyttjade.</p>
+        }
+
+        @if (ev.coOrganiserInvitations.length > 0) {
+          <h3>Skickade inbjudningar</h3>
+          @for (inv of ev.coOrganiserInvitations; track inv.id) {
+            <div class="request-item">
+              <div class="request-info">
+                <span class="request-desc">{{ inv.email }}</span>
+                <span class="request-meta">
+                  {{ inv.createdAt | date:'yyyy-MM-dd' }} ·
+                  @if (inv.status === 'Active') { Väntande }
+                  @else if (inv.status === 'Redeemed') { Inlöst }
+                  @else { Avbruten }
+                </span>
+              </div>
+              @if (inv.status === 'Active') {
+                <button mat-stroked-button color="warn" class="action-btn"
+                        (click)="cancelInvitation(inv.id)"
+                        [disabled]="invitationState().cancelling !== null">
+                  @if (invitationState().cancelling === inv.id) { <mat-spinner diameter="18" /> } @else { Avbryt }
+                </button>
+              }
+            </div>
+          }
+        }
+      </section>
+    }
+
     @if (canCommentOnPublishedEvent) {
       <section class="card">
         <h2>Föreslå ändring</h2>
