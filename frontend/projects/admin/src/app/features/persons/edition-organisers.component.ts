@@ -14,6 +14,18 @@ import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
 
 type OrganiserSortKey = 'name' | 'email' | 'event' | 'role';
 
+interface OrganiserPersonRow {
+  personId: string;
+  personName: string;
+  email: string;
+  phone: string | null;
+  events: {
+    eventId: string;
+    eventTitle: string;
+    role: string;
+  }[];
+}
+
 @Component({
   selector: 'app-edition-organisers',
   standalone: true,
@@ -89,10 +101,39 @@ export class EditionOrganisersComponent {
     });
   }
 
+  readonly organiserRows = computed<OrganiserPersonRow[]>(() => {
+    const rows = new Map<string, OrganiserPersonRow>();
+
+    for (const organiser of this.organisers()) {
+      const row = rows.get(organiser.personId);
+      const event = {
+        eventId: organiser.eventId,
+        eventTitle: organiser.eventTitle,
+        role: organiser.role,
+      };
+
+      if (row) {
+        row.events.push(event);
+      } else {
+        rows.set(organiser.personId, {
+          personId: organiser.personId,
+          personName: organiser.personName,
+          email: organiser.email,
+          phone: organiser.phone,
+          events: [event],
+        });
+      }
+    }
+
+    return [...rows.values()];
+  });
+
   readonly filtered = computed(() => {
     const q = this.searchQuery().toLowerCase();
-    return !q ? this.organisers() : this.organisers().filter(
-      o => o.personName.toLowerCase().includes(q) || o.eventTitle.toLowerCase().includes(q)
+    return !q ? this.organiserRows() : this.organiserRows().filter(
+      o => o.personName.toLowerCase().includes(q)
+        || o.email.toLowerCase().includes(q)
+        || o.events.some(event => event.eventTitle.toLowerCase().includes(q) || event.role.toLowerCase().includes(q))
     );
   });
 
@@ -100,8 +141,8 @@ export class EditionOrganisersComponent {
     sortBy(this.filtered(), this.sort(), {
       name: o => o.personName,
       email: o => o.email,
-      event: o => o.eventTitle,
-      role: o => o.role,
+      event: o => this.eventTitles(o),
+      role: o => this.eventRoles(o),
     })
   );
 
@@ -119,13 +160,17 @@ export class EditionOrganisersComponent {
     this.searchQuery.set((event.target as HTMLInputElement).value);
   }
 
-  setTicketSelection(personId: string, ticketTypeId: string | null): void {
-    this.ticketSelection.update(selection => ({ ...selection, [personId]: ticketTypeId }));
-  }
-
   currentTicketLabel(personId: string): string {
     const assignment = this.organiserTicketAssignments().find(a => a.personId === personId);
     return assignment?.ticketTypeName ?? 'Ingen aktiv arrangörsbiljett';
+  }
+
+  eventTitles(row: OrganiserPersonRow): string {
+    return row.events.map(event => event.eventTitle).join(', ');
+  }
+
+  eventRoles(row: OrganiserPersonRow): string {
+    return [...new Set(row.events.map(event => event.role))].join(', ');
   }
 
   ticketTypePriceLabel(price: number): string {
@@ -138,13 +183,14 @@ export class EditionOrganisersComponent {
     }).format(price / 100);
   }
 
-  saveTicket(personId: string): void {
+  updateTicket(personId: string, ticketTypeId: string | null): void {
     const editionId = this.editionContext.activeEdition()?.id;
     if (!editionId || this.savingPersonId()) return;
 
+    this.ticketSelection.update(selection => ({ ...selection, [personId]: ticketTypeId }));
     this.savingPersonId.set(personId);
     this.error.set(null);
-    this.regSvc.assignOrganiserTicket(editionId, personId, this.ticketSelection()[personId] ?? null).subscribe({
+    this.regSvc.assignOrganiserTicket(editionId, personId, ticketTypeId).subscribe({
       next: () => {
         this.savingPersonId.set(null);
         this.loadTicketAssignments(editionId);

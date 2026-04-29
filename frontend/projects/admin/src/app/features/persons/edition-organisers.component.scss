@@ -7,17 +7,18 @@
   }
 }
 
-.action-cell {
-  width: 96px;
-  white-space: nowrap;
+.event-cell {
+  min-width: 220px;
 
-  button {
-    min-width: 76px;
+  span {
+    display: block;
   }
+}
 
-  mat-spinner {
-    margin: 0 auto;
-  }
+.ticket-saving-spinner {
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
 }
 
 .no-edition {

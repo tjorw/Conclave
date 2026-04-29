@@ -36,24 +36,28 @@
             <th><button type="button" class="sort-header" (click)="setSort('role')">Roll <mat-icon>{{ sortIcon('role') }}</mat-icon></button></th>
             @if (hasOrganiserTicketTypes()) {
               <th>Arrangörsbiljett</th>
-              <th></th>
             }
           </tr>
         </thead>
         <tbody>
-          @for (o of sortedFiltered(); track o.personId + o.eventId) {
+          @for (o of sortedFiltered(); track o.personId) {
             <tr>
               <td><strong>{{ o.personName }}</strong></td>
               <td>{{ o.email }}</td>
-              <td>{{ o.eventTitle }}</td>
-              <td class="muted">{{ o.role }}</td>
+              <td class="event-cell">
+                @for (event of o.events; track event.eventId) {
+                  <span>{{ event.eventTitle }}</span>
+                }
+              </td>
+              <td class="muted">{{ eventRoles(o) }}</td>
               @if (hasOrganiserTicketTypes()) {
                 <td class="ticket-cell">
                   <mat-form-field appearance="outline" subscriptSizing="dynamic">
                     <mat-label>{{ currentTicketLabel(o.personId) }}</mat-label>
                     <mat-select
                       [value]="ticketSelection()[o.personId] ?? null"
-                      (selectionChange)="setTicketSelection(o.personId, $event.value)">
+                      [disabled]="savingPersonId() !== null"
+                      (selectionChange)="updateTicket(o.personId, $event.value)">
                       <mat-option [value]="null">Ingen biljett</mat-option>
                       @for (ticketType of organiserTicketTypes(); track ticketType.id) {
                         <mat-option [value]="ticketType.id">
@@ -62,25 +66,15 @@
                       }
                     </mat-select>
                   </mat-form-field>
-                </td>
-                <td class="action-cell">
-                  <button
-                    mat-stroked-button
-                    type="button"
-                    (click)="saveTicket(o.personId)"
-                    [disabled]="savingPersonId() !== null">
-                    @if (savingPersonId() === o.personId) {
-                      <mat-spinner diameter="18" />
-                    } @else {
-                      Spara
-                    }
-                  </button>
+                  @if (savingPersonId() === o.personId) {
+                    <mat-spinner class="ticket-saving-spinner" diameter="18" />
+                  }
                 </td>
               }
             </tr>
           } @empty {
             <tr>
-              <td [attr.colspan]="hasOrganiserTicketTypes() ? 6 : 4" class="empty-cell">
+              <td [attr.colspan]="hasOrganiserTicketTypes() ? 5 : 4" class="empty-cell">
                 @if (searchQuery()) {
                   Inga arrangörer matchar sökningen.
                 } @else {
