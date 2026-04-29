@@ -210,6 +210,11 @@
                   <input matInput formControlName="dropInRules" [placeholder]="PAGE.dropInPlaceholder" />
                 </mat-form-field>
               }
+
+              <mat-form-field appearance="outline" style="width: 180px">
+                <mat-label>{{ FIELD.coOrganiserCount }}</mat-label>
+                <input matInput type="number" formControlName="coOrganiserCount" min="0" />
+              </mat-form-field>
             </div>
           </form>
         </mat-card-content>

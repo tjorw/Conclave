@@ -119,6 +119,7 @@ export class EventDetailComponent implements OnInit {
     registrationType: ['DropIn', Validators.required],
     dropInRules:      [''],
     scheduleRequestText: [''],
+    coOrganiserCount: [0, [Validators.required, Validators.min(0)]],
   });
 
   readonly limitForm = this.fb.group({
@@ -287,9 +288,9 @@ export class EventDetailComponent implements OnInit {
   saveEdit(): void {
     const ev = this.event();
     if (!ev || this.editForm.invalid || this.saving()) return;
-    const { title, description, registrationType, dropInRules, scheduleRequestText } = this.editForm.getRawValue();
+    const { title, description, registrationType, dropInRules, scheduleRequestText, coOrganiserCount } = this.editForm.getRawValue();
     this.saving.set(true);
-    this.svc.updateDraft(ev.id, title!, description!, registrationType!, dropInRules || null, scheduleRequestText || null).subscribe({
+    this.svc.updateDraft(ev.id, title!, description!, registrationType!, dropInRules || null, scheduleRequestText || null, coOrganiserCount!).subscribe({
       next: () => { this.saving.set(false); this.reload(); },
       error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.saveDraft)); },
     });
@@ -487,6 +488,7 @@ export class EventDetailComponent implements OnInit {
       registrationType: e.registrationType,
       dropInRules:      e.dropInRules ?? '',
       scheduleRequestText: e.scheduleRequestText ?? '',
+      coOrganiserCount: e.coOrganiserCount,
     });
     this.limitForm.patchValue({ limit: e.coOrganiserLimit });
   }

@@ -75,6 +75,7 @@ export const FIELD = {
   maxSeats:         'Max platser',
   startType:        'Starttyp',
   password:         'Lösenord',
+  coOrganiserCount: 'Antal medarrangörsplatser',
 } as const;
 
 /** Platshållartexter i inputfält. */
