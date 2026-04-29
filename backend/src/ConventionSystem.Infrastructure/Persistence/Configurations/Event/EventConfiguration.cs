@@ -81,9 +81,19 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasMany(e => e.CoOrganiserInvitations)
+            .WithOne()
+            .HasForeignKey(i => i.EventId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Property(e => e.CoOrganiserCount).HasColumnName("co_organiser_count");
+        builder.Property(e => e.CoOrganiserLimit).HasColumnName("co_organiser_limit");
+
         builder.Navigation(e => e.Sessions).HasField("_sessions");
         builder.Navigation(e => e.CoOrganisers).HasField("_coOrganisers");
         builder.Navigation(e => e.CoOrganiserApplications).HasField("_coOrganiserApplications");
+        builder.Navigation(e => e.CoOrganiserInvitations).HasField("_coOrganiserInvitations");
         builder.Navigation(e => e.Comments).HasField("_comments");
 
         builder.HasIndex(e => e.EditionId).HasDatabaseName("IX_events_edition_id");
@@ -227,6 +237,65 @@ public sealed class EventCommentConfiguration : IEntityTypeConfiguration<EventCo
 
         builder.Property(c => c.Text).HasMaxLength(2000).IsRequired();
         builder.Property(c => c.CreatedAt).HasColumnName("created_at");
+    }
+}
+
+public sealed class CoOrganiserInvitationConfiguration : IEntityTypeConfiguration<CoOrganiserInvitation>
+{
+    public void Configure(EntityTypeBuilder<CoOrganiserInvitation> builder)
+    {
+        builder.ToTable("co_organiser_invitations");
+
+        builder.HasKey(i => i.Id);
+        builder.Property(i => i.Id)
+            .HasConversion(id => id.Value, value => new CoOrganiserInvitationId(value))
+            .ValueGeneratedNever();
+
+        builder.Property(i => i.EventId)
+            .HasConversion(id => id.Value, value => new EventId(value))
+            .HasColumnName("event_id");
+
+        builder.Property(i => i.Email)
+            .HasMaxLength(320)
+            .HasColumnName("email");
+
+        builder.Property(i => i.NormalizedEmail)
+            .HasMaxLength(320)
+            .HasColumnName("normalized_email");
+
+        builder.Property(i => i.Code)
+            .HasMaxLength(50)
+            .HasColumnName("code");
+
+        builder.Property(i => i.Status)
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasColumnName("status");
+
+        builder.Property(i => i.CreatedById)
+            .HasConversion(id => id.Value, value => new PersonId(value))
+            .HasColumnName("created_by_id");
+
+        builder.Property(i => i.CreatedAt).HasColumnName("created_at");
+
+        builder.Property(i => i.RedeemedById)
+            .HasConversion(
+                id => id.HasValue ? id.Value.Value : (Guid?)null,
+                value => value.HasValue ? new PersonId(value.Value) : (PersonId?)null)
+            .HasColumnName("redeemed_by_id");
+
+        builder.Property(i => i.RedeemedAt).HasColumnName("redeemed_at");
+
+        builder.Property(i => i.CancelledById)
+            .HasConversion(
+                id => id.HasValue ? id.Value.Value : (Guid?)null,
+                value => value.HasValue ? new PersonId(value.Value) : (PersonId?)null)
+            .HasColumnName("cancelled_by_id");
+
+        builder.Property(i => i.CancelledAt).HasColumnName("cancelled_at");
+
+        builder.HasIndex(i => i.EventId).HasDatabaseName("IX_co_organiser_invitations_event_id");
+        builder.HasIndex(i => i.Code).IsUnique().HasDatabaseName("IX_co_organiser_invitations_code");
     }
 }
 

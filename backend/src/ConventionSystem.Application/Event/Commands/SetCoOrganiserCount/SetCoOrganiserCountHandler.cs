@@ -12,13 +12,19 @@ public sealed class SetCoOrganiserCountHandler(
 {
     protected override async Task ExecuteAsync(SetCoOrganiserCountCommand command, CancellationToken ct)
     {
-        var ev = await eventRepository.GetByIdAsync(new EventId(command.EventId), ct)
+        var eventId = new EventId(command.EventId);
+        var eventAggregate = await eventRepository.GetByIdAsync(eventId, ct)
             ?? throw new ResourceNotFoundException("Evenemang", command.EventId.ToString());
 
-        if (ev.LeadOrganiserId != currentUser.PersonId)
-            throw new ForbiddenException("Endast huvudarrangören kan ange önskat antal medarrangörer.");
+        EnsureCurrentUserIsLeadOrganiser(eventAggregate);
 
-        ev.SetCoOrganiserCount(command.Count);
+        eventAggregate.SetCoOrganiserCount(command.Count);
         await eventRepository.SaveAsync(ct);
+    }
+
+    private void EnsureCurrentUserIsLeadOrganiser(Domain.Event.Aggregates.Event eventAggregate)
+    {
+        if (eventAggregate.LeadOrganiserId != currentUser.PersonId)
+            throw new ForbiddenException("Endast huvudarrangören kan ange önskat antal medarrangörer.");
     }
 }

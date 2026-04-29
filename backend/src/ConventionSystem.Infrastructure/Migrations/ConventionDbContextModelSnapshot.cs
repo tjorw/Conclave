@@ -403,6 +403,14 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("category_id");
 
+                    b.Property<int>("CoOrganiserCount")
+                        .HasColumnType("int")
+                        .HasColumnName("co_organiser_count");
+
+                    b.Property<int>("CoOrganiserLimit")
+                        .HasColumnType("int")
+                        .HasColumnName("co_organiser_limit");
+
                     b.Property<string>("Description")
                         .HasMaxLength(10000)
                         .HasColumnType("nvarchar(max)");
@@ -561,6 +569,81 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .HasDatabaseName("IX_co_organiser_applications_event_email_status");
 
                     b.ToTable("co_organiser_applications", (string)null);
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.CoOrganiserInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("cancelled_at");
+
+                    b.Property<Guid?>("CancelledById")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("cancelled_by_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("created_by_id");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("nvarchar(320)")
+                        .HasColumnName("email");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("NormalizedEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("nvarchar(320)")
+                        .HasColumnName("normalized_email");
+
+                    b.Property<DateTimeOffset?>("RedeemedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("redeemed_at");
+
+                    b.Property<Guid?>("RedeemedById")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("redeemed_by_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_co_organiser_invitations_code");
+
+                    b.HasIndex("EventId")
+                        .HasDatabaseName("IX_co_organiser_invitations_event_id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("co_organiser_invitations", (string)null);
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.EventComment", b =>
@@ -1376,6 +1459,15 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.CoOrganiserInvitation", b =>
+                {
+                    b.HasOne("ConventionSystem.Domain.Event.Aggregates.Event", null)
+                        .WithMany("CoOrganiserInvitations")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.EventComment", b =>
                 {
                     b.HasOne("ConventionSystem.Domain.Event.Aggregates.Event", null)
@@ -1578,6 +1670,8 @@ namespace ConventionSystem.Infrastructure.Migrations
             modelBuilder.Entity("ConventionSystem.Domain.Event.Aggregates.Event", b =>
                 {
                     b.Navigation("CoOrganiserApplications");
+
+                    b.Navigation("CoOrganiserInvitations");
 
                     b.Navigation("CoOrganisers");
 

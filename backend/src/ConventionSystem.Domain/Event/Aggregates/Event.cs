@@ -377,12 +377,11 @@ public sealed class Event : AggregateRoot
     {
         EnsureNotCancelled();
 
-        var activeCount = _coOrganiserInvitations.Count(i => i.Status == CoOrganiserInvitationStatus.Active);
-        if (activeCount >= CoOrganiserLimit)
+        if (GetActiveInvitationCount() >= CoOrganiserLimit)
             throw new CoOrganiserLimitExceededException();
 
         var normalizedEmail = NormalizeEmail(email);
-        if (_coOrganiserInvitations.Any(i => i.NormalizedEmail == normalizedEmail && i.Status == CoOrganiserInvitationStatus.Active))
+        if (HasActiveInvitationFor(normalizedEmail))
             throw new CoOrganiserAlreadyInvitedException();
 
         var code = GenerateInvitationCode();
@@ -400,8 +399,7 @@ public sealed class Event : AggregateRoot
 
     public void CancelInvitation(CoOrganiserInvitationId invitationId, PersonId cancelledById)
     {
-        var invitation = _coOrganiserInvitations.FirstOrDefault(i => i.Id == invitationId)
-            ?? throw new CoOrganiserInvitationNotFoundException();
+        var invitation = GetInvitationById(invitationId);
 
         invitation.Cancel(cancelledById);
         RaiseDomainEvent(new CoOrganiserInvitationCancelled(invitationId, Id, cancelledById, DateTimeOffset.UtcNow));
@@ -409,8 +407,7 @@ public sealed class Event : AggregateRoot
 
     public CoOrganiser RedeemInvitation(string code, string redeemerEmail, PersonId redeemedById)
     {
-        var invitation = _coOrganiserInvitations.FirstOrDefault(i => i.Code == code)
-            ?? throw new InvalidInvitationCodeException();
+        var invitation = GetInvitationByCode(code);
 
         if (invitation.NormalizedEmail != NormalizeEmail(redeemerEmail))
             throw new CoOrganiserInvitationEmailMismatchException();
@@ -420,6 +417,22 @@ public sealed class Event : AggregateRoot
         RaiseDomainEvent(new CoOrganiserInvitationRedeemed(invitation.Id, Id, redeemedById, DateTimeOffset.UtcNow));
         return coOrganiser;
     }
+
+    private int GetActiveInvitationCount()
+        => _coOrganiserInvitations.Count(i => i.Status == CoOrganiserInvitationStatus.Active);
+
+    private bool HasActiveInvitationFor(string normalizedEmail)
+        => _coOrganiserInvitations.Any(i =>
+            i.NormalizedEmail == normalizedEmail &&
+            i.Status == CoOrganiserInvitationStatus.Active);
+
+    private CoOrganiserInvitation GetInvitationById(CoOrganiserInvitationId invitationId)
+        => _coOrganiserInvitations.FirstOrDefault(i => i.Id == invitationId)
+            ?? throw new CoOrganiserInvitationNotFoundException();
+
+    private CoOrganiserInvitation GetInvitationByCode(string code)
+        => _coOrganiserInvitations.FirstOrDefault(i => i.Code == code)
+            ?? throw new InvalidInvitationCodeException();
 
     private static string GenerateInvitationCode()
     {
