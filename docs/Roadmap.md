@@ -115,8 +115,8 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - [x] `R-CO04` EF Core-konfiguration för `CoOrganiserInvitation` och limit-fältet på `Event`; databasmigration
 - [x] `R-CO05` API-endpoints för det nya flödet (set count, adjust limit, create/cancel/redeem invitation)
 - [x] `R-CO06` Ta bort gammalt ansökningsflöde: `AddCoOrganiser`, `ApproveCoOrganiserApplication`, `RejectCoOrganiserApplication`, `CancelCoOrganiserApplication` – commands, handlers, endpoints och frontend
-- [ ] `R-CO07` Frontend publik (min-sida/evenemang): arrangören anger önskat antal och hanterar egna inbjudningar (skapa, avbryta)
-- [ ] `R-CO08` Frontend admin: visa/justera godkänt antal, skicka inbjudningar, avbryta inbjudningar, ta bort medarrangörer
+- [x] `R-CO07` Frontend publik (min-sida/evenemang): arrangören anger önskat antal och hanterar egna inbjudningar (skapa, avbryta)
+- [x] `R-CO08` Frontend admin: visa/justera godkänt antal, skicka inbjudningar, avbryta inbjudningar, ta bort medarrangörer
 
 **Implementationsordning:** R-CO03 → R-CO04 → R-CO05 → R-CO06 → R-CO07 → R-CO08
 
