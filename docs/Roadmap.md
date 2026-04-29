@@ -56,8 +56,6 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 - [ ] `R-TAG03` Publik exponering och filtrering – event-feed och programdetalj visar taggar; publika programvyn erbjuder taggfilter utöver dag och kategori.
 - [ ] `R-TAG04` Kopiering av struktur – `CopyStructure` bör kopiera editionens taggdefinitioner på samma sätt som lokaler, funktionsområden och stationer när det är relevant för ny upplaga.
 
-
-
 ---
 
 ## Teknisk skuld
@@ -95,40 +93,7 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 - Välkomstmejl med inloggningsuppgifter för konventets admin
 
 
-## Medarrangörer – inbjudningsflöde (R-CO)
 
-**Arbetsflöde:**
-1. Arrangören anger önskat antal medarrangörer på sitt evenemang.
-2. Admin justerar och godkänner antalet medarrangörer innan eventet publiceras.
-3. Admin kan alltid ändra antalet, även efter publicering.
-4. Arrangören kan inte skapa fler aktiva inbjudningar än det godkända antalet.
-5. Arrangör eller admin skapar inbjudningar (unik inbjudningskod).
-6. Inbjuden person loggar in och löser in koden → blir medarrangör, inbjudan stängs.
-7. Arrangör eller admin kan avbryta inbjudningar och ta bort medarrangörer.
-8. Admin kan skicka inbjudningar direkt utan att arrangören initierar.
-
-**Implementationsstatus:**
-
-- [x] `R-CO01` Domänentitet `CoOrganiserInvitation` med livscykel (aktiv → inlöst / avbruten)
-- [x] `R-CO02` Application commands + handlers: `SetCoOrganiserCount`, `AdjustCoOrganiserLimit`, `CreateCoOrganiserInvitation`, `CancelCoOrganiserInvitation`, `RedeemCoOrganiserInvitation`
-- [x] `R-CO03` Domänaggregatets metoder: `SetCoOrganiserCount` och `AdjustCoOrganiserLimit` är enkla property-uppdateringar utan egna domänhändelser (samma mönster som att redigera grunduppgifter); `CreateInvitation`, `CancelInvitation` och `RedeemInvitation` höjer domänhändelser – aggregatet saknar samtliga dessa metoder trots att handlers är skrivna
-- [x] `R-CO04` EF Core-konfiguration för `CoOrganiserInvitation` och limit-fältet på `Event`; databasmigration
-- [x] `R-CO05` API-endpoints för det nya flödet (set count, adjust limit, create/cancel/redeem invitation)
-- [x] `R-CO06` Ta bort gammalt ansökningsflöde: `AddCoOrganiser`, `ApproveCoOrganiserApplication`, `RejectCoOrganiserApplication`, `CancelCoOrganiserApplication` – commands, handlers, endpoints och frontend
-- [x] `R-CO07` Frontend publik (min-sida/evenemang): arrangören anger önskat antal och hanterar egna inbjudningar (skapa, avbryta)
-- [x] `R-CO08` Frontend admin: visa/justera godkänt antal, skicka inbjudningar, avbryta inbjudningar, ta bort medarrangörer
-
-**Implementationsordning:** R-CO03 → R-CO04 → R-CO05 → R-CO06 → R-CO07 → R-CO08
-
-
-## Bemanningskorrigeringar (R-ST)
-
-Fel och saknad beteende identifierade vid livscykelanalys av passtilldelning.
-
-- [x] `R-ST01` **Frontend-bugg: Avboka-knapp saknas för Tilldelad-status** – `staff-area-detail` visar Avboka-knappen enbart när tilldelningen har status `Confirmed`, men UC-ST005 och domänlogiken tillåter avbokning från både `Assigned` och `Confirmed`. Fixa villkoret i rad 158–162 i `staff-area-detail.component.ts`.
-- [x] `R-ST02` **Saknad kaskad vid passinställning** – `DeleteShiftHandler` tar bort passet men avbokar inte aktiva tilldelningar. UC-ST006 kräver att alla `Assigned`- och `Confirmed`-tilldelningar auto-avbokas som sidoeffekt. Implementera `INotificationHandler<ShiftCancelled>` (eller motsvarande) som anropar `Shift.CancelAssignment` för varje aktiv tilldelning och sparar aggregatet.
-
-**Implementationsordning:** R-ST01 → R-ST02
 
 ---
 
