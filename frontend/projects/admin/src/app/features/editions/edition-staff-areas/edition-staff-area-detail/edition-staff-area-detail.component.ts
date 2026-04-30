@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { ConventionService, EditionDto, PersonDto, toContextErrorMessage } from 'shared';
+import { ConventionService, createAsyncState, EditionDto, PersonDto, toContextErrorMessage } from 'shared';
 import { ERROR } from '../../../../labels/errors.labels';
 import { EDITION_DETAIL } from '../../../../labels/pages.labels';
 import { ConfirmDialogService } from '../../../../shared/confirm-dialog/confirm-dialog.service';
@@ -39,9 +39,7 @@ export class EditionStaffAreaDetailComponent implements OnInit {
 
   readonly edition = signal<EditionDto | null>(null);
   readonly persons = signal<PersonDto[]>([]);
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly saving = signal(false);
+  protected readonly state = createAsyncState(true);
   readonly PAGE = EDITION_DETAIL;
 
   private editionId = '';
@@ -67,7 +65,7 @@ export class EditionStaffAreaDetailComponent implements OnInit {
   }
 
   private loadData(): void {
-    this.loading.set(true);
+    this.state.loading.set(true);
     this.svc.getEdition(this.editionId).subscribe({
       next: (e) => {
         this.edition.set(e);
@@ -80,14 +78,14 @@ export class EditionStaffAreaDetailComponent implements OnInit {
               responsibleId: area.responsibleId,
             });
           } else {
-            this.error.set('Funktionsområdet hittades inte.');
+            this.state.error.set('Funktionsområdet hittades inte.');
           }
         }
-        this.loading.set(false);
+        this.state.loading.set(false);
       },
       error: () => {
-        this.error.set(ERROR.fetchEdition);
-        this.loading.set(false);
+        this.state.error.set(ERROR.fetchEdition);
+        this.state.loading.set(false);
       },
     });
     this.svc
@@ -103,10 +101,10 @@ export class EditionStaffAreaDetailComponent implements OnInit {
       description: v.description || null,
       responsibleId: v.responsibleId!,
     };
-    this.saving.set(true);
+    this.state.saving.set(true);
     const onError = (err: unknown, label: string) => {
-      this.error.set(toContextErrorMessage(err, label));
-      this.saving.set(false);
+      this.state.error.set(toContextErrorMessage(err, label));
+      this.state.saving.set(false);
     };
     if (this.isNew()) {
       this.svc.createStaffArea(this.editionId, payload).subscribe({
@@ -130,12 +128,12 @@ export class EditionStaffAreaDetailComponent implements OnInit {
       message: this.PAGE.deleteStaffAreaMessage(area.name),
     }).subscribe((confirmed) => {
         if (!confirmed) return;
-        this.saving.set(true);
+        this.state.saving.set(true);
         this.svc.removeStaffArea(this.editionId, this.areaId).subscribe({
           next: () => this.navigateBack(),
           error: (err: unknown) => {
-            this.error.set(toContextErrorMessage(err, ERROR.deleteStaffArea));
-            this.saving.set(false);
+            this.state.error.set(toContextErrorMessage(err, ERROR.deleteStaffArea));
+            this.state.saving.set(false);
           },
         });
       });

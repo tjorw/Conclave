@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ConventionService, EditionDto, toContextErrorMessage } from 'shared';
+import { ConventionService, createAsyncState, EditionDto, toContextErrorMessage } from 'shared';
 import { ERROR } from '../../../labels/errors.labels';
 import { EDITION_DETAIL } from '../../../labels/pages.labels';
 import { ACTION } from '../../../labels/ui.labels';
@@ -31,9 +31,7 @@ export class EditionLifecycleComponent implements OnInit {
   private readonly editionContext = inject(EditionContextService);
 
   readonly edition  = signal<EditionDto | null>(null);
-  readonly loading  = signal(true);
-  readonly error    = signal<string | null>(null);
-  readonly saving   = signal(false);
+  protected readonly state = createAsyncState(true);
 
   readonly PAGE   = EDITION_DETAIL;
   readonly ACTION = ACTION;
@@ -73,10 +71,10 @@ export class EditionLifecycleComponent implements OnInit {
   }
 
   private loadData(editionId: string): void {
-    this.loading.set(true);
+    this.state.loading.set(true);
     this.svc.getEdition(editionId).subscribe({
-      next: e => { this.edition.set(e); this.loading.set(false); },
-      error: () => { this.error.set(ERROR.fetchEdition); this.loading.set(false); },
+      next: e => { this.edition.set(e); this.state.loading.set(false); },
+      error: () => { this.state.error.set(ERROR.fetchEdition); this.state.loading.set(false); },
     });
   }
 
@@ -95,11 +93,11 @@ export class EditionLifecycleComponent implements OnInit {
   }
 
   setActive(): void {
-    this.saving.set(true);
+    this.state.saving.set(true);
     const editionId = this.edition()!.id;
     this.svc.setActiveEdition(editionId).subscribe({
-      next: () => { this.editionContext.setActive(editionId); this.saving.set(false); },
-      error: (err) => { this.error.set(toContextErrorMessage(err, ERROR.setActiveEdition)); this.saving.set(false); },
+      next: () => { this.editionContext.setActive(editionId); this.state.saving.set(false); },
+      error: (err) => { this.state.error.set(toContextErrorMessage(err, ERROR.setActiveEdition)); this.state.saving.set(false); },
     });
   }
 
@@ -110,10 +108,10 @@ export class EditionLifecycleComponent implements OnInit {
       confirmLabel: this.PAGE.publishAction,
     }).subscribe(confirmed => {
       if (!confirmed) return;
-      this.saving.set(true);
+      this.state.saving.set(true);
       this.svc.publishEdition(this.edition()!.id).subscribe({
-        next: () => { this.reload(); this.saving.set(false); },
-        error: (err) => { this.error.set(toContextErrorMessage(err, ERROR.publishEdition)); this.saving.set(false); },
+        next: () => { this.reload(); this.state.saving.set(false); },
+        error: (err) => { this.state.error.set(toContextErrorMessage(err, ERROR.publishEdition)); this.state.saving.set(false); },
       });
     });
   }
@@ -125,24 +123,24 @@ export class EditionLifecycleComponent implements OnInit {
       confirmLabel: this.PAGE.unpublishAction,
     }).subscribe(confirmed => {
       if (!confirmed) return;
-      this.saving.set(true);
+      this.state.saving.set(true);
       this.svc.unpublishEdition(this.edition()!.id).subscribe({
-        next: () => { this.reload(); this.saving.set(false); },
-        error: (err) => { this.error.set(toContextErrorMessage(err, ERROR.unpublishEdition)); this.saving.set(false); },
+        next: () => { this.reload(); this.state.saving.set(false); },
+        error: (err) => { this.state.error.set(toContextErrorMessage(err, ERROR.unpublishEdition)); this.state.saving.set(false); },
       });
     });
   }
 
   toggleRegistration(type: 'organiser' | 'staff' | 'visitor'): void {
     if (!this.isPublished()) return;
-    this.saving.set(true);
+    this.state.saving.set(true);
     const open = this.registrationOpen(type);
     const call = open
       ? this.svc.closeRegistration(this.edition()!.id, type)
       : this.svc.openRegistration(this.edition()!.id, type);
     call.subscribe({
-      next: () => { this.reload(); this.saving.set(false); },
-      error: (err) => { this.error.set(toContextErrorMessage(err, ERROR.toggleRegistration)); this.saving.set(false); },
+      next: () => { this.reload(); this.state.saving.set(false); },
+      error: (err) => { this.state.error.set(toContextErrorMessage(err, ERROR.toggleRegistration)); this.state.saving.set(false); },
     });
   }
 }

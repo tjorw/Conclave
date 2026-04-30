@@ -1,7 +1,7 @@
-@if (loading()) {
+@if (state.loading()) {
   <div class="spinner-wrapper"><mat-spinner diameter="48" /></div>
-} @else if (error()) {
-  <p class="error-message">{{ error() }}</p>
+} @else if (state.error()) {
+  <p class="error-message">{{ state.error() }}</p>
 } @else if (edition(); as e) {
   <div class="page-header">
     <h1 class="page-title">{{ e.name }}</h1>
@@ -47,11 +47,11 @@
           {{ isPublished() ? PAGE.statusPublished : PAGE.statusDraft }}
         </mat-chip>
         @if (isDraft()) {
-          <button mat-flat-button color="primary" [disabled]="saving()" (click)="publish()">
+          <button mat-flat-button color="primary" [disabled]="state.saving()" (click)="publish()">
             <mat-icon>publish</mat-icon> {{ PAGE.publishAction }}
           </button>
         } @else {
-          <button mat-stroked-button color="warn" [disabled]="saving()" (click)="unpublish()">
+          <button mat-stroked-button color="warn" [disabled]="state.saving()" (click)="unpublish()">
             <mat-icon>undo</mat-icon> {{ PAGE.unpublishAction }}
           </button>
         }
@@ -71,7 +71,7 @@
           {{ isActiveEdition() ? PAGE.statusActive : PAGE.statusNotActive }}
         </mat-chip>
         <button mat-stroked-button color="primary"
-          [disabled]="saving() || isActiveEdition()" (click)="setActive()">
+          [disabled]="state.saving() || isActiveEdition()" (click)="setActive()">
           <mat-icon>public</mat-icon> {{ PAGE.setActiveAction }}
         </button>
       </div>
@@ -102,7 +102,7 @@
             </mat-chip>
             <button mat-stroked-button
               [color]="registrationOpen(type.type) ? 'warn' : 'primary'"
-              [disabled]="saving()"
+              [disabled]="state.saving()"
               (click)="toggleRegistration(type.type)">
               {{ registrationOpen(type.type) ? ACTION.close : ACTION.open }}
             </button>

@@ -1,9 +1,9 @@
-@if (loading()) {
+@if (state.loading()) {
   <div class="spinner-wrapper">
     <mat-spinner diameter="48" />
   </div>
-} @else if (error()) {
-  <p class="error-message">{{ error() }}</p>
+} @else if (state.error()) {
+  <p class="error-message">{{ state.error() }}</p>
 } @else if (edition(); as e) {
 
   <!-- ── Sidhuvud ── -->
@@ -80,11 +80,11 @@
                 {{ isPublished() ? PAGE.statusPublished : PAGE.statusDraft }}
               </mat-chip>
               @if (isDraft()) {
-                <button mat-flat-button color="primary" [disabled]="saving()" (click)="publish()">
+                <button mat-flat-button color="primary" [disabled]="state.saving()" (click)="publish()">
                   <mat-icon>publish</mat-icon> {{ PAGE.publishAction }}
                 </button>
               } @else {
-                <button mat-stroked-button color="warn" [disabled]="saving()" (click)="unpublish()">
+                <button mat-stroked-button color="warn" [disabled]="state.saving()" (click)="unpublish()">
                   <mat-icon>undo</mat-icon> {{ PAGE.unpublishAction }}
                 </button>
               }
@@ -106,7 +106,7 @@
               <button
                 mat-stroked-button
                 color="primary"
-                [disabled]="saving() || isActiveEdition()"
+                [disabled]="state.saving() || isActiveEdition()"
                 (click)="setActive()">
                 <mat-icon>public</mat-icon> {{ PAGE.setActiveAction }}
               </button>
@@ -137,7 +137,7 @@
                   <button
                     mat-stroked-button
                     [color]="registrationOpen(type.type) ? 'warn' : 'primary'"
-                    [disabled]="saving()"
+                    [disabled]="state.saving()"
                     (click)="toggleRegistration(type.type)">
                     {{ registrationOpen(type.type) ? ACTION.close : ACTION.open }}
                   </button>
@@ -224,7 +224,7 @@
                 }
               </div>
               <div class="form-actions">
-                <button mat-flat-button color="primary" type="submit" [disabled]="editEditionForm.invalid || saving()">Spara</button>
+                <button mat-flat-button color="primary" type="submit" [disabled]="editEditionForm.invalid || state.saving()">Spara</button>
               </div>
             </form>
           </mat-card-content>
@@ -251,10 +251,10 @@
                   <td>{{ v.building }}</td>
                   <td class="muted">{{ v.description || '–' }}</td>
                   <td class="row-actions">
-                    <button mat-icon-button (click)="startEditVenue(v)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
+                    <button mat-icon-button (click)="startEditVenue(v)" [matTooltip]="TOOLTIP.edit" [disabled]="state.saving()">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="deleteVenue(v)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
+                    <button mat-icon-button color="warn" (click)="deleteVenue(v)" [matTooltip]="TOOLTIP.delete" [disabled]="state.saving()">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </td>
@@ -274,13 +274,13 @@
               <mat-form-field><mat-label>Byggnad</mat-label><input matInput formControlName="building" /></mat-form-field>
               <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
               <button mat-button type="button" (click)="editingVenue.set(null)">Avbryt</button>
-              <button mat-flat-button color="primary" type="submit" [disabled]="editVenueForm.invalid || saving()">Spara</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="editVenueForm.invalid || state.saving()">Spara</button>
             </div>
           </form>
         }
 
         @if (!showAddVenueForm()) {
-          <button mat-stroked-button type="button" class="inline-add-button" (click)="openAddVenueForm()" [disabled]="saving()">
+          <button mat-stroked-button type="button" class="inline-add-button" (click)="openAddVenueForm()" [disabled]="state.saving()">
             <mat-icon>add</mat-icon>
             Lägg till lokal
           </button>
@@ -291,8 +291,8 @@
               <mat-form-field><mat-label>Namn</mat-label><input matInput formControlName="name" /></mat-form-field>
               <mat-form-field><mat-label>Byggnad</mat-label><input matInput formControlName="building" /></mat-form-field>
               <mat-form-field><mat-label>Beskrivning</mat-label><input matInput formControlName="description" /></mat-form-field>
-              <button mat-button type="button" (click)="cancelAddVenueForm()" [disabled]="saving()">Avbryt</button>
-              <button mat-flat-button color="primary" type="submit" [disabled]="venueForm.invalid || saving()">Lägg till</button>
+              <button mat-button type="button" (click)="cancelAddVenueForm()" [disabled]="state.saving()">Avbryt</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="venueForm.invalid || state.saving()">Lägg till</button>
             </div>
           </form>
         }
@@ -329,10 +329,10 @@
                     </div>
                   </td>
                   <td class="row-actions">
-                    <button mat-icon-button (click)="startEditStaffArea(area)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
+                    <button mat-icon-button (click)="startEditStaffArea(area)" [matTooltip]="TOOLTIP.edit" [disabled]="state.saving()">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="deleteStaffArea(area)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
+                    <button mat-icon-button color="warn" (click)="deleteStaffArea(area)" [matTooltip]="TOOLTIP.delete" [disabled]="state.saving()">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </td>
@@ -357,13 +357,13 @@
                 </mat-select>
               </mat-form-field>
               <button mat-button type="button" (click)="editingStaffArea.set(null)">Avbryt</button>
-              <button mat-flat-button color="primary" type="submit" [disabled]="editStaffAreaForm.invalid || saving()">Spara</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="editStaffAreaForm.invalid || state.saving()">Spara</button>
             </div>
           </form>
         }
 
         @if (!showAddStaffAreaForm()) {
-          <button mat-stroked-button type="button" class="inline-add-button" (click)="openAddStaffAreaForm()" [disabled]="saving()">
+          <button mat-stroked-button type="button" class="inline-add-button" (click)="openAddStaffAreaForm()" [disabled]="state.saving()">
             <mat-icon>add</mat-icon>
             Lägg till funktionsområde
           </button>
@@ -379,8 +379,8 @@
                   @for (p of persons(); track p.id) { <mat-option [value]="p.id">{{ p.name }}</mat-option> }
                 </mat-select>
               </mat-form-field>
-              <button mat-button type="button" (click)="cancelAddStaffAreaForm()" [disabled]="saving()">Avbryt</button>
-              <button mat-flat-button color="primary" type="submit" [disabled]="staffAreaForm.invalid || saving()">Lägg till</button>
+              <button mat-button type="button" (click)="cancelAddStaffAreaForm()" [disabled]="state.saving()">Avbryt</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="staffAreaForm.invalid || state.saving()">Lägg till</button>
             </div>
           </form>
         }
@@ -408,10 +408,10 @@
                   <td class="muted">{{ c.publicDescription || '–' }}</td>
                   <td>{{ personName(c.responsibleId) }}</td>
                   <td class="row-actions">
-                    <button mat-icon-button (click)="startEditCategory(c)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
+                    <button mat-icon-button (click)="startEditCategory(c)" [matTooltip]="TOOLTIP.edit" [disabled]="state.saving()">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="deleteCategory(c)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
+                    <button mat-icon-button color="warn" (click)="deleteCategory(c)" [matTooltip]="TOOLTIP.delete" [disabled]="state.saving()">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </td>
@@ -439,13 +439,13 @@
             <lib-markdown-editor formControlName="publicDescription" label="Publik beskrivning" [rows]="6" />
             <div class="form-row">
               <button mat-button type="button" (click)="editingCategory.set(null)">Avbryt</button>
-              <button mat-flat-button color="primary" type="submit" [disabled]="editCategoryForm.invalid || saving()">Spara</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="editCategoryForm.invalid || state.saving()">Spara</button>
             </div>
           </form>
         }
 
         @if (!showAddCategoryForm()) {
-          <button mat-stroked-button type="button" class="inline-add-button" (click)="openAddCategoryForm()" [disabled]="saving()">
+          <button mat-stroked-button type="button" class="inline-add-button" (click)="openAddCategoryForm()" [disabled]="state.saving()">
             <mat-icon>add</mat-icon>
             Lägg till kategori
           </button>
@@ -464,8 +464,8 @@
             <lib-markdown-editor formControlName="organizerInstructions" label="Instruktioner till arrangören" [rows]="6" />
             <lib-markdown-editor formControlName="publicDescription" label="Publik beskrivning" [rows]="6" />
             <div class="form-row">
-              <button mat-button type="button" (click)="cancelAddCategoryForm()" [disabled]="saving()">Avbryt</button>
-              <button mat-flat-button color="primary" type="submit" [disabled]="categoryForm.invalid || saving()">Lägg till</button>
+              <button mat-button type="button" (click)="cancelAddCategoryForm()" [disabled]="state.saving()">Avbryt</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="categoryForm.invalid || state.saving()">Lägg till</button>
             </div>
           </form>
         }
@@ -495,10 +495,10 @@
                   <td class="muted">{{ allowedCategoriesLabel(tt.allowedCategories) }}</td>
                   <td class="align-right">{{ formatPrice(tt.price) }}</td>
                   <td class="row-actions">
-                    <button mat-icon-button (click)="startEditTicketType(tt)" [matTooltip]="TOOLTIP.edit" [disabled]="saving()">
+                    <button mat-icon-button (click)="startEditTicketType(tt)" [matTooltip]="TOOLTIP.edit" [disabled]="state.saving()">
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="deleteTicketType(tt)" [matTooltip]="TOOLTIP.delete" [disabled]="saving()">
+                    <button mat-icon-button color="warn" (click)="deleteTicketType(tt)" [matTooltip]="TOOLTIP.delete" [disabled]="state.saving()">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </td>
@@ -541,13 +541,13 @@
                 </mat-select>
               </mat-form-field>
               <button mat-button type="button" (click)="editingTicketType.set(null)">{{ ACTION.cancel }}</button>
-              <button mat-flat-button color="primary" type="submit" [disabled]="editTicketTypeForm.invalid || saving()">{{ ACTION.save }}</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="editTicketTypeForm.invalid || state.saving()">{{ ACTION.save }}</button>
             </div>
           </form>
         }
 
         @if (!showAddTicketTypeForm()) {
-          <button mat-stroked-button type="button" class="inline-add-button" (click)="openAddTicketTypeForm()" [disabled]="saving()">
+          <button mat-stroked-button type="button" class="inline-add-button" (click)="openAddTicketTypeForm()" [disabled]="state.saving()">
             <mat-icon>add</mat-icon>
             Lägg till biljetttyp
           </button>
@@ -581,8 +581,8 @@
                   }
                 </mat-select>
               </mat-form-field>
-              <button mat-button type="button" (click)="cancelAddTicketTypeForm()" [disabled]="saving()">{{ ACTION.cancel }}</button>
-              <button mat-flat-button color="primary" type="submit" [disabled]="addTicketTypeForm.invalid || saving()">{{ ACTION.add }}</button>
+              <button mat-button type="button" (click)="cancelAddTicketTypeForm()" [disabled]="state.saving()">{{ ACTION.cancel }}</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="addTicketTypeForm.invalid || state.saving()">{{ ACTION.add }}</button>
             </div>
           </form>
         }

@@ -11,6 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import {
   ConventionService,
+  createAsyncState,
   EditionDto,
   MarkdownEditorComponent,
   RegistrationService,
@@ -49,9 +50,7 @@ export class TicketTypeDetailComponent implements OnInit {
 
   readonly edition = signal<EditionDto | null>(null);
   readonly ticketTypes = signal<TicketTypeAdminDto[]>([]);
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly saving = signal(false);
+  protected readonly state = createAsyncState(true);
 
   private editionId = '';
   private ticketTypeId = '';
@@ -109,15 +108,15 @@ export class TicketTypeDetailComponent implements OnInit {
   }
 
   private loadData(): void {
-    this.loading.set(true);
+    this.state.loading.set(true);
     this.svc.getEdition(this.editionId).subscribe({
       next: (e) => {
         this.edition.set(e);
         this.checkTicketType();
       },
       error: () => {
-        this.error.set(ERROR.fetchEdition);
-        this.loading.set(false);
+        this.state.error.set(ERROR.fetchEdition);
+        this.state.loading.set(false);
       },
     });
     this.regSvc.listTicketTypes(this.editionId).subscribe({
@@ -142,10 +141,10 @@ export class TicketTypeDetailComponent implements OnInit {
           description: tt.description ?? '',
         });
       } else if (this.edition()) {
-        this.error.set('Biljetttypen hittades inte.');
+        this.state.error.set('Biljetttypen hittades inte.');
       }
     }
-    this.loading.set(false);
+    this.state.loading.set(false);
   }
 
   save(): void {
@@ -159,10 +158,10 @@ export class TicketTypeDetailComponent implements OnInit {
       allowedCategories: this.normalize(v.allowedCategories),
       description: this.normalizeText(v.description),
     };
-    this.saving.set(true);
+    this.state.saving.set(true);
     const onError = (err: unknown, label: string) => {
-      this.error.set(toContextErrorMessage(err, label));
-      this.saving.set(false);
+      this.state.error.set(toContextErrorMessage(err, label));
+      this.state.saving.set(false);
     };
     if (this.isNew()) {
       this.regSvc.createTicketType(this.editionId, payload).subscribe({
@@ -186,12 +185,12 @@ export class TicketTypeDetailComponent implements OnInit {
       message: this.PAGE.deleteTicketTypeMessage(ticketType.name),
     }).subscribe((confirmed) => {
         if (!confirmed) return;
-        this.saving.set(true);
+        this.state.saving.set(true);
         this.regSvc.deleteTicketType(this.editionId, this.ticketTypeId).subscribe({
           next: () => this.navigateBack(),
           error: (err: unknown) => {
-            this.error.set(toContextErrorMessage(err, ERROR.deleteTicketType));
-            this.saving.set(false);
+            this.state.error.set(toContextErrorMessage(err, ERROR.deleteTicketType));
+            this.state.saving.set(false);
           },
         });
       });

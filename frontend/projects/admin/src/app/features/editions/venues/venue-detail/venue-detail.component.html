@@ -1,12 +1,12 @@
-@if (loading()) {
+@if (state.loading()) {
   <div class="spinner-wrapper"><mat-spinner diameter="48" /></div>
-} @else if (error()) {
+} @else if (state.error()) {
   <div class="page-header">
     <a class="back-link" (click)="navigateBack()" style="cursor: pointer">
       <mat-icon>arrow_back</mat-icon> Lokaler
     </a>
   </div>
-  <p class="error-message">{{ error() }}</p>
+  <p class="error-message">{{ state.error() }}</p>
 } @else if (edition(); as e) {
   <div class="page-header">
     <a class="back-link" (click)="navigateBack()" style="cursor: pointer">
@@ -39,7 +39,7 @@
               class="danger-action"
               type="button"
               (click)="delete()"
-              [disabled]="saving()"
+              [disabled]="state.saving()"
             >
               <mat-icon>delete</mat-icon>
               Ta bort
@@ -50,7 +50,7 @@
             mat-flat-button
             color="primary"
             type="submit"
-            [disabled]="form.invalid || saving()"
+            [disabled]="form.invalid || state.saving()"
           >
             {{ isNew() ? 'Lägg till' : 'Spara' }}
           </button>

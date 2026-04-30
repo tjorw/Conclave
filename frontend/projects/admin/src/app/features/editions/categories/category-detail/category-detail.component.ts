@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { ConventionService, EditionDto, MarkdownEditorComponent, PersonDto, toContextErrorMessage } from 'shared';
+import { ConventionService, createAsyncState, EditionDto, MarkdownEditorComponent, PersonDto, toContextErrorMessage } from 'shared';
 import { ERROR } from '../../../../labels/errors.labels';
 import { EDITION_DETAIL } from '../../../../labels/pages.labels';
 import { ConfirmDialogService } from '../../../../shared/confirm-dialog/confirm-dialog.service';
@@ -40,9 +40,7 @@ export class CategoryDetailComponent implements OnInit {
 
   readonly edition = signal<EditionDto | null>(null);
   readonly persons = signal<PersonDto[]>([]);
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly saving = signal(false);
+  protected readonly state = createAsyncState(true);
   readonly PAGE = EDITION_DETAIL;
 
   private editionId = '';
@@ -69,7 +67,7 @@ export class CategoryDetailComponent implements OnInit {
   }
 
   private loadData(): void {
-    this.loading.set(true);
+    this.state.loading.set(true);
     this.svc.getEdition(this.editionId).subscribe({
       next: (e) => {
         this.edition.set(e);
@@ -83,14 +81,14 @@ export class CategoryDetailComponent implements OnInit {
               responsibleId: category.responsibleId,
             });
           } else {
-            this.error.set('Kategorin hittades inte.');
+            this.state.error.set('Kategorin hittades inte.');
           }
         }
-        this.loading.set(false);
+        this.state.loading.set(false);
       },
       error: () => {
-        this.error.set(ERROR.fetchEdition);
-        this.loading.set(false);
+        this.state.error.set(ERROR.fetchEdition);
+        this.state.loading.set(false);
       },
     });
     this.svc
@@ -107,10 +105,10 @@ export class CategoryDetailComponent implements OnInit {
       publicDescription: v.publicDescription || null,
       responsibleId: v.responsibleId!,
     };
-    this.saving.set(true);
+    this.state.saving.set(true);
     const onError = (err: unknown, label: string) => {
-      this.error.set(toContextErrorMessage(err, label));
-      this.saving.set(false);
+      this.state.error.set(toContextErrorMessage(err, label));
+      this.state.saving.set(false);
     };
     if (this.isNew()) {
       this.svc.createCategory(this.editionId, payload).subscribe({
@@ -134,12 +132,12 @@ export class CategoryDetailComponent implements OnInit {
       message: this.PAGE.deleteCategoryMessage(category.name),
     }).subscribe((confirmed) => {
         if (!confirmed) return;
-        this.saving.set(true);
+        this.state.saving.set(true);
         this.svc.removeCategory(this.editionId, this.categoryId).subscribe({
           next: () => this.navigateBack(),
           error: (err: unknown) => {
-            this.error.set(toContextErrorMessage(err, ERROR.deleteCategory));
-            this.saving.set(false);
+            this.state.error.set(toContextErrorMessage(err, ERROR.deleteCategory));
+            this.state.saving.set(false);
           },
         });
       });

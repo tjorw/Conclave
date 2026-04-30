@@ -14,6 +14,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   CategoryDto,
   ConventionService,
+  createAsyncState,
   EditionDto,
   formatDate,
   MarkdownEditorComponent,
@@ -77,9 +78,7 @@ export class EditionDetailComponent implements OnInit {
 
   readonly edition = signal<EditionDto | null>(null);
   readonly persons = signal<PersonDto[]>([]);
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly saving = signal(false);
+  protected readonly state = createAsyncState(true);
   readonly section = signal<EditionDetailSection>('basics');
   readonly scheduleDayTimes = signal<Record<string, { startTime: string | null; endTime: string | null }>>({});
   readonly showAddVenueForm = signal(false);
@@ -101,8 +100,8 @@ export class EditionDetailComponent implements OnInit {
   readonly ticketTypeSort = signal<SortState<TicketTypeSortKey>>({ key: 'name', direction: 'asc' });
 
   private handleError(context: string, err: unknown): void {
-    this.error.set(toContextErrorMessage(err, context));
-    this.saving.set(false);
+    this.state.error.set(toContextErrorMessage(err, context));
+    this.state.saving.set(false);
   }
 
   readonly ACTION  = ACTION;
@@ -271,14 +270,14 @@ export class EditionDetailComponent implements OnInit {
   }
 
   private loadData(editionId: string): void {
-    this.loading.set(true);
+    this.state.loading.set(true);
     this.svc.getEdition(editionId).subscribe({
       next: e => {
         this.edition.set(e);
         this.syncEditEditionForm(e);
-        this.loading.set(false);
+        this.state.loading.set(false);
       },
-      error: () => { this.error.set(ERROR.fetchEdition); this.loading.set(false); },
+      error: () => { this.state.error.set(ERROR.fetchEdition); this.state.loading.set(false); },
     });
     this.svc.listPersons().subscribe({
       next: p => this.persons.set(p.filter(x => x.isActive)),
@@ -397,12 +396,12 @@ export class EditionDetailComponent implements OnInit {
   // ── Publicering, Aktiv upplaga & Registrering ────────────────────────────
 
   setActive(): void {
-    this.saving.set(true);
+    this.state.saving.set(true);
     const editionId = this.edition()!.id;
     this.svc.setActiveEdition(editionId).subscribe({
       next: () => {
         this.editionContext.setActive(editionId);
-        this.saving.set(false);
+        this.state.saving.set(false);
       },
       error: (err) => this.handleError(ERROR.setActiveEdition, err),
     });
@@ -415,9 +414,9 @@ export class EditionDetailComponent implements OnInit {
       confirmLabel: this.PAGE.publishAction,
     }).subscribe(confirmed => {
       if (!confirmed) return;
-      this.saving.set(true);
+      this.state.saving.set(true);
       this.svc.publishEdition(this.edition()!.id).subscribe({
-        next: () => { this.reload(); this.saving.set(false); },
+        next: () => { this.reload(); this.state.saving.set(false); },
         error: (err) => this.handleError(ERROR.publishEdition, err),
       });
     });
@@ -430,9 +429,9 @@ export class EditionDetailComponent implements OnInit {
       confirmLabel: this.PAGE.unpublishAction,
     }).subscribe(confirmed => {
       if (!confirmed) return;
-      this.saving.set(true);
+      this.state.saving.set(true);
       this.svc.unpublishEdition(this.edition()!.id).subscribe({
-        next: () => { this.reload(); this.saving.set(false); },
+        next: () => { this.reload(); this.state.saving.set(false); },
         error: (err) => this.handleError(ERROR.unpublishEdition, err),
       });
     });
@@ -453,14 +452,14 @@ export class EditionDetailComponent implements OnInit {
       return;
     }
 
-    this.saving.set(true);
+    this.state.saving.set(true);
     const open = this.registrationOpen(type);
     const call = open
       ? this.svc.closeRegistration(this.edition()!.id, type)
       : this.svc.openRegistration(this.edition()!.id, type);
 
     call.subscribe({
-      next: () => { this.reload(); this.saving.set(false); },
+      next: () => { this.reload(); this.state.saving.set(false); },
       error: (err) => this.handleError(ERROR.toggleRegistration, err),
     });
   }
@@ -470,7 +469,7 @@ export class EditionDetailComponent implements OnInit {
   saveEdition(): void {
     if (this.editEditionForm.invalid) return;
     const v = this.editEditionForm.value;
-    this.saving.set(true);
+    this.state.saving.set(true);
     this.svc.updateEdition(this.edition()!.id, {
       name: v.name!,
       startDate: v.startDate!,
@@ -483,7 +482,7 @@ export class EditionDetailComponent implements OnInit {
         endTime: this.toApiTime(this.scheduleDayTimes()[day.value]?.endTime),
       })),
     }).subscribe({
-      next: () => { this.reload(); this.saving.set(false); },
+      next: () => { this.reload(); this.state.saving.set(false); },
       error: (err) => this.handleError(ERROR.updateEdition, err),
     });
   }
@@ -503,11 +502,11 @@ export class EditionDetailComponent implements OnInit {
   addVenue(): void {
     if (this.venueForm.invalid) return;
     const v = this.venueForm.value;
-    this.saving.set(true);
+    this.state.saving.set(true);
     this.svc.createVenue(this.edition()!.id, {
       name: v.name!, building: v.building!, description: v.description || null,
     }).subscribe({
-      next: () => { this.reload(); this.cancelAddVenueForm(); this.saving.set(false); },
+      next: () => { this.reload(); this.cancelAddVenueForm(); this.state.saving.set(false); },
       error: (err) => this.handleError(ERROR.createVenue, err),
     });
   }
@@ -521,11 +520,11 @@ export class EditionDetailComponent implements OnInit {
     const target = this.editingVenue();
     if (!target || this.editVenueForm.invalid) return;
     const v = this.editVenueForm.value;
-    this.saving.set(true);
+    this.state.saving.set(true);
     this.svc.updateVenue(this.edition()!.id, target.id, {
       name: v.name!, building: v.building!, description: v.description || null,
     }).subscribe({
-      next: () => { this.reload(); this.editingVenue.set(null); this.saving.set(false); },
+      next: () => { this.reload(); this.editingVenue.set(null); this.state.saving.set(false); },
       error: (err) => this.handleError(ERROR.updateVenue, err),
     });
   }
@@ -534,9 +533,9 @@ export class EditionDetailComponent implements OnInit {
     this.confirmSvc.confirm({ title: this.PAGE.deleteVenueTitle, message: this.PAGE.deleteVenueMessage(venue.name) })
       .subscribe(confirmed => {
         if (!confirmed) return;
-        this.saving.set(true);
+        this.state.saving.set(true);
         this.svc.removeVenue(this.edition()!.id, venue.id).subscribe({
-          next: () => { this.reload(); this.saving.set(false); },
+          next: () => { this.reload(); this.state.saving.set(false); },
           error: (err) => this.handleError(ERROR.deleteVenue, err),
         });
       });
@@ -557,11 +556,11 @@ export class EditionDetailComponent implements OnInit {
   addStaffArea(): void {
     if (this.staffAreaForm.invalid) return;
     const v = this.staffAreaForm.value;
-    this.saving.set(true);
+    this.state.saving.set(true);
     this.svc.createStaffArea(this.edition()!.id, {
       name: v.name!, description: v.description || null, responsibleId: v.responsibleId!,
     }).subscribe({
-      next: () => { this.reload(); this.cancelAddStaffAreaForm(); this.saving.set(false); },
+      next: () => { this.reload(); this.cancelAddStaffAreaForm(); this.state.saving.set(false); },
       error: (err) => this.handleError(ERROR.createStaffArea, err),
     });
   }
@@ -575,11 +574,11 @@ export class EditionDetailComponent implements OnInit {
     const target = this.editingStaffArea();
     if (!target || this.editStaffAreaForm.invalid) return;
     const v = this.editStaffAreaForm.value;
-    this.saving.set(true);
+    this.state.saving.set(true);
     this.svc.updateStaffArea(this.edition()!.id, target.id, {
       name: v.name!, description: v.description || null, responsibleId: v.responsibleId!,
     }).subscribe({
-      next: () => { this.reload(); this.editingStaffArea.set(null); this.saving.set(false); },
+      next: () => { this.reload(); this.editingStaffArea.set(null); this.state.saving.set(false); },
       error: (err) => this.handleError(ERROR.updateStaffArea, err),
     });
   }
@@ -588,9 +587,9 @@ export class EditionDetailComponent implements OnInit {
     this.confirmSvc.confirm({ title: this.PAGE.deleteStaffAreaTitle, message: this.PAGE.deleteStaffAreaMessage(area.name) })
       .subscribe(confirmed => {
         if (!confirmed) return;
-        this.saving.set(true);
+        this.state.saving.set(true);
         this.svc.removeStaffArea(this.edition()!.id, area.id).subscribe({
-          next: () => { this.reload(); this.saving.set(false); },
+          next: () => { this.reload(); this.state.saving.set(false); },
           error: (err) => this.handleError(ERROR.deleteStaffArea, err),
         });
       });
@@ -611,14 +610,14 @@ export class EditionDetailComponent implements OnInit {
   addCategory(): void {
     if (this.categoryForm.invalid) return;
     const v = this.categoryForm.value;
-    this.saving.set(true);
+    this.state.saving.set(true);
     this.svc.createCategory(this.edition()!.id, {
       name: v.name!,
       organizerInstructions: v.organizerInstructions || null,
       publicDescription: v.publicDescription || null,
       responsibleId: v.responsibleId!,
     }).subscribe({
-      next: () => { this.reload(); this.cancelAddCategoryForm(); this.saving.set(false); },
+      next: () => { this.reload(); this.cancelAddCategoryForm(); this.state.saving.set(false); },
       error: (err) => this.handleError(ERROR.createCategory, err),
     });
   }
@@ -637,14 +636,14 @@ export class EditionDetailComponent implements OnInit {
     const target = this.editingCategory();
     if (!target || this.editCategoryForm.invalid) return;
     const v = this.editCategoryForm.value;
-    this.saving.set(true);
+    this.state.saving.set(true);
     this.svc.updateCategory(this.edition()!.id, target.id, {
       name: v.name!,
       organizerInstructions: v.organizerInstructions || null,
       publicDescription: v.publicDescription || null,
       responsibleId: v.responsibleId!,
     }).subscribe({
-      next: () => { this.reload(); this.editingCategory.set(null); this.saving.set(false); },
+      next: () => { this.reload(); this.editingCategory.set(null); this.state.saving.set(false); },
       error: (err) => this.handleError(ERROR.updateCategory, err),
     });
   }
@@ -653,9 +652,9 @@ export class EditionDetailComponent implements OnInit {
     this.confirmSvc.confirm({ title: this.PAGE.deleteCategoryTitle, message: this.PAGE.deleteCategoryMessage(category.name) })
       .subscribe(confirmed => {
         if (!confirmed) return;
-        this.saving.set(true);
+        this.state.saving.set(true);
         this.svc.removeCategory(this.edition()!.id, category.id).subscribe({
-          next: () => { this.reload(); this.saving.set(false); },
+          next: () => { this.reload(); this.state.saving.set(false); },
           error: (err) => this.handleError(ERROR.deleteCategory, err),
         });
       });
@@ -688,7 +687,7 @@ export class EditionDetailComponent implements OnInit {
     const v = this.addTicketTypeForm.value;
     const editionId = this.edition()!.id;
 
-    this.saving.set(true);
+    this.state.saving.set(true);
     this.regSvc.createTicketType(editionId, {
       name: v.name!,
       price: Math.round((v.price ?? 0) * 100),
@@ -699,7 +698,7 @@ export class EditionDetailComponent implements OnInit {
       next: () => {
         this.reload();
         this.cancelAddTicketTypeForm();
-        this.saving.set(false);
+        this.state.saving.set(false);
       },
       error: (err) => this.handleError(ERROR.createTicketType, err),
     });
@@ -722,7 +721,7 @@ export class EditionDetailComponent implements OnInit {
     const v = this.editTicketTypeForm.value;
     const editionId = this.edition()!.id;
 
-    this.saving.set(true);
+    this.state.saving.set(true);
     this.regSvc.updateTicketType(editionId, target.id, {
       name: v.name!,
       price: Math.round((v.price ?? 0) * 100),
@@ -730,7 +729,7 @@ export class EditionDetailComponent implements OnInit {
       validDays: this.normalizeSelectedDays(v.validDays),
       allowedCategories: this.normalizeAllowedCategories(v.allowedCategories),
     }).subscribe({
-      next: () => { this.reload(); this.editingTicketType.set(null); this.saving.set(false); },
+      next: () => { this.reload(); this.editingTicketType.set(null); this.state.saving.set(false); },
       error: (err) => this.handleError(ERROR.updateTicketType, err),
     });
   }
@@ -740,9 +739,9 @@ export class EditionDetailComponent implements OnInit {
       .subscribe(confirmed => {
         if (!confirmed) return;
         const editionId = this.edition()!.id;
-        this.saving.set(true);
+        this.state.saving.set(true);
         this.regSvc.deleteTicketType(editionId, tt.id).subscribe({
-          next: () => { this.reload(); this.saving.set(false); },
+          next: () => { this.reload(); this.state.saving.set(false); },
           error: (err) => this.handleError(ERROR.deleteTicketType, err),
         });
       });

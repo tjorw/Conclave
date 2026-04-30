@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ConventionService, EditionDto, toContextErrorMessage } from 'shared';
+import { ConventionService, createAsyncState, EditionDto, toContextErrorMessage } from 'shared';
 import { ERROR } from '../../../../labels/errors.labels';
 import { EDITION_DETAIL } from '../../../../labels/pages.labels';
 import { ConfirmDialogService } from '../../../../shared/confirm-dialog/confirm-dialog.service';
@@ -36,9 +36,7 @@ export class VenueDetailComponent implements OnInit {
   private readonly confirmSvc = inject(ConfirmDialogService);
 
   readonly edition = signal<EditionDto | null>(null);
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly saving = signal(false);
+  protected readonly state = createAsyncState(true);
   readonly PAGE = EDITION_DETAIL;
 
   private editionId = '';
@@ -64,7 +62,7 @@ export class VenueDetailComponent implements OnInit {
   }
 
   private loadData(): void {
-    this.loading.set(true);
+    this.state.loading.set(true);
     this.svc.getEdition(this.editionId).subscribe({
       next: (e) => {
         this.edition.set(e);
@@ -77,14 +75,14 @@ export class VenueDetailComponent implements OnInit {
               description: venue.description ?? '',
             });
           } else {
-            this.error.set('Lokalen hittades inte.');
+            this.state.error.set('Lokalen hittades inte.');
           }
         }
-        this.loading.set(false);
+        this.state.loading.set(false);
       },
       error: () => {
-        this.error.set(ERROR.fetchEdition);
-        this.loading.set(false);
+        this.state.error.set(ERROR.fetchEdition);
+        this.state.loading.set(false);
       },
     });
   }
@@ -93,10 +91,10 @@ export class VenueDetailComponent implements OnInit {
     if (this.form.invalid) return;
     const v = this.form.value;
     const payload = { name: v.name!, building: v.building!, description: v.description || null };
-    this.saving.set(true);
+    this.state.saving.set(true);
     const onError = (err: unknown, label: string) => {
-      this.error.set(toContextErrorMessage(err, label));
-      this.saving.set(false);
+      this.state.error.set(toContextErrorMessage(err, label));
+      this.state.saving.set(false);
     };
     if (this.isNew()) {
       this.svc.createVenue(this.editionId, payload).subscribe({
@@ -120,12 +118,12 @@ export class VenueDetailComponent implements OnInit {
       message: this.PAGE.deleteVenueMessage(venue.name),
     }).subscribe((confirmed) => {
         if (!confirmed) return;
-        this.saving.set(true);
+        this.state.saving.set(true);
         this.svc.removeVenue(this.editionId, this.venueId).subscribe({
           next: () => this.navigateBack(),
           error: (err: unknown) => {
-            this.error.set(toContextErrorMessage(err, ERROR.deleteVenue));
-            this.saving.set(false);
+            this.state.error.set(toContextErrorMessage(err, ERROR.deleteVenue));
+            this.state.saving.set(false);
           },
         });
       });
