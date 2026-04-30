@@ -15,6 +15,8 @@ import {
   EditionSessionDto,
   EventService,
   EventSummaryDto,
+  formatDateOnly,
+  formatDayLabel,
   VenueDto,
 } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
@@ -188,9 +190,7 @@ export class EventsComponent {
   }
 
   formatDayLabel(day: string): string {
-    return this.parseDateLocal(day).toLocaleDateString('sv-SE', {
-      weekday: 'long', day: 'numeric', month: 'short',
-    });
+    return formatDayLabel(this.parseDateLocal(day));
   }
 
   formatTime(iso: string): string {
@@ -225,12 +225,7 @@ export class EventsComponent {
     });
   }
 
-  private formatDateOnly(date: Date): string {
-    const y = date.getFullYear();
-    const m = `${date.getMonth() + 1}`.padStart(2, '0');
-    const d = `${date.getDate()}`.padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
+  private readonly formatDateOnly = formatDateOnly;
 
   private parseDateLocal(value: string): Date {
     const [year, month, day] = value.split('T')[0].split('-').map(Number);

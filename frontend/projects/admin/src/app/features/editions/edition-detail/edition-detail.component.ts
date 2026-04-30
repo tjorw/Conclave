@@ -16,6 +16,7 @@ import {
   CategoryDto,
   ConventionService,
   EditionDto,
+  formatDate,
   MarkdownEditorComponent,
   PersonDto,
   RegistrationService,
@@ -779,9 +780,7 @@ export class EditionDetailComponent implements OnInit {
 
   // ── Hjälpmetoder ─────────────────────────────────────────────────────────
 
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('sv-SE');
-  }
+  protected readonly formatDate = formatDate;
 
   toDateInput(isoDate: string): string {
     return isoDate.substring(0, 10);

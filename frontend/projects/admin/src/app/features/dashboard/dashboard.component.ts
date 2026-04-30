@@ -11,7 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { ConventionDto, ConventionService, ImportWarningDto, PersonDto, EVENT_STATUS_LABEL, toErrorMessage } from 'shared';
+import { ConventionDto, ConventionService, formatDate, ImportWarningDto, PersonDto, EVENT_STATUS_LABEL, toErrorMessage } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, CHIP, FIELD, PLACEHOLDER } from '../../labels/ui.labels';
@@ -330,9 +330,7 @@ export class DashboardComponent implements OnInit {
     return status === 'Published' ? 'primary' : 'default';
   }
 
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('sv-SE');
-  }
+  protected readonly formatDate = formatDate;
 
   private buildPreview(document: Record<string, unknown>): ExportDocumentPreview {
     const staffAreas = this.asArray(document['staffAreas']);

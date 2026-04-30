@@ -15,6 +15,7 @@ import {
   ConventionService,
   DateTimeRangeComponent,
   EditionStaffMemberDto,
+  formatTimeRange,
   ShiftDto,
   STAFF_APPLICATION_STATUS_LABEL,
   StaffApplicationSummaryDto,
@@ -890,22 +891,7 @@ export class StaffAreasComponent {
     return date;
   }
 
-  private formatAvailability(start: string, end: string): string {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const sameDay = startDate.toDateString() === endDate.toDateString();
-    const dateLabel = startDate.toLocaleDateString('sv-SE', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-    });
-    const startTime = startDate.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-    const endTime = endDate.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-
-    return sameDay
-      ? `${dateLabel} ${startTime}-${endTime}`
-      : `${dateLabel} ${startTime} - ${endDate.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })} ${endTime}`;
-  }
+  private formatAvailability = formatTimeRange;
 
   private syncCreateShiftPrefill(forceReset = false): void {
     if (!this.creatingShift() && !forceReset) {

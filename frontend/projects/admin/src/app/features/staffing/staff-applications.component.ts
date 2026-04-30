@@ -11,7 +11,7 @@ import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { TOOLTIP } from '../../labels/ui.labels';
 import {
-  ConventionService, EditionDto, StaffApplicationSummaryDto, StaffService,
+  ConventionService, EditionDto, formatTimeRange, StaffApplicationSummaryDto, StaffService,
   StaffAreaDto, STAFF_APPLICATION_STATUS_CHIP, STAFF_APPLICATION_STATUS_LABEL,
   toErrorMessage,
 } from 'shared';
@@ -193,16 +193,5 @@ export class StaffApplicationsComponent {
     return this.edition()?.staffAreas?.find((s: StaffAreaDto) => s.id === staffAreaId)?.name ?? staffAreaId;
   }
 
-  formatAvailability(start: string, end: string): string {
-    const s = new Date(start);
-    const e = new Date(end);
-    const sameDay = s.toDateString() === e.toDateString();
-    const dateStr = s.toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' });
-    const sTime = s.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-    const eTime = e.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-
-    return sameDay
-      ? `${dateStr} ${sTime}-${eTime}`
-      : `${dateStr} ${sTime} - ${e.toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' })} ${eTime}`;
-  }
+  protected readonly formatAvailability = formatTimeRange;
 }

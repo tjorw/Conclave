@@ -18,6 +18,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   CategoryDto, ConventionService, DateTimeRangeComponent, EditionDto, EditionSessionDto, EventDto, EventService, VenueDto,
   EVENT_COMMENT_STATUS_LABEL, EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
+  formatTicketPrice,
   MarkdownEditorComponent,
   OrganiserTicketAssignmentDto,
   OrganiserTicketTypeDto,
@@ -471,15 +472,7 @@ export class EventDetailComponent implements OnInit {
     return assignment?.ticketTypeName ?? 'Ingen aktiv arrangörsbiljett';
   }
 
-  ticketTypePriceLabel(price: number): string {
-    if (price === 0) return 'Kostnadsfri';
-
-    return new Intl.NumberFormat('sv-SE', {
-      style: 'currency',
-      currency: 'SEK',
-      maximumFractionDigits: 0,
-    }).format(price / 100);
-  }
+  protected readonly ticketTypePriceLabel = formatTicketPrice;
 
   private populateEditForm(e: EventDto): void {
     this.editForm.patchValue({

@@ -16,13 +16,15 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   ConventionService,
+  DateTimeRangeComponent,
   EditionDto,
   EditionSessionDto,
   EventDto,
   EventService,
+  formatDateOnly,
+  formatDayLabel,
   START_TYPE_LABEL,
   VenueDto,
-  DateTimeRangeComponent,
   toErrorMessage,
 } from 'shared';
 import { ERROR } from '../../labels/errors.labels';
@@ -397,12 +399,7 @@ export class SessionsOverviewComponent {
   }
 
   formatDayLabel(day: string): string {
-    const date = this.parseDateLocal(day);
-    return date.toLocaleDateString('sv-SE', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'short',
-    });
+    return formatDayLabel(this.parseDateLocal(day));
   }
 
   private loadData(editionId: string): void {
@@ -450,12 +447,7 @@ export class SessionsOverviewComponent {
     });
   }
 
-  private formatDateOnly(date: Date): string {
-    const y = date.getFullYear();
-    const m = `${date.getMonth() + 1}`.padStart(2, '0');
-    const d = `${date.getDate()}`.padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
+  private readonly formatDateOnly = formatDateOnly;
 
   private parseDateLocal(value: string): Date {
     const [year, month, day] = value.split('T')[0].split('-').map(Number);
