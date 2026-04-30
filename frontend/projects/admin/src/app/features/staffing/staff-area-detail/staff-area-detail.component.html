@@ -86,12 +86,12 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th><button type="button" class="sort-header" (click)="setShiftSort('start')">Start <mat-icon>{{ shiftSortIcon('start') }}</mat-icon></button></th>
-              <th><button type="button" class="sort-header" (click)="setShiftSort('end')">Slut <mat-icon>{{ shiftSortIcon('end') }}</mat-icon></button></th>
-              <th><button type="button" class="sort-header" (click)="setShiftSort('responsible')">Ansvarig <mat-icon>{{ shiftSortIcon('responsible') }}</mat-icon></button></th>
-              <th><button type="button" class="sort-header" (click)="setShiftSort('min')">Min <mat-icon>{{ shiftSortIcon('min') }}</mat-icon></button></th>
-              <th><button type="button" class="sort-header" (click)="setShiftSort('max')">Max <mat-icon>{{ shiftSortIcon('max') }}</mat-icon></button></th>
-              <th><button type="button" class="sort-header" (click)="setShiftSort('staffing')">Tilldelade <mat-icon>{{ shiftSortIcon('staffing') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="shiftSort.setSort('start')">Start <mat-icon>{{ shiftSort.sortIcon('start') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="shiftSort.setSort('end')">Slut <mat-icon>{{ shiftSort.sortIcon('end') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="shiftSort.setSort('responsible')">Ansvarig <mat-icon>{{ shiftSort.sortIcon('responsible') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="shiftSort.setSort('min')">Min <mat-icon>{{ shiftSort.sortIcon('min') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="shiftSort.setSort('max')">Max <mat-icon>{{ shiftSort.sortIcon('max') }}</mat-icon></button></th>
+              <th><button type="button" class="sort-header" (click)="shiftSort.setSort('staffing')">Tilldelade <mat-icon>{{ shiftSort.sortIcon('staffing') }}</mat-icon></button></th>
               <th class="actions-col"></th>
             </tr>
           </thead>
@@ -132,9 +132,9 @@
                         <table class="data-table inner-table">
                           <thead>
                             <tr>
-                              <th><button type="button" class="sort-header" (click)="setAssignmentSort('person')">Person <mat-icon>{{ assignmentSortIcon('person') }}</mat-icon></button></th>
-                              <th><button type="button" class="sort-header" (click)="setAssignmentSort('status')">Status <mat-icon>{{ assignmentSortIcon('status') }}</mat-icon></button></th>
-                              <th><button type="button" class="sort-header" (click)="setAssignmentSort('assigned')">Tilldelad <mat-icon>{{ assignmentSortIcon('assigned') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="assignmentSort.setSort('person')">Person <mat-icon>{{ assignmentSort.sortIcon('person') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="assignmentSort.setSort('status')">Status <mat-icon>{{ assignmentSort.sortIcon('status') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="assignmentSort.setSort('assigned')">Tilldelad <mat-icon>{{ assignmentSort.sortIcon('assigned') }}</mat-icon></button></th>
                               <th class="actions-col"></th>
                             </tr>
                           </thead>

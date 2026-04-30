@@ -1,3 +1,5 @@
+import { signal, WritableSignal } from '@angular/core';
+
 export type SortDirection = 'asc' | 'desc';
 
 export interface SortState<K extends string> {
@@ -5,9 +7,25 @@ export interface SortState<K extends string> {
   direction: SortDirection;
 }
 
+export interface SortController<K extends string> {
+  readonly state: WritableSignal<SortState<K>>;
+  readonly setSort: (key: K) => void;
+  readonly sortIcon: (key: K) => string;
+}
+
 type SortValue = string | number | boolean | Date | null | undefined;
 
 export type SortSelectors<T, K extends string> = Record<K, (item: T) => SortValue>;
+
+export function createSortController<K extends string>(initial: SortState<K>): SortController<K> {
+  const state = signal(initial);
+
+  return {
+    state,
+    setSort: key => state.set(nextSort(state(), key)),
+    sortIcon: key => sortIcon(state(), key),
+  };
+}
 
 export function nextSort<K extends string>(current: SortState<K>, key: K): SortState<K> {
   if (current.key !== key) {

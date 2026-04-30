@@ -10,7 +10,7 @@ import { ConventionService, EditionOrganiserDto, formatTicketPrice, OrganiserTic
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { FIELD, PLACEHOLDER } from '../../labels/ui.labels';
-import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+import { createSortController, sortBy } from '../../shared/sort-utils';
 
 type OrganiserSortKey = 'name' | 'email' | 'event' | 'role';
 
@@ -57,7 +57,7 @@ export class EditionOrganisersComponent {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly searchQuery = signal('');
-  readonly sort = signal<SortState<OrganiserSortKey>>({ key: 'name', direction: 'asc' });
+  readonly sort = createSortController<OrganiserSortKey>({ key: 'name', direction: 'asc' });
 
   constructor() {
     effect(() => {
@@ -138,7 +138,7 @@ export class EditionOrganisersComponent {
   });
 
   readonly sortedFiltered = computed(() =>
-    sortBy(this.filtered(), this.sort(), {
+    sortBy(this.filtered(), this.sort.state(), {
       name: o => o.personName,
       email: o => o.email,
       event: o => this.eventTitles(o),
@@ -148,13 +148,7 @@ export class EditionOrganisersComponent {
 
   readonly hasOrganiserTicketTypes = computed(() => this.organiserTicketTypes().length > 0);
 
-  setSort(key: OrganiserSortKey): void {
-    this.sort.set(nextSort(this.sort(), key));
-  }
 
-  sortIcon(key: OrganiserSortKey): string {
-    return sortIcon(this.sort(), key);
-  }
 
   onSearch(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);

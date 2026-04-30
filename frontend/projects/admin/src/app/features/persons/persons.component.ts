@@ -18,7 +18,7 @@ import {
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { CHIP, PERSON_EDITION_ROLE, PERSON_EDITION_ROLE_CHIP, PLACEHOLDER } from '../../labels/ui.labels';
-import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+import { createSortController, sortBy } from '../../shared/sort-utils';
 
 type PersonSortKey = 'name' | 'email' | 'phone' | 'roles' | 'status' | 'account';
 
@@ -54,7 +54,7 @@ export class PersonsComponent implements OnInit {
   readonly onlyEditionPersons = signal(true);
   readonly editionRolesMap    = signal<Map<string, string[]>>(new Map());
   readonly rolesLoading       = signal(false);
-  readonly sort               = signal<SortState<PersonSortKey>>({ key: 'name', direction: 'asc' });
+  readonly sort               = createSortController<PersonSortKey>({ key: 'name', direction: 'asc' });
 
   constructor() {
     effect(() => {
@@ -126,7 +126,7 @@ export class PersonsComponent implements OnInit {
   });
 
   readonly sortedFilteredPersons = computed(() =>
-    sortBy(this.filteredPersons(), this.sort(), {
+    sortBy(this.filteredPersons(), this.sort.state(), {
       name:    p => p.name,
       email:   p => p.email,
       phone:   p => p.phone ?? '',
@@ -136,13 +136,7 @@ export class PersonsComponent implements OnInit {
     })
   );
 
-  setSort(key: PersonSortKey): void {
-    this.sort.set(nextSort(this.sort(), key));
-  }
 
-  sortIcon(key: PersonSortKey): string {
-    return sortIcon(this.sort(), key);
-  }
 
   ngOnInit(): void {
     this.editionContext.load();

@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConventionService, EditionDto, RegistrationService, TicketTypeAdminDto } from 'shared';
 import { ERROR } from '../../../labels/errors.labels';
-import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
+import { createSortController, sortBy } from '../../../shared/sort-utils';
 
 type SortKey = 'name' | 'category' | 'validDays' | 'allowedCategories' | 'price';
 
@@ -29,7 +29,7 @@ export class TicketTypesComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
-  readonly sort = signal<SortState<SortKey>>({ key: 'name', direction: 'asc' });
+  readonly sort = createSortController<SortKey>({ key: 'name', direction: 'asc' });
 
   readonly editionDayOptions = computed(() => {
     const e = this.edition();
@@ -101,7 +101,7 @@ export class TicketTypesComponent implements OnInit {
   }
 
   sortedTicketTypes(): TicketTypeAdminDto[] {
-    return sortBy(this.ticketTypes(), this.sort(), {
+    return sortBy(this.ticketTypes(), this.sort.state(), {
       name: (tt) => tt.name,
       category: (tt) => this.categoryLabel(tt.category),
       validDays: (tt) => this.validDaysLabel(tt.validDays),
@@ -110,12 +110,6 @@ export class TicketTypesComponent implements OnInit {
     });
   }
 
-  setSort(key: SortKey): void {
-    this.sort.set(nextSort(this.sort(), key));
-  }
-  sortIcon(key: SortKey): string {
-    return sortIcon(this.sort(), key);
-  }
 
   openDetail(ticketTypeId: string): void {
     void this.router.navigate([ticketTypeId], { relativeTo: this.route });

@@ -399,12 +399,12 @@
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th><button type="button" class="sort-header" (click)="setSessionSort('start')">Start <mat-icon>{{ sessionSortIcon('start') }}</mat-icon></button></th>
-                    <th><button type="button" class="sort-header" (click)="setSessionSort('end')">Slut <mat-icon>{{ sessionSortIcon('end') }}</mat-icon></button></th>
-                    <th><button type="button" class="sort-header" (click)="setSessionSort('venue')">Lokal <mat-icon>{{ sessionSortIcon('venue') }}</mat-icon></button></th>
-                    <th><button type="button" class="sort-header" (click)="setSessionSort('seats')">Max platser <mat-icon>{{ sessionSortIcon('seats') }}</mat-icon></button></th>
-                    <th><button type="button" class="sort-header" (click)="setSessionSort('startType')">Starttyp <mat-icon>{{ sessionSortIcon('startType') }}</mat-icon></button></th>
-                    <th><button type="button" class="sort-header" (click)="setSessionSort('status')">Status <mat-icon>{{ sessionSortIcon('status') }}</mat-icon></button></th>
+                    <th><button type="button" class="sort-header" (click)="sessionSort.setSort('start')">Start <mat-icon>{{ sessionSort.sortIcon('start') }}</mat-icon></button></th>
+                    <th><button type="button" class="sort-header" (click)="sessionSort.setSort('end')">Slut <mat-icon>{{ sessionSort.sortIcon('end') }}</mat-icon></button></th>
+                    <th><button type="button" class="sort-header" (click)="sessionSort.setSort('venue')">Lokal <mat-icon>{{ sessionSort.sortIcon('venue') }}</mat-icon></button></th>
+                    <th><button type="button" class="sort-header" (click)="sessionSort.setSort('seats')">Max platser <mat-icon>{{ sessionSort.sortIcon('seats') }}</mat-icon></button></th>
+                    <th><button type="button" class="sort-header" (click)="sessionSort.setSort('startType')">Starttyp <mat-icon>{{ sessionSort.sortIcon('startType') }}</mat-icon></button></th>
+                    <th><button type="button" class="sort-header" (click)="sessionSort.setSort('status')">Status <mat-icon>{{ sessionSort.sortIcon('status') }}</mat-icon></button></th>
                   </tr>
                 </thead>
                 <tbody>

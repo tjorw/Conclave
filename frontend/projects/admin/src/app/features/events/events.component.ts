@@ -24,7 +24,7 @@ import {
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../labels/ui.labels';
-import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+import { createSortController, sortBy } from '../../shared/sort-utils';
 
 type EventSortKey = 'title' | 'category' | 'organiser' | 'sessions' | 'comments' | 'status';
 
@@ -66,7 +66,7 @@ export class EventsComponent {
   readonly error      = signal<string | null>(null);
   readonly filter     = signal<string>('UnderReview');
   readonly showCreateForm = signal(false);
-  readonly sort = signal<SortState<EventSortKey>>({ key: 'title', direction: 'asc' });
+  readonly sort = createSortController<EventSortKey>({ key: 'title', direction: 'asc' });
 
   readonly createForm = this.fb.group({
     categoryId:       ['', Validators.required],
@@ -82,7 +82,7 @@ export class EventsComponent {
   });
 
   readonly sortedFilteredEvents = computed(() =>
-    sortBy(this.filteredEvents(), this.sort(), {
+    sortBy(this.filteredEvents(), this.sort.state(), {
       title: e => e.title ?? '',
       category: e => e.categoryName ?? '',
       organiser: e => e.leadOrganiserName ?? '',
@@ -177,13 +177,7 @@ export class EventsComponent {
     this.router.navigate(['/events', id]);
   }
 
-  setSort(key: EventSortKey): void {
-    this.sort.set(nextSort(this.sort(), key));
-  }
 
-  sortIcon(key: EventSortKey): string {
-    return sortIcon(this.sort(), key);
-  }
 
   statusLabel(status: string): string {
     return EVENT_STATUS_LABEL[status] ?? status;

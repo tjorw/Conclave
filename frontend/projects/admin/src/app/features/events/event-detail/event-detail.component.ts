@@ -31,7 +31,7 @@ import { DraftBlock, SessionTimelineComponent } from '../../../shared/session-ti
 import { ERROR } from '../../../labels/errors.labels';
 import { EVENT_DETAIL } from '../../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
-import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
+import { createSortController, sortBy } from '../../../shared/sort-utils';
 
 type EventSessionSortKey = 'start' | 'end' | 'venue' | 'seats' | 'startType' | 'status';
 
@@ -93,7 +93,7 @@ export class EventDetailComponent implements OnInit {
   readonly editionSessions       = signal<EditionSessionDto[]>([]);
   readonly timelineLoading       = signal(false);
   private readonly timelineLoaded = signal(false);
-  readonly sessionSort = signal<SortState<EventSessionSortKey>>({ key: 'start', direction: 'desc' });
+  readonly sessionSort = createSortController<EventSessionSortKey>({ key: 'start', direction: 'desc' });
   readonly organiserTicketTypes = signal<OrganiserTicketTypeDto[]>([]);
   readonly organiserTicketAssignments = signal<OrganiserTicketAssignmentDto[]>([]);
   readonly organiserTicketSelection = signal<Record<string, string | null>>({});
@@ -587,7 +587,7 @@ export class EventDetailComponent implements OnInit {
   }
 
   readonly sortedSessions = computed(() =>
-    sortBy(this.event()?.sessions ?? [], this.sessionSort(), {
+    sortBy(this.event()?.sessions ?? [], this.sessionSort.state(), {
       start: session => session.start,
       end: session => session.end,
       venue: session => this.venueName(session.venueId),
@@ -597,13 +597,7 @@ export class EventDetailComponent implements OnInit {
     })
   );
 
-  setSessionSort(key: EventSessionSortKey): void {
-    this.sessionSort.set(nextSort(this.sessionSort(), key));
-  }
 
-  sessionSortIcon(key: EventSessionSortKey): string {
-    return sortIcon(this.sessionSort(), key);
-  }
 
   get sessionMin(): string | undefined { return this.edition()?.start.slice(0, 16); }
   get sessionMax(): string | undefined { return this.edition()?.end.slice(0, 16); }

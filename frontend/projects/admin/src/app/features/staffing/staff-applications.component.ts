@@ -15,7 +15,7 @@ import {
   StaffAreaDto, STAFF_APPLICATION_STATUS_CHIP, STAFF_APPLICATION_STATUS_LABEL,
   toErrorMessage,
 } from 'shared';
-import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+import { createSortController, sortBy } from '../../shared/sort-utils';
 
 type StatusFilter = 'all' | 'pending' | 'accepted' | 'rejected';
 type StaffApplicationSortKey = 'person' | 'interest' | 'staffAreas' | 'availability' | 'created' | 'status';
@@ -50,7 +50,7 @@ export class StaffApplicationsComponent {
   readonly edition      = signal<EditionDto | null>(null);
   readonly applications = signal<StaffApplicationSummaryDto[]>([]);
   readonly statusFilter = signal<StatusFilter>('pending');
-  readonly applicationSort = signal<SortState<StaffApplicationSortKey>>({ key: 'created', direction: 'desc' });
+  readonly applicationSort = createSortController<StaffApplicationSortKey>({ key: 'created', direction: 'desc' });
 
   readonly filteredApplications = computed(() => {
     const filter = this.statusFilter();
@@ -64,7 +64,7 @@ export class StaffApplicationsComponent {
   });
 
   readonly sortedFilteredApplications = computed(() =>
-    sortBy(this.filteredApplications(), this.applicationSort(), {
+    sortBy(this.filteredApplications(), this.applicationSort.state(), {
       person: app => app.personName ?? app.personId,
       interest: app => app.interestDescription,
       staffAreas: app => app.staffAreaPreferenceIds.map(id => this.staffAreaName(id)).join(', '),
@@ -121,13 +121,7 @@ export class StaffApplicationsComponent {
     });
   }
 
-  setApplicationSort(key: StaffApplicationSortKey): void {
-    this.applicationSort.set(nextSort(this.applicationSort(), key));
-  }
 
-  applicationSortIcon(key: StaffApplicationSortKey): string {
-    return sortIcon(this.applicationSort(), key);
-  }
 
   accept(app: StaffApplicationSummaryDto): void {
     if (this.saving()) return;

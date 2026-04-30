@@ -15,7 +15,7 @@ import { ConventionDto, ConventionService, formatDate, ImportWarningDto, PersonD
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, CHIP, FIELD, PLACEHOLDER } from '../../labels/ui.labels';
-import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+import { createSortController, sortBy } from '../../shared/sort-utils';
 import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 
 type EditionSortKey = 'name' | 'start' | 'end' | 'status';
@@ -137,7 +137,7 @@ export class DashboardComponent implements OnInit {
   readonly showCreateForm = signal(false);
   readonly createMode = signal<CreateMode>('manual');
   readonly importJsonText = signal('');
-  readonly editionSort = signal<SortState<EditionSortKey>>({ key: 'start', direction: 'desc' });
+  readonly editionSort = createSortController<EditionSortKey>({ key: 'start', direction: 'desc' });
 
   readonly createForm = this.fb.group({
     name: ['', Validators.required],
@@ -174,7 +174,7 @@ export class DashboardComponent implements OnInit {
   });
 
   readonly sortedEditions = computed(() =>
-    sortBy(this.editionContext.editions(), this.editionSort(), {
+    sortBy(this.editionContext.editions(), this.editionSort.state(), {
       name: edition => edition.name,
       start: edition => edition.start,
       end: edition => edition.end,
@@ -197,13 +197,7 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/editions', id]);
   }
 
-  setEditionSort(key: EditionSortKey): void {
-    this.editionSort.set(nextSort(this.editionSort(), key));
-  }
 
-  editionSortIcon(key: EditionSortKey): string {
-    return sortIcon(this.editionSort(), key);
-  }
 
   toggleCreateForm(): void {
     this.showCreateForm.update(open => !open);

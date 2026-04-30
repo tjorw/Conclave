@@ -8,7 +8,7 @@ import { ConventionService, EditionVisitorDto } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { FIELD, PLACEHOLDER } from '../../labels/ui.labels';
-import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+import { createSortController, sortBy } from '../../shared/sort-utils';
 
 type VisitorSortKey = 'name' | 'email' | 'phone';
 
@@ -36,7 +36,7 @@ export class EditionVisitorsComponent {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly searchQuery = signal('');
-  readonly sort = signal<SortState<VisitorSortKey>>({ key: 'name', direction: 'asc' });
+  readonly sort = createSortController<VisitorSortKey>({ key: 'name', direction: 'asc' });
 
   constructor() {
     effect(() => {
@@ -67,20 +67,14 @@ export class EditionVisitorsComponent {
   });
 
   readonly sortedFiltered = computed(() =>
-    sortBy(this.filtered(), this.sort(), {
+    sortBy(this.filtered(), this.sort.state(), {
       name: v => v.personName,
       email: v => v.email,
       phone: v => v.phone ?? '',
     })
   );
 
-  setSort(key: VisitorSortKey): void {
-    this.sort.set(nextSort(this.sort(), key));
-  }
 
-  sortIcon(key: VisitorSortKey): string {
-    return sortIcon(this.sort(), key);
-  }
 
   onSearch(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);

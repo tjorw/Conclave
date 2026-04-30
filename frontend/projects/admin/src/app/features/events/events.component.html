@@ -78,12 +78,12 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th><button type="button" class="sort-header" (click)="setSort('title')">Titel <mat-icon>{{ sortIcon('title') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('category')">Kategori <mat-icon>{{ sortIcon('category') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('organiser')">Arrangör <mat-icon>{{ sortIcon('organiser') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('sessions')">Sessioner <mat-icon>{{ sortIcon('sessions') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('comments')">Kommentarer <mat-icon>{{ sortIcon('comments') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('status')">Status <mat-icon>{{ sortIcon('status') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('title')">Titel <mat-icon>{{ sort.sortIcon('title') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('category')">Kategori <mat-icon>{{ sort.sortIcon('category') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('organiser')">Arrangör <mat-icon>{{ sort.sortIcon('organiser') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('sessions')">Sessioner <mat-icon>{{ sort.sortIcon('sessions') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('comments')">Kommentarer <mat-icon>{{ sort.sortIcon('comments') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('status')">Status <mat-icon>{{ sort.sortIcon('status') }}</mat-icon></button></th>
             <th class="actions-col"></th>
           </tr>
         </thead>

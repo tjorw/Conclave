@@ -30,7 +30,7 @@ import { EDITION_DETAIL } from '../../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
 import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 import { EditionContextService } from '../../../services/edition-context.service';
-import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
+import { createSortController, sortBy } from '../../../shared/sort-utils';
 
 type VenueSortKey = 'name' | 'building' | 'description';
 type StaffAreaSortKey = 'name' | 'description' | 'responsible' | 'stations';
@@ -94,10 +94,10 @@ export class EditionDetailComponent implements OnInit {
   // Biljettyper (laddas separat – inte en del av EditionDto)
   readonly ticketTypes        = signal<TicketTypeAdminDto[]>([]);
   readonly editingTicketType  = signal<TicketTypeAdminDto | null>(null);
-  readonly venueSort = signal<SortState<VenueSortKey>>({ key: 'name', direction: 'asc' });
-  readonly staffAreaSort = signal<SortState<StaffAreaSortKey>>({ key: 'name', direction: 'asc' });
-  readonly categorySort = signal<SortState<CategorySortKey>>({ key: 'name', direction: 'asc' });
-  readonly ticketTypeSort = signal<SortState<TicketTypeSortKey>>({ key: 'name', direction: 'asc' });
+  readonly venueSort = createSortController<VenueSortKey>({ key: 'name', direction: 'asc' });
+  readonly staffAreaSort = createSortController<StaffAreaSortKey>({ key: 'name', direction: 'asc' });
+  readonly categorySort = createSortController<CategorySortKey>({ key: 'name', direction: 'asc' });
+  readonly ticketTypeSort = createSortController<TicketTypeSortKey>({ key: 'name', direction: 'asc' });
 
   private handleError(context: string, err: unknown): void {
     this.state.error.set(toContextErrorMessage(err, context));
@@ -326,23 +326,17 @@ export class EditionDetailComponent implements OnInit {
   }
 
   sortedVenues(venues: VenueDto[]): VenueDto[] {
-    return sortBy(venues, this.venueSort(), {
+    return sortBy(venues, this.venueSort.state(), {
       name: venue => venue.name,
       building: venue => venue.building,
       description: venue => venue.description ?? '',
     });
   }
 
-  setVenueSort(key: VenueSortKey): void {
-    this.venueSort.set(nextSort(this.venueSort(), key));
-  }
 
-  venueSortIcon(key: VenueSortKey): string {
-    return sortIcon(this.venueSort(), key);
-  }
 
   sortedStaffAreas(areas: StaffAreaDto[]): StaffAreaDto[] {
-    return sortBy(areas, this.staffAreaSort(), {
+    return sortBy(areas, this.staffAreaSort.state(), {
       name: area => area.name,
       description: area => area.description ?? '',
       responsible: area => this.personName(area.responsibleId),
@@ -350,16 +344,10 @@ export class EditionDetailComponent implements OnInit {
     });
   }
 
-  setStaffAreaSort(key: StaffAreaSortKey): void {
-    this.staffAreaSort.set(nextSort(this.staffAreaSort(), key));
-  }
 
-  staffAreaSortIcon(key: StaffAreaSortKey): string {
-    return sortIcon(this.staffAreaSort(), key);
-  }
 
   sortedCategories(categories: CategoryDto[]): CategoryDto[] {
-    return sortBy(categories, this.categorySort(), {
+    return sortBy(categories, this.categorySort.state(), {
       name: category => category.name,
       organizerInstructions: category => category.organizerInstructions ?? '',
       publicDescription: category => category.publicDescription ?? '',
@@ -367,16 +355,10 @@ export class EditionDetailComponent implements OnInit {
     });
   }
 
-  setCategorySort(key: CategorySortKey): void {
-    this.categorySort.set(nextSort(this.categorySort(), key));
-  }
 
-  categorySortIcon(key: CategorySortKey): string {
-    return sortIcon(this.categorySort(), key);
-  }
 
   sortedTicketTypes(): TicketTypeAdminDto[] {
-    return sortBy(this.ticketTypes(), this.ticketTypeSort(), {
+    return sortBy(this.ticketTypes(), this.ticketTypeSort.state(), {
       name: ticketType => ticketType.name,
       category: ticketType => this.ticketTypeCategoryLabel(ticketType.category),
       validDays: ticketType => this.validDaysLabel(ticketType.validDays),
@@ -385,13 +367,7 @@ export class EditionDetailComponent implements OnInit {
     });
   }
 
-  setTicketTypeSort(key: TicketTypeSortKey): void {
-    this.ticketTypeSort.set(nextSort(this.ticketTypeSort(), key));
-  }
 
-  ticketTypeSortIcon(key: TicketTypeSortKey): string {
-    return sortIcon(this.ticketTypeSort(), key);
-  }
 
   // ── Publicering, Aktiv upplaga & Registrering ────────────────────────────
 

@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CategoryDto, ConventionService, EditionDto, PersonDto } from 'shared';
 import { ERROR } from '../../../labels/errors.labels';
-import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
+import { createSortController, sortBy } from '../../../shared/sort-utils';
 
 type SortKey = 'name' | 'description' | 'responsible';
 
@@ -28,7 +28,7 @@ export class CategoriesComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
-  readonly sort = signal<SortState<SortKey>>({ key: 'name', direction: 'asc' });
+  readonly sort = createSortController<SortKey>({ key: 'name', direction: 'asc' });
 
   ngOnInit(): void {
     this.route.paramMap.pipe(map((p) => p.get('id')!)).subscribe((id) => this.loadData(id));
@@ -56,19 +56,13 @@ export class CategoriesComponent implements OnInit {
   }
 
   sortedCategories(categories: CategoryDto[]): CategoryDto[] {
-    return sortBy(categories, this.sort(), {
+    return sortBy(categories, this.sort.state(), {
       name: (c) => c.name,
       description: (c) => c.publicDescription ?? '',
       responsible: (c) => this.personName(c.responsibleId),
     });
   }
 
-  setSort(key: SortKey): void {
-    this.sort.set(nextSort(this.sort(), key));
-  }
-  sortIcon(key: SortKey): string {
-    return sortIcon(this.sort(), key);
-  }
 
   openDetail(categoryId: string): void {
     void this.router.navigate([categoryId], { relativeTo: this.route });

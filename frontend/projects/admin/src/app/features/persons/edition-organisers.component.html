@@ -30,10 +30,10 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th><button type="button" class="sort-header" (click)="setSort('name')">Namn <mat-icon>{{ sortIcon('name') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('email')">E-post <mat-icon>{{ sortIcon('email') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('event')">Evenemang <mat-icon>{{ sortIcon('event') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('role')">Roll <mat-icon>{{ sortIcon('role') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('name')">Namn <mat-icon>{{ sort.sortIcon('name') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('email')">E-post <mat-icon>{{ sort.sortIcon('email') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('event')">Evenemang <mat-icon>{{ sort.sortIcon('event') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('role')">Roll <mat-icon>{{ sort.sortIcon('role') }}</mat-icon></button></th>
             @if (hasOrganiserTicketTypes()) {
               <th>Arrangörsbiljett</th>
             }

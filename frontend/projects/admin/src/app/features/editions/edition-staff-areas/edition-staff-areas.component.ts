@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConventionService, EditionDto, PersonDto, StaffAreaDto } from 'shared';
 import { ERROR } from '../../../labels/errors.labels';
-import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
+import { createSortController, sortBy } from '../../../shared/sort-utils';
 
 type SortKey = 'name' | 'description' | 'responsible' | 'stations';
 
@@ -28,7 +28,7 @@ export class EditionStaffAreasComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
-  readonly sort = signal<SortState<SortKey>>({ key: 'name', direction: 'asc' });
+  readonly sort = createSortController<SortKey>({ key: 'name', direction: 'asc' });
 
   ngOnInit(): void {
     this.route.paramMap.pipe(map((p) => p.get('id')!)).subscribe((id) => this.loadData(id));
@@ -60,7 +60,7 @@ export class EditionStaffAreasComponent implements OnInit {
   }
 
   sortedAreas(areas: StaffAreaDto[]): StaffAreaDto[] {
-    return sortBy(areas, this.sort(), {
+    return sortBy(areas, this.sort.state(), {
       name: (a) => a.name,
       description: (a) => a.description ?? '',
       responsible: (a) => this.personName(a.responsibleId),
@@ -68,12 +68,6 @@ export class EditionStaffAreasComponent implements OnInit {
     });
   }
 
-  setSort(key: SortKey): void {
-    this.sort.set(nextSort(this.sort(), key));
-  }
-  sortIcon(key: SortKey): string {
-    return sortIcon(this.sort(), key);
-  }
 
   openDetail(areaId: string): void {
     void this.router.navigate([areaId], { relativeTo: this.route });

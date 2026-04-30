@@ -155,13 +155,13 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th><button type="button" class="sort-header" (click)="setSort('area')">{{ PAGE.areaColumn }} <mat-icon>{{ sortIconFor('area') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setSort('station')">{{ PAGE.stationColumn }} <mat-icon>{{ sortIconFor('station') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setSort('start')">{{ PAGE.startColumn }} <mat-icon>{{ sortIconFor('start') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setSort('end')">{{ PAGE.endColumn }} <mat-icon>{{ sortIconFor('end') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setSort('responsible')">{{ PAGE.responsibleColumn }} <mat-icon>{{ sortIconFor('responsible') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setSort('staffing')">{{ PAGE.staffingColumn }} <mat-icon>{{ sortIconFor('staffing') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setSort('status')">{{ PAGE.statusColumn }} <mat-icon>{{ sortIconFor('status') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="sort.setSort('area')">{{ PAGE.areaColumn }} <mat-icon>{{ sort.sortIcon('area') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="sort.setSort('station')">{{ PAGE.stationColumn }} <mat-icon>{{ sort.sortIcon('station') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="sort.setSort('start')">{{ PAGE.startColumn }} <mat-icon>{{ sort.sortIcon('start') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="sort.setSort('end')">{{ PAGE.endColumn }} <mat-icon>{{ sort.sortIcon('end') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="sort.setSort('responsible')">{{ PAGE.responsibleColumn }} <mat-icon>{{ sort.sortIcon('responsible') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="sort.setSort('staffing')">{{ PAGE.staffingColumn }} <mat-icon>{{ sort.sortIcon('staffing') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="sort.setSort('status')">{{ PAGE.statusColumn }} <mat-icon>{{ sort.sortIcon('status') }}</mat-icon></button></th>
                 <th class="actions-col"></th>
               </tr>
             </thead>

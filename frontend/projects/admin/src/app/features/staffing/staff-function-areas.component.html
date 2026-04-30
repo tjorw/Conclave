@@ -21,23 +21,23 @@
           <thead>
             <tr>
               <th>
-                <button type="button" class="sort-header" (click)="setSort('name')">
-                  Namn <mat-icon>{{ sortIconFor('name') }}</mat-icon>
+                <button type="button" class="sort-header" (click)="sort.setSort('name')">
+                  Namn <mat-icon>{{ sort.sortIcon('name') }}</mat-icon>
                 </button>
               </th>
               <th>
-                <button type="button" class="sort-header" (click)="setSort('description')">
-                  Beskrivning <mat-icon>{{ sortIconFor('description') }}</mat-icon>
+                <button type="button" class="sort-header" (click)="sort.setSort('description')">
+                  Beskrivning <mat-icon>{{ sort.sortIcon('description') }}</mat-icon>
                 </button>
               </th>
               <th>
-                <button type="button" class="sort-header" (click)="setSort('responsible')">
-                  Ansvarig <mat-icon>{{ sortIconFor('responsible') }}</mat-icon>
+                <button type="button" class="sort-header" (click)="sort.setSort('responsible')">
+                  Ansvarig <mat-icon>{{ sort.sortIcon('responsible') }}</mat-icon>
                 </button>
               </th>
               <th>
-                <button type="button" class="sort-header" (click)="setSort('stations')">
-                  Stationer <mat-icon>{{ sortIconFor('stations') }}</mat-icon>
+                <button type="button" class="sort-header" (click)="sort.setSort('stations')">
+                  Stationer <mat-icon>{{ sort.sortIcon('stations') }}</mat-icon>
                 </button>
               </th>
               <th class="actions-col"></th>

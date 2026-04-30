@@ -94,12 +94,12 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th><button type="button" class="sort-header" (click)="setApplicationSort('person')">Person <mat-icon>{{ applicationSortIcon('person') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setApplicationSort('interest')">Intressebeskrivning <mat-icon>{{ applicationSortIcon('interest') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setApplicationSort('staffAreas')">Funktionsområden <mat-icon>{{ applicationSortIcon('staffAreas') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setApplicationSort('availability')">Tillgänglighet <mat-icon>{{ applicationSortIcon('availability') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setApplicationSort('created')">Inskickad <mat-icon>{{ applicationSortIcon('created') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setApplicationSort('status')">Status <mat-icon>{{ applicationSortIcon('status') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="applicationSort.setSort('person')">Person <mat-icon>{{ applicationSort.sortIcon('person') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="applicationSort.setSort('interest')">Intressebeskrivning <mat-icon>{{ applicationSort.sortIcon('interest') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="applicationSort.setSort('staffAreas')">Funktionsområden <mat-icon>{{ applicationSort.sortIcon('staffAreas') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="applicationSort.setSort('availability')">Tillgänglighet <mat-icon>{{ applicationSort.sortIcon('availability') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="applicationSort.setSort('created')">Inskickad <mat-icon>{{ applicationSort.sortIcon('created') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="applicationSort.setSort('status')">Status <mat-icon>{{ applicationSort.sortIcon('status') }}</mat-icon></button></th>
             @if (hasStaffTicketTypes()) {
               <th>Funktionärsbiljett</th>
             }

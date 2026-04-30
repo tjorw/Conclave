@@ -25,11 +25,11 @@
           <table class="data-table" aria-label="Besökarregistreringar">
             <thead>
               <tr>
-                <th><button type="button" class="sort-header" (click)="setRegistrationSort('person')">Person <mat-icon>{{ registrationSortIcon('person') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setRegistrationSort('ticket')">Biljetttyp <mat-icon>{{ registrationSortIcon('ticket') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setRegistrationSort('status')">Status <mat-icon>{{ registrationSortIcon('status') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setRegistrationSort('registered')">Registrerad <mat-icon>{{ registrationSortIcon('registered') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setRegistrationSort('payment')">Betalningsref. <mat-icon>{{ registrationSortIcon('payment') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="registrationSort.setSort('person')">Person <mat-icon>{{ registrationSort.sortIcon('person') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="registrationSort.setSort('ticket')">Biljetttyp <mat-icon>{{ registrationSort.sortIcon('ticket') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="registrationSort.setSort('status')">Status <mat-icon>{{ registrationSort.sortIcon('status') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="registrationSort.setSort('registered')">Registrerad <mat-icon>{{ registrationSort.sortIcon('registered') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="registrationSort.setSort('payment')">Betalningsref. <mat-icon>{{ registrationSort.sortIcon('payment') }}</mat-icon></button></th>
                 <th></th>
               </tr>
             </thead>
@@ -142,13 +142,13 @@
           <table class="data-table" aria-label="Kampanjkoder">
             <thead>
               <tr>
-                <th><button type="button" class="sort-header" (click)="setPromotionSort('code')">Kod <mat-icon>{{ promotionSortIcon('code') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setPromotionSort('description')">Beskrivning <mat-icon>{{ promotionSortIcon('description') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setPromotionSort('discount')">Rabatt <mat-icon>{{ promotionSortIcon('discount') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setPromotionSort('status')">Status <mat-icon>{{ promotionSortIcon('status') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setPromotionSort('redemptions')">Inlösta <mat-icon>{{ promotionSortIcon('redemptions') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setPromotionSort('validity')">Giltighet <mat-icon>{{ promotionSortIcon('validity') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setPromotionSort('tickets')">Biljettyper <mat-icon>{{ promotionSortIcon('tickets') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="promotionSort.setSort('code')">Kod <mat-icon>{{ promotionSort.sortIcon('code') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="promotionSort.setSort('description')">Beskrivning <mat-icon>{{ promotionSort.sortIcon('description') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="promotionSort.setSort('discount')">Rabatt <mat-icon>{{ promotionSort.sortIcon('discount') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="promotionSort.setSort('status')">Status <mat-icon>{{ promotionSort.sortIcon('status') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="promotionSort.setSort('redemptions')">Inlösta <mat-icon>{{ promotionSort.sortIcon('redemptions') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="promotionSort.setSort('validity')">Giltighet <mat-icon>{{ promotionSort.sortIcon('validity') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="promotionSort.setSort('tickets')">Biljettyper <mat-icon>{{ promotionSort.sortIcon('tickets') }}</mat-icon></button></th>
                 <th></th>
               </tr>
             </thead>
@@ -198,11 +198,11 @@
                         <table class="nested-table" aria-label="Inlösningshistorik">
                           <thead>
                             <tr>
-                              <th><button type="button" class="sort-header" (click)="setPromotionHistorySort('person')">Person <mat-icon>{{ promotionHistorySortIcon('person') }}</mat-icon></button></th>
-                              <th><button type="button" class="sort-header" (click)="setPromotionHistorySort('ticket')">Biljett <mat-icon>{{ promotionHistorySortIcon('ticket') }}</mat-icon></button></th>
-                              <th><button type="button" class="sort-header" (click)="setPromotionHistorySort('discount')">Rabatt <mat-icon>{{ promotionHistorySortIcon('discount') }}</mat-icon></button></th>
-                              <th><button type="button" class="sort-header" (click)="setPromotionHistorySort('finalPrice')">Slutpris <mat-icon>{{ promotionHistorySortIcon('finalPrice') }}</mat-icon></button></th>
-                              <th><button type="button" class="sort-header" (click)="setPromotionHistorySort('redeemed')">Inlöst <mat-icon>{{ promotionHistorySortIcon('redeemed') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="promotionHistorySort.setSort('person')">Person <mat-icon>{{ promotionHistorySort.sortIcon('person') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="promotionHistorySort.setSort('ticket')">Biljett <mat-icon>{{ promotionHistorySort.sortIcon('ticket') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="promotionHistorySort.setSort('discount')">Rabatt <mat-icon>{{ promotionHistorySort.sortIcon('discount') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="promotionHistorySort.setSort('finalPrice')">Slutpris <mat-icon>{{ promotionHistorySort.sortIcon('finalPrice') }}</mat-icon></button></th>
+                              <th><button type="button" class="sort-header" (click)="promotionHistorySort.setSort('redeemed')">Inlöst <mat-icon>{{ promotionHistorySort.sortIcon('redeemed') }}</mat-icon></button></th>
                             </tr>
                           </thead>
                           <tbody>

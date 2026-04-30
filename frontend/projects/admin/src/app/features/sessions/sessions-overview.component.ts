@@ -33,7 +33,7 @@ import { EditionContextService } from '../../services/edition-context.service';
 import { EventTimelineComponent } from '../../shared/event-timeline/event-timeline.component';
 import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { DraftBlock, SessionTimelineComponent } from '../../shared/session-timeline/session-timeline.component';
-import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+import { createSortController, sortBy } from '../../shared/sort-utils';
 
 type SessionSortKey = 'event' | 'start' | 'end' | 'venue' | 'seats' | 'startType';
 
@@ -87,7 +87,7 @@ export class SessionsOverviewComponent {
   readonly buildingFilter = signal<string>('all');
   readonly categoryFilter = signal<string>('all');
   readonly searchText = signal('');
-  readonly sort = signal<SortState<SessionSortKey>>({ key: 'start', direction: 'asc' });
+  readonly sort = createSortController<SessionSortKey>({ key: 'start', direction: 'asc' });
 
   readonly form = this.fb.group({
     eventId: ['', Validators.required],
@@ -192,7 +192,7 @@ export class SessionsOverviewComponent {
   });
 
   readonly sortedFilteredSessions = computed(() =>
-    sortBy(this.filteredSessions(), this.sort(), {
+    sortBy(this.filteredSessions(), this.sort.state(), {
       event: s => s.eventTitle,
       start: s => s.start,
       end: s => s.end,
@@ -265,13 +265,7 @@ export class SessionsOverviewComponent {
     this.viewMode.set(value);
   }
 
-  setSort(key: SessionSortKey): void {
-    this.sort.set(nextSort(this.sort(), key));
-  }
 
-  sortIcon(key: SessionSortKey): string {
-    return sortIcon(this.sort(), key);
-  }
 
   onTimelineSessionSelected(sessionId: string): void {
     const session = this.filteredSessions().find(s => s.sessionId === sessionId)

@@ -24,7 +24,7 @@ import {
   VISITOR_REGISTRATION_STATUS_CHIP,
   toContextErrorMessage,
 } from 'shared';
-import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+import { createSortController, sortBy } from '../../shared/sort-utils';
 
 type RegistrationSortKey = 'person' | 'ticket' | 'status' | 'registered' | 'payment';
 type PromotionSortKey = 'code' | 'description' | 'discount' | 'status' | 'redemptions' | 'validity' | 'tickets';
@@ -72,9 +72,9 @@ export class RegistrationsComponent {
   readonly promotionHistory = signal<PromotionCodeRedemptionHistoryDto[]>([]);
   readonly selectedPromotionCodeId = signal<string | null>(null);
   readonly loadingHistoryFor = signal<string | null>(null);
-  readonly registrationSort = signal<SortState<RegistrationSortKey>>({ key: 'registered', direction: 'desc' });
-  readonly promotionSort = signal<SortState<PromotionSortKey>>({ key: 'code', direction: 'asc' });
-  readonly promotionHistorySort = signal<SortState<PromotionHistorySortKey>>({ key: 'redeemed', direction: 'desc' });
+  readonly registrationSort = createSortController<RegistrationSortKey>({ key: 'registered', direction: 'desc' });
+  readonly promotionSort = createSortController<PromotionSortKey>({ key: 'code', direction: 'asc' });
+  readonly promotionHistorySort = createSortController<PromotionHistorySortKey>({ key: 'redeemed', direction: 'desc' });
 
   readonly discountTypeOptions: { value: PromotionDiscountType; label: string }[] = [
     { value: 'Percentage', label: 'Procent' },
@@ -94,7 +94,7 @@ export class RegistrationsComponent {
   });
 
   readonly sortedVisitorRegistrations = computed(() =>
-    sortBy(this.visitorRegistrations(), this.registrationSort(), {
+    sortBy(this.visitorRegistrations(), this.registrationSort.state(), {
       person: r => r.personName,
       ticket: r => r.ticketTypeName ?? '',
       status: r => this.statusLabel(r.status),
@@ -104,7 +104,7 @@ export class RegistrationsComponent {
   );
 
   readonly sortedPromotionCodes = computed(() =>
-    sortBy(this.promotionCodes(), this.promotionSort(), {
+    sortBy(this.promotionCodes(), this.promotionSort.state(), {
       code: c => c.code,
       description: c => c.description,
       discount: c => this.promotionDiscountLabel(c),
@@ -116,7 +116,7 @@ export class RegistrationsComponent {
   );
 
   readonly sortedPromotionHistory = computed(() =>
-    sortBy(this.promotionHistory(), this.promotionHistorySort(), {
+    sortBy(this.promotionHistory(), this.promotionHistorySort.state(), {
       person: h => this.personNameFromRegistration(h.personId),
       ticket: h => h.ticketId,
       discount: h => h.discountApplied,
@@ -222,29 +222,11 @@ export class RegistrationsComponent {
     return reg.status !== 'Cancelled';
   }
 
-  setRegistrationSort(key: RegistrationSortKey): void {
-    this.registrationSort.set(nextSort(this.registrationSort(), key));
-  }
 
-  registrationSortIcon(key: RegistrationSortKey): string {
-    return sortIcon(this.registrationSort(), key);
-  }
 
-  setPromotionSort(key: PromotionSortKey): void {
-    this.promotionSort.set(nextSort(this.promotionSort(), key));
-  }
 
-  promotionSortIcon(key: PromotionSortKey): string {
-    return sortIcon(this.promotionSort(), key);
-  }
 
-  setPromotionHistorySort(key: PromotionHistorySortKey): void {
-    this.promotionHistorySort.set(nextSort(this.promotionHistorySort(), key));
-  }
 
-  promotionHistorySortIcon(key: PromotionHistorySortKey): string {
-    return sortIcon(this.promotionHistorySort(), key);
-  }
 
   createPromotionCode(): void {
     const edition = this.editionCtx.activeEdition();

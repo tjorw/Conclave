@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConventionService, EditionDto, VenueDto } from 'shared';
 import { ERROR } from '../../../labels/errors.labels';
-import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
+import { createSortController, sortBy } from '../../../shared/sort-utils';
 
 type VenueSortKey = 'name' | 'building' | 'description';
 
@@ -27,7 +27,7 @@ export class VenuesComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
-  readonly sort = signal<SortState<VenueSortKey>>({ key: 'name', direction: 'asc' });
+  readonly sort = createSortController<VenueSortKey>({ key: 'name', direction: 'asc' });
 
   ngOnInit(): void {
     this.route.paramMap.pipe(map((p) => p.get('id')!)).subscribe((id) => this.loadData(id));
@@ -48,19 +48,13 @@ export class VenuesComponent implements OnInit {
   }
 
   sortedVenues(venues: VenueDto[]): VenueDto[] {
-    return sortBy(venues, this.sort(), {
+    return sortBy(venues, this.sort.state(), {
       name: (v) => v.name,
       building: (v) => v.building,
       description: (v) => v.description ?? '',
     });
   }
 
-  setSort(key: VenueSortKey): void {
-    this.sort.set(nextSort(this.sort(), key));
-  }
-  sortIcon(key: VenueSortKey): string {
-    return sortIcon(this.sort(), key);
-  }
 
   openDetail(venueId: string): void {
     void this.router.navigate([venueId], { relativeTo: this.route });

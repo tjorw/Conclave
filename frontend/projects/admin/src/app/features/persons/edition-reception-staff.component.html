@@ -86,9 +86,9 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th><button type="button" class="sort-header" (click)="setSort('name')">Namn <mat-icon>{{ sortIcon('name') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('email')">E-post <mat-icon>{{ sortIcon('email') }}</mat-icon></button></th>
-            <th><button type="button" class="sort-header" (click)="setSort('addedAt')">Tillagd <mat-icon>{{ sortIcon('addedAt') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('name')">Namn <mat-icon>{{ sort.sortIcon('name') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('email')">E-post <mat-icon>{{ sort.sortIcon('email') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('addedAt')">Tillagd <mat-icon>{{ sort.sortIcon('addedAt') }}</mat-icon></button></th>
             <th></th>
           </tr>
         </thead>

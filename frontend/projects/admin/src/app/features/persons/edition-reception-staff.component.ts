@@ -9,7 +9,7 @@ import { ConventionService, formatDate, PersonDto, ReceptionStaffMemberDto, toEr
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, PLACEHOLDER } from '../../labels/ui.labels';
-import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+import { createSortController, sortBy } from '../../shared/sort-utils';
 
 type SortKey = 'name' | 'email' | 'addedAt';
 
@@ -39,7 +39,7 @@ export class EditionReceptionStaffComponent {
   readonly loading     = signal(false);
   readonly error       = signal<string | null>(null);
   readonly searchQuery = signal('');
-  readonly sort        = signal<SortState<SortKey>>({ key: 'name', direction: 'asc' });
+  readonly sort        = createSortController<SortKey>({ key: 'name', direction: 'asc' });
 
   // ── Lägg till ────────────────────────────────────────────────────────────
   readonly persons       = signal<PersonDto[]>([]);
@@ -97,20 +97,14 @@ export class EditionReceptionStaffComponent {
   });
 
   readonly sortedFiltered = computed(() =>
-    sortBy(this.filtered(), this.sort(), {
+    sortBy(this.filtered(), this.sort.state(), {
       name:    m => m.name,
       email:   m => m.email,
       addedAt: m => m.addedAt,
     })
   );
 
-  setSort(key: SortKey): void {
-    this.sort.set(nextSort(this.sort(), key));
-  }
 
-  sortIcon(key: SortKey): string {
-    return sortIcon(this.sort(), key);
-  }
 
   onSearch(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);

@@ -6,7 +6,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConventionService, EditionDto, PersonDto, StaffAreaDto } from 'shared';
 import { ERROR } from '../../labels/errors.labels';
 import { EditionContextService } from '../../services/edition-context.service';
-import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+import { createSortController, sortBy } from '../../shared/sort-utils';
 
 type SortKey = 'name' | 'description' | 'responsible' | 'stations';
 
@@ -26,7 +26,7 @@ export class StaffFunctionAreasComponent {
   readonly persons = signal<PersonDto[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
-  readonly sort = signal<SortState<SortKey>>({ key: 'name', direction: 'asc' });
+  readonly sort = createSortController<SortKey>({ key: 'name', direction: 'asc' });
 
   constructor() {
     effect(() => {
@@ -67,7 +67,7 @@ export class StaffFunctionAreasComponent {
 
   readonly sortedAreas = computed<StaffAreaDto[]>(() => {
     const areas = this.edition()?.staffAreas ?? [];
-    return sortBy(areas, this.sort(), {
+    return sortBy(areas, this.sort.state(), {
       name: a => a.name,
       description: a => a.description ?? '',
       responsible: a => this.personName(a.responsibleId),
@@ -75,13 +75,7 @@ export class StaffFunctionAreasComponent {
     });
   });
 
-  setSort(key: SortKey): void {
-    this.sort.set(nextSort(this.sort(), key));
-  }
 
-  sortIconFor(key: SortKey): string {
-    return sortIcon(this.sort(), key);
-  }
 
   openDetail(areaId: string): void {
     void this.router.navigate(['/staff-areas', areaId]);

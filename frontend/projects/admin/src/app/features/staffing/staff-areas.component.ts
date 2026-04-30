@@ -29,7 +29,7 @@ import { ERROR } from '../../labels/errors.labels';
 import { STAFFING_OVERVIEW } from '../../labels/pages.labels';
 import { EditionContextService } from '../../services/edition-context.service';
 import { StaffTimelineComponent } from '../../shared/staff-timeline/staff-timeline.component';
-import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+import { createSortController, sortBy } from '../../shared/sort-utils';
 
 type StaffingSortKey = 'area' | 'station' | 'start' | 'end' | 'responsible' | 'staffing' | 'status';
 type ViewMode = 'timeline' | 'table';
@@ -120,7 +120,7 @@ export class StaffAreasComponent {
   readonly shiftLoading = signal(false);
   readonly creatingShift = signal(false);
   readonly editingShift = signal(false);
-  readonly sort = signal<SortState<StaffingSortKey>>({ key: 'start', direction: 'asc' });
+  readonly sort = createSortController<StaffingSortKey>({ key: 'start', direction: 'asc' });
 
   readonly createShiftForm = this.fb.group({
     stationId: ['', Validators.required],
@@ -244,7 +244,7 @@ export class StaffAreasComponent {
       )
     ) ?? [];
 
-    return sortBy(rows, this.sort(), {
+    return sortBy(rows, this.sort.state(), {
       area: row => row.areaName,
       station: row => row.stationName,
       start: row => row.shift.start,
@@ -544,13 +544,7 @@ export class StaffAreasComponent {
     this.viewMode.set(value);
   }
 
-  setSort(key: StaffingSortKey): void {
-    this.sort.set(nextSort(this.sort(), key));
-  }
 
-  sortIconFor(key: StaffingSortKey): string {
-    return sortIcon(this.sort(), key);
-  }
 
   selectShift(shiftId: string): void {
     if (this.selectedShiftId() === shiftId) {

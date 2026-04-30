@@ -19,7 +19,7 @@ import {
   toErrorMessage,
 } from 'shared';
 import { MatDividerModule } from '@angular/material/divider';
-import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
+import { createSortController, sortBy } from '../../../shared/sort-utils';
 
 type ShiftSortKey = 'responsible' | 'start' | 'end' | 'min' | 'max' | 'staffing';
 type AssignmentSortKey = 'person' | 'status' | 'assigned';
@@ -62,8 +62,8 @@ export class StaffAreaDetailComponent {
   readonly shiftsByStation = signal<Record<string, ShiftSummaryDto[]>>({});
   readonly selectedShift   = signal<ShiftDto | null>(null);
   readonly shiftLoading    = signal(false);
-  readonly shiftSort = signal<SortState<ShiftSortKey>>({ key: 'start', direction: 'desc' });
-  readonly assignmentSort = signal<SortState<AssignmentSortKey>>({ key: 'assigned', direction: 'desc' });
+  readonly shiftSort = createSortController<ShiftSortKey>({ key: 'start', direction: 'desc' });
+  readonly assignmentSort = createSortController<AssignmentSortKey>({ key: 'assigned', direction: 'desc' });
 
   readonly staff = signal<EditionStaffMemberDto[]>([]);
 
@@ -153,7 +153,7 @@ export class StaffAreaDetailComponent {
   }
 
   sortedShifts(shifts: ShiftSummaryDto[] | undefined): ShiftSummaryDto[] {
-    return sortBy(shifts ?? [], this.shiftSort(), {
+    return sortBy(shifts ?? [], this.shiftSort.state(), {
       responsible: shift => shift.responsibleName,
       start: shift => shift.start,
       end: shift => shift.end,
@@ -163,29 +163,17 @@ export class StaffAreaDetailComponent {
     });
   }
 
-  setShiftSort(key: ShiftSortKey): void {
-    this.shiftSort.set(nextSort(this.shiftSort(), key));
-  }
 
-  shiftSortIcon(key: ShiftSortKey): string {
-    return sortIcon(this.shiftSort(), key);
-  }
 
   sortedAssignments(shift: ShiftDto): ShiftDto['assignments'] {
-    return sortBy(shift.assignments, this.assignmentSort(), {
+    return sortBy(shift.assignments, this.assignmentSort.state(), {
       person: assignment => assignment.personName,
       status: assignment => this.assignmentStatusLabel(assignment.status),
       assigned: assignment => assignment.assignedAt,
     });
   }
 
-  setAssignmentSort(key: AssignmentSortKey): void {
-    this.assignmentSort.set(nextSort(this.assignmentSort(), key));
-  }
 
-  assignmentSortIcon(key: AssignmentSortKey): string {
-    return sortIcon(this.assignmentSort(), key);
-  }
 
   // ── Stationer ─────────────────────────────────────────────────────────────
 

@@ -238,9 +238,9 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th><button type="button" class="sort-header" (click)="setVenueSort('name')">Namn <mat-icon>{{ venueSortIcon('name') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setVenueSort('building')">Byggnad <mat-icon>{{ venueSortIcon('building') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setVenueSort('description')">Beskrivning <mat-icon>{{ venueSortIcon('description') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="venueSort.setSort('name')">Namn <mat-icon>{{ venueSort.sortIcon('name') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="venueSort.setSort('building')">Byggnad <mat-icon>{{ venueSort.sortIcon('building') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="venueSort.setSort('description')">Beskrivning <mat-icon>{{ venueSort.sortIcon('description') }}</mat-icon></button></th>
                 <th class="actions-col"></th>
               </tr>
             </thead>
@@ -305,10 +305,10 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th><button type="button" class="sort-header" (click)="setStaffAreaSort('name')">Namn <mat-icon>{{ staffAreaSortIcon('name') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setStaffAreaSort('description')">Beskrivning <mat-icon>{{ staffAreaSortIcon('description') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setStaffAreaSort('responsible')">Ansvarig <mat-icon>{{ staffAreaSortIcon('responsible') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setStaffAreaSort('stations')">Stationer <mat-icon>{{ staffAreaSortIcon('stations') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="staffAreaSort.setSort('name')">Namn <mat-icon>{{ staffAreaSort.sortIcon('name') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="staffAreaSort.setSort('description')">Beskrivning <mat-icon>{{ staffAreaSort.sortIcon('description') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="staffAreaSort.setSort('responsible')">Ansvarig <mat-icon>{{ staffAreaSort.sortIcon('responsible') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="staffAreaSort.setSort('stations')">Stationer <mat-icon>{{ staffAreaSort.sortIcon('stations') }}</mat-icon></button></th>
                 <th class="actions-col"></th>
               </tr>
             </thead>
@@ -393,10 +393,10 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th><button type="button" class="sort-header" (click)="setCategorySort('name')">Namn <mat-icon>{{ categorySortIcon('name') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setCategorySort('organizerInstructions')">Arrangörsinstruktioner <mat-icon>{{ categorySortIcon('organizerInstructions') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setCategorySort('publicDescription')">Publik beskrivning <mat-icon>{{ categorySortIcon('publicDescription') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setCategorySort('responsible')">Ansvarig <mat-icon>{{ categorySortIcon('responsible') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="categorySort.setSort('name')">Namn <mat-icon>{{ categorySort.sortIcon('name') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="categorySort.setSort('organizerInstructions')">Arrangörsinstruktioner <mat-icon>{{ categorySort.sortIcon('organizerInstructions') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="categorySort.setSort('publicDescription')">Publik beskrivning <mat-icon>{{ categorySort.sortIcon('publicDescription') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="categorySort.setSort('responsible')">Ansvarig <mat-icon>{{ categorySort.sortIcon('responsible') }}</mat-icon></button></th>
                 <th class="actions-col"></th>
               </tr>
             </thead>
@@ -478,11 +478,11 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th><button type="button" class="sort-header" (click)="setTicketTypeSort('name')">Namn <mat-icon>{{ ticketTypeSortIcon('name') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setTicketTypeSort('category')">Kategori <mat-icon>{{ ticketTypeSortIcon('category') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setTicketTypeSort('validDays')">Giltiga dagar <mat-icon>{{ ticketTypeSortIcon('validDays') }}</mat-icon></button></th>
-                <th><button type="button" class="sort-header" (click)="setTicketTypeSort('allowedCategories')">Tillåtna kategorier <mat-icon>{{ ticketTypeSortIcon('allowedCategories') }}</mat-icon></button></th>
-                <th class="align-right"><button type="button" class="sort-header" (click)="setTicketTypeSort('price')">Pris <mat-icon>{{ ticketTypeSortIcon('price') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="ticketTypeSort.setSort('name')">Namn <mat-icon>{{ ticketTypeSort.sortIcon('name') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="ticketTypeSort.setSort('category')">Kategori <mat-icon>{{ ticketTypeSort.sortIcon('category') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="ticketTypeSort.setSort('validDays')">Giltiga dagar <mat-icon>{{ ticketTypeSort.sortIcon('validDays') }}</mat-icon></button></th>
+                <th><button type="button" class="sort-header" (click)="ticketTypeSort.setSort('allowedCategories')">Tillåtna kategorier <mat-icon>{{ ticketTypeSort.sortIcon('allowedCategories') }}</mat-icon></button></th>
+                <th class="align-right"><button type="button" class="sort-header" (click)="ticketTypeSort.setSort('price')">Pris <mat-icon>{{ ticketTypeSort.sortIcon('price') }}</mat-icon></button></th>
                 <th class="actions-col"></th>
               </tr>
             </thead>

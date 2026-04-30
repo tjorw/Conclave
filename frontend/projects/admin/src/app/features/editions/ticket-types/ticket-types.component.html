@@ -24,28 +24,28 @@
         <thead>
           <tr>
             <th>
-              <button type="button" class="sort-header" (click)="setSort('name')">
-                Namn <mat-icon>{{ sortIcon('name') }}</mat-icon>
+              <button type="button" class="sort-header" (click)="sort.setSort('name')">
+                Namn <mat-icon>{{ sort.sortIcon('name') }}</mat-icon>
               </button>
             </th>
             <th>
-              <button type="button" class="sort-header" (click)="setSort('category')">
-                Kategori <mat-icon>{{ sortIcon('category') }}</mat-icon>
+              <button type="button" class="sort-header" (click)="sort.setSort('category')">
+                Kategori <mat-icon>{{ sort.sortIcon('category') }}</mat-icon>
               </button>
             </th>
             <th>
-              <button type="button" class="sort-header" (click)="setSort('validDays')">
-                Giltiga dagar <mat-icon>{{ sortIcon('validDays') }}</mat-icon>
+              <button type="button" class="sort-header" (click)="sort.setSort('validDays')">
+                Giltiga dagar <mat-icon>{{ sort.sortIcon('validDays') }}</mat-icon>
               </button>
             </th>
             <th>
-              <button type="button" class="sort-header" (click)="setSort('allowedCategories')">
-                Tillåtna kategorier <mat-icon>{{ sortIcon('allowedCategories') }}</mat-icon>
+              <button type="button" class="sort-header" (click)="sort.setSort('allowedCategories')">
+                Tillåtna kategorier <mat-icon>{{ sort.sortIcon('allowedCategories') }}</mat-icon>
               </button>
             </th>
             <th class="align-right">
-              <button type="button" class="sort-header" (click)="setSort('price')">
-                Pris <mat-icon>{{ sortIcon('price') }}</mat-icon>
+              <button type="button" class="sort-header" (click)="sort.setSort('price')">
+                Pris <mat-icon>{{ sort.sortIcon('price') }}</mat-icon>
               </button>
             </th>
             <th class="actions-col"></th>

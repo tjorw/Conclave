@@ -24,18 +24,18 @@
         <thead>
           <tr>
             <th>
-              <button type="button" class="sort-header" (click)="setSort('name')">
-                Namn <mat-icon>{{ sortIcon('name') }}</mat-icon>
+              <button type="button" class="sort-header" (click)="sort.setSort('name')">
+                Namn <mat-icon>{{ sort.sortIcon('name') }}</mat-icon>
               </button>
             </th>
             <th>
-              <button type="button" class="sort-header" (click)="setSort('description')">
-                Beskrivning <mat-icon>{{ sortIcon('description') }}</mat-icon>
+              <button type="button" class="sort-header" (click)="sort.setSort('description')">
+                Beskrivning <mat-icon>{{ sort.sortIcon('description') }}</mat-icon>
               </button>
             </th>
             <th>
-              <button type="button" class="sort-header" (click)="setSort('responsible')">
-                Ansvarig <mat-icon>{{ sortIcon('responsible') }}</mat-icon>
+              <button type="button" class="sort-header" (click)="sort.setSort('responsible')">
+                Ansvarig <mat-icon>{{ sort.sortIcon('responsible') }}</mat-icon>
               </button>
             </th>
             <th class="actions-col"></th>

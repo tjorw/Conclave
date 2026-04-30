@@ -27,7 +27,7 @@ import {
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, PLACEHOLDER, TOOLTIP } from '../../labels/ui.labels';
-import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
+import { createSortController, sortBy } from '../../shared/sort-utils';
 
 type StaffApplicationSortKey = 'person' | 'interest' | 'staffAreas' | 'availability' | 'created' | 'status';
 
@@ -72,7 +72,7 @@ export class EditionStaffComponent {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly searchQuery = signal('');
-  readonly applicationSort = signal<SortState<StaffApplicationSortKey>>({ key: 'created', direction: 'desc' });
+  readonly applicationSort = createSortController<StaffApplicationSortKey>({ key: 'created', direction: 'desc' });
 
   readonly persons = signal<PersonDto[]>([]);
   readonly personsLoaded = signal(false);
@@ -122,7 +122,7 @@ export class EditionStaffComponent {
   });
 
   readonly sortedFilteredApplications = computed(() =>
-    sortBy(this.filteredApplications(), this.applicationSort(), {
+    sortBy(this.filteredApplications(), this.applicationSort.state(), {
       person: app => app.personName ?? app.personId,
       interest: app => app.interestDescription,
       staffAreas: app => app.staffAreaPreferenceIds.map(id => this.staffAreaName(id)).join(', '),
@@ -205,13 +205,7 @@ export class EditionStaffComponent {
     });
   }
 
-  setApplicationSort(key: StaffApplicationSortKey): void {
-    this.applicationSort.set(nextSort(this.applicationSort(), key));
-  }
 
-  applicationSortIcon(key: StaffApplicationSortKey): string {
-    return sortIcon(this.applicationSort(), key);
-  }
 
   onSearch(event: Event): void {
     this.searchQuery.set((event.target as HTMLInputElement).value);
