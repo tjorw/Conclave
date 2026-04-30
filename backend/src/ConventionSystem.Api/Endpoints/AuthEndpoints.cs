@@ -227,11 +227,24 @@ public static class AuthEndpoints
                 return Results.Problem(errors, statusCode: 400);
             }
 
-            if (convention is not null)
+            // When multitenancy is disabled, convention was not fetched above – fetch it now
+            // so the person record (with the self-provided name) is always created.
+            var conventionForRegistration = convention ?? await conventionRepo.GetSingleAsync(ct);
+            if (conventionForRegistration is not null)
             {
-                var person = convention.RegisterPerson(request.Name?.Trim() ?? string.Empty, request.Email);
-                await personRepo.AddAndSaveAsync(person, ct);
-                user.PersonId = person.Id.Value;
+                // In non-multitenant mode the duplicate-person guard above was skipped;
+                // check here to avoid creating a second record for an admin-pre-seeded person.
+                var personToLink = convention is null
+                    ? await personRepo.FindByEmailInConventionAsync(conventionForRegistration.Id, request.Email, ct)
+                    : null;
+
+                if (personToLink is null)
+                {
+                    personToLink = conventionForRegistration.RegisterPerson(request.Name?.Trim() ?? string.Empty, request.Email);
+                    await personRepo.AddAndSaveAsync(personToLink, ct);
+                }
+
+                user.PersonId = personToLink.Id.Value;
                 await userManager.UpdateAsync(user);
             }
 
