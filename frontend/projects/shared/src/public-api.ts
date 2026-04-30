@@ -23,6 +23,9 @@ export * from './lib/interceptors/auth-session.interceptor';
 // HTTP
 export * from './lib/http/error-message';
 
+// Helpers
+export * from './lib/format-helpers';
+
 // Services
 export * from './lib/services/auth.service';
 export * from './lib/services/session-state.service';

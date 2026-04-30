@@ -5,7 +5,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -16,6 +15,7 @@ import {
   CategoryDto,
   ConventionService,
   EditionDto,
+  formatDate,
   MarkdownEditorComponent,
   PersonDto,
   RegistrationService,
@@ -27,7 +27,7 @@ import {
 import { ERROR } from '../../../labels/errors.labels';
 import { EDITION_DETAIL } from '../../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 import { EditionContextService } from '../../../services/edition-context.service';
 import { nextSort, sortBy, sortIcon, SortState } from '../../../shared/sort-utils';
 
@@ -72,15 +72,8 @@ export class EditionDetailComponent implements OnInit {
   private readonly fb     = inject(FormBuilder);
   private readonly svc    = inject(ConventionService);
   private readonly regSvc = inject(RegistrationService);
-  private readonly dialog = inject(MatDialog);
+  private readonly confirmSvc     = inject(ConfirmDialogService);
   private readonly editionContext = inject(EditionContextService);
-
-  private openConfirm(data: ConfirmDialogData) {
-    return this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, { data, width: '400px' })
-      .afterClosed()
-      .pipe(map(result => result === true));
-  }
 
   readonly edition = signal<EditionDto | null>(null);
   readonly persons = signal<PersonDto[]>([]);
@@ -416,7 +409,7 @@ export class EditionDetailComponent implements OnInit {
   }
 
   publish(): void {
-    this.openConfirm({
+    this.confirmSvc.confirm({
       title:        this.PAGE.publishConfirmTitle,
       message:      this.PAGE.publishConfirmMessage,
       confirmLabel: this.PAGE.publishAction,
@@ -431,7 +424,7 @@ export class EditionDetailComponent implements OnInit {
   }
 
   unpublish(): void {
-    this.openConfirm({
+    this.confirmSvc.confirm({
       title:        this.PAGE.unpublishConfirmTitle,
       message:      this.PAGE.unpublishConfirmMessage,
       confirmLabel: this.PAGE.unpublishAction,
@@ -538,7 +531,7 @@ export class EditionDetailComponent implements OnInit {
   }
 
   deleteVenue(venue: VenueDto): void {
-    this.openConfirm({ title: this.PAGE.deleteVenueTitle, message: this.PAGE.deleteVenueMessage(venue.name) })
+    this.confirmSvc.confirm({ title: this.PAGE.deleteVenueTitle, message: this.PAGE.deleteVenueMessage(venue.name) })
       .subscribe(confirmed => {
         if (!confirmed) return;
         this.saving.set(true);
@@ -592,7 +585,7 @@ export class EditionDetailComponent implements OnInit {
   }
 
   deleteStaffArea(area: StaffAreaDto): void {
-    this.openConfirm({ title: this.PAGE.deleteStaffAreaTitle, message: this.PAGE.deleteStaffAreaMessage(area.name) })
+    this.confirmSvc.confirm({ title: this.PAGE.deleteStaffAreaTitle, message: this.PAGE.deleteStaffAreaMessage(area.name) })
       .subscribe(confirmed => {
         if (!confirmed) return;
         this.saving.set(true);
@@ -657,7 +650,7 @@ export class EditionDetailComponent implements OnInit {
   }
 
   deleteCategory(category: CategoryDto): void {
-    this.openConfirm({ title: this.PAGE.deleteCategoryTitle, message: this.PAGE.deleteCategoryMessage(category.name) })
+    this.confirmSvc.confirm({ title: this.PAGE.deleteCategoryTitle, message: this.PAGE.deleteCategoryMessage(category.name) })
       .subscribe(confirmed => {
         if (!confirmed) return;
         this.saving.set(true);
@@ -743,7 +736,7 @@ export class EditionDetailComponent implements OnInit {
   }
 
   deleteTicketType(tt: TicketTypeAdminDto): void {
-    this.openConfirm({ title: this.PAGE.deleteTicketTypeTitle, message: this.PAGE.deleteTicketTypeMessage(tt.name) })
+    this.confirmSvc.confirm({ title: this.PAGE.deleteTicketTypeTitle, message: this.PAGE.deleteTicketTypeMessage(tt.name) })
       .subscribe(confirmed => {
         if (!confirmed) return;
         const editionId = this.edition()!.id;
@@ -779,9 +772,7 @@ export class EditionDetailComponent implements OnInit {
 
   // ── Hjälpmetoder ─────────────────────────────────────────────────────────
 
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('sv-SE');
-  }
+  protected readonly formatDate = formatDate;
 
   toDateInput(isoDate: string): string {
     return isoDate.substring(0, 10);

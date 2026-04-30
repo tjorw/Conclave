@@ -591,7 +591,6 @@ file sealed class CapturingEmailService : IEmailService
     public Task SendResendConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default) => Task.CompletedTask;
     public Task SendPasswordChangedAsync(string toEmail, string toName, CancellationToken ct = default) => Task.CompletedTask;
     public Task SendCoOrganiserInvitationAsync(string toEmail, string code, CancellationToken ct = default) => Task.CompletedTask;
-
     public Task SendTenantSignupWelcomeAsync(
         string toEmail,
         string toName,

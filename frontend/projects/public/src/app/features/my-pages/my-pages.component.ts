@@ -10,6 +10,7 @@ import {
   AuthService,
   EventService,
   EventSummaryDto,
+  formatSekPrice,
   MyVisitorRegistrationDto,
   MySessionRegistrationSummaryDto,
   MyStaffApplicationDto,
@@ -116,14 +117,7 @@ export class MyPagesComponent implements OnInit {
   }
 
   private priceLabel(priceInOre: number | null): string {
-    if (priceInOre === null) {
-      return 'Ej angivet';
-    }
-
-    return new Intl.NumberFormat('sv-SE', {
-      style: 'currency',
-      currency: 'SEK',
-      maximumFractionDigits: 0,
-    }).format(priceInOre / 100);
+    if (priceInOre === null) return 'Ej angivet';
+    return formatSekPrice(priceInOre);
   }
 }

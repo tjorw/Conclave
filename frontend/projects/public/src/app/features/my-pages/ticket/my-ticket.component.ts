@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MyVisitorRegistrationDto, RegistrationService, TICKET_PAYMENT_STATUS_LABEL, VisitorTicketTypeDto, toErrorMessage } from 'shared';
+import { formatSekPrice, MyVisitorRegistrationDto, RegistrationService, TICKET_PAYMENT_STATUS_LABEL, VisitorTicketTypeDto, toErrorMessage } from 'shared';
 import { MarkdownComponent } from 'ngx-markdown';
 import { EditionService } from '../../../services/edition.service';
 
@@ -149,17 +149,8 @@ export class MyTicketComponent implements OnInit {
     this.regSvc.redeemPromotionCode(registration.ticketId, code)
       .subscribe({
         next: result => {
-          const discount = new Intl.NumberFormat('sv-SE', {
-            style: 'currency',
-            currency: 'SEK',
-            maximumFractionDigits: 0,
-          }).format(result.discountApplied / 100);
-
-          const finalPrice = new Intl.NumberFormat('sv-SE', {
-            style: 'currency',
-            currency: 'SEK',
-            maximumFractionDigits: 0,
-          }).format(result.finalPrice / 100);
+          const discount = formatSekPrice(result.discountApplied);
+          const finalPrice = formatSekPrice(result.finalPrice);
 
           this.redeemResultMessage.set(`Kampanjkod tillämpad. Rabatt: ${discount}. Nytt pris: ${finalPrice}.`);
           this.updatePromotionCodeValue(registration.ticketId, '');
@@ -198,30 +189,14 @@ export class MyTicketComponent implements OnInit {
 
   ticketTypePriceLabel(ticketType: VisitorTicketTypeDto): string {
     const price = Number(ticketType.price);
-
-    if (!Number.isFinite(price) || price < 0) {
-      return 'Pris saknas';
-    }
-
-    return new Intl.NumberFormat('sv-SE', {
-      style: 'currency',
-      currency: 'SEK',
-      maximumFractionDigits: 0,
-    }).format(price / 100);
+    if (!Number.isFinite(price) || price < 0) return 'Pris saknas';
+    return formatSekPrice(price);
   }
 
   registrationPriceLabel(registration: MyVisitorRegistrationDto): string {
     const price = Number(registration.ticketPrice);
-
-    if (!Number.isFinite(price) || price < 0) {
-      return 'Pris saknas';
-    }
-
-    return new Intl.NumberFormat('sv-SE', {
-      style: 'currency',
-      currency: 'SEK',
-      maximumFractionDigits: 0,
-    }).format(price / 100);
+    if (!Number.isFinite(price) || price < 0) return 'Pris saknas';
+    return formatSekPrice(price);
   }
 
   ticketCategoryLabel(registration: MyVisitorRegistrationDto): string {

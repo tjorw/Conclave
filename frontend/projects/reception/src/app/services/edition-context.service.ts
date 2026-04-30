@@ -1,4 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { ConventionService, EditionSummaryDto } from 'shared';
 
 @Injectable({ providedIn: 'root' })
@@ -8,6 +9,7 @@ export class EditionContextService {
   private readonly _editions = signal<EditionSummaryDto[]>([]);
   private readonly _loading = signal(false);
   private readonly _error = signal(false);
+  private loadPromise: Promise<void> | null = null;
 
   readonly editions = this._editions.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -22,19 +24,25 @@ export class EditionContextService {
     );
   });
 
-  load(): void {
-    if (this._editions().length > 0 || this._loading()) return;
+  load(): Promise<void> {
+    if (this._editions().length > 0) return Promise.resolve();
+    if (this.loadPromise) return this.loadPromise;
+
     this._loading.set(true);
     this._error.set(false);
-    this.conventionService.listEditions().subscribe({
-      next: editions => {
+
+    this.loadPromise = firstValueFrom(this.conventionService.listEditions())
+      .then(editions => {
         this._editions.set(editions);
-        this._loading.set(false);
-      },
-      error: () => {
-        this._loading.set(false);
+      })
+      .catch(() => {
         this._error.set(true);
-      },
-    });
+      })
+      .finally(() => {
+        this._loading.set(false);
+        this.loadPromise = null;
+      });
+
+    return this.loadPromise;
   }
 }

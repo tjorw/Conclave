@@ -99,7 +99,13 @@ Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny
 
 ## Diverse
 - Ledning, ta bort huvudansvariga från edition. Man skall skapa egna ansvar och knyta till edition.
-- front end: gemensamma helpers, generaliseringar
+- **Frontend: gemensamma helpers och generaliseringar** – kodgranskning identifierade följande duplicerade mönster som bör extraheras:
+  - ~~**`format-helpers.ts`**~~ ✓ – `formatDate`, `formatTicketPrice`, `formatSekPrice`, `formatTimeRange`, `formatDayLabel`, `formatDateOnly` extraherade till `shared/src/lib/format-helpers.ts` och exporterade via `public-api.ts`. Ersatte duplicerade implementationer i `dashboard`, `edition-detail`, `edition-reception-staff`, `event-detail`, `edition-organisers`, `my-ticket`, `my-pages`, `staff-areas`, `staff-applications`, `sessions-overview`, `reception/events`.
+  - ~~**`ConfirmDialogService`**~~ ✓ – `openConfirm()`-logiken extraherad till `ConfirmDialogService` (`admin/shared/confirm-dialog/confirm-dialog.service.ts`). Ersatte duplicerad kod i `edition-lifecycle`, `edition-detail`, `sessions-overview`, `event-detail`, `dashboard`, `venue-detail`, `category-detail`, `ticket-type-detail`, `edition-staff-area-detail`.
+  - **Async-state-composable** – `loading/saving/deleting/error`-signalerna deklareras identiskt i 20+ komponenter. Extrahera till en fabriksfunktion `createAsyncState()` som returnerar signalerna och hjälpmetoder för set/reset.
+  - **Sorteringslogik i listkomponenter** – `sort`-signal, `setSort()` och `sortIcon()` kopieras in i varje listkomponent trots att `sort-utils.ts` redan finns. Dessa tre rader bör leva i ett delat mixin eller baskomponent.
+  - **Debounced sökning** – samma RxJS-pipeline (`debounceTime → distinctUntilChanged → switchMap → loading → subscribe`) i checkin och walkup. Extrahera till `createSearchStream()`-helper.
+  - **Multi-request pending-räknare** – `persons.component.ts` koordinerar tre parallella anrop med en manuell `pending`-räknare. Ersätt med `forkJoin`.
 - reception, återkallade biljetter är sekundär info. eller skall de tas bort?
 - reception, statistiken är inte tillräcklig. skall också ha antal pass och vara uppdelat per dag.
 - reception, om man inte har qr-biljett (måste man kunna visa i public), så behövs något annat sätt att bekräfta biljetten.

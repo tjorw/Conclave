@@ -5,7 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ConventionService, PersonDto, ReceptionStaffMemberDto, toErrorMessage } from 'shared';
+import { ConventionService, formatDate, PersonDto, ReceptionStaffMemberDto, toErrorMessage } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, PLACEHOLDER } from '../../labels/ui.labels';
@@ -178,7 +178,5 @@ export class EditionReceptionStaffComponent {
     });
   }
 
-  formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('sv-SE');
-  }
+  protected readonly formatDate = formatDate;
 }

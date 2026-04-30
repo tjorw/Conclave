@@ -4,7 +4,6 @@ import { combineLatest, map } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -13,10 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { ConventionService, EditionDto, MarkdownEditorComponent, PersonDto, toContextErrorMessage } from 'shared';
 import { ERROR } from '../../../../labels/errors.labels';
 import { EDITION_DETAIL } from '../../../../labels/pages.labels';
-import {
-  ConfirmDialogComponent,
-  ConfirmDialogData,
-} from '../../../../shared/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from '../../../../shared/confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-category-detail',
@@ -40,7 +36,7 @@ export class CategoryDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly svc = inject(ConventionService);
-  private readonly dialog = inject(MatDialog);
+  private readonly confirmSvc = inject(ConfirmDialogService);
 
   readonly edition = signal<EditionDto | null>(null);
   readonly persons = signal<PersonDto[]>([]);
@@ -133,17 +129,10 @@ export class CategoryDetailComponent implements OnInit {
     const category = this.edition()?.categories.find((c) => c.id === this.categoryId);
     if (!category) return;
 
-    this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
-        data: {
-          title: this.PAGE.deleteCategoryTitle,
-          message: this.PAGE.deleteCategoryMessage(category.name),
-        },
-        width: '400px',
-      })
-      .afterClosed()
-      .pipe(map((r) => r === true))
-      .subscribe((confirmed) => {
+    this.confirmSvc.confirm({
+      title: this.PAGE.deleteCategoryTitle,
+      message: this.PAGE.deleteCategoryMessage(category.name),
+    }).subscribe((confirmed) => {
         if (!confirmed) return;
         this.saving.set(true);
         this.svc.removeCategory(this.editionId, this.categoryId).subscribe({

@@ -11,12 +11,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { ConventionDto, ConventionService, ImportWarningDto, PersonDto, EVENT_STATUS_LABEL, toErrorMessage } from 'shared';
+import { ConventionDto, ConventionService, formatDate, ImportWarningDto, PersonDto, EVENT_STATUS_LABEL, toErrorMessage } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, CHIP, FIELD, PLACEHOLDER } from '../../labels/ui.labels';
 import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 
 type EditionSortKey = 'name' | 'start' | 'end' | 'status';
 type CreateMode = 'manual' | 'import';
@@ -121,6 +121,7 @@ export class DashboardComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly dialog = inject(MatDialog);
+  private readonly confirmSvc = inject(ConfirmDialogService);
   readonly editionContext = inject(EditionContextService);
 
   readonly ACTION      = ACTION;
@@ -250,17 +251,11 @@ export class DashboardComponent implements OnInit {
   removeEdition(edition: { id: string; name: string }, event: MouseEvent): void {
     event.stopPropagation();
 
-    this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
-        data: {
-          title: 'Ta bort upplaga',
-          message: `Vill du ta bort ${edition.name}? All struktur och kopplad data för upplagan tas bort.`,
-          confirmLabel: 'Ta bort',
-        },
-        width: '420px',
-      })
-      .afterClosed()
-      .subscribe(confirmed => {
+    this.confirmSvc.confirm({
+      title: 'Ta bort upplaga',
+      message: `Vill du ta bort ${edition.name}? All struktur och kopplad data för upplagan tas bort.`,
+      confirmLabel: 'Ta bort',
+    }).subscribe(confirmed => {
         if (!confirmed) return;
 
         this.saving.set(true);
@@ -330,9 +325,7 @@ export class DashboardComponent implements OnInit {
     return status === 'Published' ? 'primary' : 'default';
   }
 
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('sv-SE');
-  }
+  protected readonly formatDate = formatDate;
 
   private buildPreview(document: Record<string, unknown>): ExportDocumentPreview {
     const staffAreas = this.asArray(document['staffAreas']);

@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { ConventionService, EditionOrganiserDto, OrganiserTicketAssignmentDto, OrganiserTicketTypeDto, RegistrationService, toErrorMessage } from 'shared';
+import { ConventionService, EditionOrganiserDto, formatTicketPrice, OrganiserTicketAssignmentDto, OrganiserTicketTypeDto, RegistrationService, toErrorMessage } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { FIELD, PLACEHOLDER } from '../../labels/ui.labels';
@@ -173,15 +173,7 @@ export class EditionOrganisersComponent {
     return [...new Set(row.events.map(event => event.role))].join(', ');
   }
 
-  ticketTypePriceLabel(price: number): string {
-    if (price === 0) return 'Kostnadsfri';
-
-    return new Intl.NumberFormat('sv-SE', {
-      style: 'currency',
-      currency: 'SEK',
-      maximumFractionDigits: 0,
-    }).format(price / 100);
-  }
+  protected readonly ticketTypePriceLabel = formatTicketPrice;
 
   updateTicket(personId: string, ticketTypeId: string | null): void {
     const editionId = this.editionContext.activeEdition()?.id;

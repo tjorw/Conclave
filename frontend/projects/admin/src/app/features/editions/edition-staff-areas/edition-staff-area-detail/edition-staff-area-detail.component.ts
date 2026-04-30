@@ -4,7 +4,6 @@ import { combineLatest, map } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -13,10 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { ConventionService, EditionDto, PersonDto, toContextErrorMessage } from 'shared';
 import { ERROR } from '../../../../labels/errors.labels';
 import { EDITION_DETAIL } from '../../../../labels/pages.labels';
-import {
-  ConfirmDialogComponent,
-  ConfirmDialogData,
-} from '../../../../shared/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from '../../../../shared/confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-edition-staff-area-detail',
@@ -39,7 +35,7 @@ export class EditionStaffAreaDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly svc = inject(ConventionService);
-  private readonly dialog = inject(MatDialog);
+  private readonly confirmSvc = inject(ConfirmDialogService);
 
   readonly edition = signal<EditionDto | null>(null);
   readonly persons = signal<PersonDto[]>([]);
@@ -129,17 +125,10 @@ export class EditionStaffAreaDetailComponent implements OnInit {
     const area = this.edition()?.staffAreas.find((a) => a.id === this.areaId);
     if (!area) return;
 
-    this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
-        data: {
-          title: this.PAGE.deleteStaffAreaTitle,
-          message: this.PAGE.deleteStaffAreaMessage(area.name),
-        },
-        width: '400px',
-      })
-      .afterClosed()
-      .pipe(map((r) => r === true))
-      .subscribe((confirmed) => {
+    this.confirmSvc.confirm({
+      title: this.PAGE.deleteStaffAreaTitle,
+      message: this.PAGE.deleteStaffAreaMessage(area.name),
+    }).subscribe((confirmed) => {
         if (!confirmed) return;
         this.saving.set(true);
         this.svc.removeStaffArea(this.editionId, this.areaId).subscribe({

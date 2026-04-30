@@ -1,5 +1,9 @@
 import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
 import { authGuard } from 'shared';
+import { EditionService } from './services/edition.service';
+
+const editionReadyGuard = () => inject(EditionService).load().then(() => true);
 
 export const routes: Routes = [
   {
@@ -64,7 +68,7 @@ export const routes: Routes = [
       },
       {
         path: 'my-pages',
-        canActivate: [authGuard],
+        canActivate: [authGuard, editionReadyGuard],
         children: [
           {
             path: '',

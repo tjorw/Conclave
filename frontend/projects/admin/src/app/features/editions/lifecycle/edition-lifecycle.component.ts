@@ -3,14 +3,13 @@ import { map } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConventionService, EditionDto, toContextErrorMessage } from 'shared';
 import { ERROR } from '../../../labels/errors.labels';
 import { EDITION_DETAIL } from '../../../labels/pages.labels';
 import { ACTION } from '../../../labels/ui.labels';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 import { EditionContextService } from '../../../services/edition-context.service';
 
 @Component({
@@ -28,7 +27,7 @@ import { EditionContextService } from '../../../services/edition-context.service
 export class EditionLifecycleComponent implements OnInit {
   private readonly route         = inject(ActivatedRoute);
   private readonly svc           = inject(ConventionService);
-  private readonly dialog        = inject(MatDialog);
+  private readonly confirmSvc    = inject(ConfirmDialogService);
   private readonly editionContext = inject(EditionContextService);
 
   readonly edition  = signal<EditionDto | null>(null);
@@ -85,13 +84,6 @@ export class EditionLifecycleComponent implements OnInit {
     this.svc.getEdition(this.edition()!.id).subscribe({ next: e => this.edition.set(e) });
   }
 
-  private openConfirm(data: ConfirmDialogData) {
-    return this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, { data, width: '400px' })
-      .afterClosed()
-      .pipe(map(r => r === true));
-  }
-
   registrationOpen(type: 'organiser' | 'staff' | 'visitor'): boolean {
     const e = this.edition();
     if (!e) return false;
@@ -112,7 +104,7 @@ export class EditionLifecycleComponent implements OnInit {
   }
 
   publish(): void {
-    this.openConfirm({
+    this.confirmSvc.confirm({
       title:        this.PAGE.publishConfirmTitle,
       message:      this.PAGE.publishConfirmMessage,
       confirmLabel: this.PAGE.publishAction,
@@ -127,7 +119,7 @@ export class EditionLifecycleComponent implements OnInit {
   }
 
   unpublish(): void {
-    this.openConfirm({
+    this.confirmSvc.confirm({
       title:        this.PAGE.unpublishConfirmTitle,
       message:      this.PAGE.unpublishConfirmMessage,
       confirmLabel: this.PAGE.unpublishAction,

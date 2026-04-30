@@ -174,12 +174,24 @@ public static class AuthEndpoints
                 }
             }
 
-            Domain.Convention.Aggregates.Convention? convention = null;
+            Convention? convention = null;
             if (multitenancyOptions.Value.Enabled)
             {
                 convention = await conventionRepo.GetSingleAsync(ct);
                 if (convention is null)
                     return Results.Problem("Konventet är inte konfigurerat.", statusCode: 422);
+
+                var existingPerson = await personRepo.FindByEmailInConventionAsync(convention.Id, request.Email, ct);
+                if (existingPerson is not null)
+                {
+                    return Results.Problem(
+                        title: "E-postadressen används redan.",
+                        statusCode: 422,
+                        extensions: new Dictionary<string, object?>
+                        {
+                            ["errorCode"] = "email_already_exists"
+                        });
+                }
             }
 
             var user = new ApplicationUser
@@ -217,8 +229,7 @@ public static class AuthEndpoints
 
             if (convention is not null)
             {
-                var personName = request.Name?.Trim() ?? string.Empty;
-                var person = convention.RegisterPerson(personName, request.Email);
+                var person = convention.RegisterPerson(request.Name?.Trim() ?? string.Empty, request.Email);
                 await personRepo.AddAndSaveAsync(person, ct);
                 user.PersonId = person.Id.Value;
                 await userManager.UpdateAsync(user);

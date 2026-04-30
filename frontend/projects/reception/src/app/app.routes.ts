@@ -1,5 +1,9 @@
 import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
 import { authGuard, receptionGuard } from 'shared';
+import { EditionContextService } from './services/edition-context.service';
+
+const editionContextReadyGuard = () => inject(EditionContextService).load().then(() => true);
 
 export const routes: Routes = [
   {
@@ -23,7 +27,7 @@ export const routes: Routes = [
     path: '',
     loadComponent: () =>
       import('./layout/shell.component').then(m => m.ShellComponent),
-    canActivate: [authGuard, receptionGuard],
+    canActivate: [authGuard, receptionGuard, editionContextReadyGuard],
     children: [
       {
         path: 'checkin',
