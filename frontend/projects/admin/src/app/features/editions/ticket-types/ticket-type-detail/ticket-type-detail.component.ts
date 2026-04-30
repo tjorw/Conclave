@@ -4,7 +4,6 @@ import { combineLatest, map } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -21,10 +20,7 @@ import {
 import { ERROR } from '../../../../labels/errors.labels';
 import { FIELD } from '../../../../labels/ui.labels';
 import { EDITION_DETAIL } from '../../../../labels/pages.labels';
-import {
-  ConfirmDialogComponent,
-  ConfirmDialogData,
-} from '../../../../shared/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from '../../../../shared/confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-ticket-type-detail',
@@ -49,7 +45,7 @@ export class TicketTypeDetailComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly svc = inject(ConventionService);
   private readonly regSvc = inject(RegistrationService);
-  private readonly dialog = inject(MatDialog);
+  private readonly confirmSvc = inject(ConfirmDialogService);
 
   readonly edition = signal<EditionDto | null>(null);
   readonly ticketTypes = signal<TicketTypeAdminDto[]>([]);
@@ -185,17 +181,10 @@ export class TicketTypeDetailComponent implements OnInit {
     const ticketType = this.ticketTypes().find((t) => t.id === this.ticketTypeId);
     if (!ticketType) return;
 
-    this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
-        data: {
-          title: this.PAGE.deleteTicketTypeTitle,
-          message: this.PAGE.deleteTicketTypeMessage(ticketType.name),
-        },
-        width: '400px',
-      })
-      .afterClosed()
-      .pipe(map((r) => r === true))
-      .subscribe((confirmed) => {
+    this.confirmSvc.confirm({
+      title: this.PAGE.deleteTicketTypeTitle,
+      message: this.PAGE.deleteTicketTypeMessage(ticketType.name),
+    }).subscribe((confirmed) => {
         if (!confirmed) return;
         this.saving.set(true);
         this.regSvc.deleteTicketType(this.editionId, this.ticketTypeId).subscribe({

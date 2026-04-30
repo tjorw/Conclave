@@ -26,7 +26,7 @@ import {
   toErrorMessage,
 } from 'shared';
 import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../../../shared/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 import { DraftBlock, SessionTimelineComponent } from '../../../shared/session-timeline/session-timeline.component';
 import { ERROR } from '../../../labels/errors.labels';
 import { EVENT_DETAIL } from '../../../labels/pages.labels';
@@ -67,14 +67,8 @@ export class EventDetailComponent implements OnInit {
   private readonly conSvc     = inject(ConventionService);
   private readonly regSvc     = inject(RegistrationService);
   private readonly fb         = inject(FormBuilder);
-  private readonly dialog     = inject(MatDialog);
-
-  private openConfirm(data: ConfirmDialogData) {
-    return this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, { data, width: '400px' })
-      .afterClosed()
-      .pipe(map(result => result === true));
-  }
+  private readonly dialog      = inject(MatDialog);
+  private readonly confirmSvc  = inject(ConfirmDialogService);
 
   readonly ACTION        = ACTION;
   readonly TOOLTIP       = TOOLTIP;
@@ -271,7 +265,7 @@ export class EventDetailComponent implements OnInit {
   deleteEvent(): void {
     const ev = this.event();
     if (!ev || this.deleting()) return;
-    this.openConfirm({
+    this.confirmSvc.confirm({
       title:   this.PAGE.deleteTitle,
       message: this.PAGE.deleteMessage(ev.title || this.PAGE.noName),
     }).subscribe(confirmed => {
@@ -567,7 +561,7 @@ export class EventDetailComponent implements OnInit {
     const ev = this.event();
     if (!ev || this.saving()) return;
 
-    this.openConfirm({
+    this.confirmSvc.confirm({
       title: 'Ta bort medarrangör',
       message: 'Är du säker på att du vill ta bort medarrangören från evenemanget?',
     }).subscribe(confirmed => {

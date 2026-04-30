@@ -3,11 +3,10 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
+import { Observable, forkJoin, of, switchMap } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -32,7 +31,7 @@ import { SESSIONS_OVERVIEW } from '../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../labels/ui.labels';
 import { EditionContextService } from '../../services/edition-context.service';
 import { EventTimelineComponent } from '../../shared/event-timeline/event-timeline.component';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
 import { DraftBlock, SessionTimelineComponent } from '../../shared/session-timeline/session-timeline.component';
 import { nextSort, sortBy, sortIcon, SortState } from '../../shared/sort-utils';
 
@@ -65,7 +64,7 @@ export class SessionsOverviewComponent {
   private readonly eventSvc = inject(EventService);
   private readonly conventionSvc = inject(ConventionService);
   private readonly fb = inject(FormBuilder);
-  private readonly dialog = inject(MatDialog);
+  private readonly confirmSvc = inject(ConfirmDialogService);
 
   readonly editionContext = inject(EditionContextService);
 
@@ -250,12 +249,6 @@ export class SessionsOverviewComponent {
     });
   }
 
-  private openConfirm(data: ConfirmDialogData) {
-    return this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, { data, width: '400px' })
-      .afterClosed()
-      .pipe(map(result => result === true));
-  }
 
   setDay(value: string): void {
     this.day.set(value);
@@ -358,7 +351,7 @@ export class SessionsOverviewComponent {
     const eventId = this.form.getRawValue().eventId;
     if (!sessionId || !eventId || this.saving()) return;
 
-    this.openConfirm({
+    this.confirmSvc.confirm({
       title: this.PAGE.deleteSessionTitle,
       message: this.PAGE.deleteSessionMessage,
       confirmLabel: ACTION.delete,
