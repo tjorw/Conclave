@@ -9,7 +9,6 @@ Spårar vad som återstår inför produktionsstart.
 Prioriterad lista – återstående arbete, högst prioritet överst.
 
 - [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
-- [ ] `R-DM01` Dataunderhall och retention - implementera stadjobb for skickade outbox-meddelanden och gammal domain event-logg. Se `docs/DataMaintenance.md` for regler.
 - [ ] `R-HL01` Hjälpsystem – `HelpTooltip`-komponent och initiala texter för Convention/Edition (UC-HL001)
 - [ ] `R-HL02` Hjälpsystem – `HelpDrawer` + `HelpService` med route-mappning (UC-HL003, UC-HL004)
 - [ ] `R-HL03` Hjälpsystem – första omgången Markdown-innehåll (6 filer: convention, event, registration, staff)

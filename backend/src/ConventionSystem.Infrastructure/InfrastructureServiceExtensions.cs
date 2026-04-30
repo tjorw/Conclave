@@ -9,6 +9,7 @@ using ConventionSystem.Application.Staff.Abstractions;
 using ConventionSystem.Application.Tenancy.Abstractions;
 using ConventionSystem.Domain.Common;
 using ConventionSystem.Domain.Registration.Services;
+using ConventionSystem.Infrastructure.DataMaintenance;
 using ConventionSystem.Infrastructure.Dispatching;
 using ConventionSystem.Infrastructure.Email;
 using Microsoft.Extensions.Hosting;
@@ -53,6 +54,9 @@ public static class InfrastructureServiceExtensions
         services.AddOptions<EmailOptions>()
             .Bind(configuration.GetSection(EmailOptions.SectionName));
 
+        services.AddOptions<DataMaintenanceOptions>()
+            .Bind(configuration.GetSection(DataMaintenanceOptions.SectionName));
+
         services.AddScoped<LoggingEmailService>();
         services.AddScoped<SmtpEmailService>();
         services.AddScoped<SendGridEmailService>();
@@ -82,6 +86,8 @@ public static class InfrastructureServiceExtensions
         });
 
         services.AddHostedService<OutboxProcessor>();
+        services.AddScoped<DataMaintenanceCleanupService>();
+        services.AddHostedService<DataMaintenanceHostedService>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();

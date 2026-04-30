@@ -1201,6 +1201,9 @@ namespace ConventionSystem.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OccurredAt")
+                        .HasDatabaseName("ix_domain_event_log_occurred_at");
+
                     b.ToTable("domain_event_log", (string)null);
                 });
 

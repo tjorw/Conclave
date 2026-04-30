@@ -14,5 +14,7 @@ public sealed class DomainEventLogConfiguration : IEntityTypeConfiguration<Domai
         builder.Property(e => e.EventType).HasMaxLength(200).IsRequired();
         builder.Property(e => e.Payload).IsRequired();
         builder.Property(e => e.OccurredAt).HasColumnName("occurred_at");
+
+        builder.HasIndex(e => e.OccurredAt).HasDatabaseName("ix_domain_event_log_occurred_at");
     }
 }
