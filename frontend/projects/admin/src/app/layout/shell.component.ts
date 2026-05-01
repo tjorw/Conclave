@@ -12,6 +12,8 @@ import { AuthService, ContextDebugComponent, GlobalStatusBannerComponent, Sessio
 import { EditionContextService } from '../services/edition-context.service';
 import { NAV } from '../labels/nav.labels';
 import { ACTION } from '../labels/ui.labels';
+import { HelpDrawerComponent } from '../../help/components/help-drawer/help-drawer.component';
+import { HelpService } from '../../help/services/help.service';
 
 type NavSection = 'editions' | 'persons' | 'events' | 'staffing' | 'visitors';
 
@@ -42,6 +44,7 @@ const DEFAULT_COLLAPSED_NAV_SECTIONS: Record<NavSection, boolean> = {
     MatFormFieldModule,
     GlobalStatusBannerComponent,
     ContextDebugComponent,
+    HelpDrawerComponent,
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
@@ -49,6 +52,7 @@ const DEFAULT_COLLAPSED_NAV_SECTIONS: Record<NavSection, boolean> = {
 export class ShellComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  readonly help = inject(HelpService);
   readonly editionContext = inject(EditionContextService);
   readonly sessionState = inject(SessionStateService);
 

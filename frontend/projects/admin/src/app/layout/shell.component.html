@@ -168,6 +168,9 @@
         }
       </div>
       }
+      <button mat-icon-button type="button" aria-label="Öppna hjälp" (click)="help.open()">
+        <mat-icon>help_outline</mat-icon>
+      </button>
       <button mat-button (click)="logout()">
         <mat-icon>logout</mat-icon>
         {{ ACTION.logout }}
@@ -181,4 +184,5 @@
     </main>
     <app-context-debug />
   </mat-sidenav-content>
+  <app-help-drawer />
 </mat-sidenav-container>

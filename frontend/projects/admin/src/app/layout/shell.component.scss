@@ -60,6 +60,10 @@
   opacity: 0.8;
 }
 
+.shell-toolbar button[aria-label="Öppna hjälp"] {
+  margin-right: 4px;
+}
+
 .shell-main {
   padding: 24px;
 }

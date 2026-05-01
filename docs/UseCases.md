@@ -2303,10 +2303,10 @@ Admin (alla roller)
 - Drawern är tillgänglig: `role="dialog"`, `aria-label`, fokus-trap
 
 ## Acceptanskriterier
-- [ ] Rätt topic väljs baserat på aktuell route
-- [ ] Routes utan mappning faller tillbaka på standardinnehåll
-- [ ] Drawern stängs med Escape-tangenten
-- [ ] Fokus-trap aktiveras när drawern är öppen
+- [x] Rätt topic väljs baserat på aktuell route
+- [x] Routes utan mappning faller tillbaka på standardinnehåll
+- [x] Drawern stängs med Escape-tangenten
+- [x] Fokus-trap aktiveras när drawern är öppen
 
 ---
 
@@ -2331,9 +2331,9 @@ Admin (alla roller)
 - Djuplänkar fungerar: `HelpService.open('edition-lifecycle')` öppnar rätt topic direkt
 
 ## Acceptanskriterier
-- [ ] Innehållet byts utan att drawern stängs
-- [ ] Bakåt-knapp visas och fungerar efter navigering
-- [ ] `HelpService.open(topic)` öppnar korrekt topic direkt
+- [x] Innehållet byts utan att drawern stängs
+- [x] Bakåt-knapp visas och fungerar efter navigering
+- [x] `HelpService.open(topic)` öppnar korrekt topic direkt
 
 ---
 
