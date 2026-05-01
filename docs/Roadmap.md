@@ -8,7 +8,6 @@ Spårar vad som återstår inför produktionsstart.
 
 Prioriterad lista – återstående arbete, högst prioritet överst.
 
-- [ ] `R11` Fas 4.1 Demo-deploy med fiktivt konvent
 - [ ] `R-HL01` Hjälpsystem – `HelpTooltip`-komponent och initiala texter för Convention/Edition (UC-HL001)
 - [ ] `R-HL02` Hjälpsystem – `HelpDrawer` + `HelpService` med route-mappning (UC-HL003, UC-HL004)
 - [ ] `R-HL03` Hjälpsystem – första omgången Markdown-innehåll (6 filer: convention, event, registration, staff)
@@ -71,28 +70,6 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 | **`Shift` saknar `EditionId`** | `Shift` har ingen direkt koppling till `EditionId`. `MyScheduleRepository` löser detta via `Edition.Stations`-navigeringen (shadow FK). Om Shift-kontexten växer bör ett direkt `EditionId` övervägas på `Shift` för att slippa join-beroendet mot Convention. | Låg – fungerar korrekt, men fragil vid schemamigration |
 | **Deduplikering i tidsschema** | Om samma session förekommer i flera kategorier (t.ex. bokad OCH arrangör) prioriteras Booked > Organiser > Watching i `MyScheduleRepository`. Prioriteringslogiken är inte testad på domännivå. Om affärsreglerna ändras (t.ex. "visa alltid arrangörsrollen oavsett bokning") behöver deduplikeringen ses över. | Låg – nuvarande beteende är rimligt |
 | **Inga `DbSet<Station>` i `ConventionDbContext`** | `Station` och `Venue` nås via `db.Set<T>()` i stället för namngivna `DbSet<T>`-properties. Inkonsekvens mot övriga entiteter. Lägg till `DbSet<Station>` och `DbSet<Venue>` i `ConventionDbContext` om fler queries börjar hämta dem direkt. | Låg |
-
----
-
-## Fas 4 – Demo och driftsättning
-
-### 4.1 Demo-deploy (ett fiktivt konvent)
-- Bygg-pipeline: Angular-appar (admin + publik +  portal) byggs in i `wwwroot` som en del av .NET publish-steget
-- En SQL Server-instans med en databas (`dbo` för domändata, `identity` för ASP.NET Identity)
-- Self-contained .NET-publish deployad till en host (VPS, Azure App Service eller liknande)
-- `DevDataSeeder` körs i `Development`-miljö och skapar demo-konvention med exempeldata
-- Hemligheter via miljövariabler eller Key Vault (ej `appsettings`)
-- Första verifieringsmålet för `R11` är en lokal publishbar demo-artifact som kan startas utan frontend-devserver och servera de paketerade klienterna från publish-outputen
-
-### 4.2 Konvent-onboarding
-Varje konvention är en separat deploy. Onboarding innebär att sätta upp en ny instans:
-- Ny databas provisioneras (kör EF Core-migrationer mot `DefaultConnection`)
-- `environment.ts` konfigureras med rätt `conventionId` och `apiBaseUrl`
-- Admin-konto skapas via `CreateConventionCommand` + `UserManager`
-- Välkomstmejl med inloggningsuppgifter för konventets admin
-
-
-
 
 ---
 
