@@ -8,14 +8,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ConventionService, EditionDto, VenueDto } from 'shared';
 import { ERROR } from '../../../labels/errors.labels';
 import { createSortController, sortBy } from '../../../shared/sort-utils';
-import { HelpPanelComponent } from '../../../../help/components/help-panel/help-panel.component';
 
 type VenueSortKey = 'name' | 'building' | 'description';
 
 @Component({
   selector: 'app-venues',
   standalone: true,
-  imports: [MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, HelpPanelComponent],
+  imports: [MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './venues.component.html',
   styleUrl: './venues.component.scss',
 })

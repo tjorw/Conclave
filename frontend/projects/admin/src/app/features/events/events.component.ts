@@ -25,7 +25,6 @@ import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../labels/ui.labels';
 import { createSortController, sortBy } from '../../shared/sort-utils';
-import { HelpPanelComponent } from '../../../help/components/help-panel/help-panel.component';
 
 type EventSortKey = 'title' | 'category' | 'organiser' | 'sessions' | 'comments' | 'status';
 
@@ -44,7 +43,6 @@ type EventSortKey = 'title' | 'category' | 'organiser' | 'sessions' | 'comments'
     MatProgressSpinnerModule,
     MatSelectModule,
     MatTooltipModule,
-    HelpPanelComponent,
   ],
   templateUrl: './events.component.html',
   styleUrl: './events.component.scss',

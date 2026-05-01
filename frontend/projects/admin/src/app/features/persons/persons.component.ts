@@ -19,7 +19,6 @@ import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import { CHIP, PERSON_EDITION_ROLE, PERSON_EDITION_ROLE_CHIP, PLACEHOLDER } from '../../labels/ui.labels';
 import { createSortController, sortBy } from '../../shared/sort-utils';
-import { HelpPanelComponent } from '../../../help/components/help-panel/help-panel.component';
 
 type PersonSortKey = 'name' | 'email' | 'phone' | 'roles' | 'status' | 'account';
 
@@ -35,7 +34,6 @@ type PersonSortKey = 'name' | 'email' | 'phone' | 'roles' | 'status' | 'account'
     MatInputModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    HelpPanelComponent,
   ],
   templateUrl: './persons.component.html',
   styleUrl: './persons.component.scss',

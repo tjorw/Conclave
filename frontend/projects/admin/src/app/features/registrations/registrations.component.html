@@ -10,10 +10,6 @@
     </p>
   </div>
 
-  <app-help-panel
-    [panelKey]="page() === 'visitors' ? 'registration.visitors' : 'registration.promotionCodes'"
-    topic="registration" />
-
   @if (error()) {
     <p class="error-banner">{{ error() }}</p>
   }
