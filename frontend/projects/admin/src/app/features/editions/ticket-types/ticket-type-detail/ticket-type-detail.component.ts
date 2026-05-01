@@ -22,6 +22,7 @@ import { ERROR } from '../../../../labels/errors.labels';
 import { FIELD } from '../../../../labels/ui.labels';
 import { EDITION_DETAIL } from '../../../../labels/pages.labels';
 import { ConfirmDialogService } from '../../../../shared/confirm-dialog/confirm-dialog.service';
+import { HelpTooltipComponent } from '../../../../../help/components/help-tooltip/help-tooltip.component';
 
 @Component({
   selector: 'app-ticket-type-detail',
@@ -36,6 +37,7 @@ import { ConfirmDialogService } from '../../../../shared/confirm-dialog/confirm-
     MatProgressSpinnerModule,
     MatSelectModule,
     MarkdownEditorComponent,
+    HelpTooltipComponent,
   ],
   templateUrl: './ticket-type-detail.component.html',
   styleUrl: './ticket-type-detail.component.scss',

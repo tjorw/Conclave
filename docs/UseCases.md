@@ -2275,8 +2275,8 @@ Admin (alla roller)
 - Texten hämtas från `help.labels.ts`
 
 ## Acceptanskriterier
-- [ ] Expansionstillståndet sparas och återläses från `localStorage`
-- [ ] "Läs mer" öppnar drawern på rätt topic
+- [x] Expansionstillståndet sparas och återläses från `localStorage`
+- [x] "Läs mer" öppnar drawern på rätt topic
 
 ---
 

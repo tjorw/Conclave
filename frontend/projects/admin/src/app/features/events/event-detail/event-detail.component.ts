@@ -32,6 +32,7 @@ import { ERROR } from '../../../labels/errors.labels';
 import { EVENT_DETAIL } from '../../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
 import { createSortController, sortBy } from '../../../shared/sort-utils';
+import { HelpTooltipComponent } from '../../../../help/components/help-tooltip/help-tooltip.component';
 
 type EventSessionSortKey = 'start' | 'end' | 'venue' | 'seats' | 'startType' | 'status';
 
@@ -56,6 +57,7 @@ type EventSessionSortKey = 'start' | 'end' | 'venue' | 'seats' | 'startType' | '
     MatTooltipModule,
     MarkdownEditorComponent,
     SessionTimelineComponent,
+    HelpTooltipComponent,
   ],
   templateUrl: './event-detail.component.html',
   styleUrl: './event-detail.component.scss',

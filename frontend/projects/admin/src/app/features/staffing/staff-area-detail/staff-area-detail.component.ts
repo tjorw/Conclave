@@ -20,6 +20,7 @@ import {
 } from 'shared';
 import { MatDividerModule } from '@angular/material/divider';
 import { createSortController, sortBy } from '../../../shared/sort-utils';
+import { HelpTooltipComponent } from '../../../../help/components/help-tooltip/help-tooltip.component';
 
 type ShiftSortKey = 'responsible' | 'start' | 'end' | 'min' | 'max' | 'staffing';
 type AssignmentSortKey = 'person' | 'status' | 'assigned';
@@ -41,6 +42,7 @@ type AssignmentSortKey = 'person' | 'status' | 'assigned';
     MatProgressSpinnerModule,
     MatSelectModule,
     MatTooltipModule,
+    HelpTooltipComponent,
   ],
   templateUrl: './staff-area-detail.component.html',
   styleUrl: './staff-area-detail.component.scss',

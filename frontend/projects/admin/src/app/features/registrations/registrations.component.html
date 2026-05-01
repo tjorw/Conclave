@@ -10,6 +10,10 @@
     </p>
   </div>
 
+  <app-help-panel
+    [panelKey]="page() === 'visitors' ? 'registration.visitors' : 'registration.promotionCodes'"
+    topic="registration" />
+
   @if (error()) {
     <p class="error-banner">{{ error() }}</p>
   }
@@ -88,43 +92,58 @@
                   <input matInput formControlName="description" maxlength="200" />
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
-                  <mat-label>Rabattyp</mat-label>
-                  <mat-select formControlName="discountType">
+                <div class="field-with-help">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Rabattyp</mat-label>
+                    <mat-select formControlName="discountType">
                     @for (option of discountTypeOptions; track option.value) {
                       <mat-option [value]="option.value">{{ option.label }}</mat-option>
                     }
-                  </mat-select>
-                </mat-form-field>
+                    </mat-select>
+                  </mat-form-field>
+                  <app-help-tooltip helpKey="registration.promotionDiscount" />
+                </div>
 
-                <mat-form-field appearance="outline">
-                  <mat-label>Rabattvärde</mat-label>
-                  <input matInput type="number" min="0" formControlName="discountValue" />
-                </mat-form-field>
+                <div class="field-with-help">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Rabattvärde</mat-label>
+                    <input matInput type="number" min="0" formControlName="discountValue" />
+                  </mat-form-field>
+                  <app-help-tooltip helpKey="registration.promotionDiscount" />
+                </div>
 
                 <mat-form-field appearance="outline">
                   <mat-label>Max antal inlösningar</mat-label>
                   <input matInput type="number" min="1" formControlName="maxRedemptions" />
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
-                  <mat-label>Giltig från</mat-label>
-                  <input matInput type="datetime-local" formControlName="validFrom" />
-                </mat-form-field>
+                <div class="field-with-help">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Giltig från</mat-label>
+                    <input matInput type="datetime-local" formControlName="validFrom" />
+                  </mat-form-field>
+                  <app-help-tooltip helpKey="registration.promotionValidity" />
+                </div>
 
-                <mat-form-field appearance="outline">
-                  <mat-label>Giltig till</mat-label>
-                  <input matInput type="datetime-local" formControlName="validUntil" />
-                </mat-form-field>
+                <div class="field-with-help">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Giltig till</mat-label>
+                    <input matInput type="datetime-local" formControlName="validUntil" />
+                  </mat-form-field>
+                  <app-help-tooltip helpKey="registration.promotionValidity" />
+                </div>
 
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Tillåtna biljettyper</mat-label>
-                  <mat-select formControlName="allowedTicketTypeIds" multiple>
+                <div class="field-with-help full-width">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Tillåtna biljettyper</mat-label>
+                    <mat-select formControlName="allowedTicketTypeIds" multiple>
                     @for (ticketType of ticketTypes(); track ticketType.id) {
                       <mat-option [value]="ticketType.id">{{ ticketType.name }}</mat-option>
                     }
-                  </mat-select>
-                </mat-form-field>
+                    </mat-select>
+                  </mat-form-field>
+                  <app-help-tooltip helpKey="registration.promotionAllowedTickets" />
+                </div>
 
                 <div class="form-actions">
                   <button mat-button type="button" (click)="togglePromotionCodeForm()" [disabled]="saving()">

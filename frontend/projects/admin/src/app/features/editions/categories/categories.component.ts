@@ -8,13 +8,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CategoryDto, ConventionService, EditionDto, PersonDto } from 'shared';
 import { ERROR } from '../../../labels/errors.labels';
 import { createSortController, sortBy } from '../../../shared/sort-utils';
+import { HelpPanelComponent } from '../../../../help/components/help-panel/help-panel.component';
 
 type SortKey = 'name' | 'description' | 'responsible';
 
 @Component({
   selector: 'app-categories',
   standalone: true,
-  imports: [MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, HelpPanelComponent],
   templateUrl: './categories.component.html',
   styleUrl: './categories.component.scss',
 })

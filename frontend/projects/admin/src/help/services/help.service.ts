@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { computed, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
@@ -13,16 +14,28 @@ export class HelpService {
   private readonly isOpenState = signal(false);
   private readonly currentTopicState = signal<HelpTopic>(DEFAULT_HELP_TOPIC);
   private readonly historyState = signal<HelpTopic[]>([]);
+  private readonly markdownCache = new Map<HelpTopic, string>();
+  private readonly markdownState = signal<Partial<Record<HelpTopic, string>>>({});
 
   readonly isOpen = this.isOpenState.asReadonly();
   readonly currentTopic = this.currentTopicState.asReadonly();
-  readonly currentContent = computed<HelpTopicContent>(() => HELP_TOPICS[this.currentTopicState()]);
+  readonly currentContent = computed<HelpTopicContent & { markdown: string }>(() => {
+    const topic = this.currentTopicState();
+    const content = HELP_TOPICS[topic];
+    return {
+      ...content,
+      markdown: this.markdownState()[topic] ?? content.fallbackMarkdown,
+    };
+  });
   readonly canGoBack = computed(() => this.historyState().length > 0);
 
-  constructor(private readonly router: Router) {}
+  constructor(
+    private readonly router: Router,
+    private readonly http: HttpClient,
+  ) {}
 
   open(topic?: HelpTopic): void {
-    this.currentTopicState.set(topic ?? topicForRoute(this.router.url));
+    this.setTopic(topic ?? topicForRoute(this.router.url));
     this.historyState.set([]);
     this.isOpenState.set(true);
   }
@@ -37,7 +50,7 @@ export class HelpService {
     if (topic === current) return;
 
     this.historyState.update(history => [...history, current]);
-    this.currentTopicState.set(topic);
+    this.setTopic(topic);
     this.isOpenState.set(true);
   }
 
@@ -47,6 +60,27 @@ export class HelpService {
     if (!previous) return;
 
     this.historyState.set(history.slice(0, -1));
-    this.currentTopicState.set(previous);
+    this.setTopic(previous);
+  }
+
+  private setTopic(topic: HelpTopic): void {
+    this.currentTopicState.set(topic);
+    this.loadMarkdown(topic);
+  }
+
+  private loadMarkdown(topic: HelpTopic): void {
+    const content = HELP_TOPICS[topic];
+    if (!content.assetPath || this.markdownCache.has(topic)) return;
+
+    this.http.get(content.assetPath, { responseType: 'text' }).subscribe({
+      next: markdown => {
+        this.markdownCache.set(topic, markdown);
+        this.markdownState.update(current => ({ ...current, [topic]: markdown }));
+      },
+      error: () => {
+        this.markdownCache.set(topic, content.fallbackMarkdown);
+        this.markdownState.update(current => ({ ...current, [topic]: content.fallbackMarkdown }));
+      },
+    });
   }
 }

@@ -116,6 +116,30 @@
   margin-top: 4px;
 }
 
+.field-with-help {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 0;
+  }
+
+  app-help-tooltip {
+    margin-top: 10px;
+  }
+}
+
+.field-with-help--textarea app-help-tooltip {
+  margin-top: 18px;
+}
+
+.field-with-help--compact {
+  flex: 0 0 220px;
+  min-width: 180px;
+}
+
 .tab-card {
   margin-top: 16px;
 }

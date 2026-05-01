@@ -25,6 +25,8 @@ import {
   toContextErrorMessage,
 } from 'shared';
 import { createSortController, sortBy } from '../../shared/sort-utils';
+import { HelpPanelComponent } from '../../../help/components/help-panel/help-panel.component';
+import { HelpTooltipComponent } from '../../../help/components/help-tooltip/help-tooltip.component';
 
 type RegistrationSortKey = 'person' | 'ticket' | 'status' | 'registered' | 'payment';
 type PromotionSortKey = 'code' | 'description' | 'discount' | 'status' | 'redemptions' | 'validity' | 'tickets';
@@ -44,6 +46,8 @@ type RegistrationPage = 'visitors' | 'promotion-codes';
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    HelpPanelComponent,
+    HelpTooltipComponent,
   ],
   templateUrl: './registrations.component.html',
   styleUrl: './registrations.component.scss',

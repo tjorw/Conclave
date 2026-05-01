@@ -245,17 +245,20 @@ hanterar även klick/touch-toggle så samma hjälp fungerar på mobil.
 
 `HelpPanel`-komponenten är en expanderbar förklaringspanel för listsidor.
 Expansionstillståndet persisteras i `localStorage` med nyckeln `help-panel:{panelKey}`.
+Paneltexter definieras i `help/labels/help.labels.ts` via `HelpPanelKey`
+och `HELP_PANEL_LABELS`. "Läs mer" öppnar relevant topic via `HelpService`.
 
 **Nivå 2 – Hjälpdrawer**
 `HelpDrawer`-komponenten öppnas via `HelpService.open(topic?)`.
 Utan argument väljer servicen topic baserat på aktuell route via `HELP_ROUTE_MAP`.
 R-HL02 använder typade topics i `help/routing/help-routing.ts`, där
-route-mappningen och det första korta markdown-innehållet ligger. R-HL03
-utökar detta med riktiga Markdown-filer under `src/help/content/`, bundlade
-som assets under `assets/help/`.
+route-mappningen och fallback-innehåll ligger. R-HL03 lägger första
+Markdown-innehållet under `src/help/content/`, bundlat som assets under
+`assets/help/` och laddat via `HelpService`.
 
 **Konventioner**
 - Ny domänterm i ett formulär → lägg till nyckel i `HelpTooltipKey` och text i `HELP_TOOLTIP_LABELS` i samma commit.
+- R-HL05 utökar tooltip-täckningen till Event-, Registration- och Staff-flöden.
 - Ny route → lägg till mappning i `HELP_ROUTE_MAP` och vid behov en ny `HelpTopic` med tillhörande Markdown-fil.
 - Markdown-filer skrivs på svenska. Rubriknivå i filerna börjar på `##`.
 

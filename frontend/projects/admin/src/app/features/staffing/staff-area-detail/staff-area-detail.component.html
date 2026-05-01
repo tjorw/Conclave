@@ -19,7 +19,10 @@
 @if (addingStation()) {
   <mat-card class="station-form-card">
     <mat-card-content>
-      <p class="form-card-title">Ny station</p>
+        <p class="form-card-title">
+          Ny station
+          <app-help-tooltip helpKey="staff.station" />
+        </p>
       <form [formGroup]="stationForm" class="station-form-row">
         <mat-form-field appearance="outline" class="field-name">
           <mat-label>Namn</mat-label>
@@ -46,7 +49,10 @@
     <!-- Redigera station inline -->
     <mat-card class="station-form-card">
       <mat-card-content>
-        <p class="form-card-title">Redigera station</p>
+        <p class="form-card-title">
+          Redigera station
+          <app-help-tooltip helpKey="staff.station" />
+        </p>
         <form [formGroup]="stationForm" class="station-form-row">
           <mat-form-field appearance="outline" class="field-name">
             <mat-label>Namn</mat-label>
@@ -128,7 +134,10 @@
                           </button>
                         </div>
 
-                        <h4 class="section-label">Tilldelningar</h4>
+                        <h4 class="section-label">
+                          Tilldelningar
+                          <app-help-tooltip helpKey="staff.assignment" />
+                        </h4>
                         <table class="data-table inner-table">
                           <thead>
                             <tr>
@@ -172,14 +181,17 @@
                         <!-- Tilldela person -->
                         <div class="assign-form">
                             <form [formGroup]="assignForm" class="form-row">
-                              <mat-form-field appearance="outline">
-                                <mat-label>Tilldela person</mat-label>
-                                <mat-select formControlName="personId">
-                                  @for (p of staff(); track p.personId) {
-                                    <mat-option [value]="p.personId">{{ p.personName }}</mat-option>
-                                  }
-                                </mat-select>
-                              </mat-form-field>
+                              <div class="field-with-help">
+                                <mat-form-field appearance="outline">
+                                  <mat-label>Tilldela person</mat-label>
+                                  <mat-select formControlName="personId">
+                                    @for (p of staff(); track p.personId) {
+                                      <mat-option [value]="p.personId">{{ p.personName }}</mat-option>
+                                    }
+                                  </mat-select>
+                                </mat-form-field>
+                                <app-help-tooltip helpKey="staff.assignment" />
+                              </div>
                               <button mat-flat-button color="primary" (click)="assignPerson()"
                                 [disabled]="assignForm.invalid || saving()">
                                 Tilldela
@@ -203,27 +215,33 @@
         @if (createShiftForStation() === station.id) {
           <div class="create-shift-form">
             <form [formGroup]="createShiftForm" class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Ansvarig</mat-label>
-                <mat-select formControlName="responsibleId">
-                  @for (p of staff(); track p.personId) {
-                    <mat-option [value]="p.personId">{{ p.personName }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
+              <div class="field-with-help">
+                <mat-form-field appearance="outline">
+                  <mat-label>Ansvarig</mat-label>
+                  <mat-select formControlName="responsibleId">
+                    @for (p of staff(); track p.personId) {
+                      <mat-option [value]="p.personId">{{ p.personName }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <app-help-tooltip helpKey="staff.shiftResponsible" />
+              </div>
               <app-date-time-range
                 [group]="createShiftForm"
                 [defaultDurationMinutes]="60"
                 [min]="shiftMin"
                 [max]="shiftMax" />
-              <mat-form-field appearance="outline" class="field-sm">
-                <mat-label>Min</mat-label>
-                <input matInput type="number" min="1" formControlName="minPersons" />
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="field-sm">
-                <mat-label>Max</mat-label>
-                <input matInput type="number" min="1" formControlName="maxPersons" />
-              </mat-form-field>
+              <div class="field-with-help field-with-help--capacity">
+                <mat-form-field appearance="outline" class="field-sm">
+                  <mat-label>Min</mat-label>
+                  <input matInput type="number" min="1" formControlName="minPersons" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="field-sm">
+                  <mat-label>Max</mat-label>
+                  <input matInput type="number" min="1" formControlName="maxPersons" />
+                </mat-form-field>
+                <app-help-tooltip helpKey="staff.shiftCapacity" />
+              </div>
             </form>
             <div class="form-actions">
               <button mat-button (click)="cancelCreateShift()">Avbryt</button>

@@ -11,7 +11,8 @@ export type HelpTopic =
 
 export interface HelpTopicContent {
   title: string;
-  markdown: string;
+  assetPath?: string;
+  fallbackMarkdown: string;
 }
 
 export const DEFAULT_HELP_TOPIC: HelpTopic = 'welcome';
@@ -19,91 +20,81 @@ export const DEFAULT_HELP_TOPIC: HelpTopic = 'welcome';
 export const HELP_TOPICS: Record<HelpTopic, HelpTopicContent> = {
   welcome: {
     title: 'Välkommen till Conclave',
-    markdown: `
+    fallbackMarkdown: `
 ## Välkommen till Conclave
 
-Här hittar du kort hjälp för den vy du arbetar i. Välj ett ämne i listan eller använd hjälpknappen igen från en annan sida.
-
+Här hittar du kort hjälp för den vy du arbetar i. Välj ett ämne i listan eller använd hjälpknappen från en specifik vy för kontextuell hjälp.
 `,
   },
   'convention-overview': {
     title: 'Konvent och upplagor',
-    markdown: `
+    assetPath: 'assets/help/convention/overview.md',
+    fallbackMarkdown: `
 ## Konvent och upplagor
 
 Konventet är den övergripande organisationen. En upplaga är en specifik genomförandeperiod med egna datum, koordinatorer och struktur.
-
-På startsidan skapar, importerar och öppnar du upplagor.
 `,
   },
   'edition-basics': {
     title: 'Upplagans grunduppgifter',
-    markdown: `
+    assetPath: 'assets/help/convention/edition-basics.md',
+    fallbackMarkdown: `
 ## Upplagans grunduppgifter
 
 Grunduppgifterna styr namn, datum och ansvariga koordinatorer för upplagan.
-
-Schematider per dag används som stöd när andra flöden föreslår tider.
 `,
   },
   'edition-lifecycle': {
     title: 'Upplagans livscykel',
-    markdown: `
+    assetPath: 'assets/help/convention/edition-lifecycle.md',
+    fallbackMarkdown: `
 ## Upplagans livscykel
 
-Publicering gör upplagan synlig i publika flöden. Aktiv upplaga används som standard i admin och publika vyer.
-
-Registreringsöppningarna styr vilka grupper som kan anmäla sig just nu.
+Publicering gör upplagan synlig i publika flöden. Registreringsöppningarna styr vilka grupper som kan anmäla sig.
 `,
   },
   'edition-structure': {
     title: 'Upplagans struktur',
-    markdown: `
+    assetPath: 'assets/help/convention/edition-basics.md',
+    fallbackMarkdown: `
 ## Upplagans struktur
 
 Lokaler, funktionsområden, stationer, kategorier och biljettyper hör till en upplaga.
-
-Bygg strukturen innan program, bemanning och registreringar börjar användas fullt ut.
 `,
   },
   'event-workflow': {
     title: 'Evenemang och schema',
-    markdown: `
+    assetPath: 'assets/help/event/workflow.md',
+    fallbackMarkdown: `
 ## Evenemang och schema
 
 Evenemang beskriver programpunkter. Sessioner placerar dem i tid och lokal.
-
-Arrangörsflödet och granskningsflödet avgör när programpunkter är redo att schemaläggas.
 `,
   },
   registration: {
     title: 'Registrering och besökare',
-    markdown: `
+    assetPath: 'assets/help/registration/overview.md',
+    fallbackMarkdown: `
 ## Registrering och besökare
 
 Besökarregistreringar, biljetter och promotionkoder hör till registreringsflödet.
-
-Kontrollera att rätt registreringsfönster är öppet innan du felsöker en saknad anmälan.
 `,
   },
   staff: {
     title: 'Funktionärer och bemanning',
-    markdown: `
+    assetPath: 'assets/help/staff/overview.md',
+    fallbackMarkdown: `
 ## Funktionärer och bemanning
 
 Funktionärer ansöker till områden och kan tilldelas pass på stationer.
-
-Bemanningsvyerna utgår från aktiv upplaga.
 `,
   },
   feeds: {
     title: 'Publika feeds',
-    markdown: `
+    fallbackMarkdown: `
 ## Publika feeds
 
 Feeds används för att exponera programdata till externa eller publika konsumenter.
-
-URL:erna bygger på aktuell konventionskontext.
 `,
   },
 };

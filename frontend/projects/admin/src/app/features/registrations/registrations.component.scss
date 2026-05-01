@@ -51,6 +51,21 @@
   gap: 12px;
 }
 
+.field-with-help {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 0;
+  }
+
+  app-help-tooltip {
+    margin-top: 10px;
+  }
+}
+
 .full-width {
   grid-column: 1 / -1;
 }
