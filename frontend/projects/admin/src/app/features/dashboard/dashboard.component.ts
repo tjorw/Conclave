@@ -17,6 +17,7 @@ import { ERROR } from '../../labels/errors.labels';
 import { ACTION, CHIP, FIELD, PLACEHOLDER } from '../../labels/ui.labels';
 import { createSortController, sortBy } from '../../shared/sort-utils';
 import { ConfirmDialogService } from '../../shared/confirm-dialog/confirm-dialog.service';
+import { HelpTooltipComponent } from '../../../help/components/help-tooltip/help-tooltip.component';
 
 type EditionSortKey = 'name' | 'start' | 'end' | 'status';
 type CreateMode = 'manual' | 'import';
@@ -112,6 +113,7 @@ export class ImportWarningsDialogComponent {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    HelpTooltipComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',

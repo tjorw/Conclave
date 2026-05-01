@@ -2,6 +2,32 @@
   margin-bottom: 24px;
 }
 
+.page-subtitle,
+.field-with-help,
+.schedule-days-header span:first-child {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.page-subtitle app-help-tooltip {
+  margin-top: -2px;
+}
+
+.field-with-help {
+  flex: 1;
+  min-width: 160px;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 0;
+  }
+
+  app-help-tooltip {
+    margin-top: 10px;
+  }
+}
+
 .form-row {
   mat-form-field {
     flex: 1;

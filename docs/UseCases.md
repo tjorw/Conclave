@@ -2246,9 +2246,9 @@ Admin (alla roller)
 - Touch-interaktion fungerar (tryck öppnar, tryck utanför stänger)
 
 ## Acceptanskriterier
-- [ ] Tooltip visas med rätt text för varje `HelpTooltipKey`
-- [ ] Tillgänglighetsattribut sätts korrekt
-- [ ] Touch-interaktion fungerar på mobil
+- [x] Tooltip visas med rätt text för varje `HelpTooltipKey`
+- [x] Tillgänglighetsattribut sätts korrekt
+- [x] Touch-interaktion fungerar på mobil
 
 ---
 

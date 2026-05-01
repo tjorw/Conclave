@@ -11,6 +11,7 @@ import { EDITION_DETAIL } from '../../../labels/pages.labels';
 import { ACTION } from '../../../labels/ui.labels';
 import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 import { EditionContextService } from '../../../services/edition-context.service';
+import { HelpTooltipComponent } from '../../../../help/components/help-tooltip/help-tooltip.component';
 
 @Component({
   selector: 'app-edition-lifecycle',
@@ -20,6 +21,7 @@ import { EditionContextService } from '../../../services/edition-context.service
     MatChipsModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    HelpTooltipComponent,
   ],
   templateUrl: './edition-lifecycle.component.html',
   styleUrl: './edition-lifecycle.component.scss',

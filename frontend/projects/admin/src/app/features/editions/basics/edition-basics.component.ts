@@ -12,6 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { ConventionService, EditionDto, PersonDto, toContextErrorMessage } from 'shared';
 import { ERROR } from '../../../labels/errors.labels';
 import { FIELD } from '../../../labels/ui.labels';
+import { HelpTooltipComponent } from '../../../../help/components/help-tooltip/help-tooltip.component';
 
 @Component({
   selector: 'app-edition-basics',
@@ -25,6 +26,7 @@ import { FIELD } from '../../../labels/ui.labels';
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    HelpTooltipComponent,
   ],
   templateUrl: './edition-basics.component.html',
   styleUrl: './edition-basics.component.scss',

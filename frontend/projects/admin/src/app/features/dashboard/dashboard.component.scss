@@ -6,6 +6,37 @@
   flex-wrap: wrap;
 }
 
+.page-title-with-help,
+.page-subtitle,
+.field-with-help {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.page-title-with-help {
+  align-items: center;
+}
+
+.page-subtitle app-help-tooltip {
+  margin-top: -2px;
+}
+
+.field-with-help {
+  mat-form-field {
+    flex: 1;
+    min-width: 0;
+  }
+
+  app-help-tooltip {
+    margin-top: 10px;
+  }
+}
+
+.field-with-help--textarea app-help-tooltip {
+  margin-top: 18px;
+}
+
 .editions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -149,6 +180,7 @@
   }
 
   .create-mode-toggle,
+  .field-with-help,
   .form-actions {
     flex-direction: column;
   }

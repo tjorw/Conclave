@@ -5,7 +5,10 @@
 } @else if (edition(); as e) {
   <div class="page-header">
     <h1 class="page-title">{{ e.name }}</h1>
-    <p class="page-subtitle">Grunduppgifter</p>
+    <p class="page-subtitle">
+      Grunduppgifter
+      <app-help-tooltip helpKey="edition.name" />
+    </p>
   </div>
 
   <mat-card class="edit-card">
@@ -13,41 +16,59 @@
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="save()" class="edit-form">
         <div class="form-row">
-          <mat-form-field>
-            <mat-label>{{ FIELD.name }}</mat-label>
-            <input matInput formControlName="name" />
-          </mat-form-field>
-          <mat-form-field>
-            <mat-label>{{ FIELD.startDate }}</mat-label>
-            <input matInput type="date" formControlName="startDate" />
-          </mat-form-field>
-          <mat-form-field>
-            <mat-label>{{ FIELD.endDate }}</mat-label>
-            <input matInput type="date" formControlName="endDate" />
-          </mat-form-field>
+          <div class="field-with-help">
+            <mat-form-field>
+              <mat-label>{{ FIELD.name }}</mat-label>
+              <input matInput formControlName="name" />
+            </mat-form-field>
+            <app-help-tooltip helpKey="edition.name" />
+          </div>
+          <div class="field-with-help">
+            <mat-form-field>
+              <mat-label>{{ FIELD.startDate }}</mat-label>
+              <input matInput type="date" formControlName="startDate" />
+            </mat-form-field>
+            <app-help-tooltip helpKey="edition.startDate" />
+          </div>
+          <div class="field-with-help">
+            <mat-form-field>
+              <mat-label>{{ FIELD.endDate }}</mat-label>
+              <input matInput type="date" formControlName="endDate" />
+            </mat-form-field>
+            <app-help-tooltip helpKey="edition.endDate" />
+          </div>
         </div>
         <div class="form-row">
-          <mat-form-field>
-            <mat-label>{{ FIELD.staffCoord }}</mat-label>
-            <mat-select formControlName="staffCoordinatorId">
-              @for (p of persons(); track p.id) {
-                <mat-option [value]="p.id">{{ p.name }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field>
-            <mat-label>{{ FIELD.eventCoord }}</mat-label>
-            <mat-select formControlName="eventCoordinatorId">
-              @for (p of persons(); track p.id) {
-                <mat-option [value]="p.id">{{ p.name }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+          <div class="field-with-help">
+            <mat-form-field>
+              <mat-label>{{ FIELD.staffCoord }}</mat-label>
+              <mat-select formControlName="staffCoordinatorId">
+                @for (p of persons(); track p.id) {
+                  <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <app-help-tooltip helpKey="edition.staffCoordinator" />
+          </div>
+          <div class="field-with-help">
+            <mat-form-field>
+              <mat-label>{{ FIELD.eventCoord }}</mat-label>
+              <mat-select formControlName="eventCoordinatorId">
+                @for (p of persons(); track p.id) {
+                  <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <app-help-tooltip helpKey="edition.eventCoordinator" />
+          </div>
         </div>
 
         <div class="schedule-days-list">
           <div class="schedule-days-header">
-            <span>Dag</span>
+            <span>
+              Dag
+              <app-help-tooltip helpKey="edition.scheduleDayTimes" />
+            </span>
             <span>Start</span>
             <span>Slut</span>
           </div>

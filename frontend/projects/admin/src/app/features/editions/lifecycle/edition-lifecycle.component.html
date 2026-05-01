@@ -38,7 +38,10 @@
       <div class="lifecycle-panel-main">
         <mat-icon class="panel-icon">published_with_changes</mat-icon>
         <div class="panel-copy">
-          <h3>{{ PAGE.publishTitle }}</h3>
+          <h3>
+            {{ PAGE.publishTitle }}
+            <app-help-tooltip helpKey="edition.publish" />
+          </h3>
           <p>{{ PAGE.publishHint }}</p>
         </div>
       </div>
@@ -62,7 +65,10 @@
       <div class="lifecycle-panel-main">
         <mat-icon class="panel-icon">public</mat-icon>
         <div class="panel-copy">
-          <h3>{{ PAGE.activeEditionTitle }}</h3>
+          <h3>
+            {{ PAGE.activeEditionTitle }}
+            <app-help-tooltip helpKey="edition.activeEdition" />
+          </h3>
           <p>{{ PAGE.activeEditionHint }}</p>
         </div>
       </div>
@@ -81,7 +87,10 @@
   <section class="registration-panel">
     <div class="registration-panel-header">
       <div>
-        <h3>{{ PAGE.registrationsTitle }}</h3>
+        <h3>
+          {{ PAGE.registrationsTitle }}
+          <app-help-tooltip helpKey="edition.registrationWindows" />
+        </h3>
         <p>{{ PAGE.registrationsHint }}</p>
       </div>
       <span class="registration-count">

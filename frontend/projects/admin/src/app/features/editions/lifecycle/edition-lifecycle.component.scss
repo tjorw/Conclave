@@ -96,6 +96,9 @@
   min-width: 0;
 
   h3 {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     margin: 0;
     font-size: 0.98rem;
     font-weight: 600;
@@ -129,6 +132,9 @@
   margin-bottom: 12px;
 
   h3 {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     margin: 0;
     font-size: 0.98rem;
     font-weight: 600;

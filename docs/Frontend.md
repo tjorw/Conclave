@@ -239,6 +239,9 @@ Admin-klienten har ett inbyggt hjälpsystem i två nivåer.
 `HelpTooltip`-komponenten renderar en ⓘ-ikon med en kort förklaringstext.
 Alla texter definieras i `help/labels/help.labels.ts` via `HelpTooltipKey`-typen.
 Inga hjälptexter hårdkodas i HTML eller TS.
+R-HL01 omfattar endast inline-tooltipen och de första texterna för Convention
+och Edition. Komponenten bygger på Angular Material tooltip, men knappen
+hanterar även klick/touch-toggle så samma hjälp fungerar på mobil.
 
 `HelpPanel`-komponenten är en expanderbar förklaringspanel för listsidor.
 Expansionstillståndet persisteras i `localStorage` med nyckeln `help-panel:{panelKey}`.
