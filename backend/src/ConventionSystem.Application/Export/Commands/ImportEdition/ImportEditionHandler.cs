@@ -33,7 +33,7 @@ public sealed class ImportEditionHandler(
 {
     public async Task<ImportEditionResult> Handle(ImportEditionCommand command, CancellationToken ct)
     {
-        if (command.Document.SchemaVersion != EditionExportDocument.CurrentSchemaVersion)
+        if (!IsSupportedSchemaVersion(command.Document.SchemaVersion))
             throw new ArgumentException($"Okänd exportversion: {command.Document.SchemaVersion}.", nameof(command));
 
         if (command.Document.DurationDays <= 0)
@@ -92,7 +92,15 @@ public sealed class ImportEditionHandler(
                 $"Kategorin '{category.Name}'",
                 ct);
 
-            edition.CreateCategory(category.Name, responsibleId, category.Description);
+            var publicDescription = string.IsNullOrWhiteSpace(category.PublicDescription)
+                ? category.Description
+                : category.PublicDescription;
+
+            edition.CreateCategory(
+                category.Name,
+                responsibleId,
+                category.OrganizerInstructions,
+                publicDescription);
         }
 
         await editionRepository.AddAndSaveAsync(edition, ct);
@@ -272,6 +280,10 @@ public sealed class ImportEditionHandler(
                 importedEvent.EditDescription(exportedEvent.Description);
                 importedEvent.SetRegistrationType(registrationType, exportedEvent.DropInRules);
                 importedEvent.UpdateScheduleRequestText(exportedEvent.ScheduleRequestText);
+                var coOrganiserLimit = exportedEvent.CoOrganiserLimit > 0
+                    ? exportedEvent.CoOrganiserLimit
+                    : exportedEvent.CoOrganiserCount.GetValueOrDefault();
+                importedEvent.AdjustCoOrganiserLimit(coOrganiserLimit);
 
                 foreach (var session in exportedEvent.Sessions)
                 {
@@ -339,6 +351,9 @@ public sealed class ImportEditionHandler(
         date = startDate.AddDays(relativeDay - 1);
         return true;
     }
+
+    private static bool IsSupportedSchemaVersion(int schemaVersion)
+        => schemaVersion is 1 or EditionExportDocument.CurrentSchemaVersion;
 
     private static bool TryParseOptionalTime(string? value, out TimeOnly? time)
     {

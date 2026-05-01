@@ -9,9 +9,13 @@
 .option-group,
 .export-actions {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.option-group {
+  max-width: 72ch;
 }
 
 .json-panel {

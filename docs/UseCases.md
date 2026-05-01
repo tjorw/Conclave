@@ -2824,9 +2824,13 @@ Konventionsadministratör
 5. Administratören kan även ladda ner samma JSON som fil
 
 ## Valbara block
-- **Evenemang** – titel, beskrivning, kategorinamn, registreringstyp, inpläggningsregler, sessioner (lokal via namn, dag (relativt), klockslag, max-platser, starttyp)
+- **Evenemang** – titel, beskrivning, kategorinamn, registreringstyp, inpläggningsregler, schemaönskemålstext, godkänd medarrangörslimit (`coOrganiserLimit`), sessioner (lokal via namn, dag (relativt), klockslag, max-platser, starttyp)
 - **Biljetttyper** – namn, pris, typ (Visitor/Organiser/Staff), beskrivning, giltiga dagar (relativt), tillåtna kategorier via namn
 - **Bemanningspass** – exporteras alltid under respektive station: dag (relativt), klockslag, min/max bemanning och passansvarig via e-post
+
+## Kategoribeskrivningar i dokumentet
+- Kategorier exporterar både `organizerInstructions` (intern instruktion för arrangörer) och `publicDescription` (publik text).
+- För bakåtkompatibilitet kan äldre dokument innehålla `description`; importen mappar då detta till `publicDescription` om `publicDescription` saknas.
 
 ## Datumrepresentation
 Alla datum uttrycks relativt till upplagets startdatum. Dag 1 = första dagen. Klockslag är lokaltid som `HH:mm`.
@@ -2897,10 +2901,13 @@ Systemet utför skapandet i följande ordning:
 5. Skapa stationer – slå upp staffområde via namnet
 6. Skapa bemanningspass – slå upp station via staffområdets namn + stationsnamn; passansvarig via e-post, fallback till importerande person
 7. Skapa kategorier – slå upp ansvarig via e-post; fallback till importerande person
+   - `organizerInstructions` och `publicDescription` importeras om de finns
+   - äldre `description` används som fallback för `publicDescription`
 8. Skapa biljetttyper (om inkluderade) – slå upp `allowedCategoryNames` mot nya CategoryId:n
 9. Skapa evenemang (om inkluderade):
    - Slå upp kategori via namn; evenemang utan matchande kategori hoppas över med varning
    - Skapas med status `Draft`, `LeadOrganiserId` = importerande person
+   - `coOrganiserLimit` importeras till evenemangets godkända medarrangörsgräns
    - Sessioner: slå upp lokal via namn; session utan matchande lokal hoppas över med varning
 
 ## Datumrekonstruktion

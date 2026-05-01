@@ -24,11 +24,19 @@ export class EditionExportComponent implements OnInit {
   private readonly svc = inject(ConventionService);
 
   readonly edition = signal<EditionDto | null>(null);
+  readonly baseDocument = signal<Record<string, unknown> | null>(null);
   readonly json = signal('');
   readonly loading = signal(true);
   readonly exporting = signal(false);
   readonly error = signal<string | null>(null);
   readonly copied = signal(false);
+  readonly includeScheduleDays = signal(true);
+  readonly includeVenues = signal(true);
+  readonly includeStaffAreas = signal(true);
+  readonly includeStations = signal(true);
+  readonly includeShifts = signal(true);
+  readonly includeShiftStaffing = signal(false);
+  readonly includeCategories = signal(true);
   readonly includeEvents = signal(true);
   readonly includeTicketTypes = signal(true);
 
@@ -38,14 +46,49 @@ export class EditionExportComponent implements OnInit {
     this.route.paramMap.pipe(map(p => p.get('id')!)).subscribe(id => this.load(id));
   }
 
+  onIncludeScheduleDaysChange(change: MatCheckboxChange): void {
+    this.includeScheduleDays.set(change.checked);
+    this.rebuildJson();
+  }
+
+  onIncludeVenuesChange(change: MatCheckboxChange): void {
+    this.includeVenues.set(change.checked);
+    this.rebuildJson();
+  }
+
+  onIncludeStaffAreasChange(change: MatCheckboxChange): void {
+    this.includeStaffAreas.set(change.checked);
+    this.rebuildJson();
+  }
+
+  onIncludeStationsChange(change: MatCheckboxChange): void {
+    this.includeStations.set(change.checked);
+    this.rebuildJson();
+  }
+
+  onIncludeShiftsChange(change: MatCheckboxChange): void {
+    this.includeShifts.set(change.checked);
+    this.rebuildJson();
+  }
+
+  onIncludeShiftStaffingChange(change: MatCheckboxChange): void {
+    this.includeShiftStaffing.set(change.checked);
+    this.rebuildJson();
+  }
+
+  onIncludeCategoriesChange(change: MatCheckboxChange): void {
+    this.includeCategories.set(change.checked);
+    this.rebuildJson();
+  }
+
   onIncludeEventsChange(change: MatCheckboxChange): void {
     this.includeEvents.set(change.checked);
-    this.reloadExport();
+    this.rebuildJson();
   }
 
   onIncludeTicketTypesChange(change: MatCheckboxChange): void {
     this.includeTicketTypes.set(change.checked);
-    this.reloadExport();
+    this.rebuildJson();
   }
 
   copyJson(): void {
@@ -96,9 +139,19 @@ export class EditionExportComponent implements OnInit {
     this.exporting.set(true);
     this.error.set(null);
     this.copied.set(false);
-    this.svc.exportEdition(editionId, this.includeEvents(), this.includeTicketTypes()).subscribe({
+    this.svc.exportEdition(editionId, true, true).subscribe({
       next: json => {
-        this.json.set(json);
+        const parsed = this.parseDocument(json);
+        if (!parsed) {
+          this.baseDocument.set(null);
+          this.json.set('');
+          this.error.set('Kunde inte tolka exportdokumentet.');
+          this.exporting.set(false);
+          return;
+        }
+
+        this.baseDocument.set(parsed);
+        this.rebuildJson();
         this.exporting.set(false);
       },
       error: err => {
@@ -106,6 +159,94 @@ export class EditionExportComponent implements OnInit {
         this.exporting.set(false);
       },
     });
+  }
+
+  private rebuildJson(): void {
+    const source = this.baseDocument();
+    if (!source) {
+      this.json.set('');
+      return;
+    }
+
+    const filtered = this.buildFilteredDocument(source);
+    this.json.set(JSON.stringify(filtered, null, 2));
+  }
+
+  private parseDocument(json: string): Record<string, unknown> | null {
+    try {
+      const parsed: unknown = JSON.parse(json);
+      if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return null;
+      }
+
+      return parsed as Record<string, unknown>;
+    } catch {
+      return null;
+    }
+  }
+
+  private buildFilteredDocument(source: Record<string, unknown>): Record<string, unknown> {
+    const document = JSON.parse(JSON.stringify(source)) as Record<string, unknown>;
+
+    if (!this.includeScheduleDays()) {
+      delete document['scheduleDays'];
+    }
+
+    if (!this.includeVenues()) {
+      delete document['venues'];
+    }
+
+    if (!this.includeCategories()) {
+      delete document['categories'];
+    }
+
+    if (!this.includeEvents()) {
+      delete document['events'];
+    }
+
+    if (!this.includeTicketTypes()) {
+      delete document['ticketTypes'];
+    }
+
+    if (!this.includeStaffAreas()) {
+      delete document['staffAreas'];
+      return document;
+    }
+
+    const areas = Array.isArray(document['staffAreas'])
+      ? (document['staffAreas'] as Array<Record<string, unknown>>)
+      : [];
+
+    for (const area of areas) {
+      const stations = Array.isArray(area['stations'])
+        ? (area['stations'] as Array<Record<string, unknown>>)
+        : [];
+
+      if (!this.includeStations()) {
+        area['stations'] = [];
+        continue;
+      }
+
+      for (const station of stations) {
+        const shifts = Array.isArray(station['shifts'])
+          ? (station['shifts'] as Array<Record<string, unknown>>)
+          : [];
+
+        if (!this.includeShifts()) {
+          station['shifts'] = [];
+          continue;
+        }
+
+        if (!this.includeShiftStaffing()) {
+          for (const shift of shifts) {
+            delete shift['minPersons'];
+            delete shift['maxPersons'];
+          }
+        }
+      }
+    }
+
+    return document;
   }
 
   private fileName(): string {

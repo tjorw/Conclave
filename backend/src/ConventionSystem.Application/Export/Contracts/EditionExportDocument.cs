@@ -13,7 +13,7 @@ public sealed record EditionExportDocument(
     [property: JsonPropertyName("events")] IReadOnlyList<ExportEventDto>? Events,
     [property: JsonPropertyName("ticketTypes")] IReadOnlyList<ExportTicketTypeDto>? TicketTypes)
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 }
 
 public sealed record ExportScheduleDayDto(
@@ -47,6 +47,8 @@ public sealed record ExportShiftDto(
 
 public sealed record ExportCategoryDto(
     [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("organizerInstructions")] string? OrganizerInstructions,
+    [property: JsonPropertyName("publicDescription")] string? PublicDescription,
     [property: JsonPropertyName("description")] string? Description,
     [property: JsonPropertyName("responsibleEmail")] string? ResponsibleEmail);
 
@@ -57,8 +59,10 @@ public sealed record ExportEventDto(
     [property: JsonPropertyName("registrationType")] string RegistrationType,
     [property: JsonPropertyName("dropInRules")] string? DropInRules,
     [property: JsonPropertyName("scheduleRequestText")] string? ScheduleRequestText,
+    [property: JsonPropertyName("coOrganiserLimit")] int CoOrganiserLimit,
     [property: JsonPropertyName("leadOrganiserEmail")] string? LeadOrganiserEmail,
-    [property: JsonPropertyName("sessions")] IReadOnlyList<ExportSessionDto> Sessions);
+    [property: JsonPropertyName("sessions")] IReadOnlyList<ExportSessionDto> Sessions,
+    [property: JsonPropertyName("coOrganiserCount")] int? CoOrganiserCount = null);
 
 public sealed record ExportSessionDto(
     [property: JsonPropertyName("venueName")] string VenueName,

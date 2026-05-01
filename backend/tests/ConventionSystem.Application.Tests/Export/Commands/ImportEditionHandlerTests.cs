@@ -79,6 +79,161 @@ public class ImportEditionHandlerTests
                 default));
     }
 
+    [Fact]
+    public async Task Handle_CategoryDescriptions_MapsOrganizerAndPublicDescription()
+    {
+        var (convention, admin) = SetupAdminConvention();
+        _currentUser.PersonId.Returns(admin.Id);
+
+        var document = MinimalDocument() with
+        {
+            Categories =
+            [
+                new ExportCategoryDto(
+                    "Rollspel",
+                    "Arrangorsinstruktion",
+                    "Publik beskrivning",
+                    null,
+                    null),
+            ],
+        };
+
+        await _handler.Handle(
+            new ImportEditionCommand(convention.Id.Value, "Importerad", new DateOnly(2028, 3, 1), document),
+            default);
+
+        await _editionRepo.Received(1).AddAndSaveAsync(
+            Arg.Is<Domain.Convention.Aggregates.Edition>(edition =>
+                edition.Categories.Count == 1 &&
+                edition.Categories[0].OrganizerInstructions == "Arrangorsinstruktion" &&
+                edition.Categories[0].PublicDescription == "Publik beskrivning"),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_LegacyCategoryDescription_FallsBackToPublicDescription()
+    {
+        var (convention, admin) = SetupAdminConvention();
+        _currentUser.PersonId.Returns(admin.Id);
+        Domain.Convention.Aggregates.Edition? capturedEdition = null;
+        _editionRepo
+            .When(r => r.AddAndSaveAsync(Arg.Any<Domain.Convention.Aggregates.Edition>(), Arg.Any<CancellationToken>()))
+            .Do(call => capturedEdition = call.Arg<Domain.Convention.Aggregates.Edition>());
+
+        var document = MinimalDocument() with
+        {
+            SchemaVersion = 1,
+            Categories =
+            [
+                new ExportCategoryDto(
+                    "Bradspel",
+                    null,
+                    null,
+                    "Legacy publikt innehall",
+                    null),
+            ],
+        };
+
+        await _handler.Handle(
+            new ImportEditionCommand(convention.Id.Value, "Importerad", new DateOnly(2028, 3, 1), document),
+            default);
+
+        Assert.NotNull(capturedEdition);
+        Assert.Single(capturedEdition.Categories);
+        Assert.Null(capturedEdition.Categories[0].OrganizerInstructions);
+        Assert.Equal("Legacy publikt innehall", capturedEdition.Categories[0].PublicDescription);
+    }
+
+    [Fact]
+    public async Task Handle_EventCoOrganiserLimit_SetsImportedValue()
+    {
+        var (convention, admin) = SetupAdminConvention();
+        _currentUser.PersonId.Returns(admin.Id);
+        Domain.Event.Aggregates.Event? capturedEvent = null;
+        _eventRepo
+            .When(r => r.AddAndSaveAsync(Arg.Any<Domain.Event.Aggregates.Event>(), Arg.Any<CancellationToken>()))
+            .Do(call => capturedEvent = call.Arg<Domain.Event.Aggregates.Event>());
+
+        var document = MinimalDocument() with
+        {
+            Categories =
+            [
+                new ExportCategoryDto(
+                    "Seminarier",
+                    null,
+                    null,
+                    null,
+                    null),
+            ],
+            Events =
+            [
+                new ExportEventDto(
+                    "Event 1",
+                    "Beskrivning",
+                    "Seminarier",
+                    "DropIn",
+                    null,
+                    null,
+                    3,
+                    null,
+                    []),
+            ],
+        };
+
+        await _handler.Handle(
+            new ImportEditionCommand(convention.Id.Value, "Importerad", new DateOnly(2028, 3, 1), document),
+            default);
+
+        Assert.NotNull(capturedEvent);
+        Assert.Equal(3, capturedEvent.CoOrganiserLimit);
+    }
+
+    [Fact]
+    public async Task Handle_LegacyEventCoOrganiserCount_FallsBackToLimit()
+    {
+        var (convention, admin) = SetupAdminConvention();
+        _currentUser.PersonId.Returns(admin.Id);
+        Domain.Event.Aggregates.Event? capturedEvent = null;
+        _eventRepo
+            .When(r => r.AddAndSaveAsync(Arg.Any<Domain.Event.Aggregates.Event>(), Arg.Any<CancellationToken>()))
+            .Do(call => capturedEvent = call.Arg<Domain.Event.Aggregates.Event>());
+
+        var document = MinimalDocument() with
+        {
+            SchemaVersion = 1,
+            Categories =
+            [
+                new ExportCategoryDto(
+                    "Seminarier",
+                    null,
+                    null,
+                    null,
+                    null),
+            ],
+            Events =
+            [
+                new ExportEventDto(
+                    "Event Legacy",
+                    "Beskrivning",
+                    "Seminarier",
+                    "DropIn",
+                    null,
+                    null,
+                    0,
+                    null,
+                    [],
+                    4),
+            ],
+        };
+
+        await _handler.Handle(
+            new ImportEditionCommand(convention.Id.Value, "Importerad", new DateOnly(2028, 3, 1), document),
+            default);
+
+        Assert.NotNull(capturedEvent);
+        Assert.Equal(4, capturedEvent.CoOrganiserLimit);
+    }
+
     private (Domain.Convention.Aggregates.Convention Convention, Domain.Convention.Entities.Person Admin) SetupAdminConvention()
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");

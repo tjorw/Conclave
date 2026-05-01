@@ -140,6 +140,8 @@ public sealed class EditionExportReadService(ConventionDbContext db) : IEditionE
                 .OrderBy(c => c.Name)
                 .Select(c => new ExportCategoryDto(
                     c.Name,
+                    c.OrganizerInstructions,
+                    c.PublicDescription,
                     c.PublicDescription,
                     personEmails.GetValueOrDefault(c.ResponsibleId)))
                 .ToList(),
@@ -152,6 +154,7 @@ public sealed class EditionExportReadService(ConventionDbContext db) : IEditionE
                         e.RegistrationType.ToString(),
                         e.DropInRules,
                         e.ScheduleRequestText,
+                        e.CoOrganiserLimit,
                         personEmails.GetValueOrDefault(e.LeadOrganiserId),
                         e.Sessions
                             .Where(s => s.Status == SessionStatus.Active)

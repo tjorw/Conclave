@@ -12,6 +12,27 @@
 
   <section class="export-options">
     <div class="option-group">
+      <mat-checkbox [checked]="includeScheduleDays()" (change)="onIncludeScheduleDaysChange($event)">
+        Schemadagar
+      </mat-checkbox>
+      <mat-checkbox [checked]="includeVenues()" (change)="onIncludeVenuesChange($event)">
+        Lokaler
+      </mat-checkbox>
+      <mat-checkbox [checked]="includeStaffAreas()" (change)="onIncludeStaffAreasChange($event)">
+        Funktionsområden
+      </mat-checkbox>
+      <mat-checkbox [checked]="includeStations()" (change)="onIncludeStationsChange($event)">
+        Stationer
+      </mat-checkbox>
+      <mat-checkbox [checked]="includeShifts()" (change)="onIncludeShiftsChange($event)">
+        Pass
+      </mat-checkbox>
+      <mat-checkbox [checked]="includeShiftStaffing()" (change)="onIncludeShiftStaffingChange($event)">
+        Bemanning i pass
+      </mat-checkbox>
+      <mat-checkbox [checked]="includeCategories()" (change)="onIncludeCategoriesChange($event)">
+        Kategorier
+      </mat-checkbox>
       <mat-checkbox [checked]="includeEvents()" (change)="onIncludeEventsChange($event)">
         Evenemang
       </mat-checkbox>
