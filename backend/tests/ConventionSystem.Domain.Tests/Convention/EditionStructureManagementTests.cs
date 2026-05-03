@@ -243,4 +243,70 @@ public class EditionStructureManagementTests
 
         Assert.Throws<CategoryNotFoundInEditionException>(() => edition.RemoveCategory(CategoryId.New()));
     }
+
+    // ── ProgramTagDefinitions ───────────────────────────────────────────────
+
+    [Fact]
+    public void AddProgramTagDefinition_ValidName_AddsTag()
+    {
+        var (_, _, edition) = CreateEdition();
+
+        edition.AddProgramTagDefinition("Barnvänligt");
+
+        Assert.Single(edition.ProgramTagDefinitions);
+        Assert.Equal("Barnvänligt", edition.ProgramTagDefinitions[0].Name);
+    }
+
+    [Fact]
+    public void AddProgramTagDefinition_DuplicateNameIgnoringCase_Throws()
+    {
+        var (_, _, edition) = CreateEdition();
+        edition.AddProgramTagDefinition("Nybörjare");
+
+        Assert.Throws<ProgramTagDefinitionAlreadyExistsException>(() =>
+            edition.AddProgramTagDefinition("nybörjare"));
+    }
+
+    [Fact]
+    public void UpdateProgramTagDefinition_ExistingTag_UpdatesName()
+    {
+        var (_, _, edition) = CreateEdition();
+        edition.AddProgramTagDefinition("Barn");
+
+        edition.UpdateProgramTagDefinition("Barn", "Barnvänligt");
+
+        Assert.Single(edition.ProgramTagDefinitions);
+        Assert.Equal("Barnvänligt", edition.ProgramTagDefinitions[0].Name);
+    }
+
+    [Fact]
+    public void UpdateProgramTagDefinition_TargetNameAlreadyExists_Throws()
+    {
+        var (_, _, edition) = CreateEdition();
+        edition.AddProgramTagDefinition("Barnvänligt");
+        edition.AddProgramTagDefinition("18+");
+
+        Assert.Throws<ProgramTagDefinitionAlreadyExistsException>(() =>
+            edition.UpdateProgramTagDefinition("Barnvänligt", "18+"));
+    }
+
+    [Fact]
+    public void RemoveProgramTagDefinition_ExistingTag_RemovesTag()
+    {
+        var (_, _, edition) = CreateEdition();
+        edition.AddProgramTagDefinition("Nybörjare");
+
+        edition.RemoveProgramTagDefinition("Nybörjare");
+
+        Assert.Empty(edition.ProgramTagDefinitions);
+    }
+
+    [Fact]
+    public void RemoveProgramTagDefinition_TagNotFound_Throws()
+    {
+        var (_, _, edition) = CreateEdition();
+
+        Assert.Throws<ProgramTagDefinitionNotFoundException>(() =>
+            edition.RemoveProgramTagDefinition("Finns inte"));
+    }
 }

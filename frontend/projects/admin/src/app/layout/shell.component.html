@@ -39,6 +39,10 @@
             <mat-icon matListItemIcon>category</mat-icon>
             <span matListItemTitle>{{ NAV.editionCategories }}</span>
           </a>
+          <a mat-list-item [routerLink]="['/editions', activeEdition.id, 'tags']" routerLinkActive="active-link">
+            <mat-icon matListItemIcon>sell</mat-icon>
+            <span matListItemTitle>{{ NAV.editionProgramTags }}</span>
+          </a>
           <a mat-list-item [routerLink]="['/editions', activeEdition.id, 'ticket-types']" routerLinkActive="active-link">
             <mat-icon matListItemIcon>local_activity</mat-icon>
             <span matListItemTitle>{{ NAV.editionTicketTypes }}</span>

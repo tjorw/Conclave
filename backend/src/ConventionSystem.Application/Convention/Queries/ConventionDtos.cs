@@ -22,7 +22,8 @@ public record EditionDto(
     IReadOnlyList<VenueDto> Venues,
     IReadOnlyList<StaffAreaDto> StaffAreas,
     IReadOnlyList<StationDto> Stations,
-    IReadOnlyList<CategoryDto> Categories);
+    IReadOnlyList<CategoryDto> Categories,
+    IReadOnlyList<ProgramTagDefinitionDto> ProgramTagDefinitions);
 
 public record PersonDto(Guid Id, string Name, string Email, string? Phone, bool IsActive, bool IsAdmin, bool HasAccount, bool IsLocked);
 
@@ -33,6 +34,8 @@ public record StaffAreaDto(Guid Id, string Name, string? Description, Guid Respo
 public record StationDto(Guid Id, Guid StaffAreaId, string Name, string? Description);
 
 public record CategoryDto(Guid Id, string Name, string? OrganizerInstructions, string? PublicDescription, Guid ResponsibleId);
+
+public record ProgramTagDefinitionDto(string Name);
 
 public record EditionResponsibleDto(string Position, Guid? PersonId, string? PersonName, string? Email);
 

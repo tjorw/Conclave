@@ -37,6 +37,9 @@ export const ERROR = {
   createCategory:       'Kunde inte skapa kategori',
   updateCategory:       'Kunde inte uppdatera kategori',
   deleteCategory:       'Kunde inte ta bort kategori',
+  createProgramTagDefinition: 'Kunde inte skapa programtagg',
+  updateProgramTagDefinition: 'Kunde inte uppdatera programtagg',
+  deleteProgramTagDefinition: 'Kunde inte ta bort programtagg',
 
   // Biljettyper
   createTicketType:     'Kunde inte skapa biljetttyp',

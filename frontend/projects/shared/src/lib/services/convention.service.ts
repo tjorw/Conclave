@@ -101,6 +101,15 @@ export interface UpdateCategoryRequest {
   responsibleId: string;
 }
 
+export interface CreateProgramTagDefinitionRequest {
+  name: string;
+}
+
+export interface UpdateProgramTagDefinitionRequest {
+  currentName: string;
+  newName: string;
+}
+
 export interface CreatePersonRequest {
   name: string;
   email: string;
@@ -302,6 +311,26 @@ export class ConventionService {
 
   removeCategory(editionId: string, categoryId: string) {
     return this.http.delete<void>(`${this.env.apiBaseUrl}/editions/${editionId}/categories/${categoryId}`);
+  }
+
+  createProgramTagDefinition(editionId: string, request: CreateProgramTagDefinitionRequest) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/program-tag-definitions`,
+      request
+    );
+  }
+
+  updateProgramTagDefinition(editionId: string, request: UpdateProgramTagDefinitionRequest) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/program-tag-definitions`,
+      request
+    );
+  }
+
+  removeProgramTagDefinition(editionId: string, name: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/editions/${editionId}/program-tag-definitions/${encodeURIComponent(name)}`
+    );
   }
 
   createPerson(request: CreatePersonRequest) {

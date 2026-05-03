@@ -34,6 +34,7 @@ export interface EditionDto {
   staffAreas: StaffAreaDto[];
   stations: StationDto[];
   categories: CategoryDto[];
+  programTagDefinitions: ProgramTagDefinitionDto[];
 }
 
 export interface EditionScheduleDayDto {
@@ -69,6 +70,10 @@ export interface CategoryDto {
   organizerInstructions: string | null;
   publicDescription: string | null;
   responsibleId: string;
+}
+
+export interface ProgramTagDefinitionDto {
+  name: string;
 }
 
 export interface PersonDto {

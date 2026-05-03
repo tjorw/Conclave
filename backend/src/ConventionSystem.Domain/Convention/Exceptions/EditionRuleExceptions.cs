@@ -81,3 +81,13 @@ public sealed class CategoryNotFoundInEditionException()
     : DomainRuleViolationException(
         "Kategorin hittades inte på denna upplaga.",
         "category_not_found_in_edition");
+
+public sealed class ProgramTagDefinitionAlreadyExistsException()
+    : DomainRuleViolationException(
+        "Taggdefinitionen finns redan på upplagan.",
+        "program_tag_definition_already_exists");
+
+public sealed class ProgramTagDefinitionNotFoundException()
+    : DomainRuleViolationException(
+        "Taggdefinitionen hittades inte på denna upplaga.",
+        "program_tag_definition_not_found");

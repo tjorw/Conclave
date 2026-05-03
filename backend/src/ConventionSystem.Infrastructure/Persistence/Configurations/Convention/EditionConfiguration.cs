@@ -47,6 +47,27 @@ public sealed class EditionConfiguration : IEntityTypeConfiguration<Edition>
             .HasConversion(id => id!.Value.Value, value => (PersonId?)new PersonId(value))
             .HasColumnName("event_coordinator_id");
 
+        builder.OwnsMany(e => e.ProgramTagDefinitions, tags =>
+        {
+            tags.ToTable("edition_program_tag_definitions");
+            tags.WithOwner().HasForeignKey("EditionId");
+            tags.Property<EditionId>("EditionId")
+                .HasConversion(id => id.Value, value => new EditionId(value))
+                .HasColumnName("edition_id");
+
+            tags.Property<Guid>("Id").HasDefaultValueSql("newsequentialid()");
+            tags.HasKey("Id");
+
+            tags.Property(t => t.Name)
+                .HasColumnName("name")
+                .HasMaxLength(64)
+                .IsRequired();
+
+            tags.Property<Guid>("TenantId").HasColumnName("tenant_id");
+            tags.HasIndex("EditionId", "Name").IsUnique().HasDatabaseName("IX_edition_program_tag_definitions_edition_id_name");
+            tags.HasIndex("TenantId").HasDatabaseName("IX_edition_program_tag_definitions_tenant_id");
+        });
+
         builder.HasMany(e => e.Venues).WithOne().HasForeignKey("EditionId").IsRequired();
         builder.HasMany(e => e.StaffAreas).WithOne().HasForeignKey("EditionId").IsRequired();
         builder.HasMany(e => e.Stations).WithOne().HasForeignKey("EditionId").IsRequired();
@@ -58,6 +79,7 @@ public sealed class EditionConfiguration : IEntityTypeConfiguration<Edition>
         builder.Navigation(e => e.StaffAreas).HasField("_staffAreas");
         builder.Navigation(e => e.Stations).HasField("_stations");
         builder.Navigation(e => e.Categories).HasField("_categories");
+        builder.Navigation(e => e.ProgramTagDefinitions).HasField("_programTagDefinitions");
         builder.Navigation(e => e.ScheduleDays).HasField("_scheduleDays");
         builder.Navigation(e => e.ReceptionStaff).HasField("_receptionStaff");
 

@@ -27,7 +27,13 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
             .Include(e => e.Venues)
             .Include(e => e.StaffAreas)
             .Include(e => e.Stations)
+            .Include(e => e.ProgramTagDefinitions)
             .Include(e => e.ScheduleDays)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
+    public Task<Edition?> GetByIdWithProgramTagDefinitionsAsync(EditionId id, CancellationToken ct = default)
+        => db.Editions
+            .Include(e => e.ProgramTagDefinitions)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public Task<Edition?> GetByIdWithStaffAreasAsync(EditionId id, CancellationToken ct = default)
@@ -76,6 +82,7 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
             .Include(e => e.StaffAreas)
             .Include(e => e.Stations)
             .Include(e => e.Categories)
+            .Include(e => e.ProgramTagDefinitions)
             .Include(e => e.ScheduleDays)
             .Where(e => e.Id == id)
             .Select(e => new EditionDto(
@@ -94,7 +101,8 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
                 e.Venues.Select(v => new VenueDto(v.Id.Value, v.Name, v.Building, v.Description)).ToList(),
                 e.StaffAreas.Select(sa => new StaffAreaDto(sa.Id.Value, sa.Name, sa.Description, sa.ResponsibleId.Value)).ToList(),
                 e.Stations.Select(s => new StationDto(s.Id.Value, s.StaffAreaId.Value, s.Name, s.Description)).ToList(),
-                e.Categories.Select(c => new CategoryDto(c.Id.Value, c.Name, c.OrganizerInstructions, c.PublicDescription, c.ResponsibleId.Value)).ToList()))
+                e.Categories.Select(c => new CategoryDto(c.Id.Value, c.Name, c.OrganizerInstructions, c.PublicDescription, c.ResponsibleId.Value)).ToList(),
+                e.ProgramTagDefinitions.Select(t => new ProgramTagDefinitionDto(t.Name)).ToList()))
             .FirstOrDefaultAsync(ct);
 
     public async Task<IReadOnlyList<EditionResponsibleDto>> GetResponsiblesByEditionIdAsync(EditionId id, CancellationToken ct = default)

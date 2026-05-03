@@ -14,6 +14,7 @@ public sealed class Edition : AggregateRoot
     private readonly List<StaffArea> _staffAreas = [];
     private readonly List<Station> _stations = [];
     private readonly List<Category> _categories = [];
+    private readonly List<ProgramTagDefinition> _programTagDefinitions = [];
     private readonly List<EditionScheduleDay> _scheduleDays = [];
     private readonly List<ReceptionStaff> _receptionStaff = [];
 
@@ -32,6 +33,7 @@ public sealed class Edition : AggregateRoot
     public IReadOnlyList<StaffArea> StaffAreas => _staffAreas.AsReadOnly();
     public IReadOnlyList<Station> Stations => _stations.AsReadOnly();
     public IReadOnlyList<Category> Categories => _categories.AsReadOnly();
+    public IReadOnlyList<ProgramTagDefinition> ProgramTagDefinitions => _programTagDefinitions.AsReadOnly();
     public IReadOnlyList<EditionScheduleDay> ScheduleDays => _scheduleDays.AsReadOnly();
     public IReadOnlyList<ReceptionStaff> ReceptionStaff => _receptionStaff.AsReadOnly();
 
@@ -280,6 +282,39 @@ public sealed class Edition : AggregateRoot
 
     public bool IsCategoryResponsible(CategoryId categoryId, PersonId personId)
         => _categories.Any(c => c.Id == categoryId && c.ResponsibleId == personId);
+
+    public ProgramTagDefinition AddProgramTagDefinition(string name)
+    {
+        var tag = new ProgramTagDefinition(name);
+        if (_programTagDefinitions.Any(t => t.EqualsName(tag.Name)))
+            throw new ProgramTagDefinitionAlreadyExistsException();
+
+        _programTagDefinitions.Add(tag);
+        return tag;
+    }
+
+    public void UpdateProgramTagDefinition(string currentName, string newName)
+    {
+        var current = _programTagDefinitions.FirstOrDefault(t => t.EqualsName(currentName))
+            ?? throw new ProgramTagDefinitionNotFoundException();
+
+        var replacement = new ProgramTagDefinition(newName);
+        var nameChanged = !current.EqualsName(replacement.Name);
+        if (nameChanged && _programTagDefinitions.Any(t => t.EqualsName(replacement.Name)))
+            throw new ProgramTagDefinitionAlreadyExistsException();
+
+        var index = _programTagDefinitions.IndexOf(current);
+        _programTagDefinitions[index] = replacement;
+    }
+
+    public ProgramTagDefinition RemoveProgramTagDefinition(string name)
+    {
+        var tag = _programTagDefinitions.FirstOrDefault(t => t.EqualsName(name))
+            ?? throw new ProgramTagDefinitionNotFoundException();
+
+        _programTagDefinitions.Remove(tag);
+        return tag;
+    }
 
     /// <summary>
     /// Kopierar lokaler, funktionsområden och stationer från en källupplaga.

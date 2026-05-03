@@ -9,6 +9,7 @@ public interface IEditionRepository
     Task AddAndSaveAsync(Edition edition, CancellationToken ct = default);
     Task<Edition?> GetByIdAsync(EditionId id, CancellationToken ct = default);
     Task<Edition?> GetByIdWithStructureAsync(EditionId id, CancellationToken ct = default);
+    Task<Edition?> GetByIdWithProgramTagDefinitionsAsync(EditionId id, CancellationToken ct = default);
     Task<Edition?> GetByIdWithStaffAreasAsync(EditionId id, CancellationToken ct = default);
     Task<Edition?> GetByStationIdAsync(StationId stationId, CancellationToken ct = default);
     Task<Edition?> GetByIdWithCategoriesAsync(EditionId id, CancellationToken ct = default);

@@ -86,6 +86,8 @@ export const EDITION_DETAIL = {
   deleteStaffAreaMessage: (name: string) => `Ta bort funktioneringsområdet "${name}"? Alla tillhörande stationer tas också bort.`,
   deleteCategoryTitle:    'Ta bort kategori',
   deleteCategoryMessage:  (name: string) => `Ta bort kategorin "${name}"?`,
+  deleteProgramTagDefinitionTitle: 'Ta bort programtagg',
+  deleteProgramTagDefinitionMessage: (name: string) => `Ta bort programtaggen "${name}"?`,
   deleteTicketTypeTitle:   'Ta bort biljetttyp',
   deleteTicketTypeMessage: (name: string) => `Ta bort biljetttypen "${name}"?`,
 } as const;

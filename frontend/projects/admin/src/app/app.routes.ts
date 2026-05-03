@@ -78,6 +78,16 @@ export const routes: Routes = [
           import('./features/editions/categories/category-detail/category-detail.component').then(m => m.CategoryDetailComponent),
       },
       {
+        path: 'editions/:id/tags',
+        loadComponent: () =>
+          import('./features/editions/program-tag-definitions/program-tag-definitions.component').then(m => m.ProgramTagDefinitionsComponent),
+      },
+      {
+        path: 'editions/:id/tags/:tagName',
+        loadComponent: () =>
+          import('./features/editions/program-tag-definitions/program-tag-definition-detail/program-tag-definition-detail.component').then(m => m.ProgramTagDefinitionDetailComponent),
+      },
+      {
         path: 'editions/:id/ticket-types',
         loadComponent: () =>
           import('./features/editions/ticket-types/ticket-types.component').then(m => m.TicketTypesComponent),

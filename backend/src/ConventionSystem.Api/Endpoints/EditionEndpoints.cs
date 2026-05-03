@@ -30,6 +30,9 @@ using ConventionSystem.Application.Convention.Commands.UpdateCategory;
 using ConventionSystem.Application.Convention.Commands.UpdateEdition;
 using ConventionSystem.Application.Convention.Commands.UpdateStaffArea;
 using ConventionSystem.Application.Convention.Commands.UpdateVenue;
+using ConventionSystem.Application.Convention.Commands.CreateProgramTagDefinition;
+using ConventionSystem.Application.Convention.Commands.UpdateProgramTagDefinition;
+using ConventionSystem.Application.Convention.Commands.RemoveProgramTagDefinition;
 using ConventionSystem.Application.Export.Commands.ExportEdition;
 using ConventionSystem.Application.Export.Commands.ImportEdition;
 using ConventionSystem.Application.Export.Contracts;
@@ -269,6 +272,27 @@ public static class EditionEndpoints
                 return Results.NoContent();
             });
 
+        editions.MapPost("/program-tag-definitions",
+            async (Guid editionId, CreateProgramTagDefinitionRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new CreateProgramTagDefinitionCommand(editionId, request.Name), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapPut("/program-tag-definitions",
+            async (Guid editionId, UpdateProgramTagDefinitionRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdateProgramTagDefinitionCommand(editionId, request.CurrentName, request.NewName), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapDelete("/program-tag-definitions/{name}",
+            async (Guid editionId, string name, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveProgramTagDefinitionCommand(editionId, name), ct);
+                return Results.NoContent();
+            });
+
         editions.MapGet("/reception-staff",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListReceptionStaffQuery(editionId), ct)));
@@ -358,6 +382,8 @@ public record UpdateStationRequest(string Name, string? Description);
 public record CreateCategoryRequest(string Name, string? OrganizerInstructions, string? PublicDescription, Guid ResponsibleId);
 public record UpdateCategoryRequest(string Name, string? OrganizerInstructions, string? PublicDescription, Guid ResponsibleId);
 public record ChangeCategoryResponsibleRequest(Guid NewResponsibleId);
+public record CreateProgramTagDefinitionRequest(string Name);
+public record UpdateProgramTagDefinitionRequest(string CurrentName, string NewName);
 
 public record CreateEditionRequest(
     string Name,

@@ -115,7 +115,7 @@ export const HELP_ROUTE_MAP: readonly { pattern: RegExp; topic: HelpTopic }[] = 
   { pattern: /^\/dashboard(?:$|[/?#])/, topic: 'convention-overview' },
   { pattern: /^\/editions\/[^/]+\/basics(?:$|[/?#])/, topic: 'edition-basics' },
   { pattern: /^\/editions\/[^/]+\/lifecycle(?:$|[/?#])/, topic: 'edition-lifecycle' },
-  { pattern: /^\/editions\/[^/]+\/(?:venues|staff-areas|categories|ticket-types|export)(?:$|[/?#])/, topic: 'edition-structure' },
+  { pattern: /^\/editions\/[^/]+\/(?:venues|staff-areas|categories|tags|ticket-types|export)(?:$|[/?#])/, topic: 'edition-structure' },
   { pattern: /^\/(?:events|sessions|persons\/organisers)(?:$|[/?#])/, topic: 'event-workflow' },
   { pattern: /^\/(?:persons\/visitors|registrations)(?:$|[/?#])/, topic: 'registration' },
   { pattern: /^\/(?:persons\/staff|staff-areas|staffing-schedule)(?:$|[/?#])/, topic: 'staff' },

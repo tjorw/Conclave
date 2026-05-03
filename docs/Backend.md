@@ -274,7 +274,7 @@ public sealed class VenueConfiguration : IEntityTypeConfiguration<Venue>
         builder.HasKey(v => v.Id);
         builder.Property(v => v.Id)
             .HasConversion(id => id.Value, value => new VenueId(value))
-            .HasDefaultValueSql("newsequentialid()");
+            .ValueGeneratedNever();
 
         builder.Property(v => v.Name).HasMaxLength(200).IsRequired();
     }

@@ -1276,8 +1276,46 @@ namespace ConventionSystem.Infrastructure.Migrations
                                 .HasForeignKey("EditionId");
                         });
 
+                    b.OwnsMany("ConventionSystem.Domain.Convention.ValueObjects.ProgramTagDefinition", "ProgramTagDefinitions", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uniqueidentifier")
+                                .HasDefaultValueSql("newsequentialid()");
+
+                            b1.Property<Guid>("EditionId")
+                                .HasColumnType("uniqueidentifier")
+                                .HasColumnName("edition_id");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(64)
+                                .HasColumnType("nvarchar(64)")
+                                .HasColumnName("name");
+
+                            b1.Property<Guid>("TenantId")
+                                .HasColumnType("uniqueidentifier")
+                                .HasColumnName("tenant_id");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("TenantId")
+                                .HasDatabaseName("IX_edition_program_tag_definitions_tenant_id");
+
+                            b1.HasIndex("EditionId", "Name")
+                                .IsUnique()
+                                .HasDatabaseName("IX_edition_program_tag_definitions_edition_id_name");
+
+                            b1.ToTable("edition_program_tag_definitions", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("EditionId");
+                        });
+
                     b.Navigation("Period")
                         .IsRequired();
+
+                    b.Navigation("ProgramTagDefinitions");
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.Category", b =>
