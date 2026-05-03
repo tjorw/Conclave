@@ -14,6 +14,12 @@ export class EditionContextService {
 
   readonly editions = this._editions.asReadonly();
   readonly loading = this._loading.asReadonly();
+  readonly publicActiveEditionId = computed(() => this.conventionContext.convention()?.activeEditionId ?? null);
+
+  readonly publicActiveEdition = computed<EditionSummaryDto | null>(() => {
+    const id = this.publicActiveEditionId();
+    return id ? this._editions().find(e => e.id === id) ?? null : null;
+  });
 
   readonly activeEdition = computed<EditionSummaryDto | null>(() => {
     const editions = this._editions();
@@ -63,6 +69,9 @@ export class EditionContextService {
 
   setActive(editionId: string): void {
     this._activeId.set(editionId);
+  }
+
+  setPublicActive(editionId: string): void {
     this.conventionContext.setActiveEditionId(editionId);
   }
 }

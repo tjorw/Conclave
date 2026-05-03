@@ -42,7 +42,7 @@ export class EditionLifecycleComponent implements OnInit {
   readonly isPublished  = computed(() => this.edition()?.status === 'Published');
   readonly isActiveEdition = computed(() => {
     const id = this.edition()?.id;
-    return !!id && id === this.editionContext.activeEdition()?.id;
+    return !!id && id === this.editionContext.publicActiveEditionId();
   });
 
   readonly registrationTypes: { type: 'organiser' | 'staff' | 'visitor'; label: string }[] = [
@@ -98,7 +98,7 @@ export class EditionLifecycleComponent implements OnInit {
     this.state.saving.set(true);
     const editionId = this.edition()!.id;
     this.svc.setActiveEdition(editionId).subscribe({
-      next: () => { this.editionContext.setActive(editionId); this.state.saving.set(false); },
+      next: () => { this.editionContext.setPublicActive(editionId); this.state.saving.set(false); },
       error: (err) => { this.state.error.set(toContextErrorMessage(err, ERROR.setActiveEdition)); this.state.saving.set(false); },
     });
   }

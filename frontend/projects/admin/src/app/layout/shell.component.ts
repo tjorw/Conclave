@@ -66,6 +66,7 @@ export class ShellComponent implements OnInit {
 
   onEditionChange(editionId: string): void {
     this.editionContext.setActive(editionId);
+    this.navigateForEditionChange(editionId);
   }
 
   isNavSectionCollapsed(section: NavSection): boolean {
@@ -118,6 +119,32 @@ export class ShellComponent implements OnInit {
       localStorage.setItem(COLLAPSED_NAV_SECTIONS_STORAGE_KEY, JSON.stringify(this.collapsedNavSections));
     } catch {
       // Ignore storage failures; the current view still updates.
+    }
+  }
+
+  private navigateForEditionChange(editionId: string): void {
+    const path = this.router.url.split('?')[0].split('#')[0];
+
+    const editionRoute = /^\/editions\/[^/]+(?:\/([^/]+))?/.exec(path);
+    if (editionRoute) {
+      const section = editionRoute[1];
+      const target = section ? ['/editions', editionId, section] : ['/editions', editionId];
+      void this.router.navigate(target);
+      return;
+    }
+
+    if (/^\/staff-areas\/[^/]+/.test(path)) {
+      void this.router.navigate(['/staff-areas']);
+      return;
+    }
+
+    if (/^\/(?:persons\/staff|staff-applications)\/[^/]+/.test(path)) {
+      void this.router.navigate(['/persons/staff']);
+      return;
+    }
+
+    if (/^\/events\/[^/]+/.test(path)) {
+      void this.router.navigate(['/events']);
     }
   }
 }

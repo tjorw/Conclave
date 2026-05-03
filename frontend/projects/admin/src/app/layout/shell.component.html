@@ -159,7 +159,7 @@
           [attr.aria-label]="NAV.chooseEdition">
           @for (edition of editionContext.editions(); track edition.id) {
           <mat-option [value]="edition.id">
-            {{ edition.name }}{{ edition.status === 'Published' ? ' ' + NAV.activeSuffix : '' }}
+            {{ edition.name }}{{ edition.id === editionContext.publicActiveEditionId() ? ' ' + NAV.activeSuffix : '' }}
           </mat-option>
           }
         </mat-select>

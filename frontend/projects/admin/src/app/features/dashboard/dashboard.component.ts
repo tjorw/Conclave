@@ -269,7 +269,7 @@ export class DashboardComponent implements OnInit {
   }
 
   canRemoveEdition(editionId: string): boolean {
-    return this.editionContext.activeEdition()?.id !== editionId;
+    return this.editionContext.publicActiveEditionId() !== editionId;
   }
 
   importEdition(): void {

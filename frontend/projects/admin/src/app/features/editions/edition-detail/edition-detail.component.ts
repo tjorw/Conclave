@@ -111,10 +111,9 @@ export class EditionDetailComponent implements OnInit {
 
   readonly isDraft = computed(() => this.edition()?.status === 'Draft');
   readonly isPublished = computed(() => this.edition()?.status === 'Published');
-  readonly activeEdition = this.editionContext.activeEdition;
   readonly isActiveEdition = computed(() => {
     const currentEditionId = this.edition()?.id;
-    const activeEditionId = this.activeEdition()?.id;
+    const activeEditionId = this.editionContext.publicActiveEditionId();
     return !!currentEditionId && currentEditionId === activeEditionId;
   });
   readonly openRegistrationCount = computed(() =>
@@ -376,7 +375,7 @@ export class EditionDetailComponent implements OnInit {
     const editionId = this.edition()!.id;
     this.svc.setActiveEdition(editionId).subscribe({
       next: () => {
-        this.editionContext.setActive(editionId);
+        this.editionContext.setPublicActive(editionId);
         this.state.saving.set(false);
       },
       error: (err) => this.handleError(ERROR.setActiveEdition, err),
