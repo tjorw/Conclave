@@ -79,7 +79,9 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 - reception, återkallade biljetter är sekundär info. eller skall de tas bort?
 - reception, statistiken är inte tillräcklig. skall också ha antal pass och vara uppdelat per dag.
 - reception, om man inte har qr-biljett (måste man kunna visa i public), så behövs något annat sätt att bekräfta biljetten.
-- taggar. skall kunna sättas på arr i admin.
+- taggar. skall kunna sättas på arrangemang i admin.
 - taggar. skall kunna sättas från början av arrangören som en del av grunduppgifterna.
 - sidor, skall kunna visas i menyn i public.
 - gå igenom allt hårdkodat content i public så att man kan styra dem via admin.
+- sidor, import/export
+- taggar, import/export
