@@ -13,11 +13,13 @@ All markdown lagras som råtext i databasen. HTML genereras aldrig på servern f
 Båda Angular-apparna (`admin` och `public`) använder biblioteket `ngx-markdown`, som i sin tur wraper `marked` + `DOMPurify`. `DOMPurify` saniterar outputen och förhindrar att rå HTML-taggar i indata renderas.
 
 ### Editor-mönster (admin)
-Ingen WYSIWYG-editor. Formulärkomponenter som redigerar markdown-fält använder ett enkelt split-layout:
-- Vänster kolumn: `<mat-form-field>` med `<textarea>` kopplad till reactive form-kontrollen
-- Höger kolumn: `<markdown [data]="control.value" />` uppdateras i realtid
+Ingen WYSIWYG-editor. Formulärkomponenter som redigerar markdown-fält använder den delade standalone-komponenten `lib-markdown-editor`, som är en `ControlValueAccessor` för reactive forms.
 
-Mönstret upprepas inline i varje formulärkomponent; ingen delad abstraktionskomponent.
+Komponenten använder ett enkelt split-layout:
+- Vänster kolumn: `<mat-form-field>` med `<textarea>` kopplad till reactive form-kontrollen
+- Höger kolumn: `<markdown [data]="value()" />` uppdateras i realtid
+
+Eventbeskrivningar skickar in `maxLength = 10000`, vilket matchar domän- och databasgränsen för `Event.Description`.
 
 ---
 

@@ -63,10 +63,14 @@ import { MarkdownComponent } from 'ngx-markdown';
         <mat-form-field appearance="outline" class="md-input">
           <mat-label>{{ label }}</mat-label>
           <textarea #ta matInput [rows]="rows" [disabled]="disabled()"
+                    [attr.maxlength]="maxLength"
                     [value]="value()"
                     (input)="onInput($event)"
                     (blur)="onTouchedFn()"
                     (keydown)="onKeydown($event)"></textarea>
+          @if (maxLength !== null) {
+            <mat-hint align="end">{{ value().length }} / {{ maxLength }}</mat-hint>
+          }
         </mat-form-field>
         <div class="md-preview">
           <p class="md-preview-label">Förhandsvisning</p>
@@ -145,6 +149,7 @@ import { MarkdownComponent } from 'ngx-markdown';
 export class MarkdownEditorComponent implements ControlValueAccessor {
   @Input() label = 'Text';
   @Input() rows  = 8;
+  @Input() maxLength: number | null = null;
 
   @ViewChild('ta') private ta!: ElementRef<HTMLTextAreaElement>;
 

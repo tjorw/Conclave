@@ -63,6 +63,8 @@ type EventSessionSortKey = 'start' | 'end' | 'venue' | 'seats' | 'startType' | '
   styleUrl: './event-detail.component.scss',
 })
 export class EventDetailComponent implements OnInit {
+  readonly descriptionMaxLength = 10_000;
+
   private readonly route      = inject(ActivatedRoute);
   private readonly router     = inject(Router);
   private readonly svc        = inject(EventService);
@@ -112,7 +114,7 @@ export class EventDetailComponent implements OnInit {
 
   readonly editForm = this.fb.group({
     title:            ['', Validators.required],
-    description:      ['', Validators.required],
+    description:      ['', [Validators.required, Validators.maxLength(this.descriptionMaxLength)]],
     registrationType: ['DropIn', Validators.required],
     dropInRules:      [''],
     scheduleRequestText: [''],

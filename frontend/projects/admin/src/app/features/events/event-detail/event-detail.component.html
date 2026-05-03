@@ -189,7 +189,11 @@
               <app-help-tooltip helpKey="event.title" />
             </div>
 
-            <lib-markdown-editor formControlName="description" [label]="FIELD.description" [rows]="12" />
+            <lib-markdown-editor
+              formControlName="description"
+              [label]="FIELD.description"
+              [rows]="12"
+              [maxLength]="descriptionMaxLength" />
 
             <div class="field-with-help full-width field-with-help--textarea">
               <mat-form-field appearance="outline">
