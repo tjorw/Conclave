@@ -43,8 +43,8 @@ Se `docs/RichContent.md` för arkitektur och designbeslut. Use cases: UC-RC001�
 Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 
 - [x] `R-RC01` Markdown i eventbeskrivningar – `Description`-fältet (max 10 000 tecken) stödjer markdown; live preview i admin-editorn; publik vy renderar med `ngx-markdown` (UC-RC001)
-- [ ] `R-RC02` Bilduppladdning – `IFileStorage`-abstraktion; `LocalDiskFileStorage` (MVP) + `BlobFileStorage` (stub); endpoint `POST /api/uploads`; bilder refereras via URL i markdown (UC-RC002)
-- [ ] `R-RC03` Redaktionella informationssidor – `Page`-aggregat i nytt `Content` bounded context; konventions- eller upplagescopead; `IsPublished`-flagga; admin CRUD + publik `GET /api/pages/{slug}` (UC-RC003, UC-RC004)
+- [x] `R-RC02` Bilduppladdning – `IFileStorage`-abstraktion; `LocalDiskFileStorage` (MVP) + `BlobFileStorage` (stub); endpoint `POST /api/uploads`; bilder refereras via URL i markdown (UC-RC002)
+- [x] `R-RC03` Redaktionella informationssidor – `Page`-aggregat i nytt `Content` bounded context; konventions- eller upplagescopead; `IsPublished`-flagga; admin CRUD + publik `GET /api/pages/{slug}` (UC-RC003, UC-RC004)
 - [ ] `R-RC04` Mailmallar – adminredigerbara mallar i databas; standardmall per typ i kod (restore-funktion); `TemplateRenderer` med Markdig + variabelsubstitution; 
 
 ### Programtaggar (R-TAG)
@@ -79,3 +79,7 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 - reception, återkallade biljetter är sekundär info. eller skall de tas bort?
 - reception, statistiken är inte tillräcklig. skall också ha antal pass och vara uppdelat per dag.
 - reception, om man inte har qr-biljett (måste man kunna visa i public), så behövs något annat sätt att bekräfta biljetten.
+- taggar. skall kunna sättas på arr i admin.
+- taggar. skall kunna sättas från början av arrangören som en del av grunduppgifterna.
+- sidor, skall kunna visas i menyn i public.
+- gå igenom allt hårdkodat content i public så att man kan styra dem via admin.

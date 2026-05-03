@@ -25,6 +25,9 @@ Eventbeskrivningar skickar in `maxLength = 10000`, vilket matchar domän- och da
 
 ## Bilduppladdning (R-RC02)
 
+### Status
+Implementerad. R-RC02 är ett vertikalt snitt genom API, infrastructure och shared frontend.
+
 ### Abstraktion
 Application-lagret definierar ett gränssnitt:
 
@@ -43,6 +46,8 @@ public interface IFileStorage
 
 Metoden returnerar den publika URL:en till den uppladdade filen.
 
+`tenantId` skickas in av API-lagret från `ITenantContext.TenantId`. Storage-implementationen ska inte själv läsa HTTP-context eller claims.
+
 ### Implementationer
 
 | Klass | Provider | Status |
@@ -51,6 +56,20 @@ Metoden returnerar den publika URL:en till den uppladdade filen.
 | `BlobFileStorage` | Azure Blob Storage | Stub i R-RC02, implementeras separat |
 
 Aktiv implementation väljs i `Program.cs` via konfigurationsnyckel `FileStorage:Provider = "Local" | "Blob"`.
+
+Konfiguration:
+
+```json
+{
+  "FileStorage": {
+    "Provider": "Local",
+    "MaxSizeMb": 5,
+    "LocalRootPath": null
+  }
+}
+```
+
+`LocalRootPath` är valfri och används främst av tester eller specialdeploy. Om den saknas används `wwwroot/uploads`.
 
 ### Filnamn och sökväg
 Varje uppladdad fil får ett nytt GUID-baserat filnamn (`{guid}{.ext}`) för att undvika kollisioner. Sökvägen inkluderar `tenantId` för att garantera att filer från ett tenant aldrig kan skrivas över av ett annat, även om de delar samma URL-space:
@@ -62,10 +81,18 @@ URL:        /uploads/{tenantId}/{guid}.jpg
 
 Statisk filmiddleware i `Program.cs` servar filer under `/uploads` utan autentisering.
 
+`LocalDiskFileStorage` ansvarar för att skapa katalogen `wwwroot/uploads/{tenantId}/` om den saknas. Returnerad URL är relativ till API-host (`/uploads/{tenantId}/{guid}.ext`), inte en absolut URL.
+
 ### Begränsningar
 - Tillåtna MIME-typer: `image/jpeg`, `image/png`, `image/gif`, `image/webp`
 - Max filstorlek: konfigurerbar via `FileStorage:MaxSizeMb` (standard: 5 MB)
 - Validering sker i API-endpointen innan `IFileStorage` anropas
+- Filändelsen bestäms server-side från godkänd MIME-typ:
+  - `image/jpeg` → `.jpg`
+  - `image/png` → `.png`
+  - `image/gif` → `.gif`
+  - `image/webp` → `.webp`
+- Originalfilnamnet används endast för eventuell loggning/diagnostik, aldrig som lagringsnamn.
 
 ### API-endpoint
 ```
@@ -78,9 +105,50 @@ Svar 400:  vid ogiltig filtyp eller för stor fil
 Svar 401:  ej autentiserad
 ```
 
+Endpointen mappas på `groups.Authenticated`, inte `groups.Admin`. UC-RC002 tillåter både admin och evenemangsarrangör att ladda upp bilder, och arrangörer behöver kunna använda samma markdown-editor i sina eventflöden.
+
+Föreslagen endpointfil:
+
+```
+Api/Endpoints/UploadEndpoints.cs
+```
+
+Endpointen ska:
+1. kräva `multipart/form-data`
+2. läsa fältet `file`
+3. returnera `400` om fil saknas, är tom, är för stor eller har ogiltig MIME-typ
+4. hämta `tenantContext.TenantId`
+5. anropa `IFileStorage.UploadAsync(...)`
+6. returnera `200 OK` med `{ "url": "/uploads/{tenantId}/{guid}.ext" }`
+
+### Frontendintegration
+`lib-markdown-editor` utökas med en bildknapp i toolbaren:
+
+1. användaren klickar bildknappen
+2. komponenten öppnar en dold `<input type="file" accept="image/jpeg,image/png,image/gif,image/webp">`
+3. vald fil skickas till en shared `UploadService`
+4. när API:t returnerar URL infogas markdown vid markören:
+
+```markdown
+![bild](/uploads/{tenantId}/{guid}.jpg)
+```
+
+Editorn har redan selection-hantering och `commit(...)`, så bildstödet bör återanvända samma mekanism som fetstil/länk.
+
+### Testkrav
+- Infrastructure-test för `LocalDiskFileStorage`: skapar tenant-katalog, genererar GUID-filnamn och returnerar rätt URL.
+- Endpoint-test för lyckad upload med godkänd MIME-typ.
+- Endpoint-test för för stor fil.
+- Endpoint-test för ogiltig MIME-typ.
+- Frontend-test för att markdown-editorn infogar `![bild](url)` efter lyckad upload.
+- Frontend-test för att uploadfel inte ändrar textytan.
+
 ---
 
 ## Informationssidor (R-RC03)
+
+### Status
+Implementerad. R-RC03 omfattar `Page`-aggregat, `pages`-tabell, admin-CRUD, publicering/avpublicering och publik rendering via `/pages/:slug`.
 
 ### Domänmodell
 `Page` är en aggregatrot i det nya bounded context `Content`.

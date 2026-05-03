@@ -2645,11 +2645,11 @@ Konventionsadministratör eller evenemangsarrangör
 - Inga
 
 ## Acceptanskriterier
-- [ ] Uppladdad bild är åtkomlig via returnerad URL utan autentisering
-- [ ] Bilder från ett tenant kan inte skrivas över av ett annat (filsökvägen inkluderar tenantId)
-- [ ] Ogiltig filtyp returnerar valideringsfel
-- [ ] Fil över maxstorlek returnerar valideringsfel
-- [ ] Markdown-syntaxen infogas korrekt vid markörpositionen i textarea
+- [x] Uppladdad bild är åtkomlig via returnerad URL utan autentisering
+- [x] Bilder från ett tenant kan inte skrivas över av ett annat (filsökvägen inkluderar tenantId)
+- [x] Ogiltig filtyp returnerar valideringsfel
+- [x] Fil över maxstorlek returnerar valideringsfel
+- [x] Markdown-syntaxen infogas korrekt vid markörpositionen i textarea
 
 ---
 
@@ -2694,13 +2694,13 @@ Konventionsadministratör
 - `PageUnpublished { pageId, slug, occurredAt }`
 
 ## Acceptanskriterier
-- [ ] Sida sparas med giltigt PageId
-- [ ] Slug-kollision inom samma scope returnerar valideringsfel
-- [ ] Ogiltigt slug-format returnerar valideringsfel
-- [ ] Opublicerad sida returnerar 404 i publika API:et
-- [ ] Konventionsscopead sida är åtkomlig utan EditionId
-- [ ] Upplagescopead sida kräver att rätt edition är aktiv i kontexten
-- [ ] Kommandohanterarna har tillhörande enhetstester
+- [x] Sida sparas med giltigt PageId
+- [x] Slug-kollision inom samma scope returnerar valideringsfel
+- [x] Ogiltigt slug-format returnerar valideringsfel
+- [x] Opublicerad sida returnerar 404 i publika API:et
+- [x] Konventionsscopead sida är åtkomlig utan EditionId
+- [x] Upplagescopead sida kräver att rätt edition är aktiv i kontexten
+- [x] Kommandohanterarna har tillhörande enhetstester
 
 ---
 
@@ -2731,10 +2731,10 @@ Besökare (anonym eller inloggad)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Publicerad sida returneras korrekt med titel och innehåll
-- [ ] Opublicerad sida returnerar 404
-- [ ] Edition-scopad sida prioriteras framför konventionsscopead vid slug-kollision
-- [ ] Konventionsscopead sida är åtkomlig utan aktiv edition
+- [x] Publicerad sida returneras korrekt med titel och innehåll
+- [x] Opublicerad sida returnerar 404
+- [x] Edition-scopad sida prioriteras framför konventionsscopead vid slug-kollision
+- [x] Konventionsscopead sida är åtkomlig utan aktiv edition
 
 ---
 

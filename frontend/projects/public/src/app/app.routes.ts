@@ -29,6 +29,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'pages/:slug',
+        loadComponent: () =>
+          import('./features/pages/public-page.component').then(
+            m => m.PublicPageComponent
+          ),
+      },
+      {
         path: 'login',
         loadComponent: () =>
           import('./features/login/login.component').then(m => m.LoginComponent),

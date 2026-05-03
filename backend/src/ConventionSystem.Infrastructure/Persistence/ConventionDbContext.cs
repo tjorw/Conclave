@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Linq.Expressions;
+using ConventionSystem.Domain.Content.Aggregates;
 using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Registration.Aggregates;
@@ -30,6 +31,9 @@ public sealed class ConventionDbContext(
     public DbSet<Person> Persons => Set<Person>();
     public DbSet<StaffArea> StaffAreas => Set<StaffArea>();
     public DbSet<Category> Categories => Set<Category>();
+
+    // Content
+    public DbSet<Page> Pages => Set<Page>();
 
     // Event
     public DbSet<DomainEvent> Events => Set<DomainEvent>();

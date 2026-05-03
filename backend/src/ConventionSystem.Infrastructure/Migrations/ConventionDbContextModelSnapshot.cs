@@ -22,6 +22,69 @@ namespace ConventionSystem.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ConventionSystem.Domain.Content.Aggregates.Page", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .HasMaxLength(20000)
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("content");
+
+                    b.Property<Guid>("ConventionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("convention_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("EditionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("edition_id");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_published");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("slug");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("ConventionId", "Slug")
+                        .IsUnique()
+                        .HasDatabaseName("IX_pages_convention_id_slug")
+                        .HasFilter("[edition_id] IS NULL");
+
+                    b.HasIndex("ConventionId", "EditionId", "Slug")
+                        .IsUnique()
+                        .HasDatabaseName("IX_pages_convention_id_edition_id_slug")
+                        .HasFilter("[edition_id] IS NOT NULL");
+
+                    b.ToTable("pages", (string)null);
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Aggregates.Convention", b =>
                 {
                     b.Property<Guid>("Id")

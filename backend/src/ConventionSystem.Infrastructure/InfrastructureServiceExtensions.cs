@@ -1,6 +1,7 @@
 using ConventionSystem.Application.Abstractions;
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Application.Content.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Export.Abstractions;
 using ConventionSystem.Application.Reception.Abstractions;
@@ -12,6 +13,7 @@ using ConventionSystem.Domain.Registration.Services;
 using ConventionSystem.Infrastructure.DataMaintenance;
 using ConventionSystem.Infrastructure.Dispatching;
 using ConventionSystem.Infrastructure.Email;
+using ConventionSystem.Infrastructure.FileStorage;
 using Microsoft.Extensions.Hosting;
 using ConventionSystem.Infrastructure.Identity;
 using ConventionSystem.Infrastructure.MultiTenancy;
@@ -32,6 +34,7 @@ public static class InfrastructureServiceExtensions
         IConfiguration configuration)
     {
         services.AddScoped<IConventionRepository, ConventionRepository>();
+        services.AddScoped<IPageRepository, PageRepository>();
         services.AddScoped<IPersonRepository, PersonRepository>();
         services.AddScoped<IEditionRepository, EditionRepository>();
         services.AddScoped<IShiftRepository, ShiftRepository>();
@@ -57,12 +60,31 @@ public static class InfrastructureServiceExtensions
         services.AddOptions<DataMaintenanceOptions>()
             .Bind(configuration.GetSection(DataMaintenanceOptions.SectionName));
 
+        services.AddOptions<FileStorageOptions>()
+            .Bind(configuration.GetSection(FileStorageOptions.SectionName));
+
         services.AddScoped<LoggingEmailService>();
         services.AddScoped<SmtpEmailService>();
         services.AddScoped<SendGridEmailService>();
         services.AddScoped<OutboxEmailService>();
 
         services.AddScoped<IEmailService>(provider => provider.GetRequiredService<OutboxEmailService>());
+
+        services.AddScoped<LocalDiskFileStorage>();
+        services.AddScoped<BlobFileStorage>();
+        services.AddScoped<IFileStorage>(provider =>
+        {
+            var options = provider.GetRequiredService<IOptions<FileStorageOptions>>().Value;
+
+            if (string.Equals(options.Provider, "Local", StringComparison.OrdinalIgnoreCase))
+                return provider.GetRequiredService<LocalDiskFileStorage>();
+
+            if (string.Equals(options.Provider, "Blob", StringComparison.OrdinalIgnoreCase))
+                return provider.GetRequiredService<BlobFileStorage>();
+
+            throw new InvalidOperationException(
+                $"Ogiltig filstorage-provider '{options.Provider}'. Tillatna varden ar 'Local' och 'Blob'.");
+        });
 
         services.AddScoped<IDirectEmailSender>(provider =>
         {

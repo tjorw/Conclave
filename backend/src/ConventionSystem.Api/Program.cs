@@ -8,6 +8,7 @@ using ConventionSystem.Api.Endpoints;
 using ConventionSystem.Api.Services;
 using ConventionSystem.Infrastructure;
 using ConventionSystem.Infrastructure.Identity;
+using ConventionSystem.Infrastructure.FileStorage;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -99,6 +100,12 @@ if (app.Configuration.GetValue("UseHttpsRedirect", true))
     app.UseHttpsRedirection();
 
 var webRootPath = app.Environment.WebRootPath;
+var fileStorageOptions = app.Services.GetRequiredService<IOptions<FileStorageOptions>>().Value;
+var uploadsRootPath = string.IsNullOrWhiteSpace(fileStorageOptions.LocalRootPath)
+    ? Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads")
+    : fileStorageOptions.LocalRootPath;
+Directory.CreateDirectory(uploadsRootPath);
+
 var publicIndexPath = webRootPath is null ? null : Path.Combine(webRootPath, "index.html");
 var adminIndexPath = webRootPath is null ? null : Path.Combine(webRootPath, "admin", "index.html");
 var portalIndexPath = webRootPath is null ? null : Path.Combine(webRootPath, "portal", "index.html");
@@ -112,6 +119,12 @@ if (webRootPath is not null && Directory.Exists(webRootPath))
     });
     app.UseStaticFiles();
 }
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsRootPath),
+    RequestPath = "/uploads"
+});
 
 app.UseCors("Frontend");
 app.UseAuthentication();
@@ -134,6 +147,8 @@ groups.MapEditionEndpoints();
 groups.MapShiftEndpoints();
 groups.MapRegistrationEndpoints();
 groups.MapEventEndpoints();
+groups.MapUploadEndpoints();
+groups.MapPageEndpoints();
 groups.MapSystemTenantEndpoints();
 
 if (publicIndexPath is not null && File.Exists(publicIndexPath))

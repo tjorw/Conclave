@@ -207,6 +207,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/feeds/feeds.component').then(m => m.FeedsComponent),
       },
+      {
+        path: 'pages',
+        loadComponent: () =>
+          import('./features/pages/pages.component').then(m => m.PagesComponent),
+      },
+      {
+        path: 'pages/:pageId',
+        loadComponent: () =>
+          import('./features/pages/page-detail.component').then(m => m.PageDetailComponent),
+      },
 
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],

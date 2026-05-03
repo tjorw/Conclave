@@ -24,6 +24,10 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
     private readonly MsSqlContainer _sql = new MsSqlBuilder()
         .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
         .Build();
+    private readonly string _uploadRoot = Path.Combine(
+        Path.GetTempPath(),
+        "convention-system-upload-tests",
+        Guid.NewGuid().ToString("N"));
 
     private static int _userCounter;
 
@@ -44,6 +48,9 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
 
     public new async Task DisposeAsync()
     {
+        if (Directory.Exists(_uploadRoot))
+            Directory.Delete(_uploadRoot, recursive: true);
+
         await _sql.DisposeAsync();
         await base.DisposeAsync();
     }
@@ -99,7 +106,10 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
                 ["Logging:LogLevel:Microsoft.EntityFrameworkCore.Database.Command"] = "Warning",
                 ["Logging:LogLevel:Microsoft.EntityFrameworkCore.Migrations"] = "Warning",
                 ["UseHttpsRedirect"] = "false",
-                ["Multitenancy:Enabled"] = "false"
+                ["Multitenancy:Enabled"] = "false",
+                ["FileStorage:Provider"] = "Local",
+                ["FileStorage:MaxSizeMb"] = "5",
+                ["FileStorage:LocalRootPath"] = _uploadRoot
             });
         });
 
