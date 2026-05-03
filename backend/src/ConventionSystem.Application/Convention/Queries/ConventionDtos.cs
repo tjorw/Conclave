@@ -1,6 +1,6 @@
 namespace ConventionSystem.Application.Convention.Queries;
 
-public record ConventionDto(Guid Id, string Name, string Slug);
+public record ConventionDto(Guid Id, string Name, string Slug, Guid? ActiveEditionId);
 
 public record EditionSummaryDto(Guid Id, string Name, DateOnly Start, DateOnly End, string Status);
 

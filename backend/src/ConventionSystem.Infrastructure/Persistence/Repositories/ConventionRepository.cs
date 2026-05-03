@@ -35,12 +35,20 @@ public sealed class ConventionRepository(ConventionDbContext db) : IConventionRe
     public Task<ConventionDto?> GetProjectedByIdAsync(ConventionId id, CancellationToken ct = default)
         => db.Conventions
             .Where(c => c.Id == id)
-            .Select(c => new ConventionDto(c.Id.Value, c.Name, c.Slug))
+            .Select(c => new ConventionDto(
+                c.Id.Value,
+                c.Name,
+                c.Slug,
+                c.ActiveEditionId.HasValue ? c.ActiveEditionId.Value.Value : null))
             .FirstOrDefaultAsync(ct);
 
     public Task<ConventionDto?> GetProjectedAsync(CancellationToken ct = default)
         => db.Conventions
-            .Select(c => new ConventionDto(c.Id.Value, c.Name, c.Slug))
+            .Select(c => new ConventionDto(
+                c.Id.Value,
+                c.Name,
+                c.Slug,
+                c.ActiveEditionId.HasValue ? c.ActiveEditionId.Value.Value : null))
             .FirstOrDefaultAsync(ct);
 
     public Task SaveAsync(CancellationToken ct = default)

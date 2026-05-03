@@ -7,6 +7,7 @@ export interface ConventionDto {
   id: string;
   name: string;
   slug: string;
+  activeEditionId: string | null;
 }
 
 export interface EditionSummaryDto {

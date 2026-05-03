@@ -1,14 +1,14 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { ConventionService, EditionSummaryDto } from 'shared';
+import { ConventionContextService, ConventionService, EditionSummaryDto } from 'shared';
 
 @Injectable({ providedIn: 'root' })
 export class EditionContextService {
   private readonly conventionService = inject(ConventionService);
-  private readonly STORAGE_KEY = 'active_edition_id';
+  private readonly conventionContext = inject(ConventionContextService);
 
   private readonly _editions = signal<EditionSummaryDto[]>([]);
-  private readonly _activeId = signal<string | null>(sessionStorage.getItem(this.STORAGE_KEY));
+  private readonly _activeId = signal<string | null>(null);
   private readonly _loading = signal(false);
   private loadPromise: Promise<void> | null = null;
 
@@ -42,15 +42,13 @@ export class EditionContextService {
   private fetch(): Promise<void> {
     this._loading.set(true);
 
-    this.loadPromise = firstValueFrom(this.conventionService.listEditions())
+    this.loadPromise = this.conventionContext.load()
+      .then(() => firstValueFrom(this.conventionService.listEditions()))
       .then(editions => {
         this._editions.set(editions);
 
-        const stored = this._activeId();
-        if (stored && !editions.find(e => e.id === stored)) {
-          this._activeId.set(null);
-          sessionStorage.removeItem(this.STORAGE_KEY);
-        }
+        const activeEditionId = this.conventionContext.convention()?.activeEditionId ?? null;
+        this._activeId.set(editions.some(e => e.id === activeEditionId) ? activeEditionId : null);
       })
       .catch(() => {
         // Keep the route usable; feature pages can show their own empty/error state.
@@ -65,6 +63,6 @@ export class EditionContextService {
 
   setActive(editionId: string): void {
     this._activeId.set(editionId);
-    sessionStorage.setItem(this.STORAGE_KEY, editionId);
+    this.conventionContext.setActiveEditionId(editionId);
   }
 }

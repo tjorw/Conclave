@@ -48,4 +48,13 @@ export class ConventionContextService {
 
     return conventionId;
   }
+
+  setActiveEditionId(editionId: string): void {
+    const convention = this._convention();
+    if (!convention) {
+      return;
+    }
+
+    this._convention.set({ ...convention, activeEditionId: editionId });
+  }
 }

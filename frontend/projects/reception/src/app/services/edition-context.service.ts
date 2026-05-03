@@ -1,10 +1,11 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { ConventionService, EditionSummaryDto } from 'shared';
+import { ConventionContextService, ConventionService, EditionSummaryDto } from 'shared';
 
 @Injectable({ providedIn: 'root' })
 export class EditionContextService {
   private readonly conventionService = inject(ConventionService);
+  private readonly conventionContext = inject(ConventionContextService);
 
   private readonly _editions = signal<EditionSummaryDto[]>([]);
   private readonly _loading = signal(false);
@@ -18,6 +19,13 @@ export class EditionContextService {
   readonly activeEdition = computed<EditionSummaryDto | null>(() => {
     const editions = this._editions();
     if (!editions.length) return null;
+
+    const activeEditionId = this.conventionContext.convention()?.activeEditionId;
+    if (activeEditionId) {
+      const found = editions.find(e => e.id === activeEditionId);
+      if (found) return found;
+    }
+
     return (
       editions.find(e => e.status === 'Published') ??
       [...editions].sort((a, b) => b.start.localeCompare(a.start))[0]
@@ -31,7 +39,8 @@ export class EditionContextService {
     this._loading.set(true);
     this._error.set(false);
 
-    this.loadPromise = firstValueFrom(this.conventionService.listEditions())
+    this.loadPromise = this.conventionContext.load()
+      .then(() => firstValueFrom(this.conventionService.listEditions()))
       .then(editions => {
         this._editions.set(editions);
       })

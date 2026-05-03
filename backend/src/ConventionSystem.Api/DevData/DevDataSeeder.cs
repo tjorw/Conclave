@@ -205,7 +205,9 @@ public static class DevDataSeeder
         if (editions.Count > 0)
         {
             var existingEditionId = new EditionId(editions[0].Id);
-            if (convention.ActiveEditionId != existingEditionId)
+            var activeEditionExists = convention.ActiveEditionId is { } activeEditionId
+                && editions.Any(e => e.Id == activeEditionId.Value);
+            if (!activeEditionExists)
             {
                 convention.SetActiveEdition(existingEditionId);
                 await conventionRepo.SaveAsync();
