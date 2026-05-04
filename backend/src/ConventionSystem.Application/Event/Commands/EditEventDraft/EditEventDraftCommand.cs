@@ -6,6 +6,7 @@ public sealed record EditEventDraftCommand(
     Guid EventId,
     string Title,
     string Description,
+    IReadOnlyList<string> ProgramTags,
     RegistrationType RegistrationType,
     string? DropInRules,
     string? ScheduleRequestText,

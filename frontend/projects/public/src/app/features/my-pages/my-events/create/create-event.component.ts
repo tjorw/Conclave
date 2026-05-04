@@ -76,7 +76,7 @@ export class CreateEventComponent implements OnInit {
 
     const { categoryId } = this.form.getRawValue();
 
-    this.eventSvc.createEvent(editionId, categoryId!, personId).subscribe({
+    this.eventSvc.createEvent(editionId, categoryId!, personId, []).subscribe({
       next: ({ id }) => this.router.navigateByUrl(`/my-pages/events/${id}`),
       error: err => {
         this.error.set(toErrorMessage(err, 'Kunde inte skapa arrangemanget.'));

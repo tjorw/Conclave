@@ -4,6 +4,7 @@ using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Domain.Convention.Enums;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Convention.ValueObjects;
 using ConventionSystem.Domain.Event.Ids;
 
 namespace ConventionSystem.Application.Event.Commands.CreateEvent;
@@ -38,8 +39,28 @@ public sealed class CreateEventHandler(
         if (person.ConventionId != edition.ConventionId)
             throw new InvalidOperationException("Personen tillhör inte denna konvention.");
 
+        EnsureProgramTagsAreDefinedOnEdition(command.ProgramTags, edition.ProgramTagDefinitions);
+
         var ev = new Domain.Event.Aggregates.Event(EventId.New(), editionId, categoryId, leadOrganiserId);
+        ev.SetProgramTags(command.ProgramTags);
         await eventRepository.AddAndSaveAsync(ev, ct);
         return ev.Id.Value;
+    }
+
+    private static void EnsureProgramTagsAreDefinedOnEdition(
+        IReadOnlyList<string> programTags,
+        IReadOnlyList<ProgramTagDefinition> editionProgramTags)
+    {
+        var allowedTagNames = editionProgramTags
+            .Select(t => t.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var unknownTags = programTags
+            .Where(t => !allowedTagNames.Contains(t.Trim()))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (unknownTags.Count > 0)
+            throw new InvalidOperationException($"Följande taggar finns inte definierade på upplagan: {string.Join(", ", unknownTags)}.");
     }
 }

@@ -21,6 +21,7 @@ public record EventSummaryDto(
     int SessionCount,
     int PendingCommentCount,
     string Description,
+    IReadOnlyList<string> ProgramTags,
     IReadOnlyList<SessionSummaryDto> Sessions);
 
 public record SessionSummaryDto(
@@ -45,6 +46,7 @@ public record EventDto(
     string Status,
     string Title,
     string Description,
+    IReadOnlyList<string> ProgramTags,
     string? ScheduleRequestText,
     string RegistrationType,
     string? DropInRules,

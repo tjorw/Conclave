@@ -34,6 +34,8 @@ public class CreateEventHandlerTests
         var edition = convention.CreateEdition("Konvent 2027", period, staffCoord.Id, eventCoord.Id);
         edition.Publish(admin.Id);
         var category = edition.CreateCategory("Rollspel", eventCoord.Id);
+        edition.AddProgramTagDefinition("Barnvänligt");
+        edition.AddProgramTagDefinition("Nybörjare");
 
         _editionRepo.GetByIdWithCategoriesAsync(edition.Id, Arg.Any<CancellationToken>()).Returns(edition);
         _personRepo.GetByIdAsync(organiser.Id, Arg.Any<CancellationToken>()).Returns(organiser);
@@ -48,7 +50,7 @@ public class CreateEventHandlerTests
         var (convention, organiser, edition, categoryId) = Setup();
 
         var id = await _handler.Handle(
-            new CreateEventCommand(edition.Id.Value, categoryId.Value, organiser.Id.Value), default);
+            new CreateEventCommand(edition.Id.Value, categoryId.Value, organiser.Id.Value, []), default);
 
         Assert.NotEqual(Guid.Empty, id);
     }
@@ -59,7 +61,7 @@ public class CreateEventHandlerTests
         var (convention, organiser, edition, categoryId) = Setup();
 
         await _handler.Handle(
-            new CreateEventCommand(edition.Id.Value, categoryId.Value, organiser.Id.Value), default);
+            new CreateEventCommand(edition.Id.Value, categoryId.Value, organiser.Id.Value, []), default);
 
         await _eventRepo.Received(1).AddAndSaveAsync(
             Arg.Any<Domain.Event.Aggregates.Event>(), Arg.Any<CancellationToken>());
@@ -83,7 +85,7 @@ public class CreateEventHandlerTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(
-                new CreateEventCommand(edition.Id.Value, category.Id.Value, organiser.Id.Value), default));
+                new CreateEventCommand(edition.Id.Value, category.Id.Value, organiser.Id.Value, []), default));
     }
 
     [Fact]
@@ -93,7 +95,7 @@ public class CreateEventHandlerTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(
-                new CreateEventCommand(edition.Id.Value, Guid.NewGuid(), organiser.Id.Value), default));
+                new CreateEventCommand(edition.Id.Value, Guid.NewGuid(), organiser.Id.Value, []), default));
     }
 
     [Fact]
@@ -107,7 +109,7 @@ public class CreateEventHandlerTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(
-                new CreateEventCommand(edition.Id.Value, categoryId.Value, otherOrganiser.Id.Value), default));
+                new CreateEventCommand(edition.Id.Value, categoryId.Value, otherOrganiser.Id.Value, []), default));
     }
 
     [Fact]
@@ -118,7 +120,7 @@ public class CreateEventHandlerTests
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             _handler.Handle(
-                new CreateEventCommand(edition.Id.Value, categoryId.Value, organiser.Id.Value), default));
+                new CreateEventCommand(edition.Id.Value, categoryId.Value, organiser.Id.Value, []), default));
     }
 
     [Fact]
@@ -128,10 +130,40 @@ public class CreateEventHandlerTests
         _currentUser.PersonId.Returns(PersonId.New());
         _currentUser.IsAdmin.Returns(true);
 
-        await _handler.Handle(new CreateEventCommand(edition.Id.Value, categoryId.Value, organiser.Id.Value), default);
+        await _handler.Handle(new CreateEventCommand(edition.Id.Value, categoryId.Value, organiser.Id.Value, []), default);
 
         await _eventRepo.Received(1).AddAndSaveAsync(
             Arg.Is<Domain.Event.Aggregates.Event>(e => e.LeadOrganiserId == organiser.Id),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_UnknownProgramTag_Throws()
+    {
+        var (_, organiser, edition, categoryId) = Setup();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _handler.Handle(new CreateEventCommand(
+                edition.Id.Value,
+                categoryId.Value,
+                organiser.Id.Value,
+                ["Okänd tagg"]), default));
+    }
+
+    [Fact]
+    public async Task Handle_KnownProgramTags_AreSavedOnEvent()
+    {
+        var (_, organiser, edition, categoryId) = Setup();
+
+        await _handler.Handle(new CreateEventCommand(
+            edition.Id.Value,
+            categoryId.Value,
+            organiser.Id.Value,
+            ["Barnvänligt", "Nybörjare"]), default);
+
+        await _eventRepo.Received(1).AddAndSaveAsync(
+            Arg.Is<Domain.Event.Aggregates.Event>(e =>
+                e.ProgramTags.Select(t => t.Name).SequenceEqual(new[] { "Barnvänligt", "Nybörjare" })),
             Arg.Any<CancellationToken>());
     }
 }

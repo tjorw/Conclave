@@ -222,8 +222,9 @@ export class MyEventDetailComponent implements OnInit {
 
   private updateDraftFromForm() {
     const { title, description, registrationType, dropInRules, scheduleRequestText, coOrganiserCount } = this.draftForm.getRawValue();
+    const programTags = this.event()?.programTags ?? [];
     return this.eventSvc.updateDraft(
-      this.eventId, title!, description!, registrationType!, dropInRules || null, scheduleRequestText || null, coOrganiserCount ?? 0
+      this.eventId, title!, description!, programTags, registrationType!, dropInRules || null, scheduleRequestText || null, coOrganiserCount ?? 0
     );
   }
 

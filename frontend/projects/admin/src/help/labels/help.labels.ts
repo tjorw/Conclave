@@ -13,6 +13,7 @@ export type HelpTooltipKey =
   | 'edition.importJson'
   | 'event.title'
   | 'event.scheduleRequests'
+  | 'event.programTags'
   | 'event.registrationType'
   | 'event.dropInRules'
   | 'event.coOrganisers'
@@ -43,6 +44,7 @@ export const HELP_TOOLTIP_LABELS: Record<HelpTooltipKey, string> = {
   'edition.importJson': 'Skapar en ny upplaga från ett tidigare exporterat JSON-dokument.',
   'event.title': 'Publik titel för programpunkten. Håll den kort och tydlig.',
   'event.scheduleRequests': 'Arrangörens önskemål om tid, lokal eller praktiska behov.',
+  'event.programTags': 'Taggar beskriver målgrupp eller karaktär för evenemanget och måste finnas definierade på upplagan.',
   'event.registrationType': 'Avgör om deltagare bokar plats, droppar in eller inte anmäler sig.',
   'event.dropInRules': 'Kort instruktion för hur drop-in fungerar för deltagare.',
   'event.coOrganisers': 'Antal extra arrangörsplatser som kan kopplas till evenemanget.',

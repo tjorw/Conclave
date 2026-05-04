@@ -22,6 +22,7 @@ public record EventSummaryFeedDto(
     string? CategoryName,
     string Title,
     string Description,
+    IReadOnlyList<string> ProgramTags,
     string? LeadOrganiserName,
     int SessionCount,
     IReadOnlyList<SessionSummaryFeedDto> Sessions);
@@ -42,6 +43,7 @@ public record EventFeedDto(
     string? CategoryName,
     string Title,
     string Description,
+    IReadOnlyList<string> ProgramTags,
     string RegistrationType,
     string? DropInRules,
     IReadOnlyList<SessionFeedDto> Sessions);

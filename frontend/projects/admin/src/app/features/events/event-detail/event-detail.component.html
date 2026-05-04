@@ -195,6 +195,18 @@
               [rows]="12"
               [maxLength]="descriptionMaxLength" />
 
+            <div class="field-with-help full-width">
+              <mat-form-field appearance="outline">
+                <mat-label>{{ FIELD.programTags }}</mat-label>
+                <mat-select formControlName="programTags" multiple>
+                  @for (tagName of availableProgramTags(); track tagName) {
+                    <mat-option [value]="tagName">{{ tagName }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <app-help-tooltip helpKey="event.programTags" />
+            </div>
+
             <div class="field-with-help full-width field-with-help--textarea">
               <mat-form-field appearance="outline">
                 <mat-label>{{ PAGE.requestsTitle }}</mat-label>

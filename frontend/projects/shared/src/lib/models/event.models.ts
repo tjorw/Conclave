@@ -30,6 +30,7 @@ export interface EventDto {
   status: EventStatus;
   title: string;
   description: string;
+  programTags: string[];
   scheduleRequestText: string | null;
   registrationType: RegistrationType;
   dropInRules: string | null;

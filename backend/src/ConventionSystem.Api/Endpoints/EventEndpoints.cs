@@ -53,7 +53,7 @@ public static class EventEndpoints
             async (Guid editionId, CreateEventRequest request, ISender sender, CancellationToken ct) =>
             {
                 var id = await sender.Send(
-                    new CreateEventCommand(editionId, request.CategoryId, request.LeadOrganiserId), ct);
+                    new CreateEventCommand(editionId, request.CategoryId, request.LeadOrganiserId, request.ProgramTags ?? []), ct);
                 return Results.Created($"/events/{id}", new { id });
             });
 
@@ -65,7 +65,7 @@ public static class EventEndpoints
             {
                 await sender.Send(
                     new EditEventDraftCommand(eventId, request.Title, request.Description,
-                        request.RegistrationType, request.DropInRules, request.ScheduleRequestText,
+                        request.ProgramTags ?? [], request.RegistrationType, request.DropInRules, request.ScheduleRequestText,
                         request.CoOrganiserCount), ct);
                 return Results.NoContent();
             });
@@ -230,11 +230,11 @@ public static class EventEndpoints
     }
 }
 
-public record CreateEventRequest(Guid CategoryId, Guid LeadOrganiserId);
+public record CreateEventRequest(Guid CategoryId, Guid LeadOrganiserId, IReadOnlyList<string>? ProgramTags = null);
 public record ApproveVersionRequest(IReadOnlyList<ApproveOrganizerTicketAssignmentRequest>? OrganizerTicketAssignments = null);
 public record ApproveOrganizerTicketAssignmentRequest(Guid PersonId, Guid? TicketTypeId);
 public record ChangeCategoryRequest(Guid CategoryId);
-public record EditEventDraftRequest(string Title, string Description, RegistrationType RegistrationType, string? DropInRules, string? ScheduleRequestText, int CoOrganiserCount);
+public record EditEventDraftRequest(string Title, string Description, IReadOnlyList<string>? ProgramTags, RegistrationType RegistrationType, string? DropInRules, string? ScheduleRequestText, int CoOrganiserCount);
 public record RejectVersionRequest(string Comment);
 public record AddEventCommentRequest(string Comment);
 public record RespondToEventCommentRequest(string Response);

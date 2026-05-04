@@ -87,6 +87,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active),
             e.Comments.Count(c => c.RequiresHandling && (c.Status == EventCommentStatus.New || c.Status == EventCommentStatus.InProgress)),
             e.Description ?? "",
+            e.ProgramTags.Select(t => t.Name).ToList(),
             e.Sessions.Select(s => new SessionSummaryDto(
                 s.Id.Value,
                 s.VenueId.Value,
@@ -162,6 +163,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             ev.Status.ToString(),
             ev.Title,
             ev.Description,
+            ev.ProgramTags.Select(t => t.Name).ToList(),
             ev.ScheduleRequestText,
             ev.RegistrationType.ToString(),
             ev.DropInRules,
@@ -226,6 +228,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active),
             e.Comments.Count(c => c.RequiresHandling && (c.Status == EventCommentStatus.New || c.Status == EventCommentStatus.InProgress)),
             e.Description ?? "",
+            e.ProgramTags.Select(t => t.Name).ToList(),
             e.Sessions.Select(s => new SessionSummaryDto(
                 s.Id.Value,
                 s.VenueId.Value,

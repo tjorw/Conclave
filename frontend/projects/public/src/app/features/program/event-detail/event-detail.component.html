@@ -29,6 +29,9 @@
           <span class="chip chip-purple">{{ ev.categoryName }}</span>
         }
         <span class="chip chip-grey">{{ registrationLabel(ev.registrationType) }}</span>
+        @for (tag of ev.programTags; track tag) {
+          <span class="chip chip-grey">{{ tag }}</span>
+        }
       </div>
     </div>
 
@@ -127,6 +130,12 @@
             <mat-icon>category</mat-icon>
             <span>{{ ev.categoryName ?? 'Okänd kategori' }}</span>
           </div>
+          @if (ev.programTags.length > 0) {
+            <div class="sidebar-row">
+              <mat-icon>label</mat-icon>
+              <span>{{ ev.programTags.join(', ') }}</span>
+            </div>
+          }
           <div class="sidebar-row">
             <mat-icon>confirmation_number</mat-icon>
             <span>{{ registrationLabel(ev.registrationType) }}</span>

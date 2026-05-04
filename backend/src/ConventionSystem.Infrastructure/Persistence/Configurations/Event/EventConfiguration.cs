@@ -58,6 +58,28 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
             .HasMaxLength(2000)
             .HasColumnName("drop_in_rules");
 
+        builder.OwnsMany(e => e.ProgramTags, tags =>
+        {
+            tags.ToTable("event_program_tags");
+            tags.WithOwner().HasForeignKey("EventId");
+
+            tags.Property<EventId>("EventId")
+                .HasConversion(id => id.Value, value => new EventId(value))
+                .HasColumnName("event_id");
+
+            tags.Property<Guid>("Id").HasDefaultValueSql("newsequentialid()");
+            tags.HasKey("Id");
+
+            tags.Property(t => t.Name)
+                .HasColumnName("name")
+                .HasMaxLength(64)
+                .IsRequired();
+
+            tags.Property<Guid>("TenantId").HasColumnName("tenant_id");
+            tags.HasIndex("EventId", "Name").IsUnique().HasDatabaseName("IX_event_program_tags_event_id_name");
+            tags.HasIndex("TenantId").HasDatabaseName("IX_event_program_tags_tenant_id");
+        });
+
         builder.HasMany(e => e.Sessions)
             .WithOne()
             .HasForeignKey("EventId")
@@ -88,6 +110,7 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
         builder.Navigation(e => e.CoOrganisers).HasField("_coOrganisers");
         builder.Navigation(e => e.CoOrganiserInvitations).HasField("_coOrganiserInvitations");
         builder.Navigation(e => e.Comments).HasField("_comments");
+        builder.Navigation(e => e.ProgramTags).HasField("_programTags");
 
         builder.HasIndex(e => e.EditionId).HasDatabaseName("IX_events_edition_id");
         builder.HasIndex(e => e.CategoryId).HasDatabaseName("IX_events_category_id");

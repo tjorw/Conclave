@@ -24,12 +24,13 @@ export class EventService {
     return this.http.get<EventDto>(`${this.env.apiBaseUrl}/events/${eventId}`);
   }
 
-  createEvent(editionId: string, categoryId: string, leadOrganiserId: string) {
+  createEvent(editionId: string, categoryId: string, leadOrganiserId: string, programTags: string[]) {
     return this.http.post<{ id: string }>(
       `${this.env.apiBaseUrl}/editions/${editionId}/events`,
       {
         categoryId,
         leadOrganiserId,
+        programTags,
       }
     );
   }
@@ -59,6 +60,7 @@ export class EventService {
     eventId: string,
     title: string,
     description: string,
+    programTags: string[],
     registrationType: string,
     dropInRules: string | null,
     scheduleRequestText: string | null,
@@ -66,7 +68,7 @@ export class EventService {
   ) {
     return this.http.put<void>(
       `${this.env.apiBaseUrl}/events/${eventId}`,
-      { title, description, registrationType, dropInRules, scheduleRequestText, coOrganiserCount }
+      { title, description, programTags, registrationType, dropInRules, scheduleRequestText, coOrganiserCount }
     );
   }
 

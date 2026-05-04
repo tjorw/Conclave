@@ -16,6 +16,7 @@ import {
   ConventionService,
   EventService,
   EventSummaryDto,
+  ProgramTagDefinitionDto,
   PersonDto,
   EVENT_STATUS_LABEL,
   EVENT_STATUS_CHIP,
@@ -61,6 +62,7 @@ export class EventsComponent {
   readonly events     = signal<EventSummaryDto[]>([]);
   readonly persons    = signal<PersonDto[]>([]);
   readonly categories = signal<CategoryDto[]>([]);
+  readonly programTagDefinitions = signal<ProgramTagDefinitionDto[]>([]);
   readonly loading    = signal(false);
   readonly saving     = signal(false);
   readonly error      = signal<string | null>(null);
@@ -71,6 +73,7 @@ export class EventsComponent {
   readonly createForm = this.fb.group({
     categoryId:       ['', Validators.required],
     leadOrganiserId:  ['', Validators.required],
+    programTags:      this.fb.control<string[]>([], { nonNullable: true }),
   });
 
   readonly filteredEvents = computed(() => {
@@ -125,7 +128,10 @@ export class EventsComponent {
 
   private loadSupportData(editionId: string): void {
     this.conventionSvc.getEdition(editionId).subscribe({
-      next: edition => this.categories.set(edition.categories),
+      next: edition => {
+        this.categories.set(edition.categories);
+        this.programTagDefinitions.set(edition.programTagDefinitions ?? []);
+      },
     });
     this.conventionSvc.listPersons().subscribe({
       next: persons => this.persons.set(persons.filter(p => p.isActive)),
@@ -140,9 +146,9 @@ export class EventsComponent {
   create(): void {
     const edition = this.editionContext.activeEdition();
     if (!edition || this.createForm.invalid || this.saving()) return;
-    const { categoryId, leadOrganiserId } = this.createForm.getRawValue();
+    const { categoryId, leadOrganiserId, programTags } = this.createForm.getRawValue();
     this.saving.set(true);
-    this.eventSvc.createEvent(edition.id, categoryId!, leadOrganiserId!).subscribe({
+    this.eventSvc.createEvent(edition.id, categoryId!, leadOrganiserId!, programTags ?? []).subscribe({
       next: ({ id }) => {
         this.saving.set(false);
         this.createForm.reset();

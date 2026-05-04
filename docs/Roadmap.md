@@ -49,9 +49,9 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 
 ### Programtaggar (R-TAG)
 
-- [ ] `R-TAG01` Taggdefinitioner på `Edition` – `Edition` äger en uppsättning taggdefinitioner som value objects, t.ex. `Barnvänligt`, `18+`, `Nybörjare`. Taggar är upplagespecifika och ska kunna administreras tillsammans med övrig edition-struktur.
-- [ ] `R-TAG02` Tillämpa taggar på `Event` – evenemang refererar endast till taggar som finns definierade på samma `Edition`. Validering ska hindra okända taggar och taggar från annan upplaga.
-- [ ] `R-TAG03` Publik exponering och filtrering – event-feed och programdetalj visar taggar; publika programvyn erbjuder taggfilter utöver dag och kategori.
+- [x] `R-TAG01` Taggdefinitioner på `Edition` – `Edition` äger en uppsättning taggdefinitioner som value objects, t.ex. `Barnvänligt`, `18+`, `Nybörjare`. Taggar är upplagespecifika och ska kunna administreras tillsammans med övrig edition-struktur.
+- [x] `R-TAG02` Tillämpa taggar på `Event` – evenemang refererar endast till taggar som finns definierade på samma `Edition`. Validering hindrar okända taggar och taggar från annan upplaga; stöd finns i admin för att sätta taggar vid skapande och redigering av event.
+- [x] `R-TAG03` Publik exponering och filtrering – event-feed och programdetalj visar taggar; publika programvyn erbjuder taggfilter utöver dag och kategori.
 - [ ] `R-TAG04` Kopiering av struktur – `CopyStructure` bör kopiera editionens taggdefinitioner på samma sätt som lokaler, funktionsområden och stationer när det är relevant för ny upplaga.
 
 ---
@@ -79,7 +79,7 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 - reception, återkallade biljetter är sekundär info. eller skall de tas bort?
 - reception, statistiken är inte tillräcklig. skall också ha antal pass och vara uppdelat per dag.
 - reception, om man inte har qr-biljett (måste man kunna visa i public), så behövs något annat sätt att bekräfta biljetten.
-- taggar. skall kunna sättas på arrangemang i admin.
+- taggar i admin: se `R-TAG02` (taggar ska kunna sättas på arrangemang/event).
 - taggar. skall kunna sättas från början av arrangören som en del av grunduppgifterna.
 - gå igenom allt hårdkodat content i public så att man kan styra dem via admin.
 - sidor, import/export

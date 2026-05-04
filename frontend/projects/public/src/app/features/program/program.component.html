@@ -41,6 +41,16 @@
       </div>
     }
 
+    <!-- Taggfilter -->
+    @if (availableTags().length > 0) {
+      <div class="tag-chips">
+        @for (tag of availableTags(); track tag) {
+          <button class="tag-chip" [class.active]="selectedTag() === tag"
+                  (click)="toggleTag(tag)">{{ tag }}</button>
+        }
+      </div>
+    }
+
     <!-- Resultaträknare -->
     <p class="result-count">
       {{ filteredEvents().length }} evenemang
@@ -59,6 +69,13 @@
             </div>
             <h3 class="event-title">{{ event.title }}</h3>
             <p class="event-desc">{{ event.description | stripMarkdown }}</p>
+            @if (event.programTags.length > 0) {
+              <div class="event-tags">
+                @for (tag of event.programTags; track tag) {
+                  <span class="chip chip-grey">{{ tag }}</span>
+                }
+              </div>
+            }
             @if (event.sessions.length > 0) {
               <div class="event-meta">
                 <mat-icon>schedule</mat-icon>

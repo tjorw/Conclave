@@ -40,6 +40,7 @@ public sealed class GetEditionFeedHandler(
                 e.CategoryName,
                 e.Title!,
                 e.Description,
+                e.ProgramTags,
                 e.LeadOrganiserName,
                 e.SessionCount,
                 e.Sessions

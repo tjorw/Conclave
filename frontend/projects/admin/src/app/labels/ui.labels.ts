@@ -74,6 +74,7 @@ export const FIELD = {
   seats:            'Platser',
   maxSeats:         'Max platser',
   startType:        'Starttyp',
+  programTags:      'Programtaggar',
   password:         'Lösenord',
   coOrganiserCount: 'Antal medarrangörsplatser',
 } as const;

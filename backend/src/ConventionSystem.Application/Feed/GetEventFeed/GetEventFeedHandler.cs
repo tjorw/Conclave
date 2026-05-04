@@ -54,6 +54,7 @@ public sealed class GetEventFeedHandler(
             categoryName,
             ev.Title,
             ev.Description,
+            ev.ProgramTags,
             ev.RegistrationType,
             ev.DropInRules,
             sessions);

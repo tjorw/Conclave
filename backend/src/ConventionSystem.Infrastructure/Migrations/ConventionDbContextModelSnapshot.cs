@@ -1448,6 +1448,47 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Event.Aggregates.Event", b =>
+                {
+                    b.OwnsMany("ConventionSystem.Domain.Event.ValueObjects.EventProgramTag", "ProgramTags", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uniqueidentifier")
+                                .HasDefaultValueSql("newsequentialid()");
+
+                            b1.Property<Guid>("EventId")
+                                .HasColumnType("uniqueidentifier")
+                                .HasColumnName("event_id");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(64)
+                                .HasColumnType("nvarchar(64)")
+                                .HasColumnName("name");
+
+                            b1.Property<Guid>("TenantId")
+                                .HasColumnType("uniqueidentifier")
+                                .HasColumnName("tenant_id");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("TenantId")
+                                .HasDatabaseName("IX_event_program_tags_tenant_id");
+
+                            b1.HasIndex("EventId", "Name")
+                                .IsUnique()
+                                .HasDatabaseName("IX_event_program_tags_event_id_name");
+
+                            b1.ToTable("event_program_tags", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("EventId");
+                        });
+
+                    b.Navigation("ProgramTags");
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.CoOrganiser", b =>
                 {
                     b.HasOne("ConventionSystem.Domain.Event.Aggregates.Event", null)

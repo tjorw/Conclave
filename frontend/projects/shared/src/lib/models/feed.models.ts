@@ -30,6 +30,7 @@ export interface EventSummaryFeedDto {
   categoryName: string | null;
   title: string;
   description: string;
+  programTags: string[];
   leadOrganiserName: string | null;
   sessionCount: number;
   sessions: SessionSummaryFeedDto[];
@@ -52,6 +53,7 @@ export interface EventFeedDto {
   categoryName: string | null;
   title: string;
   description: string;
+  programTags: string[];
   registrationType: string;
   dropInRules: string | null;
   sessions: SessionFeedDto[];

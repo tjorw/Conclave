@@ -18,6 +18,7 @@ export class ProgramComponent {
 
   readonly selectedDay      = signal<string>('alla');
   readonly selectedCategory = signal<string | null>(null);
+  readonly selectedTag      = signal<string | null>(null);
 
   // Unika dagar extraherade från alla sessioner
   readonly availableDays = computed<string[]>(() => {
@@ -34,17 +35,30 @@ export class ProgramComponent {
     () => this.editionSvc.edition()?.categories ?? []
   );
 
+  readonly availableTags = computed<string[]>(() => {
+    const tags = new Set<string>();
+    for (const ev of (this.editionSvc.edition()?.events ?? [])) {
+      for (const tag of (ev.programTags ?? [])) {
+        tags.add(tag);
+      }
+    }
+
+    return Array.from(tags).sort((a, b) => a.localeCompare(b, 'sv-SE'));
+  });
+
   readonly filteredEvents = computed<EventSummaryFeedDto[]>(() => {
     const events = this.editionSvc.edition()?.events ?? [];
     const day  = this.selectedDay();
     const cat  = this.selectedCategory();
+    const tag  = this.selectedTag();
 
     return events.filter(ev => {
       const matchesCat = !cat || ev.categoryId === cat;
       const matchesDay = day === 'alla' || ev.sessions.some(s =>
         this.dateOnly(s.start) === day
       );
-      return matchesCat && matchesDay;
+      const matchesTag = !tag || (ev.programTags ?? []).includes(tag);
+      return matchesCat && matchesDay && matchesTag;
     });
   });
 
@@ -71,6 +85,10 @@ export class ProgramComponent {
 
   toggleCategory(id: string): void {
     this.selectedCategory.update(c => c === id ? null : id);
+  }
+
+  toggleTag(tag: string): void {
+    this.selectedTag.update(current => current === tag ? null : tag);
   }
 
   private dateOnly(isoString: string): string {

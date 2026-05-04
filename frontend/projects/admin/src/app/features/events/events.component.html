@@ -58,6 +58,14 @@
             }
           </mat-select>
         </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ FIELD.programTags }}</mat-label>
+          <mat-select formControlName="programTags" multiple>
+            @for (tag of programTagDefinitions(); track tag.name) {
+              <mat-option [value]="tag.name">{{ tag.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
       </form>
     </mat-card-content>
     <mat-card-actions align="end">

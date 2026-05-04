@@ -16,6 +16,7 @@ public sealed class Event : AggregateRoot
     private readonly List<CoOrganiser> _coOrganisers = [];
     private readonly List<CoOrganiserInvitation> _coOrganiserInvitations = [];
     private readonly List<EventComment> _comments = [];
+    private readonly List<EventProgramTag> _programTags = [];
 
     public EventId Id { get; private set; }
     public EditionId EditionId { get; private set; }
@@ -35,6 +36,7 @@ public sealed class Event : AggregateRoot
     public IReadOnlyList<CoOrganiser> CoOrganisers => _coOrganisers.AsReadOnly();
     public IReadOnlyList<CoOrganiserInvitation> CoOrganiserInvitations => _coOrganiserInvitations.AsReadOnly();
     public IReadOnlyList<EventComment> Comments => _comments.AsReadOnly();
+    public IReadOnlyList<EventProgramTag> ProgramTags => _programTags.AsReadOnly();
 
     private Event() { }
 
@@ -92,6 +94,15 @@ public sealed class Event : AggregateRoot
         ScheduleRequestText = string.IsNullOrWhiteSpace(scheduleRequestText)
             ? null
             : scheduleRequestText.Trim();
+    }
+
+    public void SetProgramTags(IReadOnlyList<string> programTags)
+    {
+        EnsureNotCancelled();
+
+        _programTags.Clear();
+        foreach (var tag in programTags.Select(t => new EventProgramTag(t)).DistinctBy(t => t.Name, StringComparer.OrdinalIgnoreCase))
+            _programTags.Add(tag);
     }
 
     public void SubmitForReview()
