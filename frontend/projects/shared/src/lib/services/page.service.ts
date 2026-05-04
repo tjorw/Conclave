@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { ENVIRONMENT } from '../environment/environment.token';
-import { PageDto, PageSummaryDto, PublicPageDto, SavePageRequest } from '../models/content.models';
+import { PageDto, PageSummaryDto, PublicPageDto, PublicPageMenuItemDto, SavePageRequest } from '../models/content.models';
 
 @Injectable({ providedIn: 'root' })
 export class PageService {
@@ -19,6 +19,10 @@ export class PageService {
 
   getPublicPage(slug: string) {
     return this.http.get<PublicPageDto>(`${this.env.apiBaseUrl}/api/pages/${slug}`);
+  }
+
+  listPublicMenuPages() {
+    return this.http.get<PublicPageMenuItemDto[]>(`${this.env.apiBaseUrl}/api/pages/menu`);
   }
 
   createPage(request: SavePageRequest) {

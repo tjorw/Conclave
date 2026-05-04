@@ -25,6 +25,7 @@ public sealed class PageRepository(ConventionDbContext db) : IPageRepository
                 p.Title,
                 p.EditionId == null ? null : p.EditionId.Value.Value,
                 p.IsPublished,
+                p.ShowInPublicMenu,
                 p.UpdatedAt))
             .ToListAsync(ct);
 
@@ -38,6 +39,7 @@ public sealed class PageRepository(ConventionDbContext db) : IPageRepository
                 p.Content,
                 p.EditionId == null ? null : p.EditionId.Value.Value,
                 p.IsPublished,
+                p.ShowInPublicMenu,
                 p.CreatedAt,
                 p.UpdatedAt))
             .FirstOrDefaultAsync(ct);
@@ -77,6 +79,36 @@ public sealed class PageRepository(ConventionDbContext db) : IPageRepository
                 p.Content,
                 p.EditionId == null ? null : p.EditionId.Value.Value))
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<PublicPageMenuItemDto>> ListPublicMenuPagesAsync(
+        ConventionId conventionId,
+        EditionId? activeEditionId,
+        CancellationToken ct = default)
+    {
+        var pages = await db.Pages
+            .Where(p => p.ConventionId == conventionId
+                && p.IsPublished
+                && p.ShowInPublicMenu
+                && (p.EditionId == null || (activeEditionId != null && p.EditionId == activeEditionId)))
+            .Select(p => new
+            {
+                p.Slug,
+                p.Title,
+                EditionId = p.EditionId == null ? (Guid?)null : p.EditionId.Value.Value,
+                IsActiveEditionScoped = activeEditionId != null && p.EditionId == activeEditionId,
+            })
+            .ToListAsync(ct);
+
+        return pages
+            .GroupBy(p => p.Slug)
+            .Select(group => group
+                .OrderByDescending(p => p.IsActiveEditionScoped)
+                .ThenBy(p => p.EditionId.HasValue)
+                .First())
+            .OrderBy(p => p.Title)
+            .Select(p => new PublicPageMenuItemDto(p.Slug, p.Title, p.EditionId))
+            .ToList();
     }
 
     public Task<bool> SlugExistsAsync(

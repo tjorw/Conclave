@@ -36,6 +36,7 @@ import { PageService, PageSummaryDto } from 'shared';
             <th>Slug</th>
             <th>Scope</th>
             <th>Status</th>
+            <th>Publik meny</th>
             <th>Uppdaterad</th>
           </tr>
         </thead>
@@ -50,6 +51,7 @@ import { PageService, PageSummaryDto } from 'shared';
                   {{ page.isPublished ? 'Publicerad' : 'Utkast' }}
                 </span>
               </td>
+              <td>{{ page.showInPublicMenu ? 'Ja' : 'Nej' }}</td>
               <td>{{ page.updatedAt | date:'yyyy-MM-dd HH:mm' }}</td>
             </tr>
           }

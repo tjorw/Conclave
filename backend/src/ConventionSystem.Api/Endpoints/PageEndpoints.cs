@@ -6,6 +6,7 @@ using ConventionSystem.Application.Content.Commands.UnpublishPage;
 using ConventionSystem.Application.Content.Commands.UpdatePage;
 using ConventionSystem.Application.Content.Queries.GetPage;
 using ConventionSystem.Application.Content.Queries.GetPublicPage;
+using ConventionSystem.Application.Content.Queries.ListPublicMenuPages;
 using ConventionSystem.Application.Content.Queries.ListPages;
 
 namespace ConventionSystem.Api.Endpoints;
@@ -14,6 +15,10 @@ public static class PageEndpoints
 {
     public static void MapPageEndpoints(this RouteGroups groups)
     {
+        groups.Anonymous.MapGet("/api/pages/menu",
+            async (ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListPublicMenuPagesQuery(), ct)));
+
         groups.Anonymous.MapGet("/api/pages/{slug}",
             async (string slug, ISender sender, CancellationToken ct) =>
             {
@@ -35,14 +40,14 @@ public static class PageEndpoints
         groups.Admin.MapPost("/api/pages",
             async (SavePageRequest request, ISender sender, CancellationToken ct) =>
             {
-                var id = await sender.Send(new CreatePageCommand(request.Slug, request.Title, request.Content, request.EditionId), ct);
+                var id = await sender.Send(new CreatePageCommand(request.Slug, request.Title, request.Content, request.EditionId, request.ShowInPublicMenu), ct);
                 return Results.Created($"/api/pages/{id}", new { id });
             });
 
         groups.Admin.MapPut("/api/pages/{pageId:guid}",
             async (Guid pageId, SavePageRequest request, ISender sender, CancellationToken ct) =>
             {
-                await sender.Send(new UpdatePageCommand(pageId, request.Slug, request.Title, request.Content, request.EditionId), ct);
+                await sender.Send(new UpdatePageCommand(pageId, request.Slug, request.Title, request.Content, request.EditionId, request.ShowInPublicMenu), ct);
                 return Results.NoContent();
             });
 
@@ -69,4 +74,4 @@ public static class PageEndpoints
     }
 }
 
-public sealed record SavePageRequest(string Slug, string Title, string Content, Guid? EditionId);
+public sealed record SavePageRequest(string Slug, string Title, string Content, Guid? EditionId, bool ShowInPublicMenu);

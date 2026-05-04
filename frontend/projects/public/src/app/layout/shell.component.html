@@ -14,6 +14,9 @@
       <!-- Desktop: nav-links och nav-actions -->
       <div class="nav-links">
         <a mat-button routerLink="/program" routerLinkActive="nav-active">Program</a>
+        @for (page of menuPages(); track page.slug) {
+          <a mat-button [routerLink]="['/pages', page.slug]" routerLinkActive="nav-active">{{ page.title }}</a>
+        }
       </div>
 
       <div class="nav-actions">
@@ -50,6 +53,10 @@
       <div class="mobile-menu">
         <a routerLink="/program" routerLinkActive="nav-active"
           (click)="menuOpen.set(false)">Program</a>
+        @for (page of menuPages(); track page.slug) {
+          <a [routerLink]="['/pages', page.slug]" routerLinkActive="nav-active"
+            (click)="menuOpen.set(false)">{{ page.title }}</a>
+        }
         @if (auth.isLoggedIn()) {
           <a routerLink="/my-pages" (click)="menuOpen.set(false)">
             Mina sidor

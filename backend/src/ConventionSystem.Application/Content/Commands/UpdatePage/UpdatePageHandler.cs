@@ -28,7 +28,7 @@ public sealed class UpdatePageHandler(
             ?? throw new KeyNotFoundException("Informationssidan hittades inte.");
 
         var editionId = command.EditionId.HasValue ? new EditionId(command.EditionId.Value) : (EditionId?)null;
-        page.Update(command.Slug, command.Title, command.Content, editionId);
+        page.Update(command.Slug, command.Title, command.Content, editionId, command.ShowInPublicMenu);
 
         if (await pageRepository.SlugExistsAsync(convention.Id, editionId, page.Slug, pageId, ct))
             throw new PageSlugAlreadyExistsException();

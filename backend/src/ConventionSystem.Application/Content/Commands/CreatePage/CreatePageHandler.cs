@@ -25,7 +25,7 @@ public sealed class CreatePageHandler(
             "Endast administratörer kan skapa informationssidor.");
 
         var editionId = command.EditionId.HasValue ? new EditionId(command.EditionId.Value) : (EditionId?)null;
-        var page = new Page(PageId.New(), convention.Id, editionId, command.Slug, command.Title, command.Content);
+        var page = new Page(PageId.New(), convention.Id, editionId, command.Slug, command.Title, command.Content, command.ShowInPublicMenu);
 
         if (await pageRepository.SlugExistsAsync(convention.Id, editionId, page.Slug, null, ct))
             throw new PageSlugAlreadyExistsException();

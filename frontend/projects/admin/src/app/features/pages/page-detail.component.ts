@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MarkdownEditorComponent, PageDto, PageService, SavePageRequest } from 'shared';
 import { EditionContextService } from '../../services/edition-context.service';
 
@@ -23,6 +24,7 @@ import { EditionContextService } from '../../services/edition-context.service';
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    MatCheckboxModule,
     MarkdownEditorComponent,
   ],
   template: `
@@ -72,6 +74,10 @@ import { EditionContextService } from '../../services/edition-context.service';
           </mat-form-field>
         </div>
 
+        <mat-checkbox formControlName="showInPublicMenu">
+          Visa sidan i den publika menyn
+        </mat-checkbox>
+
         <lib-markdown-editor formControlName="content" label="Innehåll" [rows]="16" [maxLength]="20000" />
       </form>
 
@@ -110,6 +116,7 @@ export class PageDetailComponent {
     title: ['', [Validators.required, Validators.maxLength(300)]],
     slug: ['', [Validators.required, Validators.maxLength(200), Validators.pattern(/^[a-z0-9-]+$/)]],
     editionId: [null as string | null],
+    showInPublicMenu: [false],
     content: ['', Validators.maxLength(20000)],
   });
 
@@ -132,6 +139,7 @@ export class PageDetailComponent {
           title: page.title,
           slug: page.slug,
           editionId: page.editionId,
+          showInPublicMenu: page.showInPublicMenu,
           content: page.content,
         });
         this.loading.set(false);
@@ -207,6 +215,7 @@ export class PageDetailComponent {
       title: value.title!,
       slug: value.slug!,
       editionId: value.editionId ?? null,
+      showInPublicMenu: value.showInPublicMenu ?? false,
       content: value.content ?? '',
     };
   }

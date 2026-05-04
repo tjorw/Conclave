@@ -17,27 +17,29 @@ public sealed class Page : AggregateRoot
     public string Title { get; private set; } = string.Empty;
     public string Content { get; private set; } = string.Empty;
     public bool IsPublished { get; private set; }
+    public bool ShowInPublicMenu { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
     private Page() { }
 
-    public Page(PageId id, ConventionId conventionId, EditionId? editionId, string slug, string title, string content)
+    public Page(PageId id, ConventionId conventionId, EditionId? editionId, string slug, string title, string content, bool showInPublicMenu = false)
     {
         Id = id;
         ConventionId = conventionId;
         EditionId = editionId;
         CreatedAt = DateTimeOffset.UtcNow;
         UpdatedAt = CreatedAt;
-        Update(slug, title, content, editionId);
+        Update(slug, title, content, editionId, showInPublicMenu);
     }
 
-    public void Update(string slug, string title, string content, EditionId? editionId)
+    public void Update(string slug, string title, string content, EditionId? editionId, bool showInPublicMenu = false)
     {
         Slug = NormalizeSlug(slug);
         Title = NormalizeTitle(title);
         Content = NormalizeContent(content);
         EditionId = editionId;
+        ShowInPublicMenu = showInPublicMenu;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 

@@ -48,6 +48,10 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasColumnName("is_published");
 
+                    b.Property<bool>("ShowInPublicMenu")
+                        .HasColumnType("bit")
+                        .HasColumnName("show_in_public_menu");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(200)
