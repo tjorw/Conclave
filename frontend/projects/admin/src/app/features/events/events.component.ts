@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   CategoryDto,
@@ -27,7 +28,7 @@ import { ERROR } from '../../labels/errors.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../labels/ui.labels';
 import { createSortController, sortBy } from '../../shared/sort-utils';
 
-type EventSortKey = 'title' | 'category' | 'organiser' | 'sessions' | 'comments' | 'status';
+type EventSortKey = 'title' | 'category' | 'organiser' | 'featured' | 'sessions' | 'comments' | 'status';
 
 @Component({
   selector: 'app-events',
@@ -43,6 +44,7 @@ type EventSortKey = 'title' | 'category' | 'organiser' | 'sessions' | 'comments'
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    MatSlideToggleModule,
     MatTooltipModule,
   ],
   templateUrl: './events.component.html',
@@ -89,6 +91,7 @@ export class EventsComponent {
       title: e => e.title ?? '',
       category: e => e.categoryName ?? '',
       organiser: e => e.leadOrganiserName ?? '',
+      featured: e => e.featuredSortOrder ?? Number.MAX_SAFE_INTEGER,
       sessions: e => e.sessionCount,
       comments: e => e.pendingCommentCount,
       status: e => this.statusLabel(e.status),
@@ -181,6 +184,44 @@ export class EventsComponent {
 
   openEvent(id: string): void {
     this.router.navigate(['/events', id]);
+  }
+
+  toggleFeatured(event: EventSummaryDto, checked: boolean): void {
+    if (this.saving()) return;
+
+    this.saving.set(true);
+    const sortOrder = checked ? (event.featuredSortOrder ?? 0) : null;
+    this.eventSvc.setFeatured(event.id, checked, sortOrder).subscribe({
+      next: () => {
+        this.saving.set(false);
+        const edition = this.editionContext.activeEdition();
+        if (edition) this.loadEvents(edition.id);
+      },
+      error: err => {
+        this.saving.set(false);
+        this.error.set(toErrorMessage(err, ERROR.setFeaturedEvent));
+      },
+    });
+  }
+
+  updateFeaturedSortOrder(event: EventSummaryDto, value: string): void {
+    if (this.saving() || !event.isFeatured) return;
+
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isNaN(parsed) || parsed < 0 || event.featuredSortOrder === parsed) return;
+
+    this.saving.set(true);
+    this.eventSvc.setFeatured(event.id, true, parsed).subscribe({
+      next: () => {
+        this.saving.set(false);
+        const edition = this.editionContext.activeEdition();
+        if (edition) this.loadEvents(edition.id);
+      },
+      error: err => {
+        this.saving.set(false);
+        this.error.set(toErrorMessage(err, ERROR.setFeaturedEvent));
+      },
+    });
   }
 
 

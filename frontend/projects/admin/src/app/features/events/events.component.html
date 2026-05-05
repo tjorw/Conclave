@@ -89,6 +89,7 @@
             <th><button type="button" class="sort-header" (click)="sort.setSort('title')">Titel <mat-icon>{{ sort.sortIcon('title') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="sort.setSort('category')">Kategori <mat-icon>{{ sort.sortIcon('category') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="sort.setSort('organiser')">Arrangör <mat-icon>{{ sort.sortIcon('organiser') }}</mat-icon></button></th>
+            <th><button type="button" class="sort-header" (click)="sort.setSort('featured')">Utvald <mat-icon>{{ sort.sortIcon('featured') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="sort.setSort('sessions')">Sessioner <mat-icon>{{ sort.sortIcon('sessions') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="sort.setSort('comments')">Kommentarer <mat-icon>{{ sort.sortIcon('comments') }}</mat-icon></button></th>
             <th><button type="button" class="sort-header" (click)="sort.setSort('status')">Status <mat-icon>{{ sort.sortIcon('status') }}</mat-icon></button></th>
@@ -101,6 +102,25 @@
               <td><strong>{{ event.title ?? '(Inget namn)' }}</strong></td>
               <td>{{ event.categoryName ?? '–' }}</td>
               <td>{{ event.leadOrganiserName ?? '–' }}</td>
+              <td class="featured-cell">
+                <mat-slide-toggle
+                  [checked]="event.isFeatured"
+                  [disabled]="saving()"
+                  (click)="$event.stopPropagation()"
+                  (change)="toggleFeatured(event, $event.checked)">
+                </mat-slide-toggle>
+
+                @if (event.isFeatured) {
+                  <input
+                    class="featured-order-input"
+                    type="number"
+                    min="0"
+                    [value]="event.featuredSortOrder ?? 0"
+                    [disabled]="saving()"
+                    (click)="$event.stopPropagation()"
+                    (change)="updateFeaturedSortOrder(event, $any($event.target).value)" />
+                }
+              </td>
               <td>{{ event.sessionCount }}</td>
               <td>
                 @if (event.pendingCommentCount > 0) {
@@ -120,7 +140,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="8" class="empty-cell">Inga evenemang i denna kategori.</td>
+              <td colspan="9" class="empty-cell">Inga evenemang i denna kategori.</td>
             </tr>
           }
         </tbody>

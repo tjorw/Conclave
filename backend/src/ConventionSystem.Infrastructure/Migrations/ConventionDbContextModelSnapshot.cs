@@ -522,6 +522,16 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("edition_id");
 
+                    b.Property<int?>("FeaturedSortOrder")
+                        .HasColumnType("int")
+                        .HasColumnName("featured_sort_order");
+
+                    b.Property<bool>("IsFeatured")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_featured");
+
                     b.Property<Guid>("LeadOrganiserId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("lead_organiser_id");
@@ -562,6 +572,9 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .HasDatabaseName("IX_events_lead_organiser_id");
 
                     b.HasIndex("TenantId");
+
+                    b.HasIndex("EditionId", "IsFeatured")
+                        .HasDatabaseName("IX_events_edition_id_is_featured");
 
                     b.ToTable("events", (string)null);
                 });

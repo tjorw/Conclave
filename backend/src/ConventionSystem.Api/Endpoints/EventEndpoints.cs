@@ -19,8 +19,10 @@ using ConventionSystem.Application.Event.Commands.CreateCoOrganiserInvitation;
 using ConventionSystem.Application.Event.Commands.CancelCoOrganiserInvitation;
 using ConventionSystem.Application.Event.Commands.RedeemCoOrganiserInvitation;
 using ConventionSystem.Application.Event.Queries.GetEvent;
+using ConventionSystem.Application.Event.Queries.GetFeaturedEvents;
 using ConventionSystem.Application.Event.Queries.ListEvents;
 using ConventionSystem.Application.Event.Queries.ListMyEvents;
+using ConventionSystem.Application.Event.Commands.SetFeatured;
 using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Application.Common;
 
@@ -41,6 +43,10 @@ public static class EventEndpoints
             var result = await sender.Send(new GetEventQuery(eventId), ct);
             return result is null ? Results.NotFound() : Results.Ok(result);
         });
+
+        groups.Anonymous.MapGet("/events/featured",
+            async (ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetFeaturedEventsQuery(), ct)));
 
         // --- Inloggade ---
 
@@ -213,6 +219,13 @@ public static class EventEndpoints
                 return Results.NoContent();
             });
 
+        groups.Admin.MapPut("/events/{eventId:guid}/featured",
+            async (Guid eventId, SetFeaturedRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new SetFeaturedCommand(eventId, request.IsFeatured, request.FeaturedSortOrder), ct);
+                return Results.NoContent();
+            });
+
         groups.Admin.MapDelete("/events/{eventId:guid}/co-organisers/{personId:guid}",
             async (Guid eventId, Guid personId, ISender sender, CancellationToken ct) =>
             {
@@ -243,3 +256,4 @@ public record UpdateSessionRequest(Guid VenueId, DateTime StartTime, DateTime En
 public record AdjustCoOrganiserLimitRequest(int Limit);
 public record CreateCoOrganiserInvitationRequest(string Email);
 public record RedeemCoOrganiserInvitationRequest(string Code);
+public record SetFeaturedRequest(bool IsFeatured, int? FeaturedSortOrder);

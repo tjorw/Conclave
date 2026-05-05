@@ -16,6 +16,7 @@ public interface IEventRepository
     Task<Domain.Event.Aggregates.Event?> GetByIdWithCommentsAsync(EventId id, CancellationToken ct = default);
     Task<Domain.Event.Aggregates.Event?> GetByIdWithCommentsAndCoOrganisersAsync(EventId id, CancellationToken ct = default);
     Task<IReadOnlyList<EventSummaryDto>> ListByEditionIdAsync(EditionId id, CancellationToken ct = default);
+    Task<int> CountFeaturedByEditionIdAsync(EditionId id, CancellationToken ct = default);
     Task<IReadOnlyList<EventSummaryDto>> ListByEditionAndOrganiserAsync(EditionId editionId, PersonId organiserId, CancellationToken ct = default);
     Task<EventDto?> GetProjectedByIdAsync(EventId id, CancellationToken ct = default);
     Task<IReadOnlyList<EditionOrganiserDto>> ListOrganisersByEditionIdAsync(EditionId editionId, CancellationToken ct = default);

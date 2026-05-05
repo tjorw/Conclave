@@ -31,6 +31,8 @@ public sealed class Event : AggregateRoot
     public string? DropInRules { get; private set; }
     public int CoOrganiserCount { get; private set; }
     public int CoOrganiserLimit { get; private set; }
+    public bool IsFeatured { get; private set; }
+    public int? FeaturedSortOrder { get; private set; }
 
     public IReadOnlyList<Session> Sessions => _sessions.AsReadOnly();
     public IReadOnlyList<CoOrganiser> CoOrganisers => _coOrganisers.AsReadOnly();
@@ -290,6 +292,27 @@ public sealed class Event : AggregateRoot
         if (limit < 0)
             throw new ArgumentException("Godkänt antal medarrangörer kan inte vara negativt.", nameof(limit));
         CoOrganiserLimit = limit;
+    }
+
+    public void SetFeatured(bool isFeatured, int? featuredSortOrder)
+    {
+        EnsureNotCancelled();
+
+        if (!isFeatured)
+        {
+            IsFeatured = false;
+            FeaturedSortOrder = null;
+            return;
+        }
+
+        if (!featuredSortOrder.HasValue)
+            throw new EventFeaturedSortOrderRequiredException();
+
+        if (featuredSortOrder.Value < 0)
+            throw new EventFeaturedSortOrderMustBeNonNegativeException();
+
+        IsFeatured = true;
+        FeaturedSortOrder = featuredSortOrder.Value;
     }
 
     public CoOrganiserInvitation CreateInvitation(string email, PersonId createdById)

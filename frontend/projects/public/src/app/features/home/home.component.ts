@@ -3,7 +3,7 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { EditionContentService, EDITION_CONTENT_KEYS, EventSummaryFeedDto } from 'shared';
+import { EditionContentService, EDITION_CONTENT_KEYS, EventService, EventSummaryFeedDto } from 'shared';
 import { EditionService } from '../../services/edition.service';
 
 @Component({
@@ -16,11 +16,13 @@ import { EditionService } from '../../services/edition.service';
 export class HomeComponent {
   readonly editionSvc   = inject(EditionService);
   private readonly contentSvc = inject(EditionContentService);
+  private readonly eventSvc = inject(EventService);
 
   private readonly contentMap = signal<Record<string, string>>({});
+  private readonly featuredEventsFromApi = signal<EventSummaryFeedDto[] | null>(null);
 
   readonly featuredEvents = computed<EventSummaryFeedDto[]>(() =>
-    (this.editionSvc.edition()?.events ?? []).slice(0, 3)
+    this.featuredEventsFromApi() ?? (this.editionSvc.edition()?.events ?? []).slice(0, 3)
   );
 
   readonly heroTitle = computed(() =>
@@ -47,6 +49,7 @@ export class HomeComponent {
     effect(() => {
       const editionId = this.editionSvc.editionId();
       if (!editionId) return;
+
       this.contentSvc.getContent(editionId).subscribe({
         next: items => {
           const map: Record<string, string> = {};
@@ -56,6 +59,11 @@ export class HomeComponent {
           this.contentMap.set(map);
         },
         error: () => { /* fallback-texter används */ },
+      });
+
+      this.eventSvc.getFeaturedEvents().subscribe({
+        next: events => this.featuredEventsFromApi.set(events),
+        error: () => this.featuredEventsFromApi.set(null),
       });
     });
   }

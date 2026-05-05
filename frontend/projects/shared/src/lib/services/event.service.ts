@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ENVIRONMENT } from '../environment/environment.token';
 import { EditionSessionDto, EventDto, EventSummaryDto } from '../models/event.models';
+import { EventSummaryFeedDto } from '../models/feed.models';
 
 @Injectable({ providedIn: 'root' })
 export class EventService {
@@ -17,6 +18,12 @@ export class EventService {
   getMyEvents(editionId: string) {
     return this.http.get<EventSummaryDto[]>(
       `${this.env.apiBaseUrl}/editions/${editionId}/my-events`
+    );
+  }
+
+  getFeaturedEvents() {
+    return this.http.get<EventSummaryFeedDto[]>(
+      `${this.env.apiBaseUrl}/events/featured`
     );
   }
 
@@ -76,6 +83,13 @@ export class EventService {
     return this.http.put<void>(
       `${this.env.apiBaseUrl}/events/${eventId}/category`,
       { categoryId }
+    );
+  }
+
+  setFeatured(eventId: string, isFeatured: boolean, featuredSortOrder: number | null) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/featured`,
+      { isFeatured, featuredSortOrder }
     );
   }
 

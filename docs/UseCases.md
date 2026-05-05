@@ -3358,16 +3358,16 @@ Konventionsadministratör
 - Inga nya (fältändring på `Event`)
 
 ## Implementationssteg
-- [ ] `R-CMS02` Fält `IsFeatured` och `FeaturedSortOrder` på `Event`; EF Core-migration
-- [ ] Admin-UI: toggle och drag-och-sortering i eventlistan
-- [ ] Query `GetFeaturedEventsQuery`; endpoint `GET /api/events/featured` (anonym)
-- [ ] Publik startsida konsumerar `/api/events/featured`
+- [x] `R-CMS02` Fält `IsFeatured` och `FeaturedSortOrder` på `Event`; EF Core-migration
+- [x] Admin-UI: toggle och sorteringstal i eventlistan
+- [x] Query `GetFeaturedEventsQuery`; endpoint `GET /api/events/featured` (anonym)
+- [x] Publik startsida konsumerar `/api/events/featured`
 
 ## Acceptanskriterier
-- [ ] Max 6 utvalda evenemang; sjunde ger valideringsfel
-- [ ] Opublicerat evenemang visas aldrig på startsidan trots `IsFeatured = true`
-- [ ] Utan utvalda evenemang visas de tre senast publicerade
-- [ ] Saknad behörighet vid toggle returnerar Forbidden
+- [x] Max 6 utvalda evenemang; sjunde ger valideringsfel
+- [x] Opublicerat evenemang visas aldrig på startsidan trots `IsFeatured = true`
+- [x] Utan utvalda evenemang visas de tre senast publicerade
+- [x] Saknad behörighet vid toggle returnerar Forbidden
 
 ---
 

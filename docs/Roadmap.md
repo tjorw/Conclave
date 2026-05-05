@@ -53,7 +53,7 @@ All text och allt innehåll som visas i publika appen ska kunna styras från adm
 Implementationsordning: R-CMS01 → R-CMS02 → R-CMS03 → R-CMS04
 
 - [x] `R-CMS01` `EditionContent`-entitet (EditionId, Key, Value) – nyckel-värde-par för startsidans texter (hero-rubrik, ingress, CTA-etiketter); admin-UI + publik konsumtion med fallback (UC-CMS001)
-- [ ] `R-CMS02` `Event.IsFeatured` + `FeaturedSortOrder` – admin väljer utvalda evenemang; publik startsida konsumerar `/api/events/featured` med fallback till tre senast publicerade (UC-CMS002)
+- [x] `R-CMS02` `Event.IsFeatured` + `FeaturedSortOrder` – admin väljer utvalda evenemang; publik startsida konsumerar `/api/events/featured` med fallback till tre senast publicerade (UC-CMS002)
 - [ ] `R-CMS03` `Page.MenuSortOrder` – admin styr ordningen på menysidor; publik navigation sorterar stigande på ordningstalet (UC-CMS003)
 - [ ] `R-CMS04` Publik startsida konsumerar `EditionContent`, utvalda evenemang och sorterad meny i ett sammanhängande flöde; inga hårdkodade texter i klientkoden (UC-CMS004)
 

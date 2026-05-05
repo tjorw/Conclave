@@ -84,6 +84,8 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             organiserNames.GetValueOrDefault(e.LeadOrganiserId),
             e.Status.ToString(),
             string.IsNullOrEmpty(e.Title) ? null : e.Title,
+            e.IsFeatured,
+            e.FeaturedSortOrder,
             e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active),
             e.Comments.Count(c => c.RequiresHandling && (c.Status == EventCommentStatus.New || c.Status == EventCommentStatus.InProgress)),
             e.Description ?? "",
@@ -99,6 +101,9 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             )).ToList()
         )).ToList();
     }
+
+    public Task<int> CountFeaturedByEditionIdAsync(EditionId id, CancellationToken ct = default)
+        => db.Events.CountAsync(e => e.EditionId == id && e.IsFeatured, ct);
 
     public async Task<EventDto?> GetProjectedByIdAsync(EventId id, CancellationToken ct = default)
     {
@@ -167,6 +172,8 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             ev.ScheduleRequestText,
             ev.RegistrationType.ToString(),
             ev.DropInRules,
+            ev.IsFeatured,
+            ev.FeaturedSortOrder,
             ev.CoOrganisers.Select(c => c.PersonId.Value).ToList(),
             ev.CoOrganisers.Select(c => new CoOrganiserDto(
                 c.PersonId.Value,
@@ -225,6 +232,8 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             null,
             e.Status.ToString(),
             string.IsNullOrEmpty(e.Title) ? null : e.Title,
+            e.IsFeatured,
+            e.FeaturedSortOrder,
             e.Sessions.Count(s => s.Status == Domain.Event.Enums.SessionStatus.Active),
             e.Comments.Count(c => c.RequiresHandling && (c.Status == EventCommentStatus.New || c.Status == EventCommentStatus.InProgress)),
             e.Description ?? "",

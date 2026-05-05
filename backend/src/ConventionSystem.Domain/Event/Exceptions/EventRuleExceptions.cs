@@ -156,3 +156,18 @@ public sealed class CoOrganiserAlreadyInvitedException()
     : DomainRuleViolationException(
         "Det finns redan en aktiv inbjudan för denna e-postadress.",
         "coorganiser_already_invited");
+
+public sealed class EventFeaturedSortOrderRequiredException()
+    : DomainRuleViolationException(
+        "Sorteringsordning måste anges för utvalt evenemang.",
+        "event_featured_sort_order_required");
+
+public sealed class EventFeaturedSortOrderMustBeNonNegativeException()
+    : DomainRuleViolationException(
+        "Sorteringsordning för utvalt evenemang måste vara ett icke-negativt heltal.",
+        "event_featured_sort_order_must_be_non_negative");
+
+public sealed class EventFeaturedLimitExceededException()
+    : DomainRuleViolationException(
+        "Högst sex evenemang kan vara utvalda per upplaga.",
+        "event_featured_limit_exceeded");

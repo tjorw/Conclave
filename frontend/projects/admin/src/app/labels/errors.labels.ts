@@ -60,6 +60,7 @@ export const ERROR = {
   submitForReview:      'Kunde inte skicka in evenemanget för granskning',
   respondToComment:     'Kunde inte hantera kommentaren',
   createEvent:          'Kunde inte skapa evenemang',
+  setFeaturedEvent:     'Kunde inte uppdatera utvalda evenemang',
 
   // Stationer
   createStation:          'Kunde inte skapa stationen',

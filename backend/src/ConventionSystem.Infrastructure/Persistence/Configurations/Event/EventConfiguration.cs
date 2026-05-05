@@ -58,6 +58,13 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
             .HasMaxLength(2000)
             .HasColumnName("drop_in_rules");
 
+        builder.Property(e => e.IsFeatured)
+            .HasColumnName("is_featured")
+            .HasDefaultValue(false);
+
+        builder.Property(e => e.FeaturedSortOrder)
+            .HasColumnName("featured_sort_order");
+
         builder.OwnsMany(e => e.ProgramTags, tags =>
         {
             tags.ToTable("event_program_tags");
@@ -115,6 +122,7 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
         builder.HasIndex(e => e.EditionId).HasDatabaseName("IX_events_edition_id");
         builder.HasIndex(e => e.CategoryId).HasDatabaseName("IX_events_category_id");
         builder.HasIndex(e => e.LeadOrganiserId).HasDatabaseName("IX_events_lead_organiser_id");
+        builder.HasIndex(e => new { e.EditionId, e.IsFeatured }).HasDatabaseName("IX_events_edition_id_is_featured");
     }
 }
 

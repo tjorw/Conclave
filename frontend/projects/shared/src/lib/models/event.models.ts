@@ -13,6 +13,8 @@ export interface EventSummaryDto {
   leadOrganiserName: string | null;
   status: EventStatus;
   title: string | null;
+  isFeatured: boolean;
+  featuredSortOrder: number | null;
   sessionCount: number;
   pendingCommentCount: number;
 }
@@ -34,6 +36,8 @@ export interface EventDto {
   scheduleRequestText: string | null;
   registrationType: RegistrationType;
   dropInRules: string | null;
+  isFeatured: boolean;
+  featuredSortOrder: number | null;
   coOrganiserIds: string[];
   coOrganisers: CoOrganiserDto[];
   sessions: SessionDto[];
