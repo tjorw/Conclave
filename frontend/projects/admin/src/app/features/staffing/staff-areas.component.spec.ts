@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
 import {
   ConventionService,
@@ -143,7 +143,8 @@ describe('StaffAreasComponent', () => {
       providers: [
         { provide: StaffService, useValue: staffServiceStub },
         { provide: ConventionService, useValue: conventionServiceStub },
-        { provide: EditionContextService, useValue: { activeEdition } },
+        { provide: EditionContextService, useValue: { activeEdition, setActive: vi.fn() } },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: 'edition-1' }) } } },
         { provide: Router, useValue: { navigate: vi.fn() } },
       ],
     });
