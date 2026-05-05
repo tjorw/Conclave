@@ -133,6 +133,74 @@ public sealed class PageEndpointsTests(ConventionSystemFactory factory) : Integr
         Assert.DoesNotContain(editionPages.EnumerateArray(), p => p.GetProperty("slug").GetString() == "scope-convention");
     }
 
+    [Fact]
+    public async Task UpdatePageMenuOrder_WithNegativeValue_ReturnsValidationError()
+    {
+        var token = await LoginAsync(AdminEmail, AdminPassword);
+        var client = CreateClient(token);
+        var create = await client.PostAsJsonAsync("/api/pages", new
+        {
+            slug = "menu-order-invalid",
+            title = "Menyordning",
+            content = "Text",
+            editionId = (Guid?)null,
+            showInPublicMenu = true
+        });
+        create.EnsureSuccessStatusCode();
+        var pageId = (await create.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+
+        var response = await client.PatchAsJsonAsync($"/api/pages/{pageId}/menu-order", new { menuSortOrder = -1 });
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("page_menu_sort_order_must_be_non_negative", body.GetProperty("errorCode").GetString());
+    }
+
+    [Fact]
+    public async Task PublicMenuPages_SortsByMenuOrderThenTitle_AndIgnoresHiddenPages()
+    {
+        var token = await LoginAsync(AdminEmail, AdminPassword);
+        var client = CreateClient(token);
+
+        var firstId = await CreatePageAsync(client, "menu-first", "Zoo", true);
+        var secondId = await CreatePageAsync(client, "menu-second", "Alpha", true);
+        var thirdId = await CreatePageAsync(client, "menu-third", "Beta", true);
+        var hiddenId = await CreatePageAsync(client, "menu-hidden", "Hidden", false);
+
+        (await client.PatchAsJsonAsync($"/api/pages/{firstId}/menu-order", new { menuSortOrder = 1 })).EnsureSuccessStatusCode();
+        (await client.PatchAsJsonAsync($"/api/pages/{secondId}/menu-order", new { menuSortOrder = 2 })).EnsureSuccessStatusCode();
+        (await client.PatchAsJsonAsync($"/api/pages/{thirdId}/menu-order", new { menuSortOrder = 2 })).EnsureSuccessStatusCode();
+        (await client.PatchAsJsonAsync($"/api/pages/{hiddenId}/menu-order", new { menuSortOrder = 0 })).EnsureSuccessStatusCode();
+
+        (await client.PostAsync($"/api/pages/{firstId}/publish", null)).EnsureSuccessStatusCode();
+        (await client.PostAsync($"/api/pages/{secondId}/publish", null)).EnsureSuccessStatusCode();
+        (await client.PostAsync($"/api/pages/{thirdId}/publish", null)).EnsureSuccessStatusCode();
+        (await client.PostAsync($"/api/pages/{hiddenId}/publish", null)).EnsureSuccessStatusCode();
+
+        var response = await CreateClient().GetAsync("/api/pages/menu");
+
+        response.EnsureSuccessStatusCode();
+        var items = (await response.Content.ReadFromJsonAsync<JsonElement>()).EnumerateArray().ToList();
+
+        Assert.Equal(["menu-first", "menu-second", "menu-third"], items.Select(item => item.GetProperty("slug").GetString()).ToArray());
+        Assert.DoesNotContain(items, item => item.GetProperty("slug").GetString() == "menu-hidden");
+    }
+
+    private static async Task<Guid> CreatePageAsync(HttpClient client, string slug, string title, bool showInPublicMenu)
+    {
+        var response = await client.PostAsJsonAsync("/api/pages", new
+        {
+            slug,
+            title,
+            content = "Text",
+            editionId = (Guid?)null,
+            showInPublicMenu
+        });
+
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+    }
+
     private async Task<Guid> CreateActiveEditionAsync()
     {
         await using var scope = Factory.Services.CreateAsyncScope();

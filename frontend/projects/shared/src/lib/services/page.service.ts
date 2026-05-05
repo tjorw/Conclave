@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
 import { ENVIRONMENT } from '../environment/environment.token';
-import { PageDto, PageSummaryDto, PublicPageDto, PublicPageMenuItemDto, SavePageRequest } from '../models/content.models';
+import { PageDto, PageSummaryDto, PublicPageDto, PublicPageMenuItemDto, SavePageRequest, UpdatePageMenuOrderRequest } from '../models/content.models';
 
 @Injectable({ providedIn: 'root' })
 export class PageService {
@@ -48,6 +48,10 @@ export class PageService {
 
   updatePage(pageId: string, request: SavePageRequest) {
     return this.http.put<void>(`${this.env.apiBaseUrl}/api/pages/${pageId}`, request);
+  }
+
+  updatePageMenuOrder(pageId: string, request: UpdatePageMenuOrderRequest) {
+    return this.http.patch<void>(`${this.env.apiBaseUrl}/api/pages/${pageId}/menu-order`, request);
   }
 
   publishPage(pageId: string) {

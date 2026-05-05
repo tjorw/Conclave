@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MarkdownComponent } from 'ngx-markdown';
+import { catchError, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
 import { PageService, PublicPageDto } from 'shared';
 
 @Component({
@@ -40,10 +41,22 @@ export class PublicPageComponent {
   readonly error = signal<string | null>(null);
 
   constructor() {
-    const slug = this.route.snapshot.paramMap.get('slug') ?? '';
-    this.pageSvc.getPublicPage(slug).subscribe({
-      next: page => { this.page.set(page); this.loading.set(false); },
-      error: () => { this.error.set('Sidan hittades inte.'); this.loading.set(false); },
+    this.route.paramMap.pipe(
+      map(params => params.get('slug') ?? ''),
+      distinctUntilChanged(),
+      tap(() => {
+        this.loading.set(true);
+        this.error.set(null);
+        this.page.set(null);
+      }),
+      switchMap(slug => this.pageSvc.getPublicPage(slug).pipe(
+        map(page => ({ page, error: null as string | null })),
+        catchError(() => of({ page: null, error: 'Sidan hittades inte.' })),
+      )),
+    ).subscribe(result => {
+      this.page.set(result.page);
+      this.error.set(result.error);
+      this.loading.set(false);
     });
   }
 }

@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -37,6 +38,7 @@ import { PAGE_ADMIN } from '../../labels/pages.labels';
             <th>{{ LABELS.slugColumn }}</th>
             <th>{{ LABELS.statusColumn }}</th>
             <th>{{ LABELS.publicMenuColumn }}</th>
+            <th>{{ LABELS.menuSortOrderColumn }}</th>
             <th>{{ LABELS.updatedColumn }}</th>
           </tr>
         </thead>
@@ -51,6 +53,15 @@ import { PAGE_ADMIN } from '../../labels/pages.labels';
                 </span>
               </td>
               <td>{{ page.showInPublicMenu ? LABELS.yes : LABELS.no }}</td>
+              <td>
+                <input
+                  class="menu-order-input"
+                  type="number"
+                  min="0"
+                  [value]="page.menuSortOrder"
+                  (click)="$event.stopPropagation()"
+                  (change)="saveMenuSortOrder(page, $any($event.target).valueAsNumber)" />
+              </td>
               <td>{{ page.updatedAt | date:'yyyy-MM-dd HH:mm' }}</td>
             </tr>
           }
@@ -93,4 +104,40 @@ export class PagesComponent {
       ? ['/editions', this.editionId, 'pages', page.id]
       : ['/pages', page.id];
   }
+
+  saveMenuSortOrder(page: PageSummaryDto, value: number): void {
+    const menuSortOrder = Number.isFinite(value) ? Math.trunc(value) : NaN;
+
+    if (!Number.isFinite(menuSortOrder) || menuSortOrder < 0) {
+      this.error.set(this.LABELS.menuSortOrderInvalid);
+      return;
+    }
+
+    if (menuSortOrder === page.menuSortOrder) {
+      return;
+    }
+
+    this.error.set(null);
+    this.pageSvc.updatePageMenuOrder(page.id, { menuSortOrder }).subscribe({
+      next: () => {
+        this.pages.update(items =>
+          items.map(item =>
+            item.id === page.id
+              ? { ...item, menuSortOrder }
+              : item,
+          ));
+      },
+      error: error => {
+        this.error.set(isMenuSortOrderValidationError(error)
+          ? this.LABELS.menuSortOrderInvalid
+          : this.LABELS.menuSortOrderSaveError);
+      },
+    });
+  }
+}
+
+function isMenuSortOrderValidationError(error: unknown): boolean {
+  return error instanceof HttpErrorResponse
+    && error.status === 422
+    && error.error?.errorCode === 'page_menu_sort_order_must_be_non_negative';
 }

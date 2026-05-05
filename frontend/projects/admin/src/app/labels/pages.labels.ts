@@ -104,6 +104,7 @@ export const PAGE_ADMIN = {
   slugColumn: 'Slug',
   statusColumn: 'Status',
   publicMenuColumn: 'Publik meny',
+  menuSortOrderColumn: 'Menyordning',
   updatedColumn: 'Uppdaterad',
   publishedStatus: 'Publicerad',
   draftStatus: 'Utkast',
@@ -127,6 +128,8 @@ export const PAGE_ADMIN = {
   unpublishError: 'Kunde inte avpublicera informationssidan.',
   deleteError: 'Kunde inte ta bort informationssidan.',
   saveError: 'Kunde inte spara informationssidan.',
+  menuSortOrderSaveError: 'Kunde inte spara menyordningen.',
+  menuSortOrderInvalid: 'Menyordning måste vara ett icke-negativt heltal.',
 } as const;
 
 export const SESSION_TIMELINE = {

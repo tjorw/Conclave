@@ -4,6 +4,7 @@ using ConventionSystem.Application.Content.Commands.DeletePage;
 using ConventionSystem.Application.Content.Commands.PublishPage;
 using ConventionSystem.Application.Content.Commands.UnpublishPage;
 using ConventionSystem.Application.Content.Commands.UpdatePage;
+using ConventionSystem.Application.Content.Commands.UpdatePageMenuOrder;
 using ConventionSystem.Application.Content.Queries.GetPage;
 using ConventionSystem.Application.Content.Queries.GetPublicPage;
 using ConventionSystem.Application.Content.Queries.ListPublicMenuPages;
@@ -51,6 +52,13 @@ public static class PageEndpoints
                 return Results.NoContent();
             });
 
+        groups.Admin.MapPatch("/api/pages/{pageId:guid}/menu-order",
+            async (Guid pageId, UpdatePageMenuOrderRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new UpdatePageMenuOrderCommand(pageId, request.MenuSortOrder), ct);
+                return Results.NoContent();
+            });
+
         groups.Admin.MapPost("/api/pages/{pageId:guid}/publish",
             async (Guid pageId, ISender sender, CancellationToken ct) =>
             {
@@ -75,3 +83,4 @@ public static class PageEndpoints
 }
 
 public sealed record SavePageRequest(string Slug, string Title, string Content, Guid? EditionId, bool ShowInPublicMenu);
+public sealed record UpdatePageMenuOrderRequest(int MenuSortOrder);

@@ -5,6 +5,7 @@ export interface PageSummaryDto {
   editionId: string | null;
   isPublished: boolean;
   showInPublicMenu: boolean;
+  menuSortOrder: number;
   updatedAt: string;
 }
 
@@ -16,6 +17,7 @@ export interface PageDto {
   editionId: string | null;
   isPublished: boolean;
   showInPublicMenu: boolean;
+  menuSortOrder: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,6 +32,7 @@ export interface PublicPageDto {
 export interface PublicPageMenuItemDto {
   slug: string;
   title: string;
+  menuSortOrder: number;
   editionId: string | null;
 }
 
@@ -39,6 +42,10 @@ export interface SavePageRequest {
   content: string;
   editionId: string | null;
   showInPublicMenu: boolean;
+}
+
+export interface UpdatePageMenuOrderRequest {
+  menuSortOrder: number;
 }
 
 export interface EditionContentDto {

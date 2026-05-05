@@ -3397,15 +3397,15 @@ Konventionsadministratör
 - Inga
 
 ## Implementationssteg
-- [ ] `R-CMS03` Fält `MenuSortOrder` (int, default 0) på `Page`; EF Core-migration
-- [ ] Kommando `UpdatePageMenuOrderCommand`; endpoint `PATCH /api/pages/{id}/menu-order`
-- [ ] Admin-UI: ordningsfält i sidlistan
-- [ ] Publik navigationsfråga sorterar på `MenuSortOrder ASC, Title ASC`
+- [x] `R-CMS03` Fält `MenuSortOrder` (int, default 0) på `Page`; EF Core-migration
+- [x] Kommando `UpdatePageMenuOrderCommand`; endpoint `PATCH /api/pages/{id}/menu-order`
+- [x] Admin-UI: ordningsfält i sidlistan
+- [x] Publik navigationsfråga sorterar på `MenuSortOrder ASC, Title ASC`
 
 ## Acceptanskriterier
-- [ ] Sidor visas i rätt ordning i publika navigationen
-- [ ] Sida med `ShowInPublicMenu = false` syns aldrig i menyn oavsett ordningstal
-- [ ] Negativt ordningstal returnerar valideringsfel
+- [x] Sidor visas i rätt ordning i publika navigationen
+- [x] Sida med `ShowInPublicMenu = false` syns aldrig i menyn oavsett ordningstal
+- [x] Negativt ordningstal returnerar valideringsfel
 
 ---
 

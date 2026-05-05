@@ -27,6 +27,7 @@ public sealed class PageRepository(ConventionDbContext db) : IPageRepository
                 p.EditionId == null ? null : p.EditionId.Value.Value,
                 p.IsPublished,
                 p.ShowInPublicMenu,
+                p.MenuSortOrder,
                 p.UpdatedAt))
             .ToListAsync(ct);
 
@@ -41,6 +42,7 @@ public sealed class PageRepository(ConventionDbContext db) : IPageRepository
                 p.EditionId == null ? null : p.EditionId.Value.Value,
                 p.IsPublished,
                 p.ShowInPublicMenu,
+                p.MenuSortOrder,
                 p.CreatedAt,
                 p.UpdatedAt))
             .FirstOrDefaultAsync(ct);
@@ -96,6 +98,7 @@ public sealed class PageRepository(ConventionDbContext db) : IPageRepository
             {
                 p.Slug,
                 p.Title,
+                p.MenuSortOrder,
                 EditionId = p.EditionId == null ? (Guid?)null : p.EditionId.Value.Value,
                 IsActiveEditionScoped = activeEditionId != null && p.EditionId == activeEditionId,
             })
@@ -107,8 +110,9 @@ public sealed class PageRepository(ConventionDbContext db) : IPageRepository
                 .OrderByDescending(p => p.IsActiveEditionScoped)
                 .ThenBy(p => p.EditionId.HasValue)
                 .First())
-            .OrderBy(p => p.Title)
-            .Select(p => new PublicPageMenuItemDto(p.Slug, p.Title, p.EditionId))
+            .OrderBy(p => p.MenuSortOrder)
+            .ThenBy(p => p.Title)
+            .Select(p => new PublicPageMenuItemDto(p.Slug, p.Title, p.MenuSortOrder, p.EditionId))
             .ToList();
     }
 

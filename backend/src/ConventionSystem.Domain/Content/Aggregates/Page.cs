@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using ConventionSystem.Domain.Common;
+using ConventionSystem.Domain.Content.Exceptions;
 using ConventionSystem.Domain.Content.Events;
 using ConventionSystem.Domain.Content.Ids;
 using ConventionSystem.Domain.Convention.Ids;
@@ -18,6 +19,7 @@ public sealed class Page : AggregateRoot
     public string Content { get; private set; } = string.Empty;
     public bool IsPublished { get; private set; }
     public bool ShowInPublicMenu { get; private set; }
+    public int MenuSortOrder { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
@@ -40,6 +42,15 @@ public sealed class Page : AggregateRoot
         Content = NormalizeContent(content);
         EditionId = editionId;
         ShowInPublicMenu = showInPublicMenu;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void SetMenuSortOrder(int menuSortOrder)
+    {
+        if (menuSortOrder < 0)
+            throw new PageMenuSortOrderMustBeNonNegativeException();
+
+        MenuSortOrder = menuSortOrder;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 

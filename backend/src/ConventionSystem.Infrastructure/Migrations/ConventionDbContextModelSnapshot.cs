@@ -48,6 +48,12 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasColumnName("is_published");
 
+                    b.Property<int>("MenuSortOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("menu_sort_order")
+                        .HasDefaultValue(0);
+
                     b.Property<bool>("ShowInPublicMenu")
                         .HasColumnType("bit")
                         .HasColumnName("show_in_public_menu");

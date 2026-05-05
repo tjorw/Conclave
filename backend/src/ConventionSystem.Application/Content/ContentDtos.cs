@@ -7,6 +7,7 @@ public sealed record PageSummaryDto(
     Guid? EditionId,
     bool IsPublished,
     bool ShowInPublicMenu,
+    int MenuSortOrder,
     DateTimeOffset UpdatedAt);
 
 public sealed record PageDto(
@@ -17,6 +18,7 @@ public sealed record PageDto(
     Guid? EditionId,
     bool IsPublished,
     bool ShowInPublicMenu,
+    int MenuSortOrder,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);
 
@@ -29,4 +31,5 @@ public sealed record PublicPageDto(
 public sealed record PublicPageMenuItemDto(
     string Slug,
     string Title,
+    int MenuSortOrder,
     Guid? EditionId);

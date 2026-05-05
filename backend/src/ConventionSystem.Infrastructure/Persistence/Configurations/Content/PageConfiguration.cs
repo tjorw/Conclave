@@ -43,6 +43,9 @@ public sealed class PageConfiguration : IEntityTypeConfiguration<Page>
 
         builder.Property(p => p.IsPublished).HasColumnName("is_published");
         builder.Property(p => p.ShowInPublicMenu).HasColumnName("show_in_public_menu");
+        builder.Property(p => p.MenuSortOrder)
+            .HasColumnName("menu_sort_order")
+            .HasDefaultValue(0);
         builder.Property(p => p.CreatedAt).HasColumnName("created_at");
         builder.Property(p => p.UpdatedAt).HasColumnName("updated_at");
 
