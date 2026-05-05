@@ -234,6 +234,81 @@ public class ImportEditionHandlerTests
         Assert.Equal(4, capturedEvent.CoOrganiserLimit);
     }
 
+    [Fact]
+    public async Task Handle_ProgramTagDefinitions_AreImportedOnEdition()
+    {
+        var (convention, admin) = SetupAdminConvention();
+        _currentUser.PersonId.Returns(admin.Id);
+        Domain.Convention.Aggregates.Edition? capturedEdition = null;
+        _editionRepo
+            .When(r => r.AddAndSaveAsync(Arg.Any<Domain.Convention.Aggregates.Edition>(), Arg.Any<CancellationToken>()))
+            .Do(call => capturedEdition = call.Arg<Domain.Convention.Aggregates.Edition>());
+
+        var document = MinimalDocument() with
+        {
+            ProgramTagDefinitions = ["Barnvanligt", "Nyborgare"],
+        };
+
+        await _handler.Handle(
+            new ImportEditionCommand(convention.Id.Value, "Importerad", new DateOnly(2028, 3, 1), document),
+            default);
+
+        Assert.NotNull(capturedEdition);
+        Assert.Equal(2, capturedEdition.ProgramTagDefinitions.Count);
+        Assert.Equal("Barnvanligt", capturedEdition.ProgramTagDefinitions[0].Name);
+        Assert.Equal("Nyborgare", capturedEdition.ProgramTagDefinitions[1].Name);
+    }
+
+    [Fact]
+    public async Task Handle_EventProgramTags_ImportsKnownTagsAndWarnsForUnknown()
+    {
+        var (convention, admin) = SetupAdminConvention();
+        _currentUser.PersonId.Returns(admin.Id);
+        Domain.Event.Aggregates.Event? capturedEvent = null;
+        _eventRepo
+            .When(r => r.AddAndSaveAsync(Arg.Any<Domain.Event.Aggregates.Event>(), Arg.Any<CancellationToken>()))
+            .Do(call => capturedEvent = call.Arg<Domain.Event.Aggregates.Event>());
+
+        var document = MinimalDocument() with
+        {
+            ProgramTagDefinitions = ["Barnvanligt"],
+            Categories =
+            [
+                new ExportCategoryDto(
+                    "Seminarier",
+                    null,
+                    null,
+                    null,
+                    null),
+            ],
+            Events =
+            [
+                new ExportEventDto(
+                    "Event 1",
+                    "Beskrivning",
+                    "Seminarier",
+                    "DropIn",
+                    null,
+                    null,
+                    1,
+                    null,
+                    [],
+                    null,
+                    ["Barnvanligt", "Saknas"]),
+            ],
+        };
+
+        var result = await _handler.Handle(
+            new ImportEditionCommand(convention.Id.Value, "Importerad", new DateOnly(2028, 3, 1), document),
+            default);
+
+        Assert.NotNull(capturedEvent);
+        Assert.Single(capturedEvent.ProgramTags);
+        Assert.Equal("Barnvanligt", capturedEvent.ProgramTags[0].Name);
+        Assert.Contains(result.Warnings, warning =>
+            warning.Code == "ProgramTagSkipped" && warning.Message.Contains("Saknas", StringComparison.Ordinal));
+    }
+
     private (Domain.Convention.Aggregates.Convention Convention, Domain.Convention.Entities.Person Admin) SetupAdminConvention()
     {
         var convention = new Domain.Convention.Aggregates.Convention(ConventionId.New(), "Test Con", "test-con");

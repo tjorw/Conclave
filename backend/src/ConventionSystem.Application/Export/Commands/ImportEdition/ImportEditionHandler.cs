@@ -103,15 +103,30 @@ public sealed class ImportEditionHandler(
                 publicDescription);
         }
 
+        foreach (var tagDefinition in command.Document.ProgramTagDefinitions ?? [])
+        {
+            try
+            {
+                edition.AddProgramTagDefinition(tagDefinition);
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                warnings.Add(new ImportWarning("ProgramTagDefinitionSkipped", $"Taggdefinitionen '{tagDefinition}' kunde inte skapas: {ex.Message}"));
+            }
+        }
+
         await editionRepository.AddAndSaveAsync(edition, ct);
 
         var stationMap = BuildStationMap(edition);
         var categoryMap = edition.Categories.ToDictionary(c => c.Name, c => c.Id, StringComparer.OrdinalIgnoreCase);
         var venueMap = edition.Venues.ToDictionary(v => v.Name, v => v.Id, StringComparer.OrdinalIgnoreCase);
+        var allowedProgramTags = edition.ProgramTagDefinitions
+            .Select(t => t.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         await CreateShiftsAsync(command.Document, command.StartDate, conventionId, importerId, stationMap, warnings, ct);
         await CreateTicketTypesAsync(command.Document, edition.Id, command.StartDate, categoryMap, warnings, ct);
-        await CreateEventsAsync(command.Document, edition.Id, command.StartDate, conventionId, importerId, categoryMap, venueMap, warnings, ct);
+        await CreateEventsAsync(command.Document, edition.Id, command.StartDate, conventionId, importerId, categoryMap, venueMap, allowedProgramTags, warnings, ct);
 
         return new ImportEditionResult(edition.Id.Value, warnings);
     }
@@ -256,6 +271,7 @@ public sealed class ImportEditionHandler(
         PersonId importerId,
         IReadOnlyDictionary<string, CategoryId> categoryMap,
         IReadOnlyDictionary<string, VenueId> venueMap,
+        IReadOnlySet<string> allowedProgramTags,
         List<ImportWarning> warnings,
         CancellationToken ct)
     {
@@ -284,6 +300,7 @@ public sealed class ImportEditionHandler(
                     ? exportedEvent.CoOrganiserLimit
                     : exportedEvent.CoOrganiserCount.GetValueOrDefault();
                 importedEvent.AdjustCoOrganiserLimit(coOrganiserLimit);
+                importedEvent.SetProgramTags(FilterSupportedProgramTags(exportedEvent, allowedProgramTags, warnings));
 
                 foreach (var session in exportedEvent.Sessions)
                 {
@@ -350,6 +367,31 @@ public sealed class ImportEditionHandler(
 
         date = startDate.AddDays(relativeDay - 1);
         return true;
+    }
+
+    private static IReadOnlyList<string> FilterSupportedProgramTags(
+        ExportEventDto exportedEvent,
+        IReadOnlySet<string> allowedProgramTags,
+        List<ImportWarning> warnings)
+    {
+        var uniqueProgramTags = (exportedEvent.ProgramTags ?? [])
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var unsupportedProgramTags = uniqueProgramTags
+            .Where(tag => !allowedProgramTags.Contains(tag))
+            .ToList();
+
+        foreach (var unsupportedTag in unsupportedProgramTags)
+        {
+            warnings.Add(new ImportWarning(
+                "ProgramTagSkipped",
+                $"Evenemanget '{exportedEvent.Title}' använder taggen '{unsupportedTag}' som saknas i upplagans taggdefinitioner."));
+        }
+
+        return uniqueProgramTags
+            .Where(tag => allowedProgramTags.Contains(tag))
+            .ToList();
     }
 
     private static bool IsSupportedSchemaVersion(int schemaVersion)

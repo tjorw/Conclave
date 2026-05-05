@@ -166,10 +166,19 @@ public sealed class EditionExportReadService(ConventionDbContext db) : IEditionE
                                 FormatTime(s.TimeSlot.End),
                                 s.MaxSeats,
                                 s.StartType.ToString()))
+                            .ToList(),
+                        null,
+                        e.ProgramTags
+                            .Select(t => t.Name)
+                            .OrderBy(name => name)
                             .ToList()))
                     .ToList()
                 : null,
-            ticketTypes);
+            ticketTypes,
+            edition.ProgramTagDefinitions
+                .Select(t => t.Name)
+                .OrderBy(name => name)
+                .ToList());
     }
 
     private static int ToRelativeDay(DateOnly startDate, DateOnly date)
