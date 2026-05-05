@@ -47,3 +47,5 @@ public record PersonSearchResultDto(
     IReadOnlyList<TicketSummaryForReceptionDto> Tickets);
 
 public record TicketSummaryForReceptionDto(Guid TicketId, string TicketTypeName, string Status);
+
+public record EditionContentDto(string Key, string Value);

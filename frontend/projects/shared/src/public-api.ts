@@ -39,6 +39,7 @@ export * from './lib/services/staff.service';
 export * from './lib/services/feed.service';
 export * from './lib/services/upload.service';
 export * from './lib/services/page.service';
+export * from './lib/services/edition-content.service';
 
 // Guards
 export * from './lib/guards/auth.guard';

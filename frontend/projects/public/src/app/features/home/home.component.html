@@ -1,7 +1,10 @@
 <!-- ── Hero ──────────────────────────────────────────────────────────────── -->
 <section class="hero">
   <div class="hero-inner">
-    <h1 class="hero-title">{{ editionSvc.conventionName() }}</h1>
+    <h1 class="hero-title">{{ heroTitle() }}</h1>
+    @if (heroIngress()) {
+      <p class="hero-ingress">{{ heroIngress() }}</p>
+    }
     @if (editionSvc.edition(); as ed) {
       <p class="hero-dates">
         {{ ed.startDate | date:'d MMMM':'':'sv' }} – {{ ed.endDate | date:'d MMMM yyyy':'':'sv' }}
@@ -20,7 +23,7 @@
 
       <div class="cta-card" [class.cta-open]="ed.visitorRegistrationOpen">
         <mat-icon class="mat-icon notranslate material-icons mat-ligature-font mat-icon-no-color cta-icon">local_activity</mat-icon>
-        <h2>Bli besökare</h2>
+        <h2>{{ ctaVisitorLabel() }}</h2>
         <p>Köp en biljett och delta i massor av evenemang under helgen.</p>
         @if (ed.visitorRegistrationOpen) {
           <a mat-flat-button class="btn-primary" routerLink="/my-pages/registration">
@@ -33,7 +36,7 @@
 
       <div class="cta-card" [class.cta-open]="ed.organiserRegistrationOpen">
         <mat-icon class="mat-icon notranslate material-icons mat-ligature-font mat-icon-no-color cta-icon">event</mat-icon>
-        <h2>Arrangera ett evenemang</h2>
+        <h2>{{ ctaOrganiserLabel() }}</h2>
         <p>Har du en idé till ett rollspel, brädspelssession eller seminarium? Skicka in det!</p>
         @if (ed.organiserRegistrationOpen) {
           <a mat-flat-button class="btn-primary" routerLink="/my-pages/events/new">
@@ -46,7 +49,7 @@
 
       <div class="cta-card" [class.cta-open]="ed.staffRegistrationOpen">
         <mat-icon class="mat-icon notranslate material-icons mat-ligature-font mat-icon-no-color cta-icon">supervisor_account</mat-icon>
-        <h2>Bli funktionär</h2>
+        <h2>{{ ctaStaffLabel() }}</h2>
         <p>Hjälp till att driva konventet och jobba bakom kulisserna.</p>
         @if (ed.staffRegistrationOpen) {
           <a mat-flat-button class="btn-primary" routerLink="/my-pages/staff-application">

@@ -3316,18 +3316,18 @@ Konventionsadministratör
 - `EditionContentUpdated { editionId, key, occurredAt }`
 
 ## Implementationssteg
-- [ ] `R-CMS01` `EditionContent`-entitet (EditionId, Key, Value) under `Edition`-aggregatet; EF Core-konfiguration
-- [ ] Kommando `SetEditionContentCommand(editionId, key, value)` + handler; endpoint `PUT /api/editions/{id}/content/{key}`
-- [ ] Query `GetEditionContentQuery` → `EditionContentDto[]`; endpoint `GET /api/editions/{id}/content`
-- [ ] Admin-komponent "Innehållsinställningar" med formulär per definierad nyckel
-- [ ] Publik shell läser in `EditionContent` och substituerar nycklarna i startsidans komponenter
+- [x] `R-CMS01` `EditionContent`-entitet (EditionId, Key, Value) under `Edition`-aggregatet; EF Core-konfiguration
+- [x] Kommando `SetEditionContentCommand(editionId, items[])` + handler; endpoint `PUT /api/editions/{id}/content`
+- [x] Query `GetEditionContentQuery` → `EditionContentDto[]`; endpoint `GET /api/editions/{id}/content` (anonym)
+- [x] Admin-komponent "Innehållsinställningar" med formulär per definierad nyckel
+- [x] Publik home-komponent läser in `EditionContent` via `effect()` och substituerar nycklarna med fallback
 
 ## Acceptanskriterier
-- [ ] Värde sparas och returneras korrekt per nyckel
-- [ ] Tom sträng behandlas som saknat värde; publika appen visar fallback
-- [ ] Värde över 500 tecken returnerar valideringsfel
-- [ ] Saknad behörighet returnerar Forbidden
-- [ ] Kommandohanteraren har tillhörande enhetstest
+- [x] Värde sparas och returneras korrekt per nyckel
+- [x] Tom sträng behandlas som saknat värde; publika appen visar fallback
+- [ ] Värde över 500 tecken returnerar valideringsfel (klientvalidering finns; backend-validering saknas ännu)
+- [x] Saknad behörighet returnerar Forbidden
+- [x] Kommandohanteraren har tillhörande enhetstest
 
 ---
 

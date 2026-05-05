@@ -40,3 +40,16 @@ export interface SavePageRequest {
   editionId: string | null;
   showInPublicMenu: boolean;
 }
+
+export interface EditionContentDto {
+  key: string;
+  value: string;
+}
+
+export const EDITION_CONTENT_KEYS = {
+  heroTitle:       'hero.title',
+  heroIngress:     'hero.ingress',
+  ctaVisitorLabel: 'cta.visitor.label',
+  ctaOrganiserLabel: 'cta.organiser.label',
+  ctaStaffLabel:   'cta.staff.label',
+} as const;

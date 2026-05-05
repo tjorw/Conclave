@@ -1,3 +1,5 @@
+using ConventionSystem.Application.Convention.Commands.SetEditionContent;
+using ConventionSystem.Application.Convention.Queries.GetEditionContent;
 using ConventionSystem.Application.Reception.Queries.GetPersonScheduleForReception;
 using ConventionSystem.Application.Convention.Commands.AddReceptionStaff;
 using ConventionSystem.Application.Convention.Commands.RemoveReceptionStaff;
@@ -336,6 +338,19 @@ public static class EditionEndpoints
                 return Results.File(bytes, "application/json", export.FileName);
             });
 
+        groups.Anonymous.MapGet("/editions/{editionId:guid}/content",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetEditionContentQuery(editionId), ct)));
+
+        editions.MapPut("/content",
+            async (Guid editionId, SetEditionContentRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new SetEditionContentCommand(
+                    editionId,
+                    request.Items.Select(i => new EditionContentItem(i.Key, i.Value)).ToList()), ct);
+                return Results.NoContent();
+            });
+
         groups.Authenticated.MapGet("/editions/{editionId:guid}/responsibles",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListEditionResponsiblesQuery(editionId), ct)));
@@ -384,6 +399,9 @@ public record UpdateCategoryRequest(string Name, string? OrganizerInstructions, 
 public record ChangeCategoryResponsibleRequest(Guid NewResponsibleId);
 public record CreateProgramTagDefinitionRequest(string Name);
 public record UpdateProgramTagDefinitionRequest(string CurrentName, string NewName);
+
+public record SetEditionContentRequest(IReadOnlyList<EditionContentItemRequest> Items);
+public record EditionContentItemRequest(string Key, string Value);
 
 public record CreateEditionRequest(
     string Name,

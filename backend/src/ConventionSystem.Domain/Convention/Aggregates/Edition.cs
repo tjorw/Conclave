@@ -17,6 +17,7 @@ public sealed class Edition : AggregateRoot
     private readonly List<ProgramTagDefinition> _programTagDefinitions = [];
     private readonly List<EditionScheduleDay> _scheduleDays = [];
     private readonly List<ReceptionStaff> _receptionStaff = [];
+    private readonly List<EditionContent> _content = [];
 
     public EditionId Id { get; private set; }
     public ConventionId ConventionId { get; private set; }
@@ -36,6 +37,7 @@ public sealed class Edition : AggregateRoot
     public IReadOnlyList<ProgramTagDefinition> ProgramTagDefinitions => _programTagDefinitions.AsReadOnly();
     public IReadOnlyList<EditionScheduleDay> ScheduleDays => _scheduleDays.AsReadOnly();
     public IReadOnlyList<ReceptionStaff> ReceptionStaff => _receptionStaff.AsReadOnly();
+    public IReadOnlyList<EditionContent> Content => _content.AsReadOnly();
 
     private Edition() { }
 
@@ -349,6 +351,15 @@ public sealed class Edition : AggregateRoot
 
         RaiseDomainEvent(new StructureCopiedFromEdition(
             Id, sourceEditionId, sourceVenues.Count, sourceStaffAreas.Count, sourceStations.Count, performedById, DateTimeOffset.UtcNow));
+    }
+
+    public void SetContent(string key, string value)
+    {
+        var existing = _content.FirstOrDefault(c => c.Key == key);
+        if (existing is null)
+            _content.Add(new EditionContent(key, value));
+        else
+            existing.SetValue(value);
     }
 
     private void EnsurePublished()
