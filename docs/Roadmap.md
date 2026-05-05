@@ -39,86 +39,32 @@ Platser i arrangemang kan tilldelas på olika sätt. Kön hör till det konkreta
 
 Se `docs/RichContent.md` för arkitektur och designbeslut. Use cases: UC-RC001–UC-RC006 i `docs/UseCases.md`.
 
-Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
+Kvar att göra:
+- [ ] `R-RC04` Mailmallar – adminredigerbara mallar i databas; standardmall per typ i kod (restore-funktion); `TemplateRenderer` med Markdig + variabelsubstitution
 
-- [x] `R-RC01` Markdown i eventbeskrivningar – `Description`-fältet (max 10 000 tecken) stödjer markdown; live preview i admin-editorn; publik vy renderar med `ngx-markdown` (UC-RC001)
-- [x] `R-RC02` Bilduppladdning – `IFileStorage`-abstraktion; `LocalDiskFileStorage` (MVP) + `BlobFileStorage` (stub); endpoint `POST /api/uploads`; bilder refereras via URL i markdown (UC-RC002)
-- [x] `R-RC03` Redaktionella informationssidor – `Page`-aggregat i nytt `Content` bounded context; konventions- eller upplagescopead; `IsPublished`-flagga; admin CRUD + publik `GET /api/pages/{slug}` (UC-RC003, UC-RC004)
-- [ ] `R-RC04` Mailmallar – adminredigerbara mallar i databas; standardmall per typ i kod (restore-funktion); `TemplateRenderer` med Markdig + variabelsubstitution; 
+Klart:
+- [x] `R-RC01` Markdown i eventbeskrivningar (UC-RC001)
+- [x] `R-RC02` Bilduppladdning (UC-RC002)
+- [x] `R-RC03` Redaktionella informationssidor (UC-RC003, UC-RC004)
 
 ### CMS och innehållsstyrning (R-CMS)
 
 All text och allt innehåll som visas i publika appen ska kunna styras från admin utan kodändringar. Se UC-CMS001–UC-CMS004 i `docs/UseCases.md`.
 
-Implementationsordning: R-CMS01 → R-CMS02 → R-CMS03 → R-CMS04
+Status:
+- [x] `R-CMS01` EditionContent för startsidan (UC-CMS001)
+- [x] `R-CMS02` Utvalda evenemang på startsidan (UC-CMS002)
+- [x] `R-CMS03` Menyordning via `Page.MenuSortOrder` (UC-CMS003)
+- [x] `R-CMS04` Sammanhållet startsideflöde utan hårdkodade texter (UC-CMS004)
 
-- [x] `R-CMS01` `EditionContent`-entitet (EditionId, Key, Value) – nyckel-värde-par för startsidans texter (hero-rubrik, ingress, CTA-etiketter); admin-UI + publik konsumtion med fallback (UC-CMS001)
-- [x] `R-CMS02` `Event.IsFeatured` + `FeaturedSortOrder` – admin väljer utvalda evenemang; publik startsida konsumerar `/api/events/featured` med fallback till tre senast publicerade (UC-CMS002)
-- [x] `R-CMS03` `Page.MenuSortOrder` – admin styr ordningen på menysidor; publik navigation sorterar stigande på ordningstalet (UC-CMS003)
-- [x] `R-CMS04` Publik startsida konsumerar `EditionContent`, utvalda evenemang och sorterad meny i ett sammanhängande flöde; inga hårdkodade texter i klientkoden (UC-CMS004)
-
-**R-CMS04 – konkret genomförandeplan**
-
-1. **Samla dataladdning i public-appens home-flöde**
-	- Skapa en sammanhållen facade/store för startsidan som hämtar `EditionContent`, `/events/featured` och `/api/pages/menu` parallellt.
-	- Home-komponenten och shell-komponenten ska läsa från samma state-källa för att undvika dubbla anrop och osynkade fallback-beslut.
-	- Fel i ett delanrop får inte bryta hela startsidan; varje del ska ha isolerad fallback.
-
-2. **Eliminera hårdkodade startsidetexter**
-	- Utöka `EditionContentKey` (domän + shared frontend-model) med nycklar för samtliga kvarvarande strängar i startsideflödet.
-	- Rekommenderade nya nycklar:
-	  - `hero.primaryActionLabel`
-	  - `featured.sectionTitle`
-	  - `featured.viewAllLabel`
-	  - `cta.visitor.description`, `cta.organiser.description`, `cta.staff.description`
-	  - `cta.visitor.openLabel`, `cta.organiser.openLabel`, `cta.staff.openLabel`
-	  - `cta.visitor.closedLabel`, `cta.organiser.closedLabel`, `cta.staff.closedLabel`
-	- Samtliga texter ovan ska kunna redigeras i admin-vyn för edition content.
-
-3. **Behåll och verifiera befintlig menyscope-logik**
-	- Publik meny ska fortsatt prioritera aktiv upplagas sida framför konventionssida vid slug-krock.
-	- Sortering ska ske på `MenuSortOrder`, med titel som tiebreaker inom slutligt scope-val.
-	- Ingen ny endpoint krävs för R-CMS04 så länge befintligt beteende verifieras med test.
-
-4. **Test- och kvalitetskrav innan status [x]**
-	- Frontendtester för startsidan:
-	  - CMS-värde används när nyckel finns.
-	  - Fallback används när nyckel saknas eller är tom.
-	  - Delvis API-fel (t.ex. menyfel) påverkar inte hero/featured rendering.
-	- Backendtester för public pages:
-	  - Edition-sida prioriteras vid slug-krock.
-	  - Menyresultat sorteras `MenuSortOrder ASC`, därefter `Title ASC`.
-	- Uppdatera UC-CMS004 acceptanskriterier till [x] först när ovan är grönt.
-
-5. **Definition of Done för R-CMS04**
-	- Startsidan har ett sammanhållet dataflöde för content + featured + meny.
-	- Inga hårdkodade användartexter finns kvar i home/shell för startsideupplevelsen.
-	- Alla nya content-nycklar kan redigeras i admin per upplaga.
-	- Fallback-beteenden är testade och dokumenterade i UC-CMS004.
-
-#### Adminscope och pages
-
-Adminytan ska skilja på konventionsnivå och upplagenivå. En vy på konventionsnivå får inte bero på vald upplaga i topbaren. En vy på upplagenivå ska alltid ligga under vald upplaga i navigationen och routas med `editions/:id/...`.
-
-**Konventionsnivå**
-- Dashboard och upplageöversikt.
-- Personregister när listan avser hela konventets personbas.
-- Feeds, om feeden inte har upplagebunden data.
-- Informationssidor med `Page.EditionId == null`, routade som `/pages`.
-
-**Upplagenivå**
-- Grunduppgifter, livscykel, lokaler, kategorier, programtaggar, biljettyper, innehållsinställningar och export.
-- Arrangörer, evenemang, schemaläggning, besökare, funktionärer, reception, biljetter, kampanjkoder och funktioneringsschema.
-- Informationssidor med `Page.EditionId == :id`, routade som `/editions/:id/pages`.
-
-**Implementationssteg**
-- [x] 1. `R-RC03.1` Dela admin-pages i två listvyer: `/pages` listar bara konventionssidor och `/editions/:id/pages` listar bara sidor för vald upplaga.
-- [x] 2. `R-RC03.2` Gör page-detaljvyn scope-styrd av route. Ta bort fri scope-väljare i formuläret. `/pages/new` skapar `editionId: null`; `/editions/:id/pages/new` skapar `editionId: :id`.
-- [ ] 3. `R-RC03.3` Utöka `ListPagesQuery` och `IPageRepository.ListAsync` med exakt scope-filter (`editionId == null` eller `editionId == :id`). Slug-unikhet fortsätter gälla per scope.
-- [x] 4. `R-RC03.4` Lägg till frontend-validering i detaljvyn: en konventionsroute får bara visa sidor utan `editionId`; en editionroute får bara visa sidor vars `editionId` matchar route-parametern.
-- [x] 5. `R-CMS03.1` Lägg till `Page.MenuSortOrder` efter scope-delningen, så sortering kan hanteras separat för konventionsmeny och upplagemeny.
-- [x] 6. `R-CMS04.1` Låt publik navigation fortsätta prioritera aktiv upplagas sida framför konventionssida med samma slug, men sortera menyresultatet med `MenuSortOrder` inom det slutliga scope-valet.
-- [x] 7. `R-ADM01` Flytta övriga upplageberoende adminvyer från top-level routes till `editions/:id/...`. Inga redirects behövs innan produktionssättning; gamla top-level routes tas bort.
+Adminscope och pages (status):
+- [x] `R-RC03.1` Scope-delad pages-lista i admin
+- [x] `R-RC03.2` Scope-styrd page-detalj via route
+- [x] `R-RC03.3` Exakt backendfilter per scope + slug-unikhet per scope
+- [x] `R-RC03.4` Frontendvalidering av scope i page-detalj
+- [x] `R-CMS03.1` Scope-separerad hantering av `Page.MenuSortOrder`
+- [x] `R-CMS04.1` Edition-prioritet + sortering i publik meny
+- [x] `R-ADM01` Upplageberoende adminvyer flyttade till `editions/:id/...`
 
 ### Varumärke per konvent (R-BR)
 
@@ -160,12 +106,10 @@ Implementationsordning: R-I18N01 → R-I18N02 → R-I18N03 → R-I18N04 → R-I1
 
 ---
 
-## Diverse
-- **Debounced sökning** – samma RxJS-pipeline (`debounceTime → distinctUntilChanged → switchMap → loading → subscribe`) i checkin och walkup. Extrahera till `createSearchStream()`-helper.
-- **Multi-request pending-räknare** – `persons.component.ts` koordinerar tre parallella anrop med en manuell `pending`-räknare. Ersätt med `forkJoin`.
-- reception, återkallade biljetter är sekundär info. eller skall de tas bort?
-- reception, statistiken är inte tillräcklig. skall också ha antal pass och vara uppdelat per dag.
-- reception, om man inte har qr-biljett (måste man kunna visa i public), så behövs något annat sätt att bekräfta biljetten.
-- taggar: ska kunna sättas av arrangören redan från start som en del av grunduppgifterna.
-- sidor, import/export
-- taggar, import/export
+## Övrig backlog
+- **Debounced sökning** – extrahera gemensam RxJS-pipeline till `createSearchStream()`-helper.
+- **Multi-request pending-räknare** – ersätt manuell `pending`-räknare i `persons.component.ts` med `forkJoin`.
+- **Reception: UI och statistik** – avgör om återkallade biljetter ska visas, utöka statistik med antal pass och uppdelning per dag.
+- **Reception: alternativ verifiering** – definiera flöde för verifiering när besökaren saknar QR-biljett.
+- **Taggar i grundflöde** – låt arrangör sätta taggar redan i grunduppgifter.
+- **Import/export** – lägg till stöd för sidor och taggar.

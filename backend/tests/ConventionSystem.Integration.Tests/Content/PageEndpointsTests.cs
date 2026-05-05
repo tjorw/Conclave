@@ -97,6 +97,33 @@ public sealed class PageEndpointsTests(ConventionSystemFactory factory) : Integr
     }
 
     [Fact]
+    public async Task CreatePage_WithSameSlugInDifferentScopes_IsAllowed()
+    {
+        var editionId = await CreateActiveEditionAsync();
+        var token = await LoginAsync(AdminEmail, AdminPassword);
+        var client = CreateClient(token);
+
+        var conventionResponse = await client.PostAsJsonAsync("/api/pages", new
+        {
+            slug = "scope-shared",
+            title = "Konventionssida",
+            content = "Konvention",
+            editionId = (Guid?)null
+        });
+
+        var editionResponse = await client.PostAsJsonAsync("/api/pages", new
+        {
+            slug = "scope-shared",
+            title = "Upplagesida",
+            content = "Upplaga",
+            editionId
+        });
+
+        conventionResponse.EnsureSuccessStatusCode();
+        editionResponse.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
     public async Task ListPages_FiltersByExactScope()
     {
         var editionId = await CreateActiveEditionAsync();
