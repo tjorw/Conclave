@@ -8,7 +8,6 @@ Spårar vad som återstår inför produktionsstart.
 
 Prioriterad lista – återstående arbete, högst prioritet överst.
 
-- [ ] `R-I18N01` Språkstyrning – samla kvarvarande hårdkodade UI-texter bakom labels/översättningslager och förbered engelsk version
 - [ ] `R-SCH03` Datumkontroller i boknings-, pass- och sessionsflöden föreslår första konventsdagen och dagens standardtider där det passar användarflödet.
 
 ### Laganmälningar (R-TM)
@@ -47,6 +46,38 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 - [x] `R-RC03` Redaktionella informationssidor – `Page`-aggregat i nytt `Content` bounded context; konventions- eller upplagescopead; `IsPublished`-flagga; admin CRUD + publik `GET /api/pages/{slug}` (UC-RC003, UC-RC004)
 - [ ] `R-RC04` Mailmallar – adminredigerbara mallar i databas; standardmall per typ i kod (restore-funktion); `TemplateRenderer` med Markdig + variabelsubstitution; 
 
+### CMS och innehållsstyrning (R-CMS)
+
+All text och allt innehåll som visas i publika appen ska kunna styras från admin utan kodändringar. Se UC-CMS001–UC-CMS004 i `docs/UseCases.md`.
+
+Implementationsordning: R-CMS01 → R-CMS02 → R-CMS03 → R-CMS04
+
+- [ ] `R-CMS01` `EditionContent`-entitet (EditionId, Key, Value) – nyckel-värde-par för startsidans texter (hero-rubrik, ingress, CTA-etiketter); admin-UI + publik konsumtion med fallback (UC-CMS001)
+- [ ] `R-CMS02` `Event.IsFeatured` + `FeaturedSortOrder` – admin väljer utvalda evenemang; publik startsida konsumerar `/api/events/featured` med fallback till tre senast publicerade (UC-CMS002)
+- [ ] `R-CMS03` `Page.MenuSortOrder` – admin styr ordningen på menysidor; publik navigation sorterar stigande på ordningstalet (UC-CMS003)
+- [ ] `R-CMS04` Publik startsida konsumerar `EditionContent`, utvalda evenemang och sorterad meny i ett sammanhängande flöde; inga hårdkodade texter i klientkoden (UC-CMS004)
+
+### Varumärke per konvent (R-BR)
+
+Publika appen ska reflektera respektive konvents grafiska profil utan redeploy. Se UC-BR001–UC-BR002 i `docs/UseCases.md`.
+
+Implementationsordning: R-BR01 → R-BR02
+
+- [ ] `R-BR01` `ConventionBranding`-entitet (ConventionId, PrimaryColor, AccentColor, LogoUrl, FaviconUrl, FontFamily, CustomCss) – upsert-semantik; endpoint `PUT /api/conventions/{id}/branding`; anonym `GET`-endpoint med `Cache-Control: max-age=300`; admin-UI med färgväljare, filuppladdning och typsnittsval (UC-BR001)
+- [ ] `R-BR02` Publik shell hämtar branding vid initialisering och applicerar CSS-variabler via `document.documentElement.style.setProperty`; logotyp sätts i navbar; fallback till systemdefinierade värden om anropet misslyckas (UC-BR002)
+
+### Flerspråksstöd (R-I18N)
+
+Stöd för att redigera och visa innehåll på flera språk. Implementeras i fas efter CMS och Varumärke. Se UC-I18N001–UC-I18N004 i `docs/UseCases.md`.
+
+Implementationsordning: R-I18N01 → R-I18N02 → R-I18N03 → R-I18N04 → R-I18N05
+
+- [ ] `R-I18N01` Språkstyrning – samla kvarvarande hårdkodade UI-texter bakom labels/översättningslager och förbered engelsk version
+- [ ] `R-I18N02` `EditionLocale`-entitet (EditionId, Locale, IsPrimary) – admin aktiverar språk per upplaga; primärspråk alltid exakt ett (UC-I18N001)
+- [ ] `R-I18N03` `PageTranslation`-entitet (PageId, Locale, Title, Content) – admin redigerar översättningar via flikbaserat UI; `GetPageBySlugQuery` utökas med locale-parameter och fallback (UC-I18N002)
+- [ ] `R-I18N04` `EventTranslation`-entitet (EventId, Locale, Title, Description) – arrangör/admin redigerar översättningar; publika eventqueries tar emot locale-parameter (UC-I18N003)
+- [ ] `R-I18N05` Publik språkväljare-komponent + locale-signal-service; locale skickas som query-parameter; `localStorage`-persistens; `Accept-Language`-fallback (UC-I18N004)
+
 ---
 
 ## Teknisk skuld
@@ -73,6 +104,5 @@ Implementationsordning: R-RC01 → R-RC03 → R-RC02 → R-RC04
 - reception, statistiken är inte tillräcklig. skall också ha antal pass och vara uppdelat per dag.
 - reception, om man inte har qr-biljett (måste man kunna visa i public), så behövs något annat sätt att bekräfta biljetten.
 - taggar: ska kunna sättas av arrangören redan från start som en del av grunduppgifterna.
-- gå igenom allt hårdkodat content i public så att man kan styra dem via admin.
 - sidor, import/export
 - taggar, import/export

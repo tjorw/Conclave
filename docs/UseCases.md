@@ -3284,3 +3284,400 @@ Receptionspersonal (konventionsadministratör eller `ReceptionStaff`)
 - [ ] Person som redan finns (e-postmatch) återanvänds utan duplikat
 - [ ] Biljett skapas, betalas och checkas in utan manuella mellansteg
 - [ ] Förmåner visas i sista steget
+
+---
+
+# UC-CMS001 – Redigera upplagens innehållsinställningar
+
+## Sammanfattning
+En administratör redigerar de texter och rubriker som visas på den publika startsidan för en upplaga: hero-rubrik, ingress och uppmaningstexter för besökar-, arrangörs- och funktionärsregistrering. Värdena lagras som nyckel-värde-par i en `EditionContent`-entitet och ersätter hårdkodade UI-texter.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Utföraren är administratör för konventet
+- Upplagan finns
+
+## Flöde
+1. Administratören öppnar "Innehållsinställningar" under upplagens inställningar i admin
+2. Systemet visar ett formulär med samtliga definierade nycklar och deras nuvarande värden
+3. Administratören redigerar ett eller flera värden
+4. Systemet sparar ändringarna per nyckel
+5. Publika appen hämtar värdena vid nästa sidladdning och renderar dem
+
+## Affärsregler
+- Nycklar är fördefinierade av systemet (t.ex. `hero.title`, `hero.ingress`, `cta.visitor.label`, `cta.organiser.label`, `cta.staff.label`)
+- Om ett värde saknas i databasen används en hårdkodad fallback-text i publika appen
+- Max 500 tecken per värde
+- Tomma strängar behandlas som "ej angivet" och utlöser fallback
+
+## Domänhändelser
+- `EditionContentUpdated { editionId, key, occurredAt }`
+
+## Implementationssteg
+- [ ] `R-CMS01` `EditionContent`-entitet (EditionId, Key, Value) under `Edition`-aggregatet; EF Core-konfiguration
+- [ ] Kommando `SetEditionContentCommand(editionId, key, value)` + handler; endpoint `PUT /api/editions/{id}/content/{key}`
+- [ ] Query `GetEditionContentQuery` → `EditionContentDto[]`; endpoint `GET /api/editions/{id}/content`
+- [ ] Admin-komponent "Innehållsinställningar" med formulär per definierad nyckel
+- [ ] Publik shell läser in `EditionContent` och substituerar nycklarna i startsidans komponenter
+
+## Acceptanskriterier
+- [ ] Värde sparas och returneras korrekt per nyckel
+- [ ] Tom sträng behandlas som saknat värde; publika appen visar fallback
+- [ ] Värde över 500 tecken returnerar valideringsfel
+- [ ] Saknad behörighet returnerar Forbidden
+- [ ] Kommandohanteraren har tillhörande enhetstest
+
+---
+
+# UC-CMS002 – Markera evenemang som utvalda
+
+## Sammanfattning
+En administratör markerar ett eller flera evenemang som "utvalda" för en upplaga. Publika startsidan visar de utvalda evenemangen i stället för ett automatiskt urval.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Utföraren är administratör
+- Evenemanget finns och tillhör aktiv upplaga
+
+## Flöde
+1. Administratören öppnar eventlistan i admin
+2. Administratören växlar "Utvalt"-flaggan på ett evenemang
+3. Systemet sätter `IsFeatured = true/false` och ett `FeaturedSortOrder` (ordningstal inom utvalda)
+4. Publika startsidan hämtar utvalda evenemang via `GET /api/events/featured`
+
+## Affärsregler
+- Max 6 utvalda evenemang per upplaga
+- Om inga evenemang är markerade som utvalda visas de tre senast publicerade i publika appen (bakåtkompatibelt beteende)
+- Bara publicerade evenemang visas på startsidan oavsett flagga
+
+## Domänhändelser
+- Inga nya (fältändring på `Event`)
+
+## Implementationssteg
+- [ ] `R-CMS02` Fält `IsFeatured` och `FeaturedSortOrder` på `Event`; EF Core-migration
+- [ ] Admin-UI: toggle och drag-och-sortering i eventlistan
+- [ ] Query `GetFeaturedEventsQuery`; endpoint `GET /api/events/featured` (anonym)
+- [ ] Publik startsida konsumerar `/api/events/featured`
+
+## Acceptanskriterier
+- [ ] Max 6 utvalda evenemang; sjunde ger valideringsfel
+- [ ] Opublicerat evenemang visas aldrig på startsidan trots `IsFeatured = true`
+- [ ] Utan utvalda evenemang visas de tre senast publicerade
+- [ ] Saknad behörighet vid toggle returnerar Forbidden
+
+---
+
+# UC-CMS003 – Ordna navigationsmenyn
+
+## Sammanfattning
+En administratör styr i vilken ordning sidor visas i den publika navigationens meny. Ordningen sparas på sidan och respekteras av den publika appen.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Minst en sida med `ShowInPublicMenu = true` finns
+
+## Flöde
+1. Administratören öppnar sidlistan i admin
+2. Administratören anger ett `MenuSortOrder`-värde (heltal) per sida, alternativt drar om ordningen i ett drag-och-släpp-gränssnitt
+3. Systemet sparar ordningsvärdena
+4. Publika appens navigation renderar sidor med `ShowInPublicMenu = true` sorterade stigande på `MenuSortOrder`
+
+## Affärsregler
+- `MenuSortOrder` är ett icke-negativt heltal
+- Sidor med samma ordningstal sorteras alfabetiskt på titel som tiebreaker
+- Sidor med `ShowInPublicMenu = false` ignoreras oavsett ordningstal
+
+## Domänhändelser
+- Inga
+
+## Implementationssteg
+- [ ] `R-CMS03` Fält `MenuSortOrder` (int, default 0) på `Page`; EF Core-migration
+- [ ] Kommando `UpdatePageMenuOrderCommand`; endpoint `PATCH /api/pages/{id}/menu-order`
+- [ ] Admin-UI: ordningsfält i sidlistan
+- [ ] Publik navigationsfråga sorterar på `MenuSortOrder ASC, Title ASC`
+
+## Acceptanskriterier
+- [ ] Sidor visas i rätt ordning i publika navigationen
+- [ ] Sida med `ShowInPublicMenu = false` syns aldrig i menyn oavsett ordningstal
+- [ ] Negativt ordningstal returnerar valideringsfel
+
+---
+
+# UC-CMS004 – Visa startsidan med admin-styrt innehåll
+
+## Sammanfattning
+En besökare öppnar den publika startsidan. Systemet kombinerar admin-konfigurerade texter, utvalda evenemang och den sorterade navigationsmenyn till en sammanhängande vy utan hårdkodade texter i klientkoden.
+
+## Aktör
+Besökare (anonym eller inloggad)
+
+## Förutsättningar
+- En aktiv upplaga finns
+
+## Flöde
+1. Besökaren navigerar till startsidan
+2. Publika appen hämtar parallellt: `EditionContent`, utvalda evenemang (`/api/events/featured`) och publika menysidor (`/api/pages/menu`)
+3. Hero-sektionen renderas med `hero.title` och `hero.ingress` från `EditionContent`; fallback till konventionsnamn och datum om saknas
+4. CTA-korten renderas med texter från `EditionContent` och visas baserat på registreringsstatus
+5. Utvalda evenemang visas i programsektionen
+
+## Affärsregler
+- Ingen autentisering krävs
+- Fallback-texter i klientkoden används om `EditionContent`-nycklar saknas
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Admin-konfigurerad hero-rubrik visas på startsidan
+- [ ] Fallback-rubrik visas om nyckeln saknas i databasen
+- [ ] CTA-kort för stängd registrering döljs korrekt oavsett textinställning
+- [ ] Utvalda evenemang visas; automatiskt urval används om inga är markerade
+
+---
+
+# UC-BR001 – Konfigurera varumärket för ett konvent
+
+## Sammanfattning
+En administratör konfigurerar det visuella varumärket för ett konvent: primärfärg, accentfärg, logotyp och typsnitt. Inställningarna sparas i en `ConventionBranding`-entitet och tillämpas dynamiskt i den publika appen utan redeploy.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Utföraren är administratör för konventet
+
+## Flöde
+1. Administratören öppnar "Varumärke" under konventsinställningar i admin
+2. Systemet visar nuvarande inställningar med förhandsvisning
+3. Administratören redigerar färger (hex-format), laddar upp logotyp och väljer typsnitt ur en begränsad lista
+4. Administratören sparar
+5. Systemet lagrar `ConventionBranding` och returnerar en publik endpoint för branding-data
+6. Publika appen hämtar ny branding vid nästa laddning
+
+## Affärsregler
+- Färger anges som hex-strängar (`#rrggbb`); ogiltigt format returnerar valideringsfel
+- Logotyp: JPEG, PNG, SVG, WebP; max 1 MB; sparas via `IFileStorage` tenant-scopat
+- Tillåtna typsnitt: `Inter`, `Roboto`, `Open Sans`, `Lato`, `Merriweather` (listan är utökningsbar i konfiguration)
+- `CustomCss`: valfritt fritext-fält, max 5 000 tecken; renderas aldrig som rå `<style>`-tagg utan stansas in strikt som CSS-variabelöverskridning
+- En `ConventionBranding`-post skapas on-demand om ingen finns (upsert-semantik)
+- Branding är konventionsscoped, inte editionscoped – ett konvent har ett varumärke
+
+## Domänhändelser
+- `ConventionBrandingUpdated { conventionId, occurredAt }`
+
+## Implementationssteg
+- [ ] `R-BR01` `ConventionBranding`-entitet (ConventionId, PrimaryColor, AccentColor, LogoUrl, FaviconUrl, FontFamily, CustomCss); EF Core-konfiguration; migration
+- [ ] Kommando `SetConventionBrandingCommand` + handler (upsert); endpoint `PUT /api/conventions/{id}/branding`
+- [ ] Publik query `GetConventionBrandingQuery`; endpoint `GET /api/conventions/{id}/branding` (anonym, cacheable)
+- [ ] Admin-komponent "Varumärke" med färgväljare, filuppladdning för logotyp och typsnittslista
+- [ ] Admin-förhandsvisning: live mock av publika appens header med valda inställningar
+
+## Acceptanskriterier
+- [ ] Branding sparas och returneras korrekt
+- [ ] Ogiltig hex-sträng returnerar valideringsfel
+- [ ] Logotyp utanför tillåten typ eller storlek returnerar valideringsfel
+- [ ] Otillåtet typsnitt returnerar valideringsfel
+- [ ] Saknad behörighet returnerar Forbidden
+- [ ] Kommandohanteraren har tillhörande enhetstest
+
+---
+
+# UC-BR002 – Visa publik app med konventionsvarumärke
+
+## Sammanfattning
+En besökare öppnar den publika appen. Appen hämtar konventionens `ConventionBranding` och applicerar färger, typsnitt och logotyp dynamiskt via CSS-variabler utan att sidan behöver byggas om.
+
+## Aktör
+Besökare (anonym eller inloggad)
+
+## Förutsättningar
+- En `ConventionBranding`-post finns för konventet (skapas med systemdefinierade defaultvärden om administratören inte konfigurerat något)
+
+## Flöde
+1. Publika appens shell-komponent hämtar `GET /api/conventions/{id}/branding` vid initialisering
+2. Appen infogar CSS-variabler (`--brand-primary`, `--brand-accent`, `--brand-font-family` m.fl.) på `document.documentElement` via `style.setProperty`
+3. Logotyp-URL sätts i navbar
+4. Sidan renderas med konventionens färger och typsnitt
+
+## Affärsregler
+- Om branding-anropet misslyckas används systemdefinierade CSS-fallbacks (bakåtkompatibelt)
+- CSS-variablerna sätts i realtid; inga `<style>`-block genereras med API-data
+- HTTP-svaret för branding-endpointen inkluderar `Cache-Control: max-age=300` för att undvika onödiga anrop
+
+## Domänhändelser
+- Inga
+
+## Acceptanskriterier
+- [ ] Publika appen visar korrekt primärfärg och accentfärg från databasen
+- [ ] Logotyp visas i navbar
+- [ ] Om branding-anropet returnerar 404 används systemfallbacks utan synliga fel
+- [ ] HTTP-svar inkluderar korrekt `Cache-Control`-header
+
+---
+
+# UC-I18N001 – Konfigurera tillgängliga språk för en upplaga
+
+## Sammanfattning
+En administratör anger vilket primärspråk en upplaga har och vilka ytterligare språk innehållet kan översättas till. Inställningen styr vilka locale-alternativ som visas i redaktörsgränssnitten och i publika appens språkväljare.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Utföraren är administratör
+- Upplagan finns
+
+## Flöde
+1. Administratören öppnar upplagens grundinställningar
+2. Administratören väljer primärspråk (t.ex. `sv`) ur en fast lista av stödda locales
+3. Administratören aktiverar ytterligare språk (t.ex. `en`)
+4. Systemet sparar `EditionLocale`-poster (EditionId, Locale, IsPrimary)
+5. Redaktörsgränssnitt för sidor och evenemang visar nu fliklayout per aktiverat språk
+
+## Affärsregler
+- Exakt ett primärspråk per upplaga
+- Stödda locales i fas 1: `sv`, `en`
+- Primärspråket kan inte avaktiveras om det finns publicerat innehåll
+- Att lägga till ett språk skapar inga översättningar automatiskt
+
+## Domänhändelser
+- `EditionLocaleAdded { editionId, locale, occurredAt }`
+- `EditionLocalePrimaryChanged { editionId, locale, occurredAt }`
+
+## Implementationssteg
+- [ ] `R-I18N02` `EditionLocale`-entitet (EditionId, Locale, IsPrimary); EF Core-konfiguration; migration
+- [ ] Kommando `SetEditionLocalesCommand` + handler; endpoint `PUT /api/editions/{id}/locales`
+- [ ] Admin-UI: språkinställning i upplagens grundformulär
+
+## Acceptanskriterier
+- [ ] Exakt ett primärspråk sparas per upplaga; försök att sätta fler ger valideringsfel
+- [ ] Okänd locale returnerar valideringsfel
+- [ ] Borttagning av primärspråk returnerar valideringsfel
+- [ ] Kommandohanteraren har tillhörande enhetstest
+
+---
+
+# UC-I18N002 – Redigera översättning av informationssida
+
+## Sammanfattning
+En administratör lägger till eller redigerar en översättning av en informationssida (titel + markdown-innehåll) för ett aktiverat språk. Originalsidan (primärspråket) ändras inte.
+
+## Aktör
+Konventionsadministratör
+
+## Förutsättningar
+- Sidan finns
+- Mållocalen är aktiverad för upplagan (UC-I18N001)
+
+## Flöde
+1. Administratören öppnar sidan i admin
+2. Systemet visar en flik per aktiverat språk; primärspråksfliken visar originalinnehållet (skrivskyddat)
+3. Administratören väljer en översättningsflik och redigerar titel och innehåll
+4. Systemet sparar `PageTranslation`-posten (PageId, Locale, Title, Content)
+
+## Affärsregler
+- En `PageTranslation` per (PageId, Locale)-kombination; upsert-semantik
+- Primärspråkets innehåll ändras aldrig via översättningsflödet
+- Publiceringsstatusen styrs av originalsidan; en oversättning kan inte publiceras separat
+
+## Domänhändelser
+- Inga
+
+## Implementationssteg
+- [ ] `R-I18N03` `PageTranslation`-entitet (PageId, Locale, Title, Content); EF Core-konfiguration; migration
+- [ ] Kommando `SetPageTranslationCommand` + handler; endpoint `PUT /api/pages/{id}/translations/{locale}`
+- [ ] Query `GetPageBySlugQuery` utökas med locale-parameter; returnerar rätt `PageTranslation` om tillgänglig
+- [ ] Admin-UI: flikbaserat redigeringsformulär per locale
+
+## Acceptanskriterier
+- [ ] Översättning sparas och kan hämtas per (slug, locale)
+- [ ] Primärspråket påverkas inte av översättningsoperationen
+- [ ] Otillåten locale returnerar valideringsfel
+- [ ] Kommandohanteraren har tillhörande enhetstest
+
+---
+
+# UC-I18N003 – Redigera översättning av evenemangsbeskrivning
+
+## Sammanfattning
+En arrangör eller administratör lägger till eller redigerar en översättning av ett evenemangs titel och beskrivning för ett aktiverat språk.
+
+## Aktör
+Konventionsadministratör eller evenemangsarrangör (LeadOrganiser/CoOrganiser)
+
+## Förutsättningar
+- Evenemanget finns
+- Utföraren är admin eller arrangör för evenemanget
+- Mållocalen är aktiverad för upplagan
+
+## Flöde
+1. Arrangören öppnar evenemangsformuläret i admin eller i arrangörsgränssnittet
+2. Systemet visar en flik per aktiverat språk; primärspråket är skrivskyddat i detta flöde
+3. Arrangören redigerar titel och beskrivning på målspråket
+4. Systemet sparar `EventTranslation`-posten (EventId, Locale, Title, Description)
+
+## Affärsregler
+- En `EventTranslation` per (EventId, Locale)-kombination; upsert-semantik
+- Max 10 000 tecken på Description per locale (samma gräns som originalet)
+- Arrangör kan bara redigera översättningar för sina egna evenemang
+
+## Domänhändelser
+- Inga
+
+## Implementationssteg
+- [ ] `R-I18N04` `EventTranslation`-entitet (EventId, Locale, Title, Description); EF Core-konfiguration; migration
+- [ ] Kommando `SetEventTranslationCommand` + handler; endpoint `PUT /api/events/{id}/translations/{locale}`
+- [ ] Query `GetEventQuery` och `ListEventsQuery` utökas med locale-parameter
+- [ ] Admin- och arrangörsgränssnitt: flikbaserat redigeringsformulär per locale
+
+## Acceptanskriterier
+- [ ] Översättning sparas och returneras per (eventId, locale)
+- [ ] Arrangör kan inte redigera ett evenemang de inte tillhör
+- [ ] Description över 10 000 tecken returnerar valideringsfel
+- [ ] Kommandohanteraren har tillhörande enhetstest
+
+---
+
+# UC-I18N004 – Visa innehåll på valt språk
+
+## Sammanfattning
+En besökare väljer ett språk i den publika appen (eller systemet läser `Accept-Language`). API:t returnerar översatt titel och innehåll om en översättning finns; annars faller det tillbaka på primärspråket.
+
+## Aktör
+Besökare (anonym eller inloggad)
+
+## Förutsättningar
+- Mållocalen är aktiverad för upplagan
+
+## Flöde
+1. Besökaren väljer språk i publika appens språkväljare, eller webbläsarens `Accept-Language` läses vid första besök
+2. Publika appen lägger till `?locale=en` (eller liknande) på API-anrop
+3. API:t hämtar `PageTranslation` eller `EventTranslation` för angiven locale
+4. Om ingen översättning finns returneras originaltexten (primärspråket) utan felstatus
+5. Sidrubriker och innehåll renderas på valt språk
+
+## Affärsregler
+- Fallback till primärspråk är tyst – inga felmeddelanden visas
+- Localepreferens sparas i `localStorage` och används vid nästa besök
+- Systemtexter (knappar, etiketter) hanteras separat via Angular `@angular/localize` (UC hör till R-I18N01)
+
+## Domänhändelser
+- Inga
+
+## Implementationssteg
+- [ ] `R-I18N05` Publik app: språkväljare-komponent + locale-state i signal-service; locale skickas som query-parameter
+- [ ] Samtliga publika queries som hämtar sidor och evenemang tar emot `locale`-parameter och tillämpar fallback-logik
+- [ ] `Accept-Language`-header läses som fallback om ingen explicit locale anges
+
+## Acceptanskriterier
+- [ ] Sida med översättning returneras på valt språk
+- [ ] Sida utan översättning returneras på primärspråket utan fel
+- [ ] Localepreferens bevaras mellan sidladdningar
+- [ ] Språkväljaren visar bara aktiverade locales för upplagan
