@@ -3452,15 +3452,15 @@ Besökare (anonym eller inloggad)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Admin-konfigurerad hero-rubrik visas på startsidan
-- [ ] Fallback-rubrik visas om nyckeln saknas i databasen
-- [ ] Hero primärknappstext kan styras från admin via `EditionContent`
-- [ ] CTA-beskrivningar, open-labels och closed-labels kan styras från admin via `EditionContent`
-- [ ] CTA-kort för stängd registrering visar korrekt closed-label oavsett textinställning
-- [ ] Utvalda evenemang visas; automatiskt urval används om inga är markerade
-- [ ] Menyresultat prioriterar aktiv upplagas slug före konventionsslug och sorteras `MenuSortOrder ASC`, `Title ASC`
-- [ ] Delvis API-fel i en datakälla blockerar inte rendering av övriga sektioner på startsidan
-- [ ] Frontendtester verifierar både CMS-värden och fallback för samtliga nya startsidenycklar
+- [x] Admin-konfigurerad hero-rubrik visas på startsidan
+- [x] Fallback-rubrik visas om nyckeln saknas i databasen
+- [x] Hero primärknappstext kan styras från admin via `EditionContent`
+- [x] CTA-beskrivningar, open-labels och closed-labels kan styras från admin via `EditionContent`
+- [x] CTA-kort för stängd registrering visar korrekt closed-label oavsett textinställning
+- [x] Utvalda evenemang visas; automatiskt urval används om inga är markerade
+- [x] Menyresultat prioriterar aktiv upplagas slug före konventionsslug och sorteras `MenuSortOrder ASC`, `Title ASC`
+- [x] Delvis API-fel i en datakälla blockerar inte rendering av övriga sektioner på startsidan
+- [x] Frontendtester verifierar både CMS-värden och fallback för samtliga nya startsidenycklar
 
 ---
 
