@@ -102,6 +102,7 @@ public sealed class ConventionSystemFactory : WebApplicationFactory<Program>, IA
                 [JwtOptions.IssuerConfigurationKey] = TestJwtIssuer,
                 [JwtOptions.AudienceConfigurationKey] = TestJwtAudience,
                 ["DevData:EnableSeeding"] = "false",
+                ["SingleTenantBootstrap:Enabled"] = "false",
                 ["Email:Provider"] = "Logging",
                 ["Logging:LogLevel:Microsoft.EntityFrameworkCore.Database.Command"] = "Warning",
                 ["Logging:LogLevel:Microsoft.EntityFrameworkCore.Migrations"] = "Warning",
