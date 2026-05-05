@@ -51,8 +51,8 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.Property<int>("MenuSortOrder")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("menu_sort_order")
-                        .HasDefaultValue(0);
+                        .HasDefaultValue(0)
+                        .HasColumnName("menu_sort_order");
 
                     b.Property<bool>("ShowInPublicMenu")
                         .HasColumnType("bit")
@@ -247,6 +247,56 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.HasIndex("TenantId");
 
                     b.ToTable("convention_administrators", (string)null);
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.ConventionBranding", b =>
+                {
+                    b.Property<Guid>("ConventionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("convention_id");
+
+                    b.Property<string>("AccentColor")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)")
+                        .HasColumnName("accent_color");
+
+                    b.Property<string>("CustomCss")
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("custom_css");
+
+                    b.Property<string>("FaviconUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("favicon_url");
+
+                    b.Property<string>("FontFamily")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("font_family");
+
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("logo_url");
+
+                    b.Property<string>("PrimaryColor")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)")
+                        .HasColumnName("primary_color");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("ConventionId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("convention_brandings", (string)null);
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.EditionContent", b =>
@@ -1449,6 +1499,15 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.HasOne("ConventionSystem.Domain.Convention.Aggregates.Convention", null)
                         .WithMany("Administrators")
                         .HasForeignKey("ConventionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.ConventionBranding", b =>
+                {
+                    b.HasOne("ConventionSystem.Domain.Convention.Aggregates.Convention", null)
+                        .WithOne()
+                        .HasForeignKey("ConventionSystem.Domain.Convention.Entities.ConventionBranding", "ConventionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -4,6 +4,7 @@ import { ENVIRONMENT } from '../environment/environment.token';
 import { ConventionContextService } from './convention-context.service';
 import {
   CategoryDto,
+  ConventionBrandingDto,
   ConventionDto,
   EditionDto,
   EditionOrganiserDto,
@@ -122,6 +123,15 @@ export interface UpdatePersonRequest {
   phone?: string | null;
 }
 
+export interface SetConventionBrandingRequest {
+  primaryColor: string;
+  accentColor: string;
+  logoUrl?: string | null;
+  faviconUrl?: string | null;
+  fontFamily: string;
+  customCss?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ConventionService {
   private readonly http = inject(HttpClient);
@@ -138,6 +148,14 @@ export class ConventionService {
 
   getConvention() {
     return this.http.get<ConventionDto>(this.base);
+  }
+
+  getBranding() {
+    return this.http.get<ConventionBrandingDto>(`${this.base}/branding`);
+  }
+
+  setBranding(request: SetConventionBrandingRequest) {
+    return this.http.put<void>(`${this.base}/branding`, request);
   }
 
   listEditions() {

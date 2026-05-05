@@ -1,6 +1,8 @@
 using ConventionSystem.Application.Convention.Commands.AddAdministrator;
 using ConventionSystem.Application.Convention.Commands.CreateConvention;
 using ConventionSystem.Application.Convention.Commands.RemoveAdministrator;
+using ConventionSystem.Application.Convention.Commands.SetConventionBranding;
+using ConventionSystem.Application.Convention.Queries.GetConventionBranding;
 using ConventionSystem.Application.Convention.Queries.GetConvention;
 using ConventionSystem.Application.Convention.Queries.GetEdition;
 using ConventionSystem.Application.Convention.Queries.ListEditions;
@@ -33,6 +35,36 @@ public static class ConventionEndpoints
             return result is null ? Results.NotFound() : Results.Ok(result);
         });
 
+        groups.Anonymous.MapGet("/conventions/{conventionId:guid}/branding", async (
+            Guid conventionId,
+            HttpResponse response,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetConventionBrandingQuery(conventionId), ct);
+            if (result is null)
+                return Results.NotFound();
+
+            response.Headers.CacheControl = "max-age=300";
+            return Results.Ok(result);
+        });
+
+        groups.Admin.MapPut("/conventions/{conventionId:guid}/branding",
+            async (Guid conventionId, SetConventionBrandingRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new SetConventionBrandingCommand(
+                    conventionId,
+                    request.PrimaryColor,
+                    request.AccentColor,
+                    request.LogoUrl,
+                    request.FaviconUrl,
+                    request.FontFamily,
+                    request.CustomCss),
+                    ct);
+
+                return Results.NoContent();
+            });
+
         groups.Anonymous.MapGet("/conventions/{conventionId:guid}/editions", async (Guid conventionId, ISender sender, CancellationToken ct) =>
             Results.Ok(await sender.Send(new ListEditionsQuery(conventionId), ct)));
 
@@ -63,3 +95,10 @@ public static class ConventionEndpoints
 
 public record CreateConventionRequest(string Name, string Slug, string RegistrantName, string RegistrantEmail);
 public record AddAdministratorRequest(Guid PersonId);
+public record SetConventionBrandingRequest(
+    string PrimaryColor,
+    string AccentColor,
+    string? LogoUrl,
+    string? FaviconUrl,
+    string FontFamily,
+    string? CustomCss);

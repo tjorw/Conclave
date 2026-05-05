@@ -66,6 +66,38 @@ public sealed class UploadEndpointsTests(ConventionSystemFactory factory) : Inte
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
+    [Fact]
+    public async Task UploadBrandingImage_WithSvg_ReturnsPublicUrl()
+    {
+        var token = await LoginAsync(AdminEmail, AdminPassword);
+        var client = CreateClient(token);
+        using var content = CreateMultipart(System.Text.Encoding.UTF8.GetBytes("<svg />"), "image/svg+xml", "logo.svg");
+
+        var response = await client.PostAsync("/api/uploads/branding", content);
+
+        response.EnsureSuccessStatusCode();
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var url = body.GetProperty("url").GetString();
+
+        Assert.NotNull(url);
+        Assert.StartsWith("/uploads/00000000000000000000000000000000/", url);
+        Assert.EndsWith(".svg", url);
+    }
+
+    [Fact]
+    public async Task UploadBrandingImage_WithTooLargeFile_ReturnsBadRequest()
+    {
+        var token = await LoginAsync(AdminEmail, AdminPassword);
+        var client = CreateClient(token);
+        using var content = CreateMultipart(new byte[(1024 * 1024) + 1], "image/png", "huge.png");
+
+        var response = await client.PostAsync("/api/uploads/branding", content);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("file_too_large", body.GetProperty("errorCode").GetString());
+    }
+
     private static MultipartFormDataContent CreateMultipart(byte[] bytes, string contentType, string filename)
     {
         var content = new MultipartFormDataContent();

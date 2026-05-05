@@ -37,6 +37,7 @@ public sealed class LocalDiskFileStorage(
         "image/jpeg" => ".jpg",
         "image/png" => ".png",
         "image/gif" => ".gif",
+        "image/svg+xml" => ".svg",
         "image/webp" => ".webp",
         _ => throw new InvalidOperationException($"Unsupported content type '{contentType}'.")
     };

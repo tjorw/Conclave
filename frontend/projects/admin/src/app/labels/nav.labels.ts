@@ -13,6 +13,7 @@ export const NAV = {
   visitorRegistrations: 'Biljetter',
   promotionCodes: 'Kampanjkoder',
   feeds:          'Feeds',
+  branding:       'Varumärke',
   pages:          'Informationssidor',
   conventionPages: 'Konventionssidor',
   logout:         'Logga ut',

@@ -21,4 +21,13 @@ export class UploadService {
       .post<UploadResponse>(`${this.env.apiBaseUrl}/api/uploads`, form)
       .pipe(map(response => response.url));
   }
+
+  uploadBrandingImage(file: File) {
+    const form = new FormData();
+    form.append('file', file);
+
+    return this.http
+      .post<UploadResponse>(`${this.env.apiBaseUrl}/api/uploads/branding`, form)
+      .pipe(map(response => response.url));
+  }
 }

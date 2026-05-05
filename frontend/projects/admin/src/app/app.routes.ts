@@ -212,6 +212,11 @@ export const routes: Routes = [
           import('./features/feeds/feeds.component').then(m => m.FeedsComponent),
       },
       {
+        path: 'branding',
+        loadComponent: () =>
+          import('./features/branding/convention-branding.component').then(m => m.ConventionBrandingComponent),
+      },
+      {
         path: 'pages',
         loadComponent: () =>
           import('./features/pages/pages.component').then(m => m.PagesComponent),

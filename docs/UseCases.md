@@ -3495,19 +3495,19 @@ Konventionsadministratör
 - `ConventionBrandingUpdated { conventionId, occurredAt }`
 
 ## Implementationssteg
-- [ ] `R-BR01` `ConventionBranding`-entitet (ConventionId, PrimaryColor, AccentColor, LogoUrl, FaviconUrl, FontFamily, CustomCss); EF Core-konfiguration; migration
-- [ ] Kommando `SetConventionBrandingCommand` + handler (upsert); endpoint `PUT /api/conventions/{id}/branding`
-- [ ] Publik query `GetConventionBrandingQuery`; endpoint `GET /api/conventions/{id}/branding` (anonym, cacheable)
-- [ ] Admin-komponent "Varumärke" med färgväljare, filuppladdning för logotyp och typsnittslista
-- [ ] Admin-förhandsvisning: live mock av publika appens header med valda inställningar
+- [x] `R-BR01` `ConventionBranding`-entitet (ConventionId, PrimaryColor, AccentColor, LogoUrl, FaviconUrl, FontFamily, CustomCss); EF Core-konfiguration; migration
+- [x] Kommando `SetConventionBrandingCommand` + handler (upsert); endpoint `PUT /api/conventions/{id}/branding`
+- [x] Publik query `GetConventionBrandingQuery`; endpoint `GET /api/conventions/{id}/branding` (anonym, cacheable)
+- [x] Admin-komponent "Varumärke" med färgväljare, filuppladdning för logotyp och typsnittslista
+- [x] Admin-förhandsvisning: live mock av publika appens header med valda inställningar
 
 ## Acceptanskriterier
-- [ ] Branding sparas och returneras korrekt
-- [ ] Ogiltig hex-sträng returnerar valideringsfel
-- [ ] Logotyp utanför tillåten typ eller storlek returnerar valideringsfel
-- [ ] Otillåtet typsnitt returnerar valideringsfel
-- [ ] Saknad behörighet returnerar Forbidden
-- [ ] Kommandohanteraren har tillhörande enhetstest
+- [x] Branding sparas och returneras korrekt
+- [x] Ogiltig hex-sträng returnerar valideringsfel
+- [x] Logotyp utanför tillåten typ eller storlek returnerar valideringsfel
+- [x] Otillåtet typsnitt returnerar valideringsfel
+- [x] Saknad behörighet returnerar Forbidden
+- [x] Kommandohanteraren har tillhörande enhetstest
 
 ---
 

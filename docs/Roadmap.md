@@ -72,7 +72,7 @@ Publika appen ska reflektera respektive konvents grafiska profil utan redeploy. 
 
 Implementationsordning: R-BR01 → R-BR02
 
-- [ ] `R-BR01` `ConventionBranding`-entitet (ConventionId, PrimaryColor, AccentColor, LogoUrl, FaviconUrl, FontFamily, CustomCss) – upsert-semantik; endpoint `PUT /api/conventions/{id}/branding`; anonym `GET`-endpoint med `Cache-Control: max-age=300`; admin-UI med färgväljare, filuppladdning och typsnittsval (UC-BR001)
+- [x] `R-BR01` `ConventionBranding`-entitet (ConventionId, PrimaryColor, AccentColor, LogoUrl, FaviconUrl, FontFamily, CustomCss) – upsert-semantik; endpoint `PUT /api/conventions/{id}/branding`; anonym `GET`-endpoint med `Cache-Control: max-age=300`; admin-UI med färgväljare, filuppladdning och typsnittsval (UC-BR001)
 - [ ] `R-BR02` Publik shell hämtar branding vid initialisering och applicerar CSS-variabler via `document.documentElement.style.setProperty`; logotyp sätts i navbar; fallback till systemdefinierade värden om anropet misslyckas (UC-BR002)
 
 ### Flerspråksstöd (R-I18N)

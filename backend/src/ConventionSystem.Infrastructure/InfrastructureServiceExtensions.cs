@@ -34,6 +34,7 @@ public static class InfrastructureServiceExtensions
         IConfiguration configuration)
     {
         services.AddScoped<IConventionRepository, ConventionRepository>();
+        services.AddScoped<IConventionBrandingRepository, ConventionBrandingRepository>();
         services.AddScoped<IPageRepository, PageRepository>();
         services.AddScoped<IPersonRepository, PersonRepository>();
         services.AddScoped<IEditionRepository, EditionRepository>();

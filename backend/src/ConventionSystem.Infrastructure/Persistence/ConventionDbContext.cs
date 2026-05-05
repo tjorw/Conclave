@@ -27,6 +27,7 @@ public sealed class ConventionDbContext(
 
     // Convention
     public DbSet<Convention> Conventions => Set<Convention>();
+    public DbSet<ConventionBranding> ConventionBrandings => Set<ConventionBranding>();
     public DbSet<Edition> Editions => Set<Edition>();
     public DbSet<Person> Persons => Set<Person>();
     public DbSet<StaffArea> StaffAreas => Set<StaffArea>();

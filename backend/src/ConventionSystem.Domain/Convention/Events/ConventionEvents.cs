@@ -47,6 +47,10 @@ public record AdministratorRemoved(
     PersonId RemovedById,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
+public record ConventionBrandingUpdated(
+    ConventionId ConventionId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public record EditionPublished(
     EditionId EditionId,
     PersonId PerformedById,

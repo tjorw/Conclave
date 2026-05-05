@@ -10,6 +10,16 @@ export interface ConventionDto {
   activeEditionId: string | null;
 }
 
+export interface ConventionBrandingDto {
+  conventionId: string;
+  primaryColor: string;
+  accentColor: string;
+  logoUrl: string | null;
+  faviconUrl: string | null;
+  fontFamily: string;
+  customCss: string | null;
+}
+
 export interface EditionSummaryDto {
   id: string;
   name: string;
