@@ -57,6 +57,45 @@ Implementationsordning: R-CMS01 → R-CMS02 → R-CMS03 → R-CMS04
 - [x] `R-CMS03` `Page.MenuSortOrder` – admin styr ordningen på menysidor; publik navigation sorterar stigande på ordningstalet (UC-CMS003)
 - [ ] `R-CMS04` Publik startsida konsumerar `EditionContent`, utvalda evenemang och sorterad meny i ett sammanhängande flöde; inga hårdkodade texter i klientkoden (UC-CMS004)
 
+**R-CMS04 – konkret genomförandeplan**
+
+1. **Samla dataladdning i public-appens home-flöde**
+	- Skapa en sammanhållen facade/store för startsidan som hämtar `EditionContent`, `/events/featured` och `/api/pages/menu` parallellt.
+	- Home-komponenten och shell-komponenten ska läsa från samma state-källa för att undvika dubbla anrop och osynkade fallback-beslut.
+	- Fel i ett delanrop får inte bryta hela startsidan; varje del ska ha isolerad fallback.
+
+2. **Eliminera hårdkodade startsidetexter**
+	- Utöka `EditionContentKey` (domän + shared frontend-model) med nycklar för samtliga kvarvarande strängar i startsideflödet.
+	- Rekommenderade nya nycklar:
+	  - `hero.primaryActionLabel`
+	  - `featured.sectionTitle`
+	  - `featured.viewAllLabel`
+	  - `cta.visitor.description`, `cta.organiser.description`, `cta.staff.description`
+	  - `cta.visitor.openLabel`, `cta.organiser.openLabel`, `cta.staff.openLabel`
+	  - `cta.visitor.closedLabel`, `cta.organiser.closedLabel`, `cta.staff.closedLabel`
+	- Samtliga texter ovan ska kunna redigeras i admin-vyn för edition content.
+
+3. **Behåll och verifiera befintlig menyscope-logik**
+	- Publik meny ska fortsatt prioritera aktiv upplagas sida framför konventionssida vid slug-krock.
+	- Sortering ska ske på `MenuSortOrder`, med titel som tiebreaker inom slutligt scope-val.
+	- Ingen ny endpoint krävs för R-CMS04 så länge befintligt beteende verifieras med test.
+
+4. **Test- och kvalitetskrav innan status [x]**
+	- Frontendtester för startsidan:
+	  - CMS-värde används när nyckel finns.
+	  - Fallback används när nyckel saknas eller är tom.
+	  - Delvis API-fel (t.ex. menyfel) påverkar inte hero/featured rendering.
+	- Backendtester för public pages:
+	  - Edition-sida prioriteras vid slug-krock.
+	  - Menyresultat sorteras `MenuSortOrder ASC`, därefter `Title ASC`.
+	- Uppdatera UC-CMS004 acceptanskriterier till [x] först när ovan är grönt.
+
+5. **Definition of Done för R-CMS04**
+	- Startsidan har ett sammanhållet dataflöde för content + featured + meny.
+	- Inga hårdkodade användartexter finns kvar i home/shell för startsideupplevelsen.
+	- Alla nya content-nycklar kan redigeras i admin per upplaga.
+	- Fallback-beteenden är testade och dokumenterade i UC-CMS004.
+
 #### Adminscope och pages
 
 Adminytan ska skilja på konventionsnivå och upplagenivå. En vy på konventionsnivå får inte bero på vald upplaga i topbaren. En vy på upplagenivå ska alltid ligga under vald upplaga i navigationen och routas med `editions/:id/...`.
@@ -73,13 +112,13 @@ Adminytan ska skilja på konventionsnivå och upplagenivå. En vy på konvention
 - Informationssidor med `Page.EditionId == :id`, routade som `/editions/:id/pages`.
 
 **Implementationssteg**
-1. `R-RC03.1` Dela admin-pages i två listvyer: `/pages` listar bara konventionssidor och `/editions/:id/pages` listar bara sidor för vald upplaga.
-2. `R-RC03.2` Gör page-detaljvyn scope-styrd av route. Ta bort fri scope-väljare i formuläret. `/pages/new` skapar `editionId: null`; `/editions/:id/pages/new` skapar `editionId: :id`.
-3. `R-RC03.3` Utöka `ListPagesQuery` och `IPageRepository.ListAsync` med exakt scope-filter (`editionId == null` eller `editionId == :id`). Slug-unikhet fortsätter gälla per scope.
-4. `R-RC03.4` Lägg till frontend-validering i detaljvyn: en konventionsroute får bara visa sidor utan `editionId`; en editionroute får bara visa sidor vars `editionId` matchar route-parametern.
-5. `R-CMS03.1` Lägg till `Page.MenuSortOrder` efter scope-delningen, så sortering kan hanteras separat för konventionsmeny och upplagemeny.
-6. `R-CMS04.1` Låt publik navigation fortsätta prioritera aktiv upplagas sida framför konventionssida med samma slug, men sortera menyresultatet med `MenuSortOrder` inom det slutliga scope-valet.
-7. `R-ADM01` Flytta övriga upplageberoende adminvyer från top-level routes till `editions/:id/...`. Inga redirects behövs innan produktionssättning; gamla top-level routes tas bort.
+- [x] 1. `R-RC03.1` Dela admin-pages i två listvyer: `/pages` listar bara konventionssidor och `/editions/:id/pages` listar bara sidor för vald upplaga.
+- [x] 2. `R-RC03.2` Gör page-detaljvyn scope-styrd av route. Ta bort fri scope-väljare i formuläret. `/pages/new` skapar `editionId: null`; `/editions/:id/pages/new` skapar `editionId: :id`.
+- [ ] 3. `R-RC03.3` Utöka `ListPagesQuery` och `IPageRepository.ListAsync` med exakt scope-filter (`editionId == null` eller `editionId == :id`). Slug-unikhet fortsätter gälla per scope.
+- [ ] 4. `R-RC03.4` Lägg till frontend-validering i detaljvyn: en konventionsroute får bara visa sidor utan `editionId`; en editionroute får bara visa sidor vars `editionId` matchar route-parametern.
+- [ ] 5. `R-CMS03.1` Lägg till `Page.MenuSortOrder` efter scope-delningen, så sortering kan hanteras separat för konventionsmeny och upplagemeny.
+- [ ] 6. `R-CMS04.1` Låt publik navigation fortsätta prioritera aktiv upplagas sida framför konventionssida med samma slug, men sortera menyresultatet med `MenuSortOrder` inom det slutliga scope-valet.
+- [ ] 7. `R-ADM01` Flytta övriga upplageberoende adminvyer från top-level routes till `editions/:id/...`. Inga redirects behövs innan produktionssättning; gamla top-level routes tas bort.
 
 ### Varumärke per konvent (R-BR)
 

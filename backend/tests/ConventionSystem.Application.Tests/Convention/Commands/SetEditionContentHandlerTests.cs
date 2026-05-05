@@ -81,10 +81,11 @@ public class SetEditionContentHandlerTests
                 new EditionContentItem(EditionContentKey.HeroTitle, "Titel"),
                 new EditionContentItem(EditionContentKey.HeroIngress, "Ingress"),
                 new EditionContentItem(EditionContentKey.CtaVisitorLabel, "Bli besökare"),
+                new EditionContentItem(EditionContentKey.FeaturedSectionTitle, "Utvalda evenemang"),
             ]),
             default);
 
-        Assert.Equal(3, edition.Content.Count);
+        Assert.Equal(4, edition.Content.Count);
     }
 
     [Fact]

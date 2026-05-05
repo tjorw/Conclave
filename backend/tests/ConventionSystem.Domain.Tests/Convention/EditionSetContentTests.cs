@@ -48,8 +48,9 @@ public class EditionSetContentTests
         edition.SetContent(EditionContentKey.HeroTitle, "Titel");
         edition.SetContent(EditionContentKey.HeroIngress, "Ingress");
         edition.SetContent(EditionContentKey.CtaVisitorLabel, "Bli besökare");
+        edition.SetContent(EditionContentKey.FeaturedSectionTitle, "Utvalda evenemang");
 
-        Assert.Equal(3, edition.Content.Count);
+        Assert.Equal(4, edition.Content.Count);
     }
 
     [Fact]

@@ -1,10 +1,11 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { EditionContentService, EDITION_CONTENT_KEYS, EventService, EventSummaryFeedDto } from 'shared';
+import { EDITION_CONTENT_KEYS, EventSummaryFeedDto } from 'shared';
 import { EditionService } from '../../services/edition.service';
+import { HomeContentStateService } from '../../services/home-content-state.service';
 
 @Component({
   selector: 'app-home',
@@ -15,58 +16,79 @@ import { EditionService } from '../../services/edition.service';
 })
 export class HomeComponent {
   readonly editionSvc   = inject(EditionService);
-  private readonly contentSvc = inject(EditionContentService);
-  private readonly eventSvc = inject(EventService);
-
-  private readonly contentMap = signal<Record<string, string>>({});
-  private readonly featuredEventsFromApi = signal<EventSummaryFeedDto[] | null>(null);
+  private readonly homeContentState = inject(HomeContentStateService);
 
   readonly featuredEvents = computed<EventSummaryFeedDto[]>(() =>
-    this.featuredEventsFromApi() ?? (this.editionSvc.edition()?.events ?? []).slice(0, 3)
+    this.homeContentState.featuredEventsFromApi() ?? (this.editionSvc.edition()?.events ?? []).slice(0, 3)
   );
 
   readonly heroTitle = computed(() =>
-    this.contentMap()[EDITION_CONTENT_KEYS.heroTitle] || this.editionSvc.conventionName()
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.heroTitle] || this.editionSvc.conventionName()
   );
 
   readonly heroIngress = computed(() =>
-    this.contentMap()[EDITION_CONTENT_KEYS.heroIngress] || null
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.heroIngress] || null
+  );
+
+  readonly heroPrimaryActionLabel = computed(() =>
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.heroPrimaryActionLabel] || 'Se programmet'
   );
 
   readonly ctaVisitorLabel = computed(() =>
-    this.contentMap()[EDITION_CONTENT_KEYS.ctaVisitorLabel] || 'Bli besökare'
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.ctaVisitorLabel] || 'Bli besökare'
   );
 
   readonly ctaOrganiserLabel = computed(() =>
-    this.contentMap()[EDITION_CONTENT_KEYS.ctaOrganiserLabel] || 'Arrangera ett evenemang'
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.ctaOrganiserLabel] || 'Arrangera ett evenemang'
   );
 
   readonly ctaStaffLabel = computed(() =>
-    this.contentMap()[EDITION_CONTENT_KEYS.ctaStaffLabel] || 'Bli funktionär'
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.ctaStaffLabel] || 'Bli funktionär'
   );
 
-  constructor() {
-    effect(() => {
-      const editionId = this.editionSvc.editionId();
-      if (!editionId) return;
+  readonly ctaVisitorDescription = computed(() =>
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.ctaVisitorDescription] || 'Köp en biljett och delta i massor av evenemang under helgen.'
+  );
 
-      this.contentSvc.getContent(editionId).subscribe({
-        next: items => {
-          const map: Record<string, string> = {};
-          for (const item of items) {
-            if (item.value) map[item.key] = item.value;
-          }
-          this.contentMap.set(map);
-        },
-        error: () => { /* fallback-texter används */ },
-      });
+  readonly ctaOrganiserDescription = computed(() =>
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.ctaOrganiserDescription] || 'Har du en idé till ett rollspel, brädspelssession eller seminarium? Skicka in det!'
+  );
 
-      this.eventSvc.getFeaturedEvents().subscribe({
-        next: events => this.featuredEventsFromApi.set(events),
-        error: () => this.featuredEventsFromApi.set(null),
-      });
-    });
-  }
+  readonly ctaStaffDescription = computed(() =>
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.ctaStaffDescription] || 'Hjälp till att driva konventet och jobba bakom kulisserna.'
+  );
+
+  readonly ctaVisitorOpenLabel = computed(() =>
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.ctaVisitorOpenLabel] || 'Registrera dig nu'
+  );
+
+  readonly ctaOrganiserOpenLabel = computed(() =>
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.ctaOrganiserOpenLabel] || 'Skicka in evenemang'
+  );
+
+  readonly ctaStaffOpenLabel = computed(() =>
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.ctaStaffOpenLabel] || 'Ansök nu'
+  );
+
+  readonly ctaVisitorClosedLabel = computed(() =>
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.ctaVisitorClosedLabel] || 'Registrering inte öppen än'
+  );
+
+  readonly ctaOrganiserClosedLabel = computed(() =>
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.ctaOrganiserClosedLabel] || 'Inlämning inte öppen än'
+  );
+
+  readonly ctaStaffClosedLabel = computed(() =>
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.ctaStaffClosedLabel] || 'Ansökan inte öppen än'
+  );
+
+  readonly featuredSectionTitle = computed(() =>
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.featuredSectionTitle] || 'Utvalda evenemang'
+  );
+
+  readonly featuredViewAllLabel = computed(() =>
+    this.homeContentState.contentMap()[EDITION_CONTENT_KEYS.featuredViewAllLabel] || 'Visa hela programmet'
+  );
 
   readonly firstSession = (event: EventSummaryFeedDto): string => {
     const s = event.sessions[0];

@@ -11,7 +11,7 @@
       </p>
     }
     <div class="hero-actions">
-      <a mat-flat-button class="btn-accent" routerLink="/program">Se programmet</a>
+      <a mat-flat-button class="btn-accent" routerLink="/program">{{ heroPrimaryActionLabel() }}</a>
     </div>
   </div>
 </section>
@@ -24,39 +24,39 @@
       <div class="cta-card" [class.cta-open]="ed.visitorRegistrationOpen">
         <mat-icon class="mat-icon notranslate material-icons mat-ligature-font mat-icon-no-color cta-icon">local_activity</mat-icon>
         <h2>{{ ctaVisitorLabel() }}</h2>
-        <p>Köp en biljett och delta i massor av evenemang under helgen.</p>
+        <p>{{ ctaVisitorDescription() }}</p>
         @if (ed.visitorRegistrationOpen) {
           <a mat-flat-button class="btn-primary" routerLink="/my-pages/registration">
-            Registrera dig nu
+            {{ ctaVisitorOpenLabel() }}
           </a>
         } @else {
-          <span class="cta-closed">Registrering inte öppen än</span>
+          <span class="cta-closed">{{ ctaVisitorClosedLabel() }}</span>
         }
       </div>
 
       <div class="cta-card" [class.cta-open]="ed.organiserRegistrationOpen">
         <mat-icon class="mat-icon notranslate material-icons mat-ligature-font mat-icon-no-color cta-icon">event</mat-icon>
         <h2>{{ ctaOrganiserLabel() }}</h2>
-        <p>Har du en idé till ett rollspel, brädspelssession eller seminarium? Skicka in det!</p>
+        <p>{{ ctaOrganiserDescription() }}</p>
         @if (ed.organiserRegistrationOpen) {
           <a mat-flat-button class="btn-primary" routerLink="/my-pages/events/new">
-            Skicka in evenemang
+            {{ ctaOrganiserOpenLabel() }}
           </a>
         } @else {
-          <span class="cta-closed">Inlämning inte öppen än</span>
+          <span class="cta-closed">{{ ctaOrganiserClosedLabel() }}</span>
         }
       </div>
 
       <div class="cta-card" [class.cta-open]="ed.staffRegistrationOpen">
         <mat-icon class="mat-icon notranslate material-icons mat-ligature-font mat-icon-no-color cta-icon">supervisor_account</mat-icon>
         <h2>{{ ctaStaffLabel() }}</h2>
-        <p>Hjälp till att driva konventet och jobba bakom kulisserna.</p>
+        <p>{{ ctaStaffDescription() }}</p>
         @if (ed.staffRegistrationOpen) {
           <a mat-flat-button class="btn-primary" routerLink="/my-pages/staff-application">
-            Ansök nu
+            {{ ctaStaffOpenLabel() }}
           </a>
         } @else {
-          <span class="cta-closed">Ansökan inte öppen än</span>
+          <span class="cta-closed">{{ ctaStaffClosedLabel() }}</span>
         }
       </div>
 
@@ -67,7 +67,7 @@
 <!-- ── Utvalda evenemang ─────────────────────────────────────────────────── -->
 @if (featuredEvents().length > 0) {
   <section class="events-section page-container">
-    <h2 class="section-title">Utvalda evenemang</h2>
+    <h2 class="section-title">{{ featuredSectionTitle() }}</h2>
     <div class="events-grid">
       @for (event of featuredEvents(); track event.id) {
         <a class="event-card" [routerLink]="['/program', event.id]">
@@ -86,7 +86,7 @@
       }
     </div>
     <div class="events-more">
-      <a mat-stroked-button routerLink="/program" class="btn-outline">Visa hela programmet</a>
+      <a mat-stroked-button routerLink="/program" class="btn-outline">{{ featuredViewAllLabel() }}</a>
     </div>
   </section>
 }

@@ -3,8 +3,9 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { AuthService, ContextDebugComponent, GlobalStatusBannerComponent, PageService, PublicPageMenuItemDto, SessionStateService } from 'shared';
+import { AuthService, ContextDebugComponent, GlobalStatusBannerComponent, SessionStateService } from 'shared';
 import { EditionService } from '../services/edition.service';
+import { HomeContentStateService } from '../services/home-content-state.service';
 
 @Component({
   selector: 'app-shell',
@@ -25,18 +26,11 @@ export class ShellComponent {
   readonly auth       = inject(AuthService);
   readonly sessionState = inject(SessionStateService);
   readonly editionSvc = inject(EditionService);
-  private readonly pageSvc = inject(PageService);
+  private readonly homeContentState = inject(HomeContentStateService);
   private readonly router = inject(Router);
 
   readonly menuOpen = signal(false);
-  readonly menuPages = signal<PublicPageMenuItemDto[]>([]);
-
-  constructor() {
-    this.pageSvc.listPublicMenuPages().subscribe({
-      next: pages => this.menuPages.set(pages),
-      error: () => this.menuPages.set([]),
-    });
-  }
+  readonly menuPages = this.homeContentState.menuPages;
 
   logout(): void {
     this.menuOpen.set(false);

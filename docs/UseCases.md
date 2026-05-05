@@ -3427,6 +3427,23 @@ Besökare (anonym eller inloggad)
 4. CTA-korten renderas med texter från `EditionContent` och visas baserat på registreringsstatus
 5. Utvalda evenemang visas i programsektionen
 
+## Implementationsspec (R-CMS04)
+- Public-appen ska använda en sammanhållen facade/store för startsidedata så att `EditionContent`, featured events och meny laddas i samma flöde.
+- Home- och shell-komponenterna ska konsumera samma state-källa för att undvika divergerande fallback-beteenden.
+- Delvisa fel ska degraderas mjukt:
+   - Misslyckad menyhämtning ger tom meny, men hero/CTA/events fortsätter renderas.
+   - Misslyckad `EditionContent`-hämtning ger fallback-texter utan blockerande fel.
+   - Misslyckad featured-hämtning ger befintlig fallback till automatiskt urval.
+- Följande `EditionContent`-nycklar ska finnas för startsidan (utöver befintliga):
+   - `hero.primaryActionLabel`
+   - `featured.sectionTitle`
+   - `featured.viewAllLabel`
+   - `cta.visitor.description`, `cta.organiser.description`, `cta.staff.description`
+   - `cta.visitor.openLabel`, `cta.organiser.openLabel`, `cta.staff.openLabel`
+   - `cta.visitor.closedLabel`, `cta.organiser.closedLabel`, `cta.staff.closedLabel`
+- Admin-vyn för edition content ska exponera alla nycklar ovan med maxlängd 500 tecken och tydlig hjälpttext.
+- Publik meny ska fortsatt prioritera edition-scope framför convention-scope vid slug-krock och därefter sortera på `MenuSortOrder ASC`, `Title ASC`.
+
 ## Affärsregler
 - Ingen autentisering krävs
 - Fallback-texter i klientkoden används om `EditionContent`-nycklar saknas
@@ -3437,8 +3454,13 @@ Besökare (anonym eller inloggad)
 ## Acceptanskriterier
 - [ ] Admin-konfigurerad hero-rubrik visas på startsidan
 - [ ] Fallback-rubrik visas om nyckeln saknas i databasen
-- [ ] CTA-kort för stängd registrering döljs korrekt oavsett textinställning
+- [ ] Hero primärknappstext kan styras från admin via `EditionContent`
+- [ ] CTA-beskrivningar, open-labels och closed-labels kan styras från admin via `EditionContent`
+- [ ] CTA-kort för stängd registrering visar korrekt closed-label oavsett textinställning
 - [ ] Utvalda evenemang visas; automatiskt urval används om inga är markerade
+- [ ] Menyresultat prioriterar aktiv upplagas slug före konventionsslug och sorteras `MenuSortOrder ASC`, `Title ASC`
+- [ ] Delvis API-fel i en datakälla blockerar inte rendering av övriga sektioner på startsidan
+- [ ] Frontendtester verifierar både CMS-värden och fallback för samtliga nya startsidenycklar
 
 ---
 

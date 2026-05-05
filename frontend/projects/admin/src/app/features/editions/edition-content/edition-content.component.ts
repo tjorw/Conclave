@@ -52,6 +52,12 @@ import { EditionContentService, EDITION_CONTENT_KEYS } from 'shared';
           <mat-hint>Kort text under rubriken.</mat-hint>
         </mat-form-field>
 
+        <mat-form-field appearance="outline">
+          <mat-label>Hero-knapptext</mat-label>
+          <input matInput formControlName="heroPrimaryActionLabel" maxlength="500" />
+          <mat-hint>Exempel: "Se programmet"</mat-hint>
+        </mat-form-field>
+
         <h2>Uppmaningsknappar</h2>
 
         <mat-form-field appearance="outline">
@@ -70,6 +76,65 @@ import { EditionContentService, EDITION_CONTENT_KEYS } from 'shared';
           <mat-label>Etikett – Funktionärsregistrering</mat-label>
           <input matInput formControlName="ctaStaffLabel" maxlength="500" />
           <mat-hint>Exempel: "Bli funktionär"</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Beskrivning – Besökarregistrering</mat-label>
+          <textarea matInput formControlName="ctaVisitorDescription" rows="2" maxlength="500"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Beskrivning – Arrangörsregistrering</mat-label>
+          <textarea matInput formControlName="ctaOrganiserDescription" rows="2" maxlength="500"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Beskrivning – Funktionärsregistrering</mat-label>
+          <textarea matInput formControlName="ctaStaffDescription" rows="2" maxlength="500"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Knapptext (öppen) – Besökarregistrering</mat-label>
+          <input matInput formControlName="ctaVisitorOpenLabel" maxlength="500" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Knapptext (öppen) – Arrangörsregistrering</mat-label>
+          <input matInput formControlName="ctaOrganiserOpenLabel" maxlength="500" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Knapptext (öppen) – Funktionärsregistrering</mat-label>
+          <input matInput formControlName="ctaStaffOpenLabel" maxlength="500" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Statusetikett (stängd) – Besökarregistrering</mat-label>
+          <input matInput formControlName="ctaVisitorClosedLabel" maxlength="500" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Statusetikett (stängd) – Arrangörsregistrering</mat-label>
+          <input matInput formControlName="ctaOrganiserClosedLabel" maxlength="500" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Statusetikett (stängd) – Funktionärsregistrering</mat-label>
+          <input matInput formControlName="ctaStaffClosedLabel" maxlength="500" />
+        </mat-form-field>
+
+        <h2>Utvalda evenemang</h2>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Sektionsrubrik</mat-label>
+          <input matInput formControlName="featuredSectionTitle" maxlength="500" />
+          <mat-hint>Exempel: "Utvalda evenemang"</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Knapptext – visa hela programmet</mat-label>
+          <input matInput formControlName="featuredViewAllLabel" maxlength="500" />
+          <mat-hint>Exempel: "Visa hela programmet"</mat-hint>
         </mat-form-field>
 
         @if (saved()) {
@@ -113,9 +178,21 @@ export class EditionContentComponent implements OnInit {
   readonly form = this.fb.group({
     heroTitle:         ['', Validators.maxLength(500)],
     heroIngress:       ['', Validators.maxLength(500)],
+    heroPrimaryActionLabel: ['', Validators.maxLength(500)],
     ctaVisitorLabel:   ['', Validators.maxLength(500)],
     ctaOrganiserLabel: ['', Validators.maxLength(500)],
     ctaStaffLabel:     ['', Validators.maxLength(500)],
+    ctaVisitorDescription: ['', Validators.maxLength(500)],
+    ctaOrganiserDescription: ['', Validators.maxLength(500)],
+    ctaStaffDescription: ['', Validators.maxLength(500)],
+    ctaVisitorOpenLabel: ['', Validators.maxLength(500)],
+    ctaOrganiserOpenLabel: ['', Validators.maxLength(500)],
+    ctaStaffOpenLabel: ['', Validators.maxLength(500)],
+    ctaVisitorClosedLabel: ['', Validators.maxLength(500)],
+    ctaOrganiserClosedLabel: ['', Validators.maxLength(500)],
+    ctaStaffClosedLabel: ['', Validators.maxLength(500)],
+    featuredSectionTitle: ['', Validators.maxLength(500)],
+    featuredViewAllLabel: ['', Validators.maxLength(500)],
   });
 
   ngOnInit(): void {
@@ -135,9 +212,21 @@ export class EditionContentComponent implements OnInit {
     const items = [
       { key: EDITION_CONTENT_KEYS.heroTitle,         value: v.heroTitle ?? '' },
       { key: EDITION_CONTENT_KEYS.heroIngress,       value: v.heroIngress ?? '' },
+      { key: EDITION_CONTENT_KEYS.heroPrimaryActionLabel, value: v.heroPrimaryActionLabel ?? '' },
       { key: EDITION_CONTENT_KEYS.ctaVisitorLabel,   value: v.ctaVisitorLabel ?? '' },
       { key: EDITION_CONTENT_KEYS.ctaOrganiserLabel, value: v.ctaOrganiserLabel ?? '' },
       { key: EDITION_CONTENT_KEYS.ctaStaffLabel,     value: v.ctaStaffLabel ?? '' },
+      { key: EDITION_CONTENT_KEYS.ctaVisitorDescription, value: v.ctaVisitorDescription ?? '' },
+      { key: EDITION_CONTENT_KEYS.ctaOrganiserDescription, value: v.ctaOrganiserDescription ?? '' },
+      { key: EDITION_CONTENT_KEYS.ctaStaffDescription, value: v.ctaStaffDescription ?? '' },
+      { key: EDITION_CONTENT_KEYS.ctaVisitorOpenLabel, value: v.ctaVisitorOpenLabel ?? '' },
+      { key: EDITION_CONTENT_KEYS.ctaOrganiserOpenLabel, value: v.ctaOrganiserOpenLabel ?? '' },
+      { key: EDITION_CONTENT_KEYS.ctaStaffOpenLabel, value: v.ctaStaffOpenLabel ?? '' },
+      { key: EDITION_CONTENT_KEYS.ctaVisitorClosedLabel, value: v.ctaVisitorClosedLabel ?? '' },
+      { key: EDITION_CONTENT_KEYS.ctaOrganiserClosedLabel, value: v.ctaOrganiserClosedLabel ?? '' },
+      { key: EDITION_CONTENT_KEYS.ctaStaffClosedLabel, value: v.ctaStaffClosedLabel ?? '' },
+      { key: EDITION_CONTENT_KEYS.featuredSectionTitle, value: v.featuredSectionTitle ?? '' },
+      { key: EDITION_CONTENT_KEYS.featuredViewAllLabel, value: v.featuredViewAllLabel ?? '' },
     ];
 
     this.contentSvc.setContent(this.editionId, items).subscribe({
@@ -154,9 +243,21 @@ export class EditionContentComponent implements OnInit {
         this.form.patchValue({
           heroTitle:         byKey[EDITION_CONTENT_KEYS.heroTitle]         ?? '',
           heroIngress:       byKey[EDITION_CONTENT_KEYS.heroIngress]       ?? '',
+          heroPrimaryActionLabel: byKey[EDITION_CONTENT_KEYS.heroPrimaryActionLabel] ?? '',
           ctaVisitorLabel:   byKey[EDITION_CONTENT_KEYS.ctaVisitorLabel]   ?? '',
           ctaOrganiserLabel: byKey[EDITION_CONTENT_KEYS.ctaOrganiserLabel] ?? '',
           ctaStaffLabel:     byKey[EDITION_CONTENT_KEYS.ctaStaffLabel]     ?? '',
+          ctaVisitorDescription: byKey[EDITION_CONTENT_KEYS.ctaVisitorDescription] ?? '',
+          ctaOrganiserDescription: byKey[EDITION_CONTENT_KEYS.ctaOrganiserDescription] ?? '',
+          ctaStaffDescription: byKey[EDITION_CONTENT_KEYS.ctaStaffDescription] ?? '',
+          ctaVisitorOpenLabel: byKey[EDITION_CONTENT_KEYS.ctaVisitorOpenLabel] ?? '',
+          ctaOrganiserOpenLabel: byKey[EDITION_CONTENT_KEYS.ctaOrganiserOpenLabel] ?? '',
+          ctaStaffOpenLabel: byKey[EDITION_CONTENT_KEYS.ctaStaffOpenLabel] ?? '',
+          ctaVisitorClosedLabel: byKey[EDITION_CONTENT_KEYS.ctaVisitorClosedLabel] ?? '',
+          ctaOrganiserClosedLabel: byKey[EDITION_CONTENT_KEYS.ctaOrganiserClosedLabel] ?? '',
+          ctaStaffClosedLabel: byKey[EDITION_CONTENT_KEYS.ctaStaffClosedLabel] ?? '',
+          featuredSectionTitle: byKey[EDITION_CONTENT_KEYS.featuredSectionTitle] ?? '',
+          featuredViewAllLabel: byKey[EDITION_CONTENT_KEYS.featuredViewAllLabel] ?? '',
         });
         this.loading.set(false);
       },
