@@ -15,9 +15,10 @@ public sealed class PageRepository(ConventionDbContext db) : IPageRepository
     public Task<Page?> GetByIdAsync(PageId id, CancellationToken ct = default)
         => db.Pages.FirstOrDefaultAsync(p => p.Id == id, ct);
 
-    public async Task<IReadOnlyList<PageSummaryDto>> ListAsync(ConventionId conventionId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<PageSummaryDto>> ListAsync(ConventionId conventionId, EditionId? editionId, CancellationToken ct = default)
         => await db.Pages
             .Where(p => p.ConventionId == conventionId)
+            .Where(p => p.EditionId == editionId)
             .OrderBy(p => p.Title)
             .Select(p => new PageSummaryDto(
                 p.Id.Value,

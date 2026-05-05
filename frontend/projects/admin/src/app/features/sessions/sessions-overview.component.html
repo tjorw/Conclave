@@ -131,7 +131,9 @@
               @for (session of sortedFilteredSessions(); track session.sessionId) {
                 <tr>
                   <td>
-                    <a [routerLink]="['/events', session.eventId]">{{ session.eventTitle }}</a>
+                    <a [routerLink]="editionContext.activeEdition()
+                      ? ['/editions', editionContext.activeEdition()!.id, 'events', session.eventId]
+                      : ['/dashboard']">{{ session.eventTitle }}</a>
                   </td>
                   <td>{{ session.start | date:'yyyy-MM-dd HH:mm' }}</td>
                   <td>{{ session.end | date:'HH:mm' }}</td>

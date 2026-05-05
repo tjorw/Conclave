@@ -125,26 +125,36 @@ export class ShellComponent implements OnInit {
   private navigateForEditionChange(editionId: string): void {
     const path = this.router.url.split('?')[0].split('#')[0];
 
-    const editionRoute = /^\/editions\/[^/]+(?:\/([^/]+))?/.exec(path);
-    if (editionRoute) {
-      const section = editionRoute[1];
-      const target = section ? ['/editions', editionId, section] : ['/editions', editionId];
-      void this.router.navigate(target);
+    const editionSegments = /^\/editions\/[^/]+(?:\/(.+))?$/.exec(path);
+    if (editionSegments) {
+      const rest = editionSegments[1]?.split('/').filter(Boolean) ?? [];
+      void this.router.navigate(['/editions', editionId, ...this.listRouteForEditionChange(rest)]);
       return;
     }
 
-    if (/^\/staff-areas\/[^/]+/.test(path)) {
-      void this.router.navigate(['/staff-areas']);
-      return;
+  }
+
+  private listRouteForEditionChange(segments: string[]): string[] {
+    if (segments.length === 0) return [];
+
+    const [section, subSection] = segments;
+
+    if (['events', 'pages', 'venues', 'categories', 'tags', 'ticket-types'].includes(section)) {
+      return [section];
     }
 
-    if (/^\/(?:persons\/staff|staff-applications)\/[^/]+/.test(path)) {
-      void this.router.navigate(['/persons/staff']);
-      return;
+    if (section === 'persons' && subSection) {
+      return ['persons', subSection];
     }
 
-    if (/^\/events\/[^/]+/.test(path)) {
-      void this.router.navigate(['/events']);
+    if (section === 'registrations' && subSection) {
+      return ['registrations', subSection];
     }
+
+    if (section === 'staffing' && subSection) {
+      return ['staffing', subSection];
+    }
+
+    return [section];
   }
 }

@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -29,6 +30,7 @@ type SortKey = 'name' | 'email' | 'addedAt';
 })
 export class EditionReceptionStaffComponent {
   private readonly svc    = inject(ConventionService);
+  private readonly route  = inject(ActivatedRoute);
   readonly editionContext = inject(EditionContextService);
 
   readonly ACTION      = ACTION;
@@ -40,6 +42,7 @@ export class EditionReceptionStaffComponent {
   readonly error       = signal<string | null>(null);
   readonly searchQuery = signal('');
   readonly sort        = createSortController<SortKey>({ key: 'name', direction: 'asc' });
+  readonly routeEditionId = this.route.snapshot.paramMap.get('id');
 
   // ── Lägg till ────────────────────────────────────────────────────────────
   readonly persons       = signal<PersonDto[]>([]);
@@ -69,6 +72,10 @@ export class EditionReceptionStaffComponent {
   readonly confirmPersonId  = signal<string | null>(null);
 
   constructor() {
+    if (this.routeEditionId) {
+      this.editionContext.setActive(this.routeEditionId);
+    }
+
     effect(() => {
       const edition = this.editionContext.activeEdition();
       if (edition) {

@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -96,6 +96,7 @@ export class StaffAreasComponent {
   private readonly staffSvc = inject(StaffService);
   private readonly conventionSvc = inject(ConventionService);
   private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   readonly editionCtx = inject(EditionContextService);
 
@@ -115,6 +116,7 @@ export class StaffAreasComponent {
   readonly staffingFilter = signal<string>('all');
   readonly viewMode = signal<ViewMode>('timeline');
   readonly selectedShiftId = signal<string | null>(null);
+  readonly routeEditionId = this.route.snapshot.paramMap.get('id');
   readonly selectedShiftDetail = signal<ShiftDto | null>(null);
   readonly selectedShiftDetailView = signal<SelectedShiftDetailView>('assignments');
   readonly shiftLoading = signal(false);
@@ -145,6 +147,10 @@ export class StaffAreasComponent {
   });
 
   constructor() {
+    if (this.routeEditionId) {
+      this.editionCtx.setActive(this.routeEditionId);
+    }
+
     effect(() => {
       const summary = this.editionCtx.activeEdition();
       if (!summary) {
@@ -620,7 +626,9 @@ export class StaffAreasComponent {
   }
 
   navigateToArea(areaId: string): void {
-    this.router.navigate(['/staff-areas', areaId]);
+    const editionId = this.editionCtx.activeEdition()?.id;
+    if (!editionId) return;
+    this.router.navigate(['/editions', editionId, 'staffing', 'function-areas', areaId]);
   }
 
   submitEditShift(): void {

@@ -5,7 +5,7 @@
 } @else if (event(); as e) {
 
   <div class="page-header">
-    <a routerLink="/events" class="back-link">
+    <a [routerLink]="listLink()" class="back-link">
       <mat-icon>arrow_back</mat-icon> {{ PAGE.backLink }}
     </a>
     <div class="title-row">

@@ -59,6 +59,7 @@ export class StaffAreaDetailComponent {
   readonly error     = signal<string | null>(null);
 
   readonly areaId = signal<string>('');
+  readonly routeEditionId = this.route.snapshot.paramMap.get('id');
   readonly edition = signal<EditionDto | null>(null);
 
   readonly shiftsByStation = signal<Record<string, ShiftSummaryDto[]>>({});
@@ -93,6 +94,10 @@ export class StaffAreaDetailComponent {
   });
 
   constructor() {
+    if (this.routeEditionId) {
+      this.editionCtx.setActive(this.routeEditionId);
+    }
+
     const id = this.route.snapshot.paramMap.get('areaId') ?? '';
     this.areaId.set(id);
 

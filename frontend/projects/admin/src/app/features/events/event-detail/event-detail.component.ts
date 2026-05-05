@@ -33,6 +33,7 @@ import { EVENT_DETAIL } from '../../../labels/pages.labels';
 import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
 import { createSortController, sortBy } from '../../../shared/sort-utils';
 import { HelpTooltipComponent } from '../../../../help/components/help-tooltip/help-tooltip.component';
+import { EditionContextService } from '../../../services/edition-context.service';
 
 type EventSessionSortKey = 'start' | 'end' | 'venue' | 'seats' | 'startType' | 'status';
 
@@ -73,6 +74,7 @@ export class EventDetailComponent implements OnInit {
   private readonly fb         = inject(FormBuilder);
   private readonly dialog      = inject(MatDialog);
   private readonly confirmSvc  = inject(ConfirmDialogService);
+  private readonly editionContext = inject(EditionContextService);
 
   readonly ACTION        = ACTION;
   readonly TOOLTIP       = TOOLTIP;
@@ -80,6 +82,7 @@ export class EventDetailComponent implements OnInit {
   readonly PAGE          = EVENT_DETAIL;
   readonly registrationTypes = (Object.entries(REGISTRATION_KIND_LABEL) as [string, string][]).map(([value, label]) => ({ value, label }));
   readonly startTypes        = (Object.entries(START_TYPE_LABEL) as [string, string][]).map(([value, label]) => ({ value, label }));
+  readonly routeEditionId = this.route.snapshot.paramMap.get('id');
 
   readonly event      = signal<EventDto | null>(null);
   readonly edition    = signal<EditionDto | null>(null);
@@ -125,6 +128,10 @@ export class EventDetailComponent implements OnInit {
   readonly availableProgramTags = computed(() =>
     this.edition()?.programTagDefinitions?.map(t => t.name) ?? []
   );
+  readonly listLink = computed(() => {
+    const editionId = this.routeEditionId ?? this.event()?.editionId ?? null;
+    return editionId ? ['/editions', editionId, 'events'] : ['/dashboard'];
+  });
 
   readonly limitForm = this.fb.group({
     limit: [0, [Validators.required, Validators.min(0)]],
@@ -163,6 +170,10 @@ export class EventDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    if (this.routeEditionId) {
+      this.editionContext.setActive(this.routeEditionId);
+    }
+
     const id = this.route.snapshot.paramMap.get('eventId')!;
     this.svc.getEvent(id).subscribe({
       next: e => {
@@ -281,7 +292,7 @@ export class EventDetailComponent implements OnInit {
       if (!confirmed) return;
       this.deleting.set(true);
       this.svc.deleteEvent(ev.id).subscribe({
-        next: () => this.router.navigate(['/events']),
+        next: () => this.router.navigate(this.listLink()),
         error: err => { this.deleting.set(false); this.error.set(toErrorMessage(err, ERROR.deleteEvent)); },
       });
     });

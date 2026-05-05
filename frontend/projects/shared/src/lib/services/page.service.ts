@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 import { ENVIRONMENT } from '../environment/environment.token';
 import { PageDto, PageSummaryDto, PublicPageDto, PublicPageMenuItemDto, SavePageRequest } from '../models/content.models';
@@ -11,6 +11,15 @@ export class PageService {
 
   listPages() {
     return this.http.get<PageSummaryDto[]>(`${this.env.apiBaseUrl}/api/pages`);
+  }
+
+  listConventionPages() {
+    return this.listPages();
+  }
+
+  listEditionPages(editionId: string) {
+    const params = new HttpParams().set('editionId', editionId);
+    return this.http.get<PageSummaryDto[]>(`${this.env.apiBaseUrl}/api/pages`, { params });
   }
 
   getPage(pageId: string) {
@@ -27,6 +36,14 @@ export class PageService {
 
   createPage(request: SavePageRequest) {
     return this.http.post<{ id: string }>(`${this.env.apiBaseUrl}/api/pages`, request);
+  }
+
+  createConventionPage(request: Omit<SavePageRequest, 'editionId'>) {
+    return this.createPage({ ...request, editionId: null });
+  }
+
+  createEditionPage(editionId: string, request: Omit<SavePageRequest, 'editionId'>) {
+    return this.createPage({ ...request, editionId });
   }
 
   updatePage(pageId: string, request: SavePageRequest) {

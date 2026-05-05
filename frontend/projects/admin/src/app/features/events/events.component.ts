@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -53,6 +53,7 @@ type EventSortKey = 'title' | 'category' | 'organiser' | 'featured' | 'sessions'
 export class EventsComponent {
   private readonly eventSvc    = inject(EventService);
   private readonly conventionSvc = inject(ConventionService);
+  private readonly route       = inject(ActivatedRoute);
   private readonly router      = inject(Router);
   private readonly fb          = inject(FormBuilder);
   readonly editionContext      = inject(EditionContextService);
@@ -71,6 +72,7 @@ export class EventsComponent {
   readonly filter     = signal<string>('UnderReview');
   readonly showCreateForm = signal(false);
   readonly sort = createSortController<EventSortKey>({ key: 'title', direction: 'asc' });
+  readonly routeEditionId = this.route.snapshot.paramMap.get('id');
 
   readonly createForm = this.fb.group({
     categoryId:       ['', Validators.required],
@@ -111,6 +113,10 @@ export class EventsComponent {
   });
 
   constructor() {
+    if (this.routeEditionId) {
+      this.editionContext.setActive(this.routeEditionId);
+    }
+
     effect(() => {
       const edition = this.editionContext.activeEdition();
       if (edition) {
@@ -157,7 +163,7 @@ export class EventsComponent {
         this.createForm.reset();
         this.showCreateForm.set(false);
         this.loadEvents(edition.id);
-        this.router.navigate(['/events', id]);
+        this.router.navigate(this.eventDetailLink(id, edition.id));
       },
       error: err => {
         this.saving.set(false);
@@ -183,7 +189,7 @@ export class EventsComponent {
   }
 
   openEvent(id: string): void {
-    this.router.navigate(['/events', id]);
+    this.router.navigate(this.eventDetailLink(id));
   }
 
   toggleFeatured(event: EventSummaryDto, checked: boolean): void {
@@ -232,5 +238,9 @@ export class EventsComponent {
 
   statusChipClass(status: string): string {
     return EVENT_STATUS_CHIP[status] ?? 'chip-grey';
+  }
+
+  private eventDetailLink(eventId: string, editionId = this.editionContext.activeEdition()?.id): string[] {
+    return editionId ? ['/editions', editionId, 'events', eventId] : ['/dashboard'];
   }
 }

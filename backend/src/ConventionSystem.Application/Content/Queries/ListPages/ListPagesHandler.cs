@@ -2,6 +2,7 @@ using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Authorization;
 using ConventionSystem.Application.Content.Abstractions;
 using ConventionSystem.Application.Convention.Abstractions;
+using ConventionSystem.Domain.Convention.Ids;
 
 namespace ConventionSystem.Application.Content.Queries.ListPages;
 
@@ -20,6 +21,8 @@ public sealed class ListPagesHandler(
             currentUser.PersonId,
             "Endast administratörer kan visa informationssidor.");
 
-        return await pageRepository.ListAsync(convention.Id, ct);
+        var editionId = query.EditionId.HasValue ? new EditionId(query.EditionId.Value) : (EditionId?)null;
+
+        return await pageRepository.ListAsync(convention.Id, editionId, ct);
     }
 }

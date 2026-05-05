@@ -98,6 +98,16 @@ export const routes: Routes = [
           import('./features/editions/edition-content/edition-content.component').then(m => m.EditionContentComponent),
       },
       {
+        path: 'editions/:id/pages',
+        loadComponent: () =>
+          import('./features/pages/pages.component').then(m => m.PagesComponent),
+      },
+      {
+        path: 'editions/:id/pages/:pageId',
+        loadComponent: () =>
+          import('./features/pages/page-detail.component').then(m => m.PageDetailComponent),
+      },
+      {
         path: 'editions/:id/export',
         loadComponent: () =>
           import('./features/editions/export/edition-export.component').then(m => m.EditionExportComponent),
@@ -107,6 +117,73 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/editions/ticket-types/ticket-type-detail/ticket-type-detail.component').then(m => m.TicketTypeDetailComponent),
       },
+      {
+        path: 'editions/:id/events',
+        loadComponent: () =>
+          import('./features/events/events.component').then(m => m.EventsComponent),
+      },
+      {
+        path: 'editions/:id/events/:eventId',
+        loadComponent: () =>
+          import('./features/events/event-detail/event-detail.component').then(m => m.EventDetailComponent),
+      },
+      {
+        path: 'editions/:id/sessions',
+        loadComponent: () =>
+          import('./features/sessions/sessions-overview.component').then(m => m.SessionsOverviewComponent),
+      },
+      {
+        path: 'editions/:id/persons/visitors',
+        loadComponent: () =>
+          import('./features/persons/edition-visitors.component').then(m => m.EditionVisitorsComponent),
+      },
+      {
+        path: 'editions/:id/persons/organisers',
+        loadComponent: () =>
+          import('./features/persons/edition-organisers.component').then(m => m.EditionOrganisersComponent),
+      },
+      {
+        path: 'editions/:id/persons/staff',
+        loadComponent: () =>
+          import('./features/persons/edition-staff.component').then(m => m.EditionStaffComponent),
+      },
+      {
+        path: 'editions/:id/persons/staff/:applicationId',
+        loadComponent: () =>
+          import('./features/staffing/staff-application-detail/staff-application-detail.component').then(m => m.StaffApplicationDetailComponent),
+      },
+      {
+        path: 'editions/:id/persons/reception-staff',
+        loadComponent: () =>
+          import('./features/persons/edition-reception-staff.component').then(m => m.EditionReceptionStaffComponent),
+      },
+      {
+        path: 'editions/:id/registrations/visitors',
+        loadComponent: () =>
+          import('./features/registrations/registrations.component').then(m => m.RegistrationsComponent),
+        data: { page: 'visitors' },
+      },
+      {
+        path: 'editions/:id/registrations/promotion-codes',
+        loadComponent: () =>
+          import('./features/registrations/registrations.component').then(m => m.RegistrationsComponent),
+        data: { page: 'promotion-codes' },
+      },
+      {
+        path: 'editions/:id/staffing/function-areas',
+        loadComponent: () =>
+          import('./features/staffing/staff-function-areas.component').then(m => m.StaffFunctionAreasComponent),
+      },
+      {
+        path: 'editions/:id/staffing/function-areas/:areaId',
+        loadComponent: () =>
+          import('./features/staffing/staff-area-detail/staff-area-detail.component').then(m => m.StaffAreaDetailComponent),
+      },
+      {
+        path: 'editions/:id/staffing/schedule',
+        loadComponent: () =>
+          import('./features/staffing/staff-areas.component').then(m => m.StaffAreasComponent),
+      },
 
       // ── Personer ─────────────────────────────────────────────────────────────
       {
@@ -115,96 +192,18 @@ export const routes: Routes = [
           import('./features/persons/persons.component').then(m => m.PersonsComponent),
       },
       {
-        path: 'persons/visitors',
-        loadComponent: () =>
-          import('./features/persons/edition-visitors.component').then(m => m.EditionVisitorsComponent),
-      },
-      {
-        path: 'persons/organisers',
-        loadComponent: () =>
-          import('./features/persons/edition-organisers.component').then(m => m.EditionOrganisersComponent),
-      },
-      {
-        path: 'persons/staff',
-        loadComponent: () =>
-          import('./features/persons/edition-staff.component').then(m => m.EditionStaffComponent),
-      },
-      {
-        path: 'persons/staff/:applicationId',
-        loadComponent: () =>
-          import('./features/staffing/staff-application-detail/staff-application-detail.component').then(m => m.StaffApplicationDetailComponent),
-      },
-      {
-        path: 'persons/reception-staff',
-        loadComponent: () =>
-          import('./features/persons/edition-reception-staff.component').then(m => m.EditionReceptionStaffComponent),
-      },
-      {
         path: 'persons/:personId',
         loadComponent: () =>
           import('./features/persons/person-detail/person-detail.component').then(m => m.PersonDetailComponent),
       },
 
       // ── Evenemang ────────────────────────────────────────────────────────────
-      {
-        path: 'events',
-        loadComponent: () =>
-          import('./features/events/events.component').then(m => m.EventsComponent),
-      },
-      {
-        path: 'events/:eventId',
-        loadComponent: () =>
-          import('./features/events/event-detail/event-detail.component').then(m => m.EventDetailComponent),
-      },
 
       // ── Schema ───────────────────────────────────────────────────────────────
-      {
-        path: 'sessions',
-        loadComponent: () =>
-          import('./features/sessions/sessions-overview.component').then(m => m.SessionsOverviewComponent),
-      },
 
       // ── Bemanning ────────────────────────────────────────────────────────────
-      {
-        path: 'staff-areas',
-        loadComponent: () =>
-          import('./features/staffing/staff-function-areas.component').then(m => m.StaffFunctionAreasComponent),
-      },
-      {
-        path: 'staffing-schedule',
-        loadComponent: () =>
-          import('./features/staffing/staff-areas.component').then(m => m.StaffAreasComponent),
-      },
-      {
-        path: 'staff-areas/:areaId',
-        loadComponent: () =>
-          import('./features/staffing/staff-area-detail/staff-area-detail.component').then(m => m.StaffAreaDetailComponent),
-      },
-      {
-        path: 'staff-applications',
-        redirectTo: 'persons/staff',
-        pathMatch: 'full',
-      },
-      {
-        path: 'staff-applications/:applicationId',
-        loadComponent: () =>
-          import('./features/staffing/staff-application-detail/staff-application-detail.component').then(m => m.StaffApplicationDetailComponent),
-      },
 
       // ── Besökare ─────────────────────────────────────────────────────────────
-      { path: 'registrations', redirectTo: 'registrations/visitors', pathMatch: 'full' },
-      {
-        path: 'registrations/visitors',
-        loadComponent: () =>
-          import('./features/registrations/registrations.component').then(m => m.RegistrationsComponent),
-        data: { page: 'visitors' },
-      },
-      {
-        path: 'registrations/promotion-codes',
-        loadComponent: () =>
-          import('./features/registrations/registrations.component').then(m => m.RegistrationsComponent),
-        data: { page: 'promotion-codes' },
-      },
 
       // ── Feeds ────────────────────────────────────────────────────────────────
       {

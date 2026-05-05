@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Observable, forkJoin, of, switchMap } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -63,6 +63,7 @@ type SessionSortKey = 'event' | 'start' | 'end' | 'venue' | 'seats' | 'startType
 export class SessionsOverviewComponent {
   private readonly eventSvc = inject(EventService);
   private readonly conventionSvc = inject(ConventionService);
+  private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
   private readonly confirmSvc = inject(ConfirmDialogService);
 
@@ -80,6 +81,7 @@ export class SessionsOverviewComponent {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly editingSessionId = signal<string | null>(null);
+  readonly routeEditionId = this.route.snapshot.paramMap.get('id');
 
   readonly day = signal<string | null>(null);
   readonly schedulePerspective = signal<'venue' | 'event'>('venue');
@@ -242,6 +244,10 @@ export class SessionsOverviewComponent {
   });
 
   constructor() {
+    if (this.routeEditionId) {
+      this.editionContext.setActive(this.routeEditionId);
+    }
+
     effect(() => {
       const activeEdition = this.editionContext.activeEdition();
       if (!activeEdition) return;

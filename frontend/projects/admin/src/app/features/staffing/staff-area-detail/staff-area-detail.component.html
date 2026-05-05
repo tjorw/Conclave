@@ -1,6 +1,8 @@
 <!-- Tillbaka-länk -->
 <div class="page-header">
-  <a routerLink="/staff-areas" class="back-link">
+  <a [routerLink]="editionCtx.activeEdition()
+    ? ['/editions', editionCtx.activeEdition()!.id, 'staffing', 'function-areas']
+    : ['/dashboard']" class="back-link">
     <mat-icon>arrow_back</mat-icon> Funktionsområden
   </a>
   @if (area) {

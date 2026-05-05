@@ -55,6 +55,7 @@ export class RegistrationsComponent {
   private readonly svc = inject(RegistrationService);
   private readonly route = inject(ActivatedRoute);
   readonly editionCtx = inject(EditionContextService);
+  readonly routeEditionId = this.route.snapshot.paramMap.get('id');
 
   readonly page = toSignal(
     this.route.data.pipe(map(data => (data['page'] as RegistrationPage | undefined) ?? 'visitors')),
@@ -128,6 +129,10 @@ export class RegistrationsComponent {
   );
 
   constructor() {
+    if (this.routeEditionId) {
+      this.editionCtx.setActive(this.routeEditionId);
+    }
+
     effect(() => {
       const edition = this.editionCtx.activeEdition();
       if (edition) this.load(edition.id);

@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -54,6 +54,7 @@ export class EditionStaffComponent {
   private readonly staffSvc = inject(StaffService);
   private readonly regSvc = inject(RegistrationService);
   private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   readonly editionContext = inject(EditionContextService);
 
@@ -73,6 +74,7 @@ export class EditionStaffComponent {
   readonly error = signal<string | null>(null);
   readonly searchQuery = signal('');
   readonly applicationSort = createSortController<StaffApplicationSortKey>({ key: 'created', direction: 'desc' });
+  readonly routeEditionId = this.route.snapshot.paramMap.get('id');
 
   readonly persons = signal<PersonDto[]>([]);
   readonly personsLoaded = signal(false);
@@ -135,6 +137,10 @@ export class EditionStaffComponent {
   readonly hasStaffTicketTypes = computed(() => this.staffTicketTypes().length > 0);
 
   constructor() {
+    if (this.routeEditionId) {
+      this.editionContext.setActive(this.routeEditionId);
+    }
+
     effect(() => {
       const edition = this.editionContext.activeEdition();
       if (edition) {
@@ -302,7 +308,10 @@ export class EditionStaffComponent {
   }
 
   openApplicationDetail(applicationId: string): void {
-    void this.router.navigate(['/persons/staff', applicationId]);
+    const editionId = this.editionContext.activeEdition()?.id;
+    void this.router.navigate(editionId
+      ? ['/editions', editionId, 'persons', 'staff', applicationId]
+      : ['/dashboard']);
   }
 
   acceptApplication(app: StaffApplicationSummaryDto, event?: Event): void {

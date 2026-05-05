@@ -95,6 +95,44 @@ public sealed class PageEndpointsTests(ConventionSystemFactory factory) : Integr
         Assert.Equal("Sluggen finns redan i valt scope.", body.GetProperty("detail").GetString());
     }
 
+    [Fact]
+    public async Task ListPages_FiltersByExactScope()
+    {
+        var editionId = await CreateActiveEditionAsync();
+        var token = await LoginAsync(AdminEmail, AdminPassword);
+        var client = CreateClient(token);
+
+        (await client.PostAsJsonAsync("/api/pages", new
+        {
+            slug = "scope-convention",
+            title = "Konventionssida",
+            content = "Konvention",
+            editionId = (Guid?)null
+        })).EnsureSuccessStatusCode();
+
+        (await client.PostAsJsonAsync("/api/pages", new
+        {
+            slug = "scope-edition",
+            title = "Upplagesida",
+            content = "Upplaga",
+            editionId
+        })).EnsureSuccessStatusCode();
+
+        var conventionResponse = await client.GetAsync("/api/pages");
+        var editionResponse = await client.GetAsync($"/api/pages?editionId={editionId}");
+
+        conventionResponse.EnsureSuccessStatusCode();
+        editionResponse.EnsureSuccessStatusCode();
+
+        var conventionPages = await conventionResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var editionPages = await editionResponse.Content.ReadFromJsonAsync<JsonElement>();
+
+        Assert.Contains(conventionPages.EnumerateArray(), p => p.GetProperty("slug").GetString() == "scope-convention");
+        Assert.DoesNotContain(conventionPages.EnumerateArray(), p => p.GetProperty("slug").GetString() == "scope-edition");
+        Assert.Contains(editionPages.EnumerateArray(), p => p.GetProperty("slug").GetString() == "scope-edition");
+        Assert.DoesNotContain(editionPages.EnumerateArray(), p => p.GetProperty("slug").GetString() == "scope-convention");
+    }
+
     private async Task<Guid> CreateActiveEditionAsync()
     {
         await using var scope = Factory.Services.CreateAsyncScope();

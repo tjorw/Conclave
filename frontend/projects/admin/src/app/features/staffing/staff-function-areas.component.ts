@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -19,6 +19,7 @@ type SortKey = 'name' | 'description' | 'responsible' | 'stations';
 })
 export class StaffFunctionAreasComponent {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly conventionSvc = inject(ConventionService);
   readonly editionCtx = inject(EditionContextService);
 
@@ -27,8 +28,13 @@ export class StaffFunctionAreasComponent {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly sort = createSortController<SortKey>({ key: 'name', direction: 'asc' });
+  readonly routeEditionId = this.route.snapshot.paramMap.get('id');
 
   constructor() {
+    if (this.routeEditionId) {
+      this.editionCtx.setActive(this.routeEditionId);
+    }
+
     effect(() => {
       const active = this.editionCtx.activeEdition();
       if (!active) {
@@ -78,6 +84,8 @@ export class StaffFunctionAreasComponent {
 
 
   openDetail(areaId: string): void {
-    void this.router.navigate(['/staff-areas', areaId]);
+    const editionId = this.editionCtx.activeEdition()?.id;
+    if (!editionId) return;
+    void this.router.navigate(['/editions', editionId, 'staffing', 'function-areas', areaId]);
   }
 }

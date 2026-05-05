@@ -57,6 +57,30 @@ Implementationsordning: R-CMS01 → R-CMS02 → R-CMS03 → R-CMS04
 - [ ] `R-CMS03` `Page.MenuSortOrder` – admin styr ordningen på menysidor; publik navigation sorterar stigande på ordningstalet (UC-CMS003)
 - [ ] `R-CMS04` Publik startsida konsumerar `EditionContent`, utvalda evenemang och sorterad meny i ett sammanhängande flöde; inga hårdkodade texter i klientkoden (UC-CMS004)
 
+#### Adminscope och pages
+
+Adminytan ska skilja på konventionsnivå och upplagenivå. En vy på konventionsnivå får inte bero på vald upplaga i topbaren. En vy på upplagenivå ska alltid ligga under vald upplaga i navigationen och routas med `editions/:id/...`.
+
+**Konventionsnivå**
+- Dashboard och upplageöversikt.
+- Personregister när listan avser hela konventets personbas.
+- Feeds, om feeden inte har upplagebunden data.
+- Informationssidor med `Page.EditionId == null`, routade som `/pages`.
+
+**Upplagenivå**
+- Grunduppgifter, livscykel, lokaler, kategorier, programtaggar, biljettyper, innehållsinställningar och export.
+- Arrangörer, evenemang, schemaläggning, besökare, funktionärer, reception, biljetter, kampanjkoder och funktioneringsschema.
+- Informationssidor med `Page.EditionId == :id`, routade som `/editions/:id/pages`.
+
+**Implementationssteg**
+1. `R-RC03.1` Dela admin-pages i två listvyer: `/pages` listar bara konventionssidor och `/editions/:id/pages` listar bara sidor för vald upplaga.
+2. `R-RC03.2` Gör page-detaljvyn scope-styrd av route. Ta bort fri scope-väljare i formuläret. `/pages/new` skapar `editionId: null`; `/editions/:id/pages/new` skapar `editionId: :id`.
+3. `R-RC03.3` Utöka `ListPagesQuery` och `IPageRepository.ListAsync` med exakt scope-filter (`editionId == null` eller `editionId == :id`). Slug-unikhet fortsätter gälla per scope.
+4. `R-RC03.4` Lägg till frontend-validering i detaljvyn: en konventionsroute får bara visa sidor utan `editionId`; en editionroute får bara visa sidor vars `editionId` matchar route-parametern.
+5. `R-CMS03.1` Lägg till `Page.MenuSortOrder` efter scope-delningen, så sortering kan hanteras separat för konventionsmeny och upplagemeny.
+6. `R-CMS04.1` Låt publik navigation fortsätta prioritera aktiv upplagas sida framför konventionssida med samma slug, men sortera menyresultatet med `MenuSortOrder` inom det slutliga scope-valet.
+7. `R-ADM01` Flytta övriga upplageberoende adminvyer från top-level routes till `editions/:id/...`. Inga redirects behövs innan produktionssättning; gamla top-level routes tas bort.
+
 ### Varumärke per konvent (R-BR)
 
 Publika appen ska reflektera respektive konvents grafiska profil utan redeploy. Se UC-BR001–UC-BR002 i `docs/UseCases.md`.

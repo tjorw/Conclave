@@ -51,6 +51,7 @@ export class StaffApplicationDetailComponent {
   readonly error = signal<string | null>(null);
   readonly application = signal<StaffApplicationSummaryDto | null>(null);
   readonly edition = signal<EditionDto | null>(null);
+  readonly routeEditionId = this.route.snapshot.paramMap.get('id');
 
   private applicationId = '';
 
@@ -63,6 +64,10 @@ export class StaffApplicationDetailComponent {
   readonly title = computed(() => this.application()?.personName ?? 'Funktionär');
 
   constructor() {
+    if (this.routeEditionId) {
+      this.editionCtx.setActive(this.routeEditionId);
+    }
+
     this.route.paramMap
       .pipe(takeUntilDestroyed())
       .subscribe(params => {
@@ -157,7 +162,8 @@ export class StaffApplicationDetailComponent {
   }
 
   navigateBack(): void {
-    void this.router.navigate(['/persons/staff']);
+    const editionId = this.editionCtx.activeEdition()?.id;
+    void this.router.navigate(editionId ? ['/editions', editionId, 'persons', 'staff'] : ['/dashboard']);
   }
 
   applicationStatusLabel(status: string): string {

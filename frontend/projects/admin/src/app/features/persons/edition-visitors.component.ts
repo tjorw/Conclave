@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -27,6 +28,7 @@ type VisitorSortKey = 'name' | 'email' | 'phone';
 })
 export class EditionVisitorsComponent {
   private readonly svc = inject(ConventionService);
+  private readonly route = inject(ActivatedRoute);
   readonly editionContext = inject(EditionContextService);
 
   readonly FIELD       = FIELD;
@@ -37,8 +39,13 @@ export class EditionVisitorsComponent {
   readonly error = signal<string | null>(null);
   readonly searchQuery = signal('');
   readonly sort = createSortController<VisitorSortKey>({ key: 'name', direction: 'asc' });
+  readonly routeEditionId = this.route.snapshot.paramMap.get('id');
 
   constructor() {
+    if (this.routeEditionId) {
+      this.editionContext.setActive(this.routeEditionId);
+    }
+
     effect(() => {
       const edition = this.editionContext.activeEdition();
       if (edition) {

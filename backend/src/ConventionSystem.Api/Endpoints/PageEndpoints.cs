@@ -27,8 +27,8 @@ public static class PageEndpoints
             });
 
         groups.Admin.MapGet("/api/pages",
-            async (ISender sender, CancellationToken ct) =>
-                Results.Ok(await sender.Send(new ListPagesQuery(), ct)));
+            async (Guid? editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListPagesQuery(editionId), ct)));
 
         groups.Admin.MapGet("/api/pages/{pageId:guid}",
             async (Guid pageId, ISender sender, CancellationToken ct) =>

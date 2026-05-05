@@ -320,6 +320,94 @@ export const tenantDevInterceptor: HttpInterceptorFn = (req, next) => {
 
 ---
 
+### Konventions- och upplagescope i admin
+
+Admin-appen har två tydliga navigationsscope:
+
+**Konventionsnivå** är global för aktuell tenant/konvention och får inte bero
+på vald upplaga i topbarens editionsväljare. Routes ligger på top-level under
+shellen, till exempel `/dashboard`, `/pages` och andra konventionsgemensamma
+vyer.
+
+**Upplagenivå** är alltid bunden till vald upplaga och ska routas under
+`/editions/:id/...`. Navigationen ska bygga länkar från
+`editionContext.activeEdition().id`, och vyn ska läsa edition-id från route
+med `route.snapshot.paramMap.get('id')`. En upplagebunden vy får inte själv
+välja scope i formuläret.
+
+#### Routingstruktur
+
+```text
+/pages                         # konventionssidor
+/pages/new
+/pages/:pageId
+
+/editions/:id/basics
+/editions/:id/lifecycle
+/editions/:id/venues
+/editions/:id/categories
+/editions/:id/tags
+/editions/:id/ticket-types
+/editions/:id/content
+/editions/:id/pages            # upplagesidor
+/editions/:id/pages/new
+/editions/:id/pages/:pageId
+/editions/:id/events
+/editions/:id/events/:eventId
+/editions/:id/sessions
+/editions/:id/persons/visitors
+/editions/:id/persons/organisers
+/editions/:id/persons/staff
+/editions/:id/persons/reception-staff
+/editions/:id/registrations/visitors
+/editions/:id/registrations/promotion-codes
+/editions/:id/staffing/function-areas
+/editions/:id/staffing/function-areas/:areaId
+/editions/:id/staffing/schedule
+```
+
+Upplagebundna vyer ska inte ha top-level routes eller redirects. Appen är inte
+live, så routingmodellen hålls ren i stället för bakåtkompatibel.
+
+#### Pages
+
+`Page` finns i två scope:
+
+- Konventionssida: `editionId === null`, administreras under `/pages`.
+- Upplagesida: `editionId === route.params.id`, administreras under
+  `/editions/:id/pages`.
+
+Pages-komponenterna ska vara route-scopeade:
+
+- Listvyn hämtar bara sidor för aktuellt scope.
+- Detaljvyn sätter `editionId` från route vid create/update.
+- Formuläret visar ingen fri scope-väljare.
+- Vid edit ska komponenten verifiera att hämtad sidas `editionId` matchar
+  aktuell route. Fel scope ska behandlas som 404 eller navigera tillbaka till
+  rätt lista.
+- Tillbakalänkar och save/delete-navigation ska gå tillbaka till samma scope
+  som användaren kom från.
+
+Shared `PageService` bör exponera scope-tydliga metoder, även om API:t tekniskt
+använder samma endpoint:
+
+```typescript
+listConventionPages()
+listEditionPages(editionId: string)
+createConventionPage(request)
+createEditionPage(editionId: string, request)
+```
+
+#### Editionbyte
+
+När användaren byter aktiv upplaga i topbaren ska shellen behålla samma
+upplagesektion om route-strukturen tillåter det. Exempel:
+`/editions/2026/events` navigerar till `/editions/2027/events`.
+Detaljvyer vars objekt tillhör den gamla upplagan ska navigera till närmaste
+listvy i den nya upplagan.
+
+---
+
 ### UI-bibliotek och visuellt
 
 **Angular Material** – standardkomponenter för alla UI-element. Inga egna

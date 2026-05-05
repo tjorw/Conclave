@@ -8,7 +8,7 @@ public interface IPageRepository
 {
     Task AddAsync(Page page, CancellationToken ct = default);
     Task<Page?> GetByIdAsync(PageId id, CancellationToken ct = default);
-    Task<IReadOnlyList<PageSummaryDto>> ListAsync(ConventionId conventionId, CancellationToken ct = default);
+    Task<IReadOnlyList<PageSummaryDto>> ListAsync(ConventionId conventionId, EditionId? editionId, CancellationToken ct = default);
     Task<PageDto?> GetProjectedByIdAsync(PageId id, CancellationToken ct = default);
     Task<PublicPageDto?> GetPublishedBySlugAsync(ConventionId conventionId, EditionId? activeEditionId, string slug, CancellationToken ct = default);
     Task<IReadOnlyList<PublicPageMenuItemDto>> ListPublicMenuPagesAsync(ConventionId conventionId, EditionId? activeEditionId, CancellationToken ct = default);
