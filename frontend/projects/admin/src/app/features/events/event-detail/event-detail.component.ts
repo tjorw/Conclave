@@ -34,6 +34,7 @@ import { ACTION, FIELD, TOOLTIP } from '../../../labels/ui.labels';
 import { createSortController, sortBy } from '../../../shared/sort-utils';
 import { HelpTooltipComponent } from '../../../../help/components/help-tooltip/help-tooltip.component';
 import { EditionContextService } from '../../../services/edition-context.service';
+import { getSuggestedDateTimeRange } from '../../../shared/schedule-defaults';
 
 type EventSessionSortKey = 'start' | 'end' | 'venue' | 'seats' | 'startType' | 'status';
 
@@ -316,9 +317,23 @@ export class EventDetailComponent implements OnInit {
   // ── Sessions ────────────────────────────────────────────────────────────
 
   toggleAddSessionForm(): void {
-    this.showAddSessionForm.update(v => !v);
+    const shouldOpen = !this.showAddSessionForm();
+    this.showAddSessionForm.set(shouldOpen);
     this.editingSessionId.set(null);
-    if (!this.showAddSessionForm()) this.sessionForm.reset({ maxSeats: 20, startType: 'FixedTime' });
+
+    if (!shouldOpen) {
+      this.sessionForm.reset({ maxSeats: 20, startType: 'FixedTime' });
+      return;
+    }
+
+    const defaults = getSuggestedDateTimeRange(this.edition(), 120);
+    this.sessionForm.reset({
+      venueId: this.venues()[0]?.id ?? '',
+      startTime: defaults?.start ?? '',
+      endTime: defaults?.end ?? '',
+      maxSeats: 20,
+      startType: 'FixedTime',
+    });
   }
 
   startEditSession(sessionId: string): void {

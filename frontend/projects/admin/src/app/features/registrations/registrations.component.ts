@@ -14,6 +14,8 @@ import { map } from 'rxjs';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ERROR } from '../../labels/errors.labels';
 import {
+  ConventionService,
+  EditionDto,
   PromotionCodeAdminDto,
   PromotionCodeRedemptionHistoryDto,
   PromotionDiscountType,
@@ -26,6 +28,7 @@ import {
 } from 'shared';
 import { createSortController, sortBy } from '../../shared/sort-utils';
 import { HelpTooltipComponent } from '../../../help/components/help-tooltip/help-tooltip.component';
+import { getSuggestedPromotionValidityRange } from '../../shared/schedule-defaults';
 
 type RegistrationSortKey = 'person' | 'ticket' | 'status' | 'registered' | 'payment';
 type PromotionSortKey = 'code' | 'description' | 'discount' | 'status' | 'redemptions' | 'validity' | 'tickets';
@@ -53,6 +56,7 @@ type RegistrationPage = 'visitors' | 'promotion-codes';
 export class RegistrationsComponent {
   private readonly fb = inject(FormBuilder);
   private readonly svc = inject(RegistrationService);
+  private readonly conventionSvc = inject(ConventionService);
   private readonly route = inject(ActivatedRoute);
   readonly editionCtx = inject(EditionContextService);
   readonly routeEditionId = this.route.snapshot.paramMap.get('id');
@@ -68,6 +72,7 @@ export class RegistrationsComponent {
   readonly error = signal<string | null>(null);
   readonly saving = signal(false);
   readonly showPromotionCodeForm = signal(false);
+  readonly edition = signal<EditionDto | null>(null);
 
   readonly visitorRegistrations = signal<VisitorRegistrationAdminDto[]>([]);
   readonly promotionCodes = signal<PromotionCodeAdminDto[]>([]);
@@ -146,7 +151,7 @@ export class RegistrationsComponent {
     this.promotionHistory.set([]);
     this.loadingHistoryFor.set(null);
 
-    let remaining = 3;
+    let remaining = 4;
     const complete = () => {
       remaining -= 1;
       if (remaining === 0) {
@@ -171,6 +176,12 @@ export class RegistrationsComponent {
       error: (err) => this.handleLoadError(ERROR.fetchTicketTypes, err),
       complete,
     });
+
+    this.conventionSvc.getEdition(editionId).subscribe({
+      next: edition => this.edition.set(edition),
+      error: (err) => this.handleLoadError(ERROR.fetchEdition, err),
+      complete,
+    });
   }
 
   private reload(): void {
@@ -188,21 +199,24 @@ export class RegistrationsComponent {
   }
 
   togglePromotionCodeForm(): void {
-    this.showPromotionCodeForm.update(open => !open);
-    if (!this.showPromotionCodeForm()) {
-      this.resetPromotionCodeForm();
-    }
+    const shouldOpen = !this.showPromotionCodeForm();
+    this.showPromotionCodeForm.set(shouldOpen);
+    this.resetPromotionCodeForm(shouldOpen);
   }
 
-  private resetPromotionCodeForm(): void {
+  private resetPromotionCodeForm(useDefaults = false): void {
+    const defaults = useDefaults
+      ? getSuggestedPromotionValidityRange(this.edition())
+      : null;
+
     this.promotionCodeForm.reset({
       code: '',
       description: '',
       discountType: 'Percentage',
       discountValue: 0,
       maxRedemptions: null,
-      validFrom: '',
-      validUntil: '',
+      validFrom: defaults?.validFrom ?? '',
+      validUntil: defaults?.validUntil ?? '',
       allowedTicketTypeIds: [],
     });
   }
@@ -255,7 +269,7 @@ export class RegistrationsComponent {
       allowedTicketTypeIds: value.allowedTicketTypeIds.length > 0 ? value.allowedTicketTypeIds : null,
     }).subscribe({
       next: () => {
-        this.resetPromotionCodeForm();
+        this.resetPromotionCodeForm(false);
         this.showPromotionCodeForm.set(false);
         this.loadPromotionCodes(edition.id);
         this.saving.set(false);

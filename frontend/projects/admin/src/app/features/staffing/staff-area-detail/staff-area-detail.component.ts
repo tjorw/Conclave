@@ -21,6 +21,7 @@ import {
 import { MatDividerModule } from '@angular/material/divider';
 import { createSortController, sortBy } from '../../../shared/sort-utils';
 import { HelpTooltipComponent } from '../../../../help/components/help-tooltip/help-tooltip.component';
+import { getSuggestedDateTimeRange } from '../../../shared/schedule-defaults';
 
 type ShiftSortKey = 'responsible' | 'start' | 'end' | 'min' | 'max' | 'staffing';
 type AssignmentSortKey = 'person' | 'status' | 'assigned';
@@ -251,8 +252,16 @@ export class StaffAreaDetailComponent {
   }
 
   openCreateShift(stationId: string): void {
+    const defaults = getSuggestedDateTimeRange(this.edition(), 60);
+
     this.createShiftForStation.set(stationId);
-    this.createShiftForm.reset({ minPersons: 1, maxPersons: 4 });
+    this.createShiftForm.reset({
+      responsibleId: '',
+      startTime: defaults?.start ?? '',
+      endTime: defaults?.end ?? '',
+      minPersons: 1,
+      maxPersons: 4,
+    });
   }
 
   cancelCreateShift(): void { this.createShiftForStation.set(null); }
