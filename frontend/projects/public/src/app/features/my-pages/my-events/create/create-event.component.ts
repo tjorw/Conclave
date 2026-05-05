@@ -7,7 +7,16 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { CategoryDto, ConventionService, EventService, AuthService, OrganiserTicketTypeDto, RegistrationService, toErrorMessage } from 'shared';
+import {
+  AuthService,
+  CategoryDto,
+  ConventionService,
+  EventService,
+  OrganiserTicketTypeDto,
+  ProgramTagDefinitionDto,
+  RegistrationService,
+  toErrorMessage,
+} from 'shared';
 import { EditionService } from '../../../../services/edition.service';
 
 @Component({
@@ -39,10 +48,12 @@ export class CreateEventComponent implements OnInit {
   readonly saving     = signal(false);
   readonly error      = signal<string | null>(null);
   readonly categories = signal<CategoryDto[]>([]);
+  readonly programTagDefinitions = signal<ProgramTagDefinitionDto[]>([]);
   readonly organiserTicketTypes = signal<OrganiserTicketTypeDto[]>([]);
 
   readonly form = this.fb.group({
     categoryId: ['', Validators.required],
+    programTags: this.fb.control<string[]>([], { nonNullable: true }),
   });
 
   ngOnInit(): void {
@@ -54,6 +65,7 @@ export class CreateEventComponent implements OnInit {
     this.conventionSvc.getEdition(editionId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: edition => {
         this.categories.set(edition.categories);
+        this.programTagDefinitions.set(edition.programTagDefinitions ?? []);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -74,9 +86,9 @@ export class CreateEventComponent implements OnInit {
     this.saving.set(true);
     this.error.set(null);
 
-    const { categoryId } = this.form.getRawValue();
+    const { categoryId, programTags } = this.form.getRawValue();
 
-    this.eventSvc.createEvent(editionId, categoryId!, personId, []).subscribe({
+    this.eventSvc.createEvent(editionId, categoryId!, personId, programTags ?? []).subscribe({
       next: ({ id }) => this.router.navigateByUrl(`/my-pages/events/${id}`),
       error: err => {
         this.error.set(toErrorMessage(err, 'Kunde inte skapa arrangemanget.'));

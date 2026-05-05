@@ -28,6 +28,18 @@
           </mat-select>
         </mat-form-field>
 
+        @if (programTagDefinitions().length > 0) {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Taggar</mat-label>
+            <mat-select formControlName="programTags" multiple>
+              @for (tag of programTagDefinitions(); track tag.name) {
+                <mat-option [value]="tag.name">{{ tag.name }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>Valfritt: välj en eller flera taggar redan nu.</mat-hint>
+          </mat-form-field>
+        }
+
         <p class="hint">
           Du väljer titel, beskrivning och sessionönskemål i nästa steg.
         </p>

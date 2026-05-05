@@ -653,6 +653,11 @@ Varje sektionskomponent hämtar sin egen data och visar CTA om svaret är tomt:
 `MinaSidorComponent` (hub) laddar alla fyra parallellt och visar ett
 kompakt statuskort per sektion med länk till respektive under-route.
 
+**Skapa arrangemang (public)** – i flödet `Mina arrangemang -> Nytt arrangemang`
+kan arrangören välja både kategori och valfria programtaggar redan i
+grunduppgifterna. Taggarna hämtas från upplagans `programTagDefinitions`
+och skickas med i skapaanropet `POST /editions/{id}/events` som `programTags`.
+
 ---
 
 ### Skeleton loading
