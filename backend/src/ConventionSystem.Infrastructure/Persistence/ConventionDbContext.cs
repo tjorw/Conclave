@@ -35,6 +35,7 @@ public sealed class ConventionDbContext(
 
     // Content
     public DbSet<Page> Pages => Set<Page>();
+    public DbSet<MailTemplate> MailTemplates => Set<MailTemplate>();
 
     // Event
     public DbSet<DomainEvent> Events => Set<DomainEvent>();

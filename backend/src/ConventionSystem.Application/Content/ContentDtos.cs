@@ -33,3 +33,16 @@ public sealed record PublicPageMenuItemDto(
     string Title,
     int MenuSortOrder,
     Guid? EditionId);
+
+public sealed record MailTemplateDto(
+    string TemplateType,
+    string Subject,
+    string BodyMarkdown,
+    bool IsCustomized,
+    DateTimeOffset? UpdatedAt,
+    IReadOnlyList<string> AvailableVariables);
+
+public sealed record MailTemplateSummaryDto(
+    string TemplateType,
+    bool IsCustomized,
+    DateTimeOffset? UpdatedAt);

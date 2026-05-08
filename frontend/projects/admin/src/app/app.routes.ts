@@ -227,6 +227,18 @@ export const routes: Routes = [
           import('./features/pages/page-detail.component').then(m => m.PageDetailComponent),
       },
 
+      // ── E-postmallar ─────────────────────────────────────────────────────────
+      {
+        path: 'mail-templates',
+        loadComponent: () =>
+          import('./features/mail-templates/mail-templates.component').then(m => m.MailTemplatesComponent),
+      },
+      {
+        path: 'mail-templates/:type',
+        loadComponent: () =>
+          import('./features/mail-templates/mail-template-detail.component').then(m => m.MailTemplateDetailComponent),
+      },
+
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

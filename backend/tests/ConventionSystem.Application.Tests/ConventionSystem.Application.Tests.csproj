@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ConventionSystem.Application\ConventionSystem.Application.csproj" />
+    <ProjectReference Include="..\..\src\ConventionSystem.Infrastructure\ConventionSystem.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

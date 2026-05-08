@@ -36,6 +36,8 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IConventionRepository, ConventionRepository>();
         services.AddScoped<IConventionBrandingRepository, ConventionBrandingRepository>();
         services.AddScoped<IPageRepository, PageRepository>();
+        services.AddScoped<IMailTemplateRepository, MailTemplateRepository>();
+        services.AddScoped<IMailTemplateRenderer, MarkdigMailTemplateRenderer>();
         services.AddScoped<IPersonRepository, PersonRepository>();
         services.AddScoped<IEditionRepository, EditionRepository>();
         services.AddScoped<IShiftRepository, ShiftRepository>();

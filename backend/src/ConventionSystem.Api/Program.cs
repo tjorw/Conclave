@@ -149,6 +149,7 @@ groups.MapRegistrationEndpoints();
 groups.MapEventEndpoints();
 groups.MapUploadEndpoints();
 groups.MapPageEndpoints();
+groups.MapMailTemplateEndpoints();
 groups.MapSystemTenantEndpoints();
 
 if (publicIndexPath is not null && File.Exists(publicIndexPath))

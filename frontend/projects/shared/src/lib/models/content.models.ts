@@ -48,6 +48,26 @@ export interface UpdatePageMenuOrderRequest {
   menuSortOrder: number;
 }
 
+export interface MailTemplateSummaryDto {
+  templateType: string;
+  isCustomized: boolean;
+  updatedAt: string | null;
+}
+
+export interface MailTemplateDto {
+  templateType: string;
+  subject: string;
+  bodyMarkdown: string;
+  isCustomized: boolean;
+  updatedAt: string | null;
+  availableVariables: string[];
+}
+
+export interface UpdateMailTemplateRequest {
+  subject: string;
+  bodyMarkdown: string;
+}
+
 export interface EditionContentDto {
   key: string;
   value: string;

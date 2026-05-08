@@ -9,5 +9,7 @@ Börja med att:
 
 Skapa sedan ADR i `docs/decisions/` med format: `YYYY-MM-DD-[kort-slug].md`
 
+SKapa plan för implementering i `docs/roadmap.md`
+
 Avsluta med en tydlig sammanfattning av beslutet och skriv:
 "ADR skapad: docs/decisions/[filnamn]. Redo att bygga — godkänn med /build"

@@ -40,7 +40,14 @@ Platser i arrangemang kan tilldelas på olika sätt. Kön hör till det konkreta
 Se `docs/RichContent.md` för arkitektur och designbeslut. Use cases: UC-RC001–UC-RC006 i `docs/UseCases.md`.
 
 Kvar att göra:
-- [ ] `R-RC04` Mailmallar – adminredigerbara mallar i databas; standardmall per typ i kod (restore-funktion); `TemplateRenderer` med Markdig + variabelsubstitution
+- [x] `R-RC04` Mailmallar – adminredigerbara mallar i databas; standardmall per typ i kod (restore-funktion); `TemplateRenderer` med Markdig + variabelsubstitution
+
+**Implementationsplan (UC-RC005, UC-RC006) – se ADR `docs/decisions/2026-05-08-mail-templates.md`:**
+1. **Domän** – `MailTemplate` (aggregatrot), `MailTemplateType` (enum, 7 typer), `MailTemplateId`
+2. **Applikation** – `IMailTemplateRenderer`, `DefaultMailTemplates`, `IMailTemplateRepository`, commands (`UpdateMailTemplate`, `ResetMailTemplate`), queries (`GetMailTemplate`, `ListMailTemplates`)
+3. **Infrastruktur** – `MarkdigMailTemplateRenderer`, `MailTemplateRepository`, EF Core-konfiguration (`mail_templates`-tabell), migration, uppdaterade `IEmailService`-signaturer med `ConventionId`, `OutboxEmailService` integrerar renderer
+4. **API** – `MailTemplateEndpoints` (5 endpoints under `/api/conventions/{id}/mail-templates`)
+5. **Frontend** – `mail-templates`-feature i admin: lista + markdown-redigeringsvy med variabelhjälp och "Återställ"-knapp
 
 
 ### Varumärke per konvent (R-BR)

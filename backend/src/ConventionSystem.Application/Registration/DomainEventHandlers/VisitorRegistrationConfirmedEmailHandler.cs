@@ -6,6 +6,7 @@ namespace ConventionSystem.Application.Registration.DomainEventHandlers;
 
 public sealed class VisitorRegistrationConfirmedEmailHandler(
     IPersonRepository personRepository,
+    IConventionRepository conventionRepository,
     IEmailService emailService)
     : IDomainEventHandler<VisitorRegistrationConfirmed>
 {
@@ -14,6 +15,9 @@ public sealed class VisitorRegistrationConfirmedEmailHandler(
         var person = await personRepository.GetByIdAsync(notification.PersonId, ct);
         if (person is null) return;
 
-        await emailService.SendVisitorRegistrationConfirmedAsync(person.Email, person.Name, ct);
+        var convention = await conventionRepository.GetSingleAsync(ct);
+        if (convention is null) return;
+
+        await emailService.SendVisitorRegistrationConfirmedAsync(person.Email, person.Name, convention.Id.Value, ct);
     }
 }

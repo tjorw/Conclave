@@ -580,17 +580,17 @@ file sealed class CapturingEmailService : IEmailService
 {
     public List<ProvisionedWelcomeEmail> ProvisionedWelcomeEmails { get; } = [];
 
-    public Task SendVisitorRegistrationConfirmedAsync(string toEmail, string toName, CancellationToken ct = default) => Task.CompletedTask;
-    public Task SendStaffApplicationReceivedAsync(string toEmail, string toName, CancellationToken ct = default) => Task.CompletedTask;
-    public Task SendStaffApplicationAcceptedAsync(string toEmail, string toName, CancellationToken ct = default) => Task.CompletedTask;
-    public Task SendStaffApplicationRejectedAsync(string toEmail, string toName, CancellationToken ct = default) => Task.CompletedTask;
-    public Task SendEventApprovedAsync(string toEmail, string toName, string eventTitle, CancellationToken ct = default) => Task.CompletedTask;
-    public Task SendEventRejectedAsync(string toEmail, string toName, string eventTitle, string comment, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendVisitorRegistrationConfirmedAsync(string toEmail, string toName, Guid conventionId, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendStaffApplicationReceivedAsync(string toEmail, string toName, Guid conventionId, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendStaffApplicationAcceptedAsync(string toEmail, string toName, Guid conventionId, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendStaffApplicationRejectedAsync(string toEmail, string toName, Guid conventionId, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendEventApprovedAsync(string toEmail, string toName, string eventTitle, Guid conventionId, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendEventRejectedAsync(string toEmail, string toName, string eventTitle, string comment, Guid conventionId, CancellationToken ct = default) => Task.CompletedTask;
     public Task SendPasswordResetAsync(string toEmail, string toName, string resetLink, CancellationToken ct = default) => Task.CompletedTask;
     public Task SendEmailConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default) => Task.CompletedTask;
     public Task SendResendConfirmationAsync(string toEmail, string toName, string confirmLink, CancellationToken ct = default) => Task.CompletedTask;
     public Task SendPasswordChangedAsync(string toEmail, string toName, CancellationToken ct = default) => Task.CompletedTask;
-    public Task SendCoOrganiserInvitationAsync(string toEmail, string code, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SendCoOrganiserInvitationAsync(string toEmail, string firstName, string eventTitle, string code, Guid conventionId, CancellationToken ct = default) => Task.CompletedTask;
     public Task SendTenantSignupWelcomeAsync(
         string toEmail,
         string toName,

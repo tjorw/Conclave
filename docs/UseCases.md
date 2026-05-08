@@ -2766,11 +2766,11 @@ Konventionsadministratör
 - Inga
 
 ## Acceptanskriterier
-- [ ] Ämne och brödtext sparas per malltyp
-- [ ] `IsCustomized` sätts till `true` vid sparad anpassning
-- [ ] Anpassad mall används vid nästa utskick av rätt typ
-- [ ] Variabelsubstitution fungerar korrekt (`{{firstName}}` → personens förnamn)
-- [ ] Okänd variabel ersätts med tom sträng (inget undantag kastas)
+- [x] Ämne och brödtext sparas per malltyp
+- [x] `IsCustomized` sätts till `true` vid sparad anpassning
+- [x] Anpassad mall används vid nästa utskick av rätt typ
+- [x] Variabelsubstitution fungerar korrekt (`{{firstName}}` → personens förnamn)
+- [x] Okänd variabel ersätts med tom sträng (inget undantag kastas)
 
 ---
 
@@ -2798,9 +2798,9 @@ Konventionsadministratör
 - Inga
 
 ## Acceptanskriterier
-- [ ] `IsCustomized` sätts till `false`
-- [ ] Nästa utskick av aktuell typ använder standardtextens ämne och brödtext
-- [ ] Kommandohanteraren har ett tillhörande enhetstest
+- [x] `IsCustomized` sätts till `false`
+- [x] Nästa utskick av aktuell typ använder standardtextens ämne och brödtext
+- [x] Kommandohanteraren har ett tillhörande enhetstest
 
 ---
 

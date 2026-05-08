@@ -14,6 +14,7 @@ export const NAV = {
   promotionCodes: 'Kampanjkoder',
   feeds:          'Feeds',
   branding:       'Varumärke',
+  mailTemplates:  'E-postmallar',
   pages:          'Informationssidor',
   conventionPages: 'Konventionssidor',
   logout:         'Logga ut',

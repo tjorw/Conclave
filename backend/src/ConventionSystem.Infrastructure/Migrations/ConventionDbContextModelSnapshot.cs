@@ -22,6 +22,55 @@ namespace ConventionSystem.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ConventionSystem.Domain.Content.Aggregates.MailTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BodyMarkdown")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("body_markdown");
+
+                    b.Property<Guid>("ConventionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("convention_id");
+
+                    b.Property<bool>("IsCustomized")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_customized");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("subject");
+
+                    b.Property<string>("TemplateType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("template_type");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("ConventionId", "TemplateType")
+                        .IsUnique()
+                        .HasDatabaseName("IX_mail_templates_convention_id_template_type");
+
+                    b.ToTable("mail_templates", (string)null);
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Content.Aggregates.Page", b =>
                 {
                     b.Property<Guid>("Id")

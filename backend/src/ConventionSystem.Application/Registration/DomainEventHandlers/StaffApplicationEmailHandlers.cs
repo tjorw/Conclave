@@ -1,4 +1,4 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Domain.Registration.Events;
 
@@ -6,6 +6,7 @@ namespace ConventionSystem.Application.Registration.DomainEventHandlers;
 
 public sealed class StaffApplicationReceivedEmailHandler(
     IPersonRepository personRepository,
+    IConventionRepository conventionRepository,
     IEmailService emailService)
     : IDomainEventHandler<StaffApplicationReceived>
 {
@@ -14,12 +15,16 @@ public sealed class StaffApplicationReceivedEmailHandler(
         var person = await personRepository.GetByIdAsync(notification.PersonId, ct);
         if (person is null) return;
 
-        await emailService.SendStaffApplicationReceivedAsync(person.Email, person.Name, ct);
+        var convention = await conventionRepository.GetSingleAsync(ct);
+        if (convention is null) return;
+
+        await emailService.SendStaffApplicationReceivedAsync(person.Email, person.Name, convention.Id.Value, ct);
     }
 }
 
 public sealed class StaffApplicationAcceptedEmailHandler(
     IPersonRepository personRepository,
+    IConventionRepository conventionRepository,
     IEmailService emailService)
     : IDomainEventHandler<StaffApplicationAccepted>
 {
@@ -28,12 +33,16 @@ public sealed class StaffApplicationAcceptedEmailHandler(
         var person = await personRepository.GetByIdAsync(notification.PersonId, ct);
         if (person is null) return;
 
-        await emailService.SendStaffApplicationAcceptedAsync(person.Email, person.Name, ct);
+        var convention = await conventionRepository.GetSingleAsync(ct);
+        if (convention is null) return;
+
+        await emailService.SendStaffApplicationAcceptedAsync(person.Email, person.Name, convention.Id.Value, ct);
     }
 }
 
 public sealed class StaffApplicationRejectedEmailHandler(
     IPersonRepository personRepository,
+    IConventionRepository conventionRepository,
     IEmailService emailService)
     : IDomainEventHandler<StaffApplicationRejected>
 {
@@ -42,6 +51,9 @@ public sealed class StaffApplicationRejectedEmailHandler(
         var person = await personRepository.GetByIdAsync(notification.PersonId, ct);
         if (person is null) return;
 
-        await emailService.SendStaffApplicationRejectedAsync(person.Email, person.Name, ct);
+        var convention = await conventionRepository.GetSingleAsync(ct);
+        if (convention is null) return;
+
+        await emailService.SendStaffApplicationRejectedAsync(person.Email, person.Name, convention.Id.Value, ct);
     }
 }
