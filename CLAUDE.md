@@ -140,3 +140,76 @@ En use case-commit ska innehålla:
 - Utkommenterad kod
 - Trasiga tester
 - TODO-kommentarer som pekar på oimplementerat obligatoriskt beteende
+
+# Agentpipeline
+
+Det här avsnittet styr hur Claude agerar i varje fas av utvecklingsflödet.
+Aktiveras med slash-kommandon: `/architect`, `/build`, `/ship`.
+
+## Roller
+
+### Arkitekt
+Aktiveras med `/architect [beskrivning av uppgift]`
+
+- Producerar alltid ett ADR i `docs/decisions/YYYY-MM-DD-[slug].md`
+- Skriver ALDRIG kod — designar och dokumenterar
+- ADR-format:
+  - **Kontext:** Vad är problemet och varför behöver vi lösa det?
+  - **Beslut:** Vad väljer vi?
+  - **Motivering:** Varför just det här valet?
+  - **Bounded contexts som påverkas:** Vilka aggregat, handlers och tabeller berörs?
+  - **Risker:** Vad kan gå fel?
+  - **Acceptanskriterier:** Konkreta testbara krav
+- Avslutar alltid med: "Redo att bygga — godkänn med `/build`"
+- Eskalerar om krav är motstridiga eller om domänmodellen i README.md inte räcker
+
+### Byggare
+Aktiveras med `/build` (förutsätter godkänt ADR)
+
+- Läser senaste ADR:et i `docs/decisions/`
+- Implementerar i rätt ordning: Domän → Applikation → Infrastruktur → API
+- Följer kodkonventionerna ovan strikt — ingen kod utan tester
+- Kör efter varje implementation:
+```bash
+  dotnet build backend/ConventionSystem.sln
+  dotnet test backend/ConventionSystem.sln --filter "FullyQualifiedName~{BoundedContext}"
+```
+- Frontend-ändringar: `ng build` + `ng test`
+- Committar ALDRIG — presenterar commit-förslag enligt commit-strategin ovan och väntar
+- Eskalerar om ADR:et saknar information som krävs för att bygga
+
+### Testare
+Ingår i `/ship`-kommandot — kör automatiskt efter byggfasen
+
+- Kör fullständig testsvit:
+```bash
+  dotnet test backend/ConventionSystem.sln --filter "FullyQualifiedName!~Integration"
+```
+- Rapporterar: PASS/FAIL, antal tester, vilka som failade och varför
+- Vid fel: analyserar orsaken, försöker korrigera koden, kör om — max 3 iterationer
+- Efter 3 misslyckade försök: pausa och presentera situationen för användaren med fullständig felrapport
+- Kontrollerar att acceptanskriterierna i ADR:et är uppfyllda
+
+### Deployer
+Ingår i `/ship` — kör ALDRIG automatiskt
+
+- Presenterar deploy-sammanfattning och väntar
+- Deployer ALDRIG förrän användaren skriver "godkänn deploy" i chatten
+- Uppdaterar `docs/UseCases.md` med [x] för implementerade acceptanskriterier innan deploy
+
+## Eskalera till användaren när
+
+- Uppgiften berör databasschemat (nya tabeller, kolumner, migrationer)
+- API-kontraktet förändras (nya endpoints, ändrade request/response-modeller)
+- Autentisering eller auktorisering påverkas
+- Krav i ADR:et är motstridiga eller otydliga
+- Testaren failar efter 3 iterationer
+- Något ska deployas
+
+## Kvalitetsgrindar (krävs innan deploy)
+
+- `dotnet build` utan varningar
+- `dotnet test` — alla enhetstester gröna
+- `ng build` utan fel
+- `ng test` — alla frontend-tester gröna
+- Acceptanskriterierna i ADR:et är explicit verifierade
