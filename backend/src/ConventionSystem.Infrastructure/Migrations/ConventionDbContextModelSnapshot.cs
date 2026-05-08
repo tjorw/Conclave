@@ -641,6 +641,14 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("lead_organiser_id");
 
+                    b.Property<string>("RegistrationMode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Individual")
+                        .HasColumnName("registration_mode");
+
                     b.Property<string>("RegistrationType")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1065,6 +1073,97 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.HasIndex("TenantId");
 
                     b.ToTable("staff_applications", (string)null);
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.Team", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CaptainPersonId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("captain_person_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("EditionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("edition_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CaptainPersonId")
+                        .HasDatabaseName("IX_teams_captain_person_id");
+
+                    b.HasIndex("EditionId")
+                        .HasDatabaseName("IX_teams_edition_id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("teams", (string)null);
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.TeamEventRegistration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("EditionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("edition_id");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("team_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId")
+                        .HasDatabaseName("IX_team_event_registrations_event_id");
+
+                    b.HasIndex("TeamId")
+                        .HasDatabaseName("IX_team_event_registrations_team_id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TeamId", "EventId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_team_event_registrations_team_event");
+
+                    b.ToTable("team_event_registrations", (string)null);
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.Ticket", b =>
@@ -1653,7 +1752,30 @@ namespace ConventionSystem.Infrastructure.Migrations
                                 .HasForeignKey("EventId");
                         });
 
+                    b.OwnsOne("ConventionSystem.Domain.Event.ValueObjects.TeamSize", "TeamSize", b1 =>
+                        {
+                            b1.Property<Guid>("EventId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<int>("Max")
+                                .HasColumnType("int")
+                                .HasColumnName("team_size_max");
+
+                            b1.Property<int>("Min")
+                                .HasColumnType("int")
+                                .HasColumnName("team_size_min");
+
+                            b1.HasKey("EventId");
+
+                            b1.ToTable("events");
+
+                            b1.WithOwner()
+                                .HasForeignKey("EventId");
+                        });
+
                     b.Navigation("ProgramTags");
+
+                    b.Navigation("TeamSize");
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.CoOrganiser", b =>

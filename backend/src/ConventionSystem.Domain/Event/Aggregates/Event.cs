@@ -29,6 +29,8 @@ public sealed class Event : AggregateRoot
     public string? ScheduleRequestText { get; private set; }
     public RegistrationType RegistrationType { get; private set; }
     public string? DropInRules { get; private set; }
+    public RegistrationMode RegistrationMode { get; private set; }
+    public TeamSize? TeamSize { get; private set; }
     public int CoOrganiserCount { get; private set; }
     public int CoOrganiserLimit { get; private set; }
     public bool IsFeatured { get; private set; }
@@ -88,6 +90,24 @@ public sealed class Event : AggregateRoot
         EnsureNotCancelled();
         RegistrationType = registrationType;
         DropInRules = dropInRules;
+    }
+
+    public void ConfigureTeamRegistration(RegistrationMode mode, int? minTeamSize, int? maxTeamSize)
+    {
+        EnsureNotCancelled();
+
+        if (mode == RegistrationMode.Individual)
+        {
+            RegistrationMode = RegistrationMode.Individual;
+            TeamSize = null;
+            return;
+        }
+
+        if (!minTeamSize.HasValue || !maxTeamSize.HasValue)
+            throw new ArgumentException("Minsta och högsta lagstorlek måste anges för laganmälningsläge.");
+
+        TeamSize = new TeamSize(minTeamSize.Value, maxTeamSize.Value);
+        RegistrationMode = RegistrationMode.Team;
     }
 
     public void UpdateScheduleRequestText(string? scheduleRequestText)

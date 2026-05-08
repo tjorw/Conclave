@@ -53,6 +53,8 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IStaffApplicationRepository, StaffApplicationRepository>();
         services.AddScoped<ISessionRegistrationRepository, SessionRegistrationRepository>();
         services.AddScoped<ISessionWatchRepository, SessionWatchRepository>();
+        services.AddScoped<ITeamRepository, TeamRepository>();
+        services.AddScoped<ITeamEventRegistrationRepository, TeamEventRegistrationRepository>();
         services.AddScoped<IMyScheduleRepository, MyScheduleRepository>();
         services.AddScoped<IReceptionScheduleRepository, ReceptionScheduleRepository>();
         services.AddScoped<IRegistrationRuleService, RegistrationRuleService>();

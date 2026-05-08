@@ -58,6 +58,18 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
             .HasMaxLength(2000)
             .HasColumnName("drop_in_rules");
 
+        builder.Property(e => e.RegistrationMode)
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasColumnName("registration_mode")
+            .HasDefaultValue(Domain.Event.Enums.RegistrationMode.Individual);
+
+        builder.OwnsOne(e => e.TeamSize, ts =>
+        {
+            ts.Property(t => t.Min).HasColumnName("team_size_min");
+            ts.Property(t => t.Max).HasColumnName("team_size_max");
+        });
+
         builder.Property(e => e.IsFeatured)
             .HasColumnName("is_featured")
             .HasDefaultValue(false);

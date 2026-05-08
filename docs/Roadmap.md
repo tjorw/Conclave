@@ -2,22 +2,24 @@
 
 Spårar vad som återstår inför produktionsstart.
 
+**Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
+
 ---
 
-## Implementationsordning
-
-Prioriterad lista – återstående arbete, högst prioritet överst.
-
-- [x] `R-SCH03` Datumkontroller i boknings-, pass- och sessionsflöden föreslår första konventsdagen och dagens standardtider där det passar användarflödet.
 
 ### Laganmälningar (R-TM)
 
-- [ ] `R-TM01` `Event.RegistrationMode: Individual | Team` + `TeamSize { Min, Max }` – arrangören konfigurerar anmälningsläge och lagstorlek per evenemang; se UC-TM001
-- [ ] `R-TM02` `Team`-aggregat – Edition-scoped, captain (`PersonId`), lagnamn (obligatoriskt); `Members[]` valfritt och ej obligatoriskt i fas 1; se UC-TM002
-- [ ] `R-TM03` `TeamEventRegistration`-aggregat – lag anmäler sig till evenemang, livscykel `Pending → Confirmed | Cancelled`; se UC-TM002, UC-TM003, UC-TM004
+**Fas 1 (ADR 2026-05-08-team-registrations.md):**
+- [x] `R-TM01` `Event.RegistrationMode: Individual | Team` + `TeamSize { Min, Max }` value object; `ConfigureTeamRegistration()`-metod + invarianter; EF-kolumner på befintlig `events`-tabell; se UC-TM001
+- [x] `R-TM02` `Team`-aggregat – Edition-scoped, captain (`PersonId`), lagnamn (max 200), `TeamCreated`-event; se UC-TM002
+- [x] `R-TM03` `TeamEventRegistration`-aggregat – livscykel `Pending → Confirmed | Cancelled`; domänmetoder `Confirm()` och `Cancel()`; denormaliserat `EditionId`; unikt sammansatt index `(team_id, event_id)`; se UC-TM002–UC-TM004
+- [ ] `R-TM01b` Admin-UI: anmälningsläge-sektion i evenemangsdetalj (dropdown Individual/Team + lagstorlek)
+- [ ] `R-TM03b` Admin-UI: laganmälningslista per evenemang med bekräfta/avboka-knappar
+
+**Fas 2 (separat ADR):**
 - [ ] `R-TM04` Admin-vy: arrangör tilldelar lag till session (`TeamSessionAssignment` på `Session`)
-- [ ] `R-TM05` Tidschema: lagmedlemmars tilldelade sessioner visas via query-projektion (utökning av `MyScheduleRepository`)
-- [ ] `R-TM06` Publik vy: laganmälningsflöde – captain anmäler lag och anger lagnamn; lagmedlemmar behöver inte anges i fas 1
+- [ ] `R-TM05` Tidschema: lagmedlemmars tilldelade sessioner via query-projektion (`MyScheduleRepository`)
+- [ ] `R-TM06` Publik vy: captain anmäler lag via publik app
 
 
 ### Bokning och tilldelning av plats
@@ -33,31 +35,6 @@ Platser i arrangemang kan tilldelas på olika sätt. Kön hör till det konkreta
 - [ ] `R-MT015` `portal`-app: tenant-dashboard för tenant-ägare
 - [ ] `R-MT017` Faktureringsintegration *(utanför scope – dokumenterat för framtiden)*
 
-**Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
-
-### Rikt innehåll (R-RC)
-
-Se `docs/RichContent.md` för arkitektur och designbeslut. Use cases: UC-RC001–UC-RC006 i `docs/UseCases.md`.
-
-Kvar att göra:
-- [x] `R-RC04` Mailmallar – adminredigerbara mallar i databas; standardmall per typ i kod (restore-funktion); `TemplateRenderer` med Markdig + variabelsubstitution
-
-**Implementationsplan (UC-RC005, UC-RC006) – se ADR `docs/decisions/2026-05-08-mail-templates.md`:**
-1. **Domän** – `MailTemplate` (aggregatrot), `MailTemplateType` (enum, 7 typer), `MailTemplateId`
-2. **Applikation** – `IMailTemplateRenderer`, `DefaultMailTemplates`, `IMailTemplateRepository`, commands (`UpdateMailTemplate`, `ResetMailTemplate`), queries (`GetMailTemplate`, `ListMailTemplates`)
-3. **Infrastruktur** – `MarkdigMailTemplateRenderer`, `MailTemplateRepository`, EF Core-konfiguration (`mail_templates`-tabell), migration, uppdaterade `IEmailService`-signaturer med `ConventionId`, `OutboxEmailService` integrerar renderer
-4. **API** – `MailTemplateEndpoints` (5 endpoints under `/api/conventions/{id}/mail-templates`)
-5. **Frontend** – `mail-templates`-feature i admin: lista + markdown-redigeringsvy med variabelhjälp och "Återställ"-knapp
-
-
-### Varumärke per konvent (R-BR)
-
-Publika appen ska reflektera respektive konvents grafiska profil utan redeploy. Se UC-BR001–UC-BR002 i `docs/UseCases.md`.
-
-Implementationsordning: R-BR01 → R-BR02
-
-- [x] `R-BR01` `ConventionBranding`-entitet (ConventionId, PrimaryColor, AccentColor, LogoUrl, FaviconUrl, FontFamily, CustomCss) – upsert-semantik; endpoint `PUT /api/conventions/{id}/branding`; anonym `GET`-endpoint med `Cache-Control: max-age=300`; admin-UI med färgväljare, filuppladdning och typsnittsval (UC-BR001)
-- [x] `R-BR02` Publik shell hämtar branding vid initialisering och applicerar CSS-variabler via `document.documentElement.style.setProperty`; logotyp sätts i navbar; fallback till systemdefinierade värden om anropet misslyckas (UC-BR002)
 
 ### Flerspråksstöd (R-I18N)
 

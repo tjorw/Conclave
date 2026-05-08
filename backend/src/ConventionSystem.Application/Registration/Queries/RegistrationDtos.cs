@@ -137,3 +137,25 @@ public record PromotionCodeRedemptionHistoryDto(
     DateTimeOffset RedeemedAt,
     int DiscountApplied,
     int FinalPrice);
+
+public record TeamRegistrationSummaryDto(
+    Guid Id,
+    Guid TeamId,
+    string TeamName,
+    Guid CaptainPersonId,
+    string CaptainName,
+    string Status,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt);
+
+public record TeamRegistrationDetailDto(
+    Guid Id,
+    Guid TeamId,
+    string TeamName,
+    Guid CaptainPersonId,
+    string CaptainName,
+    Guid EventId,
+    Guid EditionId,
+    string Status,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt);

@@ -86,3 +86,28 @@ public sealed class TicketAlreadyPaidException()
     : DomainRuleViolationException(
         "Biljetten är redan betald.",
         "ticket_already_paid");
+
+public sealed class TeamRegistrationNotPendingException()
+    : DomainRuleViolationException(
+        "Laganmälan kan bara bekräftas när den är väntande.",
+        "team_registration_not_pending");
+
+public sealed class TeamRegistrationAlreadyCancelledException()
+    : DomainRuleViolationException(
+        "Laganmälan är redan avbokad.",
+        "team_registration_already_cancelled");
+
+public sealed class EventNotAcceptingTeamRegistrationsException()
+    : DomainRuleViolationException(
+        "Evenemanget accepterar inte laganmälningar.",
+        "event_not_accepting_team_registrations");
+
+public sealed class ActiveTeamRegistrationExistsException()
+    : DomainRuleViolationException(
+        "Du har redan en aktiv laganmälan för detta evenemang.",
+        "active_team_registration_exists");
+
+public sealed class TeamRegistrationNotFoundException()
+    : DomainRuleViolationException(
+        "Laganmälan hittades inte.",
+        "team_registration_not_found");

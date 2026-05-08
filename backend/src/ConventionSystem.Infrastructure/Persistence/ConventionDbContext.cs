@@ -48,6 +48,8 @@ public sealed class ConventionDbContext(
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<TicketType> TicketTypes => Set<TicketType>();
     public DbSet<PromotionCode> PromotionCodes => Set<PromotionCode>();
+    public DbSet<Team> Teams => Set<Team>();
+    public DbSet<TeamEventRegistration> TeamEventRegistrations => Set<TeamEventRegistration>();
 
     // Staff
     public DbSet<Shift> Shifts => Set<Shift>();
