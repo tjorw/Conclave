@@ -5,7 +5,11 @@
     <div class="topnav-inner">
 
       <a class="brand" routerLink="/" (click)="menuOpen.set(false)">
-        <span class="brand-name">{{ editionSvc.conventionName() }}</span>
+        @if (branding.logoUrl(); as logoUrl) {
+          <img class="brand-logo" [src]="logoUrl" [alt]="editionSvc.conventionName()" />
+        } @else {
+          <span class="brand-name">{{ editionSvc.conventionName() }}</span>
+        }
         @if (editionSvc.editionYear()) {
           <span class="brand-year">{{ editionSvc.editionYear() }}</span>
         }

@@ -8,11 +8,19 @@ import { routes } from './app.routes';
 import { ConventionContextService, ENVIRONMENT, tenantDevInterceptor, conventionInterceptor, authInterceptor, authSessionInterceptor } from 'shared';
 import { environment } from '../environments/environment';
 import { EditionService } from './services/edition.service';
+import { BrandingService } from './services/branding.service';
 
-function initEdition(conventionContext: ConventionContextService, svc: EditionService): () => Promise<void> {
+function initPublicApp(
+  conventionContext: ConventionContextService,
+  editionService: EditionService,
+  brandingService: BrandingService
+): () => Promise<void> {
   return async () => {
     await conventionContext.load();
-    await svc.load();
+    await Promise.all([
+      brandingService.load(),
+      editionService.load(),
+    ]);
   };
 }
 
@@ -25,8 +33,8 @@ export const appConfig: ApplicationConfig = {
     { provide: ENVIRONMENT, useValue: environment },
     {
       provide: APP_INITIALIZER,
-      useFactory: initEdition,
-      deps: [ConventionContextService, EditionService],
+      useFactory: initPublicApp,
+      deps: [ConventionContextService, EditionService, BrandingService],
       multi: true,
     },
     provideMarkdown(),

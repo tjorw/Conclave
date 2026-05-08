@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { AuthService, ContextDebugComponent, GlobalStatusBannerComponent, SessionStateService } from 'shared';
 import { EditionService } from '../services/edition.service';
 import { HomeContentStateService } from '../services/home-content-state.service';
+import { BrandingService } from '../services/branding.service';
 
 @Component({
   selector: 'app-shell',
@@ -26,6 +27,7 @@ export class ShellComponent {
   readonly auth       = inject(AuthService);
   readonly sessionState = inject(SessionStateService);
   readonly editionSvc = inject(EditionService);
+  readonly branding = inject(BrandingService);
   private readonly homeContentState = inject(HomeContentStateService);
   private readonly router = inject(Router);
 

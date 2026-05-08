@@ -32,20 +32,34 @@
 .brand {
   text-decoration: none;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  min-width: 0;
 }
 
 .brand-name {
   font-size: 1.1rem;
   font-weight: 700;
   color: #fff;
-  letter-spacing: .01em;
+  letter-spacing: 0;
 
   @media (min-width: 768px) {
     font-size: 1.2rem;
     margin-right: 16px;
+  }
+}
+
+.brand-logo {
+  display: block;
+  max-width: 150px;
+  max-height: 40px;
+  object-fit: contain;
+
+  @media (min-width: 768px) {
+    max-width: 190px;
+    max-height: 46px;
+    margin-right: 8px;
   }
 }
 

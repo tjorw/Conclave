@@ -42,29 +42,6 @@ Se `docs/RichContent.md` för arkitektur och designbeslut. Use cases: UC-RC001�
 Kvar att göra:
 - [ ] `R-RC04` Mailmallar – adminredigerbara mallar i databas; standardmall per typ i kod (restore-funktion); `TemplateRenderer` med Markdig + variabelsubstitution
 
-Klart:
-- [x] `R-RC01` Markdown i eventbeskrivningar (UC-RC001)
-- [x] `R-RC02` Bilduppladdning (UC-RC002)
-- [x] `R-RC03` Redaktionella informationssidor (UC-RC003, UC-RC004)
-
-### CMS och innehållsstyrning (R-CMS)
-
-All text och allt innehåll som visas i publika appen ska kunna styras från admin utan kodändringar. Se UC-CMS001–UC-CMS004 i `docs/UseCases.md`.
-
-Status:
-- [x] `R-CMS01` EditionContent för startsidan (UC-CMS001)
-- [x] `R-CMS02` Utvalda evenemang på startsidan (UC-CMS002)
-- [x] `R-CMS03` Menyordning via `Page.MenuSortOrder` (UC-CMS003)
-- [x] `R-CMS04` Sammanhållet startsideflöde utan hårdkodade texter (UC-CMS004)
-
-Adminscope och pages (status):
-- [x] `R-RC03.1` Scope-delad pages-lista i admin
-- [x] `R-RC03.2` Scope-styrd page-detalj via route
-- [x] `R-RC03.3` Exakt backendfilter per scope + slug-unikhet per scope
-- [x] `R-RC03.4` Frontendvalidering av scope i page-detalj
-- [x] `R-CMS03.1` Scope-separerad hantering av `Page.MenuSortOrder`
-- [x] `R-CMS04.1` Edition-prioritet + sortering i publik meny
-- [x] `R-ADM01` Upplageberoende adminvyer flyttade till `editions/:id/...`
 
 ### Varumärke per konvent (R-BR)
 
@@ -73,7 +50,7 @@ Publika appen ska reflektera respektive konvents grafiska profil utan redeploy. 
 Implementationsordning: R-BR01 → R-BR02
 
 - [x] `R-BR01` `ConventionBranding`-entitet (ConventionId, PrimaryColor, AccentColor, LogoUrl, FaviconUrl, FontFamily, CustomCss) – upsert-semantik; endpoint `PUT /api/conventions/{id}/branding`; anonym `GET`-endpoint med `Cache-Control: max-age=300`; admin-UI med färgväljare, filuppladdning och typsnittsval (UC-BR001)
-- [ ] `R-BR02` Publik shell hämtar branding vid initialisering och applicerar CSS-variabler via `document.documentElement.style.setProperty`; logotyp sätts i navbar; fallback till systemdefinierade värden om anropet misslyckas (UC-BR002)
+- [x] `R-BR02` Publik shell hämtar branding vid initialisering och applicerar CSS-variabler via `document.documentElement.style.setProperty`; logotyp sätts i navbar; fallback till systemdefinierade värden om anropet misslyckas (UC-BR002)
 
 ### Flerspråksstöd (R-I18N)
 

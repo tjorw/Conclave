@@ -3537,10 +3537,10 @@ Besökare (anonym eller inloggad)
 - Inga
 
 ## Acceptanskriterier
-- [ ] Publika appen visar korrekt primärfärg och accentfärg från databasen
-- [ ] Logotyp visas i navbar
-- [ ] Om branding-anropet returnerar 404 används systemfallbacks utan synliga fel
-- [ ] HTTP-svar inkluderar korrekt `Cache-Control`-header
+- [x] Publika appen visar korrekt primärfärg och accentfärg från databasen
+- [x] Logotyp visas i navbar
+- [x] Om branding-anropet returnerar 404 används systemfallbacks utan synliga fel
+- [x] HTTP-svar inkluderar korrekt `Cache-Control`-header
 
 ---
 
