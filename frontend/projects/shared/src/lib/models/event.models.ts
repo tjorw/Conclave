@@ -3,6 +3,7 @@ export type EventCommentStatus = 'New' | 'InProgress' | 'Responded' | 'Acknowled
 export type SessionStatus = 'Active' | 'Inactive';
 export type StartType = 'FixedTime' | 'Rolling' | 'Tournament';
 export type RegistrationType = 'DropIn' | 'PreRegistration' | 'Combined';
+export type RegistrationMode = 'Individual' | 'Team';
 
 export interface EventSummaryDto {
   id: string;
@@ -35,6 +36,9 @@ export interface EventDto {
   programTags: string[];
   scheduleRequestText: string | null;
   registrationType: RegistrationType;
+  registrationMode: RegistrationMode;
+  minTeamSize: number | null;
+  maxTeamSize: number | null;
   dropInRules: string | null;
   isFeatured: boolean;
   featuredSortOrder: number | null;

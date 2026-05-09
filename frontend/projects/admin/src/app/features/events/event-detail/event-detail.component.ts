@@ -17,7 +17,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   CategoryDto, ConventionService, DateTimeRangeComponent, EditionDto, EditionSessionDto, EventDto, EventService, VenueDto,
-  EVENT_COMMENT_STATUS_LABEL, EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
+  EVENT_COMMENT_STATUS_LABEL, EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, REGISTRATION_MODE_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
   formatTicketPrice,
   MarkdownEditorComponent,
   OrganiserTicketAssignmentDto,
@@ -82,6 +82,7 @@ export class EventDetailComponent implements OnInit {
   readonly FIELD         = FIELD;
   readonly PAGE          = EVENT_DETAIL;
   readonly registrationTypes = (Object.entries(REGISTRATION_KIND_LABEL) as [string, string][]).map(([value, label]) => ({ value, label }));
+  readonly registrationModes = (Object.entries(REGISTRATION_MODE_LABEL) as [string, string][]).map(([value, label]) => ({ value, label }));
   readonly startTypes        = (Object.entries(START_TYPE_LABEL) as [string, string][]).map(([value, label]) => ({ value, label }));
   readonly routeEditionId = this.route.snapshot.paramMap.get('id');
 
@@ -91,6 +92,7 @@ export class EventDetailComponent implements OnInit {
   readonly categories = signal<CategoryDto[]>([]);
   readonly loading    = signal(true);
   readonly saving     = signal(false);
+  readonly registrationModeSaving = signal(false);
   readonly deleting   = signal(false);
   readonly error      = signal<string | null>(null);
   readonly showRejectForm        = signal(false);
@@ -126,6 +128,12 @@ export class EventDetailComponent implements OnInit {
     coOrganiserCount: [0, [Validators.required, Validators.min(0)]],
   });
 
+  readonly registrationModeForm = this.fb.group({
+    registrationMode: ['Individual', Validators.required],
+    minTeamSize: [null as number | null, [Validators.min(1)]],
+    maxTeamSize: [null as number | null, [Validators.min(1)]],
+  });
+
   readonly availableProgramTags = computed(() =>
     this.edition()?.programTagDefinitions?.map(t => t.name) ?? []
   );
@@ -153,8 +161,23 @@ export class EventDetailComponent implements OnInit {
   private readonly sessionFormValues = toSignal(this.sessionForm.valueChanges, {
     initialValue: this.sessionForm.value,
   });
+  private readonly registrationModeFormValues = toSignal(this.registrationModeForm.valueChanges, {
+    initialValue: this.registrationModeForm.value,
+  });
 
   readonly timelineVenueId = computed(() => this.sessionFormValues()?.venueId ?? null);
+  readonly teamRegistrationSelected = computed(() =>
+    this.registrationModeFormValues()?.registrationMode === 'Team'
+  );
+  readonly registrationModeInvalid = computed(() => {
+    const values = this.registrationModeFormValues();
+    if (this.registrationModeForm.invalid) return true;
+    if (values?.registrationMode !== 'Team') return false;
+
+    const min = values.minTeamSize;
+    const max = values.maxTeamSize;
+    return min === null || min === undefined || max === null || max === undefined || max < min;
+  });
 
   readonly timelineDraft = computed<DraftBlock | null>(() => {
     // Visa bara ett draft-block när formuläret faktiskt är öppet
@@ -266,6 +289,28 @@ export class EventDetailComponent implements OnInit {
     this.svc.rejectEvent(ev.id, comment).subscribe({
       next: () => { this.saving.set(false); this.showRejectForm.set(false); this.reload(); },
       error: err => { this.saving.set(false); this.error.set(toErrorMessage(err, ERROR.rejectEvent)); },
+    });
+  }
+
+  saveRegistrationMode(): void {
+    const ev = this.event();
+    if (!ev || this.registrationModeInvalid() || this.registrationModeSaving()) return;
+
+    const { registrationMode, minTeamSize, maxTeamSize } = this.registrationModeForm.getRawValue();
+    const isTeam = registrationMode === 'Team';
+
+    this.registrationModeSaving.set(true);
+    this.svc.configureTeamRegistration(
+      ev.id,
+      registrationMode!,
+      isTeam ? minTeamSize : null,
+      isTeam ? maxTeamSize : null
+    ).subscribe({
+      next: () => { this.registrationModeSaving.set(false); this.reload(); },
+      error: err => {
+        this.registrationModeSaving.set(false);
+        this.error.set(toErrorMessage(err, ERROR.configureTeamRegistration));
+      },
     });
   }
 
@@ -514,6 +559,11 @@ export class EventDetailComponent implements OnInit {
       coOrganiserCount: e.coOrganiserCount,
     });
     this.limitForm.patchValue({ limit: e.coOrganiserLimit });
+    this.registrationModeForm.patchValue({
+      registrationMode: e.registrationMode ?? 'Individual',
+      minTeamSize: e.minTeamSize,
+      maxTeamSize: e.maxTeamSize,
+    });
   }
 
   statusLabel(status: string): string {

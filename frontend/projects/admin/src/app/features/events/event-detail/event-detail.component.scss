@@ -160,6 +160,18 @@
   }
 }
 
+.registration-mode-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+
+  mat-form-field {
+    flex: 1 1 180px;
+    min-width: 160px;
+  }
+}
+
 .add-request-form {
   padding: 12px 16px 0;
 

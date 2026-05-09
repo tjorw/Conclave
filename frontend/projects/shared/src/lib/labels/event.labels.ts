@@ -18,6 +18,11 @@ export const REGISTRATION_KIND_LABEL: Record<string, string> = {
   Combined:        'Kombinerat',
 };
 
+export const REGISTRATION_MODE_LABEL: Record<string, string> = {
+  Individual: 'Individuell',
+  Team:       'Lag',
+};
+
 export const START_TYPE_LABEL: Record<string, string> = {
   FixedTime:  'Fast tid',
   Rolling:    'Löpande',

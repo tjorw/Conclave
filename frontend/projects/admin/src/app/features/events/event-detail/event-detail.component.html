@@ -256,6 +256,42 @@
           </button>
         </mat-card-actions>
       </mat-card>
+
+      <mat-card class="content-card tab-card">
+        <mat-card-header>
+          <mat-card-title>{{ PAGE.registrationModeTitle }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="help-text">{{ PAGE.registrationModeHint }}</p>
+          <form [formGroup]="registrationModeForm" class="registration-mode-form">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ PAGE.registrationModeField }}</mat-label>
+              <mat-select formControlName="registrationMode">
+                @for (mode of registrationModes; track mode.value) {
+                  <mat-option [value]="mode.value">{{ mode.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            @if (teamRegistrationSelected()) {
+              <mat-form-field appearance="outline">
+                <mat-label>{{ PAGE.minTeamSizeField }}</mat-label>
+                <input matInput type="number" min="1" formControlName="minTeamSize" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>{{ PAGE.maxTeamSizeField }}</mat-label>
+                <input matInput type="number" min="1" formControlName="maxTeamSize" />
+              </mat-form-field>
+            }
+          </form>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-flat-button color="primary" (click)="saveRegistrationMode()"
+            [disabled]="registrationModeInvalid() || registrationModeSaving()">
+            @if (registrationModeSaving()) { <mat-spinner diameter="18" /> } @else { {{ PAGE.saveRegistrationMode }} }
+          </button>
+        </mat-card-actions>
+      </mat-card>
     </mat-tab>
 
     <mat-tab [label]="PAGE.coOrganisersTab">

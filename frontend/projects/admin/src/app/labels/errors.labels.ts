@@ -61,6 +61,7 @@ export const ERROR = {
   respondToComment:     'Kunde inte hantera kommentaren',
   createEvent:          'Kunde inte skapa evenemang',
   setFeaturedEvent:     'Kunde inte uppdatera utvalda evenemang',
+  configureTeamRegistration: 'Kunde inte uppdatera anmälningsläget',
 
   // Stationer
   createStation:          'Kunde inte skapa stationen',

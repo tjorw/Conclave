@@ -86,6 +86,18 @@ export class EventService {
     );
   }
 
+  configureTeamRegistration(
+    eventId: string,
+    registrationMode: string,
+    minTeamSize: number | null,
+    maxTeamSize: number | null
+  ) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/api/events/${eventId}/registration-mode`,
+      { registrationMode, minTeamSize, maxTeamSize }
+    );
+  }
+
   setFeatured(eventId: string, isFeatured: boolean, featuredSortOrder: number | null) {
     return this.http.put<void>(
       `${this.env.apiBaseUrl}/events/${eventId}/featured`,

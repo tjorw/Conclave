@@ -13,7 +13,7 @@ Spårar vad som återstår inför produktionsstart.
 - [x] `R-TM01` `Event.RegistrationMode: Individual | Team` + `TeamSize { Min, Max }` value object; `ConfigureTeamRegistration()`-metod + invarianter; EF-kolumner på befintlig `events`-tabell; se UC-TM001
 - [x] `R-TM02` `Team`-aggregat – Edition-scoped, captain (`PersonId`), lagnamn (max 200), `TeamCreated`-event; se UC-TM002
 - [x] `R-TM03` `TeamEventRegistration`-aggregat – livscykel `Pending → Confirmed | Cancelled`; domänmetoder `Confirm()` och `Cancel()`; denormaliserat `EditionId`; unikt sammansatt index `(team_id, event_id)`; se UC-TM002–UC-TM004
-- [ ] `R-TM01b` Admin-UI: anmälningsläge-sektion i evenemangsdetalj (dropdown Individual/Team + lagstorlek)
+- [x] `R-TM01b` Admin-UI: anmälningsläge-sektion i evenemangsdetalj (dropdown Individual/Team + lagstorlek)
 - [ ] `R-TM03b` Admin-UI: laganmälningslista per evenemang med bekräfta/avboka-knappar
 
 **Fas 2 (separat ADR):**
