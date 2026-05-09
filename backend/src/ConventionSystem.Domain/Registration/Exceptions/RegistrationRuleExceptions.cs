@@ -47,6 +47,16 @@ public sealed class SessionRegistrationAlreadyCancelledException()
         "Sessionsregistreringen är redan avbokad.",
         "session_registration_already_cancelled");
 
+public sealed class SessionFullException()
+    : DomainRuleViolationException(
+        "Sessionen är fullbokad.",
+        "session_full");
+
+public sealed class SessionRegistrationCannotBeConfirmedException()
+    : DomainRuleViolationException(
+        "Bara väntande registreringar kan bekräftas.",
+        "session_registration_cannot_be_confirmed");
+
 public sealed class VisitorRegistrationPaymentStateInvalidException()
     : DomainRuleViolationException(
         "Betalning kan bara bekräftas när registreringen väntar på betalning.",

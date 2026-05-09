@@ -19,14 +19,31 @@ public sealed class SessionRegistration : AggregateRoot
 
     private SessionRegistration() { }
 
-    public SessionRegistration(SessionRegistrationId id, SessionId sessionId, PersonId personId, TicketId ticketId)
+    public SessionRegistration(
+        SessionRegistrationId id,
+        SessionId sessionId,
+        PersonId personId,
+        TicketId ticketId,
+        SessionRegistrationStatus status = SessionRegistrationStatus.Confirmed)
     {
         Id = id;
         SessionId = sessionId;
         PersonId = personId;
         TicketId = ticketId;
-        Status = SessionRegistrationStatus.Confirmed;
+        Status = status;
         CreatedAt = DateTimeOffset.UtcNow;
+
+        if (status == SessionRegistrationStatus.Pending)
+            RaiseDomainEvent(new SessionRegistrationQueued(id, sessionId, personId, DateTimeOffset.UtcNow));
+    }
+
+    public void Confirm()
+    {
+        if (Status != SessionRegistrationStatus.Pending)
+            throw new SessionRegistrationCannotBeConfirmedException();
+
+        Status = SessionRegistrationStatus.Confirmed;
+        RaiseDomainEvent(new SessionRegistrationConfirmed(Id, SessionId, PersonId, DateTimeOffset.UtcNow));
     }
 
     public void Cancel()

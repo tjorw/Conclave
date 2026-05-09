@@ -12,6 +12,18 @@ public record VisitorRegistrationConfirmed(
     EditionId EditionId,
     DateTimeOffset OccurredAt) : IDomainEvent;
 
+public record SessionRegistrationQueued(
+    SessionRegistrationId RegistrationId,
+    SessionId SessionId,
+    PersonId PersonId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record SessionRegistrationConfirmed(
+    SessionRegistrationId RegistrationId,
+    SessionId SessionId,
+    PersonId PersonId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
 public record SessionRegistrationCancelled(
     SessionRegistrationId RegistrationId,
     SessionId SessionId,

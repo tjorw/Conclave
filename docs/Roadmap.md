@@ -9,8 +9,18 @@ Spårar vad som återstår inför produktionsstart.
 
 ### Bokning och tilldelning av plats
 Platser i arrangemang kan tilldelas på olika sätt. Kön hör till det konkreta objektet man anmäler sig till; i nuvarande modell är det en session. Arrangemanget äger reglerna för hur sessionernas bokningar hanteras, till exempel om första bokningsförsöket skall bekräftas direkt eller hamna i kö/väntlista, och om samma person får boka flera sessioner i samma arrangemang.
-- [ ] `R-BK01` Bokningskö – första bokningsförsök skapar en väntande bokning på den aktuella sessionen när arrangemanget kräver tilldelning i stället för direkt bekräftelse
-- [ ] `R-BK02` Bokningstilldelning – stöd strategi per arrangemang för tilldelning av sessionernas väntande bokningar: först till kvarn, lottning eller manuell tilldelning
+
+**ADR:** `docs/decisions/2026-05-09-booking-allocation.md`
+
+Implementationsordning: R-BK01a → R-BK01b → R-BK01c → R-BK02a → R-BK02b → R-BK02c
+
+- [x] `R-BK01a` Domän: `AllocationMode`-enum + `Event.ConfigureAllocationMode()`; `SessionRegistrationStatus.Pending`; `SessionRegistration.Confirm()` + utökad `Cancel()`; domain events `SessionRegistrationQueued` och `SessionRegistrationConfirmed`; enhetstest
+- [x] `R-BK01b` Applikation: `RegisterForSessionHandler` grenar på `AllocationMode` — `DirectConfirmation` räknar kapacitet, `Queue` skapar `Pending`; `IRegistrationRuleService.ValidateSeatAvailability` tas bort; ny repo-metod `CountConfirmedBySessionIdAsync`; `ConfigureAllocationModeCommand` + handler
+- [x] `R-BK01c` Infrastruktur + API: EF-kolumn `allocation_mode` på `events`; migration `AddAllocationMode`; endpoint `PUT /api/events/{id}/allocation-mode`
+- [x] `R-BK02a` Domän + Applikation: `AllocationStrategy`-enum; `AllocateSessionRegistrationsCommand` + handler med FCFS, Lottery och Manual; `ISessionRegistrationRepository.GetPendingBySessionAsync` + `SaveAllAsync`; enhetstest för alla tre strategier
+- [x] `R-BK02b` Infrastruktur + API: repository-implementationer; endpoint `POST /api/events/{eventId}/sessions/{sessionId}/allocate`; behörighetscheck admin
+- [ ] `R-BK01c-ui` Admin-UI: dropdown för `AllocationMode` i evenemangsdetalj
+- [ ] `R-BK02c` Admin-UI: sektion i sessionslistan som visar antal `Pending` per session; knapp "Kör tilldelning" öppnar dialog med strategival och bekräftelse
 
 
 ### Multitenancy

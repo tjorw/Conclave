@@ -17,6 +17,7 @@ using ConventionSystem.Application.Registration.Commands.DeleteStaffApplication;
 using ConventionSystem.Application.Registration.Commands.DeleteTicketType;
 using ConventionSystem.Application.Registration.Commands.IssueTicket;
 using ConventionSystem.Application.Registration.Commands.RedeemPromotionCode;
+using ConventionSystem.Application.Registration.Commands.AllocateSessionRegistrations;
 using ConventionSystem.Application.Registration.Commands.RegisterForSession;
 using ConventionSystem.Application.Registration.Commands.RegisterManualTicketPayment;
 using ConventionSystem.Application.Registration.Commands.RejectStaffApplication;
@@ -442,6 +443,14 @@ public static class RegistrationEndpoints
                 await sender.Send(new DeleteStaffApplicationCommand(applicationId), ct);
                 return Results.NoContent();
             });
+
+        // R-BK02 – Kör platslotteri / tilldelning
+        groups.Admin.MapPost("/events/{eventId:guid}/sessions/{sessionId:guid}/allocate",
+            async (Guid eventId, Guid sessionId, AllocateSessionsRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new AllocateSessionRegistrationsCommand(eventId, sessionId, request.Strategy), ct);
+                return Results.NoContent();
+            });
     }
 }
 
@@ -476,3 +485,4 @@ public record UpdateStaffApplicationRequest(
     IReadOnlyList<UpdateStaffApplicationAvailabilityRequest> Availabilities,
     IReadOnlyList<Guid> StaffAreaIds);
 public record UpdateStaffApplicationAvailabilityRequest(DateTime From, DateTime To);
+public record AllocateSessionsRequest(string Strategy);

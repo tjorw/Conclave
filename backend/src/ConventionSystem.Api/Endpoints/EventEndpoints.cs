@@ -22,6 +22,7 @@ using ConventionSystem.Application.Event.Queries.GetEvent;
 using ConventionSystem.Application.Event.Queries.GetFeaturedEvents;
 using ConventionSystem.Application.Event.Queries.ListEvents;
 using ConventionSystem.Application.Event.Queries.ListMyEvents;
+using ConventionSystem.Application.Event.Commands.ConfigureAllocationMode;
 using ConventionSystem.Application.Event.Commands.SetFeatured;
 using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Application.Common;
@@ -233,6 +234,14 @@ public static class EventEndpoints
                 return Results.NoContent();
             });
 
+        // R-BK01 – Konfigurera allokeringsläge
+        groups.Admin.MapPut("/events/{eventId:guid}/allocation-mode",
+            async (Guid eventId, ConfigureAllocationModeRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new ConfigureAllocationModeCommand(eventId, request.AllocationMode), ct);
+                return Results.NoContent();
+            });
+
         // R-CO: Lös in inbjudan
         groups.Authenticated.MapPost("/co-organiser-invitations/redeem",
             async (RedeemCoOrganiserInvitationRequest request, ISender sender, CancellationToken ct) =>
@@ -257,3 +266,4 @@ public record AdjustCoOrganiserLimitRequest(int Limit);
 public record CreateCoOrganiserInvitationRequest(string Email);
 public record RedeemCoOrganiserInvitationRequest(string Code);
 public record SetFeaturedRequest(bool IsFeatured, int? FeaturedSortOrder);
+public record ConfigureAllocationModeRequest(string AllocationMode);

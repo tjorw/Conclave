@@ -1,3 +1,5 @@
+using ConventionSystem.Domain.Event.Enums;
+
 namespace ConventionSystem.Application.Event.Queries;
 
 public record EditionOrganiserDto(
@@ -95,6 +97,10 @@ public record EditionSessionDto(
     int MaxSeats,
     string StartType,
     string Status);
+
+public record SessionAllocationInfoDto(
+    AllocationMode AllocationMode,
+    int MaxSeats);
 
 public record EventCommentDto(
     Guid Id,

@@ -31,6 +31,7 @@ public sealed class Event : AggregateRoot
     public string? DropInRules { get; private set; }
     public RegistrationMode RegistrationMode { get; private set; }
     public TeamSize? TeamSize { get; private set; }
+    public AllocationMode AllocationMode { get; private set; }
     public int CoOrganiserCount { get; private set; }
     public int CoOrganiserLimit { get; private set; }
     public bool IsFeatured { get; private set; }
@@ -90,6 +91,12 @@ public sealed class Event : AggregateRoot
         EnsureNotCancelled();
         RegistrationType = registrationType;
         DropInRules = dropInRules;
+    }
+
+    public void ConfigureAllocationMode(AllocationMode mode)
+    {
+        EnsureNotCancelled();
+        AllocationMode = mode;
     }
 
     public void ConfigureTeamRegistration(RegistrationMode mode, int? minTeamSize, int? maxTeamSize)

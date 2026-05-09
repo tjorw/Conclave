@@ -123,6 +123,12 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(e => e.AllocationMode)
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasColumnName("allocation_mode")
+            .HasDefaultValue(Domain.Event.Enums.AllocationMode.DirectConfirmation);
+
         builder.Property(e => e.CoOrganiserCount).HasColumnName("co_organiser_count");
         builder.Property(e => e.CoOrganiserLimit).HasColumnName("co_organiser_limit");
 

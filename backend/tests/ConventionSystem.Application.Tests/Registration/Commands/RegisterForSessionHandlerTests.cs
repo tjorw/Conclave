@@ -1,11 +1,15 @@
-﻿using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
+using ConventionSystem.Application.Event.Abstractions;
+using ConventionSystem.Application.Event.Queries;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Commands.RegisterForSession;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Common;
+using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Registration.Aggregates;
+using ConventionSystem.Domain.Registration.Enums;
 using ConventionSystem.Domain.Registration.Ids;
 using ConventionSystem.Domain.Registration.Services;
 using NSubstitute;
@@ -16,23 +20,28 @@ public class RegisterForSessionHandlerTests
 {
     private readonly ISessionRegistrationRepository _sessionRegRepo = Substitute.For<ISessionRegistrationRepository>();
     private readonly ITicketRepository _ticketRepo = Substitute.For<ITicketRepository>();
+    private readonly IEventRepository _eventRepo = Substitute.For<IEventRepository>();
     private readonly IRegistrationRuleService _ruleService = Substitute.For<IRegistrationRuleService>();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly RegisterForSessionHandler _handler;
 
     public RegisterForSessionHandlerTests()
     {
-        _handler = new RegisterForSessionHandler(_sessionRegRepo, _ticketRepo, _ruleService, _currentUser);
+        _handler = new RegisterForSessionHandler(
+            _sessionRegRepo, _ticketRepo, _eventRepo, _ruleService, _currentUser);
     }
 
-    private Ticket SetupPaidTicket()
+    private Ticket SetupPaidTicket(int maxSeats = 10, AllocationMode mode = AllocationMode.DirectConfirmation)
     {
         var ticket = new Ticket(TicketId.New(), TicketTypeId.New(), PersonId.New(), EditionId.New());
         ticket.ConfirmPayment();
         _ticketRepo.GetByIdAsync(ticket.Id, Arg.Any<CancellationToken>()).Returns(ticket);
-        _ruleService.ValidateSeatAvailability(Arg.Any<SessionId>()).Returns(true);
         _ruleService.ValidateTicket(Arg.Any<TicketId>(), Arg.Any<SessionId>()).Returns(true);
         _currentUser.PersonId.Returns(ticket.PersonId);
+        _eventRepo.GetSessionAllocationInfoAsync(Arg.Any<SessionId>(), Arg.Any<CancellationToken>())
+            .Returns(new SessionAllocationInfoDto(mode, maxSeats));
+        _sessionRegRepo.CountConfirmedBySessionIdAsync(Arg.Any<SessionId>(), Arg.Any<CancellationToken>())
+            .Returns(0);
         return ticket;
     }
 
@@ -59,6 +68,33 @@ public class RegisterForSessionHandlerTests
     }
 
     [Fact]
+    public async Task Handle_DirectConfirmation_FullSession_Throws()
+    {
+        var ticket = SetupPaidTicket(maxSeats: 5, mode: AllocationMode.DirectConfirmation);
+        _sessionRegRepo.CountConfirmedBySessionIdAsync(Arg.Any<SessionId>(), Arg.Any<CancellationToken>())
+            .Returns(5);
+
+        await Assert.ThrowsAsync<DomainRuleViolationException>(
+            () => _handler.Handle(
+                new RegisterForSessionCommand(Guid.NewGuid(), ticket.Id.Value), default));
+    }
+
+    [Fact]
+    public async Task Handle_Queue_FullSession_RegistersAsPending()
+    {
+        var ticket = SetupPaidTicket(maxSeats: 5, mode: AllocationMode.Queue);
+        _sessionRegRepo.CountConfirmedBySessionIdAsync(Arg.Any<SessionId>(), Arg.Any<CancellationToken>())
+            .Returns(5);
+
+        await _handler.Handle(
+            new RegisterForSessionCommand(Guid.NewGuid(), ticket.Id.Value), default);
+
+        await _sessionRegRepo.Received(1).AddAndSaveAsync(
+            Arg.Is<SessionRegistration>(r => r.Status == SessionRegistrationStatus.Pending),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Handle_TicketNotPaid_Throws()
     {
         var ticket = new Ticket(TicketId.New(), TicketTypeId.New(), PersonId.New(), EditionId.New());
@@ -78,17 +114,6 @@ public class RegisterForSessionHandlerTests
         await Assert.ThrowsAsync<ForbiddenException>(
             () => _handler.Handle(
             new RegisterForSessionCommand(Guid.NewGuid(), ticket.Id.Value), default));
-    }
-
-    [Fact]
-    public async Task Handle_NoSeatsAvailable_Throws()
-    {
-        var ticket = SetupPaidTicket();
-        _ruleService.ValidateSeatAvailability(Arg.Any<SessionId>()).Returns(false);
-
-        await Assert.ThrowsAsync<DomainRuleViolationException>(
-            () => _handler.Handle(
-                new RegisterForSessionCommand(Guid.NewGuid(), ticket.Id.Value), default));
     }
 
     [Fact]

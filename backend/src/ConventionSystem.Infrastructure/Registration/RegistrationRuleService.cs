@@ -10,9 +10,6 @@ namespace ConventionSystem.Infrastructure.Registration;
 
 public sealed class RegistrationRuleService(ConventionDbContext db) : IRegistrationRuleService
 {
-    // Seat availability is still outside the current scope and handled as permissive.
-    public bool ValidateSeatAvailability(SessionId sessionId) => true;
-
     public bool ValidateTicket(TicketId ticketId, SessionId sessionId)
     {
         var sessionInfo = db.Events

@@ -331,6 +331,20 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .ToList();
     }
 
+    public async Task<SessionAllocationInfoDto?> GetSessionAllocationInfoAsync(SessionId sessionId, CancellationToken ct = default)
+    {
+        var result = await db.Events
+            .Where(e => e.Sessions.Any(s => s.Id == sessionId))
+            .Select(e => new
+            {
+                e.AllocationMode,
+                MaxSeats = e.Sessions.Where(s => s.Id == sessionId).Select(s => s.MaxSeats).FirstOrDefault()
+            })
+            .FirstOrDefaultAsync(ct);
+
+        return result is null ? null : new SessionAllocationInfoDto(result.AllocationMode, result.MaxSeats);
+    }
+
     public async Task DeleteAsync(Domain.Event.Aggregates.Event ev, CancellationToken ct = default)
     {
         db.Events.Remove(ev);

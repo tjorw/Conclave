@@ -13,7 +13,10 @@ public interface ISessionRegistrationRepository
     Task<IReadOnlyList<SessionRegistration>> GetAllConfirmedByTicketIdAsync(TicketId ticketId, CancellationToken ct = default);
     Task<IReadOnlyDictionary<SessionId, int>> CountConfirmedBySessionIdsAsync(IReadOnlyCollection<SessionId> sessionIds, CancellationToken ct = default);
     Task<bool> HasRegistrationAsync(PersonId personId, SessionId sessionId, CancellationToken ct = default);
+    Task<int> CountConfirmedBySessionIdAsync(SessionId sessionId, CancellationToken ct = default);
+    Task<IReadOnlyList<SessionRegistration>> GetPendingBySessionAsync(SessionId sessionId, CancellationToken ct = default);
     Task<IReadOnlyList<MySessionRegistrationSummaryDto>> ListByPersonAndEditionAsync(PersonId personId, EditionId editionId, CancellationToken ct = default);
     Task AddAndSaveAsync(SessionRegistration registration, CancellationToken ct = default);
     Task SaveAsync(CancellationToken ct = default);
+    Task SaveAllAsync(IReadOnlyList<SessionRegistration> registrations, CancellationToken ct = default);
 }

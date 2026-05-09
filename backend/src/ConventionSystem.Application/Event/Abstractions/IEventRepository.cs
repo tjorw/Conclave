@@ -1,5 +1,6 @@
 using ConventionSystem.Application.Event.Queries;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Event.Ids;
 
 namespace ConventionSystem.Application.Event.Abstractions;
@@ -22,6 +23,7 @@ public interface IEventRepository
     Task<EventDto?> GetProjectedByIdAsync(EventId id, CancellationToken ct = default);
     Task<IReadOnlyList<EditionOrganiserDto>> ListOrganisersByEditionIdAsync(EditionId editionId, CancellationToken ct = default);
     Task<IReadOnlyList<EditionSessionDto>> ListSessionsByEditionIdAsync(EditionId editionId, CancellationToken ct = default);
+    Task<SessionAllocationInfoDto?> GetSessionAllocationInfoAsync(SessionId sessionId, CancellationToken ct = default);
     Task DeleteAsync(Domain.Event.Aggregates.Event ev, CancellationToken ct = default);
     Task SaveAsync(CancellationToken ct = default);
 }

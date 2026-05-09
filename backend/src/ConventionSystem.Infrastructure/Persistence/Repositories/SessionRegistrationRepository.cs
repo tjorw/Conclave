@@ -51,6 +51,15 @@ public sealed class SessionRegistrationRepository(ConventionDbContext db) : ISes
             r => r.PersonId == personId && r.SessionId == sessionId
               && r.Status != Domain.Registration.Enums.SessionRegistrationStatus.Cancelled, ct);
 
+    public Task<int> CountConfirmedBySessionIdAsync(SessionId sessionId, CancellationToken ct = default)
+        => db.SessionRegistrations.CountAsync(
+            r => r.SessionId == sessionId && r.Status == SessionRegistrationStatus.Confirmed, ct);
+
+    public async Task<IReadOnlyList<SessionRegistration>> GetPendingBySessionAsync(SessionId sessionId, CancellationToken ct = default)
+        => await db.SessionRegistrations
+            .Where(r => r.SessionId == sessionId && r.Status == SessionRegistrationStatus.Pending)
+            .ToListAsync(ct);
+
     public async Task<IReadOnlyList<MySessionRegistrationSummaryDto>> ListByPersonAndEditionAsync(
         PersonId personId, EditionId editionId, CancellationToken ct = default)
     {
@@ -103,5 +112,8 @@ public sealed class SessionRegistrationRepository(ConventionDbContext db) : ISes
     }
 
     public Task SaveAsync(CancellationToken ct = default)
+        => db.SaveChangesAsync(ct);
+
+    public Task SaveAllAsync(IReadOnlyList<SessionRegistration> registrations, CancellationToken ct = default)
         => db.SaveChangesAsync(ct);
 }
