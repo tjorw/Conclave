@@ -7,30 +7,6 @@ Spårar vad som återstår inför produktionsstart.
 ---
 
 
-### Laganmälningar (R-TM)
-
-**Fas 1 (ADR 2026-05-08-team-registrations.md):**
-- [x] `R-TM01` `Event.RegistrationMode: Individual | Team` + `TeamSize { Min, Max }` value object; `ConfigureTeamRegistration()`-metod + invarianter; EF-kolumner på befintlig `events`-tabell; se UC-TM001
-- [x] `R-TM02` `Team`-aggregat – Edition-scoped, captain (`PersonId`), lagnamn (max 200), `TeamCreated`-event; se UC-TM002
-- [x] `R-TM03` `TeamEventRegistration`-aggregat – livscykel `Pending → Confirmed | Cancelled`; domänmetoder `Confirm()` och `Cancel()`; denormaliserat `EditionId`; unikt sammansatt index `(team_id, event_id)`; se UC-TM002–UC-TM004
-- [x] `R-TM01b` Admin-UI: anmälningsläge-sektion i evenemangsdetalj (dropdown Individual/Team + lagstorlek)
-- [x] `R-TM03b` Admin-UI: laganmälningslista per evenemang med bekräfta/avboka-knappar
-
-**Fas 2 (ADR 2026-05-09-team-registrations-fas2.md):**
-
-Implementationsordning: R-TM04 → R-TM05 → R-TM06
-
-- [x] `R-TM04a` Domän: `TeamSessionAssignment`-entitet + collection på `Session`; metoder `AssignTeam()`/`RemoveTeamAssignment()` med invarianter; publika metoder `AssignTeamToSession()`/`RemoveTeamFromSession()` på `Event`; domain events; enhetstest
-- [x] `R-TM04b` Applikation: `AssignTeamToSessionCommand`, `RemoveTeamFromSessionCommand`, `ListTeamAssignmentsForSessionQuery` + handlers; `ITeamSessionAssignmentRepository`
-- [x] `R-TM04c` Infrastruktur: EF-konfiguration `team_session_assignments`; migration `AddTeamSessionAssignments`; `TeamSessionAssignmentRepository`; utöka `EventRepository` med Include för `TeamAssignments`
-- [x] `R-TM04d` API: endpoints i `TeamRegistrationEndpoints.cs`; behörighetscheck admin/kategoriansvarig
-- [x] `R-TM04e` Admin-UI: "Tilldela session"-knapp per Confirmed-lag i laganmälningslistan
-- [x] `R-TM05a` Applikation: ny metod `ListMyTeamAssignedSessionsAsync` på `IMyScheduleRepository`; `MyTeamAssignedSessionDto`; `GetMyTeamAssignedSessionsQuery` + handler
-- [x] `R-TM05b` Infrastruktur: implementera `ListMyTeamAssignedSessionsAsync` i `MyScheduleRepository`
-- [x] `R-TM05c` API: `GET /api/schedule/team-sessions?editionId={id}` endpoint
-- [x] `R-TM06` Publik app: ny komponent `team-registration.component.ts`; route `/my-pages/team-registration/:eventId`; formulär med lagnamn; länk från eventdetalj när `registrationMode = Team`
-
-
 ### Bokning och tilldelning av plats
 Platser i arrangemang kan tilldelas på olika sätt. Kön hör till det konkreta objektet man anmäler sig till; i nuvarande modell är det en session. Arrangemanget äger reglerna för hur sessionernas bokningar hanteras, till exempel om första bokningsförsöket skall bekräftas direkt eller hamna i kö/väntlista, och om samma person får boka flera sessioner i samma arrangemang.
 - [ ] `R-BK01` Bokningskö – första bokningsförsök skapar en väntande bokning på den aktuella sessionen när arrangemanget kräver tilldelning i stället för direkt bekräftelse
