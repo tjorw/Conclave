@@ -19,8 +19,8 @@ Implementationsordning: R-BK01a → R-BK01b → R-BK01c → R-BK02a → R-BK02b 
 - [x] `R-BK01c` Infrastruktur + API: EF-kolumn `allocation_mode` på `events`; migration `AddAllocationMode`; endpoint `PUT /api/events/{id}/allocation-mode`
 - [x] `R-BK02a` Domän + Applikation: `AllocationStrategy`-enum; `AllocateSessionRegistrationsCommand` + handler med FCFS, Lottery och Manual; `ISessionRegistrationRepository.GetPendingBySessionAsync` + `SaveAllAsync`; enhetstest för alla tre strategier
 - [x] `R-BK02b` Infrastruktur + API: repository-implementationer; endpoint `POST /api/events/{eventId}/sessions/{sessionId}/allocate`; behörighetscheck admin
-- [ ] `R-BK01c-ui` Admin-UI: dropdown för `AllocationMode` i evenemangsdetalj
-- [ ] `R-BK02c` Admin-UI: sektion i sessionslistan som visar antal `Pending` per session; knapp "Kör tilldelning" öppnar dialog med strategival och bekräftelse
+- [x] `R-BK01c-ui` Admin-UI: dropdown för `AllocationMode` i evenemangsdetalj
+- [x] `R-BK02c` Admin-UI: sektion i sessionslistan som visar antal `Pending` per session; knapp "Kör tilldelning" öppnar dialog med strategival och bekräftelse
 
 
 ### Multitenancy

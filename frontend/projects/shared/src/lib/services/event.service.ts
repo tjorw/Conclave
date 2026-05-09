@@ -202,4 +202,11 @@ export class EventService {
       `${this.env.apiBaseUrl}/editions/${editionId}/sessions`
     );
   }
+
+  configureAllocationMode(eventId: string, allocationMode: string) {
+    return this.http.put<void>(
+      `${this.env.apiBaseUrl}/events/${eventId}/allocation-mode`,
+      { allocationMode }
+    );
+  }
 }

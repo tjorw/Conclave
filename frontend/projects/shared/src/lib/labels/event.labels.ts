@@ -40,3 +40,8 @@ export const EVENT_COMMENT_STATUS_LABEL: Record<string, string> = {
   Responded:    'Besvarad',
   Acknowledged: 'Kvitterad',
 };
+
+export const ALLOCATION_MODE_LABEL: Record<string, string> = {
+  DirectConfirmation: 'Direkt bekräftelse',
+  Queue:              'Kö',
+};

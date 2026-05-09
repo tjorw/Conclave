@@ -285,6 +285,13 @@ export class RegistrationService {
     );
   }
 
+  allocateSessionRegistrations(eventId: string, sessionId: string, strategy: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/api/events/${eventId}/sessions/${sessionId}/allocate`,
+      { strategy }
+    );
+  }
+
   confirmVisitorPayment(registrationId: string, externalReference: string) {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/visitor-registrations/${registrationId}/confirm-payment`,

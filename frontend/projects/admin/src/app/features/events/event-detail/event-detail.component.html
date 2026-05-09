@@ -292,6 +292,34 @@
           </button>
         </mat-card-actions>
       </mat-card>
+
+      <mat-card class="content-card tab-card">
+        <mat-card-header>
+          <mat-card-title>{{ PAGE.allocationModeTitle }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="help-text">{{ PAGE.allocationModeHint }}</p>
+          @if (allocationModeError()) {
+            <div class="error-banner">{{ allocationModeError() }}</div>
+          }
+          <form [formGroup]="allocationModeForm" class="registration-mode-form">
+            <mat-form-field appearance="outline">
+              <mat-label>{{ PAGE.allocationModeField }}</mat-label>
+              <mat-select formControlName="allocationMode">
+                @for (mode of allocationModes; track mode.value) {
+                  <mat-option [value]="mode.value">{{ mode.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </form>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-flat-button color="primary" (click)="saveAllocationMode()"
+            [disabled]="allocationModeForm.invalid || allocationModeSaving()">
+            @if (allocationModeSaving()) { <mat-spinner diameter="18" /> } @else { {{ PAGE.saveAllocationMode }} }
+          </button>
+        </mat-card-actions>
+      </mat-card>
     </mat-tab>
 
     <mat-tab [label]="PAGE.teamRegistrationsTab">
@@ -561,6 +589,10 @@
                     <th><button type="button" class="sort-header" (click)="sessionSort.setSort('seats')">Max platser <mat-icon>{{ sessionSort.sortIcon('seats') }}</mat-icon></button></th>
                     <th><button type="button" class="sort-header" (click)="sessionSort.setSort('startType')">Starttyp <mat-icon>{{ sessionSort.sortIcon('startType') }}</mat-icon></button></th>
                     <th><button type="button" class="sort-header" (click)="sessionSort.setSort('status')">Status <mat-icon>{{ sessionSort.sortIcon('status') }}</mat-icon></button></th>
+                    @if (event()?.allocationMode === 'Queue') {
+                      <th>{{ PAGE.pendingColumn }}</th>
+                      <th></th>
+                    }
                   </tr>
                 </thead>
                 <tbody>
@@ -574,6 +606,29 @@
                       <td>{{ s.maxSeats }}</td>
                       <td>{{ startTypeLabel(s.startType) }}</td>
                       <td><span class="chip chip-grey">{{ sessionStatusLabel(s.status) }}</span></td>
+                      @if (event()?.allocationMode === 'Queue') {
+                        <td>
+                          @if (s.pendingCount > 0) {
+                            <span class="chip chip-orange">{{ s.pendingCount }}</span>
+                          } @else {
+                            <span class="text-subtle">0</span>
+                          }
+                        </td>
+                        <td class="action-cell" (click)="$event.stopPropagation()">
+                          @if (s.pendingCount > 0) {
+                            <button mat-icon-button color="primary"
+                              [matTooltip]="PAGE.allocateAction"
+                              [disabled]="allocatingSessionId() !== null"
+                              (click)="openAllocateSessionDialog(s)">
+                              @if (allocatingSessionId() === s.id) {
+                                <mat-spinner diameter="18" />
+                              } @else {
+                                <mat-icon>how_to_reg</mat-icon>
+                              }
+                            </button>
+                          }
+                        </td>
+                      }
                     </tr>
                   }
                 </tbody>

@@ -4,6 +4,7 @@ export type SessionStatus = 'Active' | 'Inactive';
 export type StartType = 'FixedTime' | 'Rolling' | 'Tournament';
 export type RegistrationType = 'DropIn' | 'PreRegistration' | 'Combined';
 export type RegistrationMode = 'Individual' | 'Team';
+export type AllocationMode = 'DirectConfirmation' | 'Queue';
 
 export interface EventSummaryDto {
   id: string;
@@ -49,6 +50,7 @@ export interface EventDto {
   coOrganiserCount: number;
   coOrganiserLimit: number;
   coOrganiserInvitations: CoOrganiserInvitationDto[];
+  allocationMode: AllocationMode;
 }
 
 export interface CoOrganiserDto {
@@ -70,6 +72,7 @@ export interface SessionDto {
   end: string;
   maxSeats: number;
   registrationCount: number;
+  pendingCount: number;
   startType: StartType;
   status: SessionStatus;
 }

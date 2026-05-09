@@ -17,17 +17,19 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   CategoryDto, ConventionService, DateTimeRangeComponent, EditionDto, EditionSessionDto, EventDto, EventService, VenueDto,
-  EVENT_COMMENT_STATUS_LABEL, EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, REGISTRATION_MODE_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
+  ALLOCATION_MODE_LABEL, EVENT_COMMENT_STATUS_LABEL, EVENT_STATUS_LABEL, REGISTRATION_KIND_LABEL, REGISTRATION_MODE_LABEL, START_TYPE_LABEL, SESSION_STATUS_LABEL,
   formatTicketPrice,
   MarkdownEditorComponent,
   OrganiserTicketAssignmentDto,
   OrganiserTicketTypeDto,
   RegistrationService,
+  SessionDto,
   TeamRegistrationSummaryDto,
   TEAM_REGISTRATION_STATUS_CHIP,
   TEAM_REGISTRATION_STATUS_LABEL,
   toErrorMessage,
 } from 'shared';
+import { AllocateSessionDialogComponent, AllocateSessionDialogResult } from './allocate-session-dialog.component';
 import { AssignSessionDialogComponent } from './assign-session-dialog.component';
 import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
 import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
@@ -87,6 +89,7 @@ export class EventDetailComponent implements OnInit {
   readonly PAGE          = EVENT_DETAIL;
   readonly registrationTypes = (Object.entries(REGISTRATION_KIND_LABEL) as [string, string][]).map(([value, label]) => ({ value, label }));
   readonly registrationModes = (Object.entries(REGISTRATION_MODE_LABEL) as [string, string][]).map(([value, label]) => ({ value, label }));
+  readonly allocationModes   = (Object.entries(ALLOCATION_MODE_LABEL) as [string, string][]).map(([value, label]) => ({ value, label }));
   readonly startTypes        = (Object.entries(START_TYPE_LABEL) as [string, string][]).map(([value, label]) => ({ value, label }));
   readonly routeEditionId = this.route.snapshot.paramMap.get('id');
 
@@ -122,6 +125,9 @@ export class EventDetailComponent implements OnInit {
   readonly invitationSaving    = signal(false);
   readonly invitationCancelling = signal<string | null>(null);
   readonly invitationError     = signal<string | null>(null);
+  readonly allocationModeSaving = signal(false);
+  readonly allocationModeError  = signal<string | null>(null);
+  readonly allocatingSessionId  = signal<string | null>(null);
 
   readonly rejectForm = this.fb.group({
     comment: ['', [Validators.required, Validators.minLength(5)]],
@@ -141,6 +147,10 @@ export class EventDetailComponent implements OnInit {
     registrationMode: ['Individual', Validators.required],
     minTeamSize: [null as number | null, [Validators.min(1)]],
     maxTeamSize: [null as number | null, [Validators.min(1)]],
+  });
+
+  readonly allocationModeForm = this.fb.group({
+    allocationMode: ['DirectConfirmation', Validators.required],
   });
 
   readonly availableProgramTags = computed(() =>
@@ -323,6 +333,42 @@ export class EventDetailComponent implements OnInit {
         this.registrationModeSaving.set(false);
         this.error.set(toErrorMessage(err, ERROR.configureTeamRegistration));
       },
+    });
+  }
+
+  saveAllocationMode(): void {
+    const ev = this.event();
+    if (!ev || this.allocationModeForm.invalid || this.allocationModeSaving()) return;
+    const { allocationMode } = this.allocationModeForm.getRawValue();
+    this.allocationModeSaving.set(true);
+    this.allocationModeError.set(null);
+    this.svc.configureAllocationMode(ev.id, allocationMode!).subscribe({
+      next: () => { this.allocationModeSaving.set(false); this.reload(); },
+      error: err => {
+        this.allocationModeSaving.set(false);
+        this.allocationModeError.set(toErrorMessage(err, ERROR.configureAllocationMode));
+      },
+    });
+  }
+
+  openAllocateSessionDialog(session: SessionDto): void {
+    const ev = this.event();
+    if (!ev || this.allocatingSessionId()) return;
+    const ref = this.dialog.open(AllocateSessionDialogComponent, {
+      width: '380px',
+      data: { session },
+    });
+    ref.afterClosed().subscribe((result: AllocateSessionDialogResult | undefined) => {
+      if (!result) return;
+      this.allocatingSessionId.set(session.id);
+      this.error.set(null);
+      this.regSvc.allocateSessionRegistrations(ev.id, session.id, result.strategy).subscribe({
+        next: () => { this.allocatingSessionId.set(null); this.reload(); },
+        error: err => {
+          this.allocatingSessionId.set(null);
+          this.error.set(toErrorMessage(err, ERROR.allocateSessionRegistrations));
+        },
+      });
     });
   }
 
@@ -634,6 +680,9 @@ export class EventDetailComponent implements OnInit {
       registrationMode: e.registrationMode ?? 'Individual',
       minTeamSize: e.minTeamSize,
       maxTeamSize: e.maxTeamSize,
+    });
+    this.allocationModeForm.patchValue({
+      allocationMode: e.allocationMode ?? 'DirectConfirmation',
     });
   }
 

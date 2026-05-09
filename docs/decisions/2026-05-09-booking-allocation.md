@@ -156,4 +156,4 @@ räknar om bekräftade platser precis innan save. Unik felkänning kastas om pla
 - [x] `AllocateSessionRegistrations` med `Lottery` väljer slumpmässigt bland `Pending` upp till lediga platser; avbokar resten
 - [x] `AllocateSessionRegistrations` med `Manual` bekräftar de angivna registreringarna; lämnar resterande `Pending`
 - [x] En person kan inte ha mer än en aktiv (`Pending` eller `Confirmed`) registrering per session
-- [ ] Admin-UI visar antal `Pending` per session och knapp för att köra tilldelning (R-BK02c – återstår)
+- [x] Admin-UI visar antal `Pending` per session och knapp för att köra tilldelning (R-BK01c-ui + R-BK02c)

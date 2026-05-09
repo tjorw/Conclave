@@ -65,7 +65,8 @@ public record EventDto(
     IReadOnlyList<EventCommentDto> Comments,
     int CoOrganiserCount,
     int CoOrganiserLimit,
-    IReadOnlyList<CoOrganiserInvitationDto> CoOrganiserInvitations);
+    IReadOnlyList<CoOrganiserInvitationDto> CoOrganiserInvitations,
+    string AllocationMode);
 
 public record CoOrganiserInvitationDto(
     Guid Id,
@@ -84,6 +85,7 @@ public record SessionDto(
     DateTime End,
     int MaxSeats,
     int RegistrationCount,
+    int PendingCount,
     string StartType,
     string Status);
 

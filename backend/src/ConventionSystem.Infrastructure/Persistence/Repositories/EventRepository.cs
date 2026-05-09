@@ -143,6 +143,15 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
                 .ToDictionaryAsync(x => x.SessionId.Value, x => x.Count, ct)
             : new Dictionary<Guid, int>();
 
+        var pendingCounts = sessionIds.Count > 0
+            ? await db.SessionRegistrations
+                .Where(r => sessionIds.Contains(r.SessionId)
+                         && r.Status == SessionRegistrationStatus.Pending)
+                .GroupBy(r => r.SessionId)
+                .Select(g => new { SessionId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.SessionId.Value, x => x.Count, ct)
+            : new Dictionary<Guid, int>();
+
         var personIds = new List<PersonId> { ev.LeadOrganiserId };
         personIds.AddRange(ev.CoOrganisers.Select(c => c.PersonId));
         if (category is not null) personIds.Add(category.ResponsibleId);
@@ -193,6 +202,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
                 s.TimeSlot.Start, s.TimeSlot.End,
                 s.MaxSeats,
                 registrationCounts.GetValueOrDefault(s.Id.Value),
+                pendingCounts.GetValueOrDefault(s.Id.Value),
                 s.StartType.ToString(), s.Status.ToString())).ToList(),
             ev.Comments.Select(c => new EventCommentDto(
                 c.Id.Value,
@@ -213,7 +223,8 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             ev.CoOrganiserInvitations.Select(i => new CoOrganiserInvitationDto(
                 i.Id.Value,
                 i.Email,
-                i.CreatedAt)).ToList());
+                i.CreatedAt)).ToList(),
+            ev.AllocationMode.ToString());
     }
 
     public async Task<IReadOnlyList<EventSummaryDto>> ListByEditionAndOrganiserAsync(
