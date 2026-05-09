@@ -294,6 +294,83 @@
       </mat-card>
     </mat-tab>
 
+    <mat-tab [label]="PAGE.teamRegistrationsTab">
+      <mat-card class="content-card tab-card">
+        <mat-card-header>
+          <mat-card-title>{{ PAGE.teamRegistrationsTitle }}</mat-card-title>
+          <button mat-icon-button class="timeline-toggle"
+            (click)="refreshTeamRegistrations()"
+            [disabled]="teamRegistrationsLoading()"
+            matTooltip="Uppdatera">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </mat-card-header>
+        <mat-card-content class="no-pad">
+          @if (teamRegistrationsError()) {
+            <div class="error-banner team-registration-error">{{ teamRegistrationsError() }}</div>
+          }
+
+          @if (teamRegistrationsLoading()) {
+            <div class="timeline-spinner"><mat-spinner diameter="36" /></div>
+          } @else if (teamRegistrations().length === 0) {
+            <p class="empty-state">{{ PAGE.teamRegistrationsEmpty }}</p>
+          } @else {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>{{ PAGE.teamRegistrationTeamColumn }}</th>
+                  <th>{{ PAGE.teamRegistrationCaptainColumn }}</th>
+                  <th>{{ PAGE.teamRegistrationStatusColumn }}</th>
+                  <th>{{ PAGE.teamRegistrationCreatedColumn }}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (registration of teamRegistrations(); track registration.id) {
+                  <tr>
+                    <td>{{ registration.teamName }}</td>
+                    <td>{{ registration.captainName }}</td>
+                    <td>
+                      <span class="chip {{ teamRegistrationStatusChip[registration.status] }}">
+                        {{ teamRegistrationStatusLabel[registration.status] }}
+                      </span>
+                    </td>
+                    <td>{{ registration.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+                    <td class="action-cell team-registration-actions">
+                      @if (registration.status === 'Pending') {
+                        <button mat-icon-button color="primary"
+                          [matTooltip]="PAGE.confirmTeamRegistrationAction"
+                          [disabled]="teamRegistrationActionId() !== null"
+                          (click)="confirmTeamRegistration(registration.id)">
+                          @if (teamRegistrationActionId() === registration.id) {
+                            <mat-spinner diameter="18" />
+                          } @else {
+                            <mat-icon>check_circle</mat-icon>
+                          }
+                        </button>
+                      }
+                      @if (registration.status !== 'Cancelled') {
+                        <button mat-icon-button color="warn"
+                          [matTooltip]="PAGE.cancelTeamRegistrationAction"
+                          [disabled]="teamRegistrationActionId() !== null"
+                          (click)="cancelTeamRegistration(registration.id)">
+                          @if (teamRegistrationActionId() === registration.id) {
+                            <mat-spinner diameter="18" />
+                          } @else {
+                            <mat-icon>cancel</mat-icon>
+                          }
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
     <mat-tab [label]="PAGE.coOrganisersTab">
 
       <!-- Antal -->

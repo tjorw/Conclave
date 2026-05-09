@@ -13,6 +13,7 @@ export const ERROR = {
   fetchDashboard:       'Kunde inte hämta konventdata.',
   fetchEvents:          'Kunde inte hämta evenemangslistan.',
   fetchTicketTypes:     'Kunde inte hämta biljettyper.',
+  fetchTeamRegistrations: 'Kunde inte hämta laganmälningar.',
 
   // Upplaga
   createEdition:        'Kunde inte skapa upplaga',
@@ -62,6 +63,8 @@ export const ERROR = {
   createEvent:          'Kunde inte skapa evenemang',
   setFeaturedEvent:     'Kunde inte uppdatera utvalda evenemang',
   configureTeamRegistration: 'Kunde inte uppdatera anmälningsläget',
+  confirmTeamRegistration: 'Kunde inte bekräfta laganmälan',
+  cancelTeamRegistration:  'Kunde inte avboka laganmälan',
 
   // Stationer
   createStation:          'Kunde inte skapa stationen',

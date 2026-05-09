@@ -4,6 +4,7 @@ export type StaffApplicationStatus = 'Received' | 'UnderReview' | 'Assigned' | '
 export type TicketStatus = 'Reserved' | 'Paid' | 'Collected' | 'Revoked';
 export type TicketTypeCategory = 'Visitor' | 'Organiser' | 'Staff';
 export type PromotionDiscountType = 'Percentage' | 'Fixed' | 'Free';
+export type TeamRegistrationStatus = 'Pending' | 'Confirmed' | 'Cancelled';
 
 export interface TicketTypeAdminDto {
   id: string;
@@ -91,6 +92,17 @@ export interface VisitorRegistrationAdminDto {
   status: VisitorRegistrationStatus;
   registeredAt: string;
   paymentReference: string | null;
+}
+
+export interface TeamRegistrationSummaryDto {
+  id: string;
+  teamId: string;
+  teamName: string;
+  captainPersonId: string;
+  captainName: string;
+  status: TeamRegistrationStatus;
+  createdAt: string;
+  updatedAt: string | null;
 }
 
 export interface VisitorRegistrationDto {

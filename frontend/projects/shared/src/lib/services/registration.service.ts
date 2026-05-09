@@ -19,6 +19,7 @@ import {
   PromotionCodeRedemptionHistoryDto,
   PromotionDiscountType,
   RedeemPromotionCodeResultDto,
+  TeamRegistrationSummaryDto,
 } from '../models/registration.models';
 
 @Injectable({ providedIn: 'root' })
@@ -228,6 +229,26 @@ export class RegistrationService {
   listVisitorRegistrations(editionId: string) {
     return this.http.get<VisitorRegistrationAdminDto[]>(
       `${this.env.apiBaseUrl}/editions/${editionId}/visitor-registrations`
+    );
+  }
+
+  listTeamRegistrations(eventId: string) {
+    return this.http.get<TeamRegistrationSummaryDto[]>(
+      `${this.env.apiBaseUrl}/api/events/${eventId}/team-registrations`
+    );
+  }
+
+  confirmTeamRegistration(registrationId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/api/team-registrations/${registrationId}/confirm`,
+      {}
+    );
+  }
+
+  cancelTeamRegistration(registrationId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/api/team-registrations/${registrationId}/cancel`,
+      {}
     );
   }
 

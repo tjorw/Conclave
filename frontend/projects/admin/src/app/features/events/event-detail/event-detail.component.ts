@@ -23,6 +23,9 @@ import {
   OrganiserTicketAssignmentDto,
   OrganiserTicketTypeDto,
   RegistrationService,
+  TeamRegistrationSummaryDto,
+  TEAM_REGISTRATION_STATUS_CHIP,
+  TEAM_REGISTRATION_STATUS_LABEL,
   toErrorMessage,
 } from 'shared';
 import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
@@ -107,6 +110,10 @@ export class EventDetailComponent implements OnInit {
   readonly organiserTicketTypes = signal<OrganiserTicketTypeDto[]>([]);
   readonly organiserTicketAssignments = signal<OrganiserTicketAssignmentDto[]>([]);
   readonly organiserTicketSelection = signal<Record<string, string | null>>({});
+  readonly teamRegistrations = signal<TeamRegistrationSummaryDto[]>([]);
+  readonly teamRegistrationsLoading = signal(false);
+  readonly teamRegistrationsError = signal<string | null>(null);
+  readonly teamRegistrationActionId = signal<string | null>(null);
 
   readonly limitSaving         = signal(false);
   readonly limitError          = signal<string | null>(null);
@@ -205,6 +212,7 @@ export class EventDetailComponent implements OnInit {
         this.loading.set(false);
         this.populateEditForm(e);
         this.loadOrganiserTicketState(e);
+        this.loadTeamRegistrations(e.id);
         this.conSvc.getEdition(e.editionId).subscribe({
           next: ed => {
             this.edition.set(ed);
@@ -228,6 +236,8 @@ export class EventDetailComponent implements OnInit {
   });
 
   readonly commentStatusLabel = EVENT_COMMENT_STATUS_LABEL;
+  readonly teamRegistrationStatusLabel = TEAM_REGISTRATION_STATUS_LABEL;
+  readonly teamRegistrationStatusChip = TEAM_REGISTRATION_STATUS_CHIP;
 
   readonly eventOrganisers = computed(() => {
     const ev = this.event();
@@ -310,6 +320,42 @@ export class EventDetailComponent implements OnInit {
       error: err => {
         this.registrationModeSaving.set(false);
         this.error.set(toErrorMessage(err, ERROR.configureTeamRegistration));
+      },
+    });
+  }
+
+  refreshTeamRegistrations(): void {
+    const ev = this.event();
+    if (!ev) return;
+    this.loadTeamRegistrations(ev.id);
+  }
+
+  confirmTeamRegistration(registrationId: string): void {
+    if (this.teamRegistrationActionId()) return;
+    this.teamRegistrationActionId.set(registrationId);
+    this.regSvc.confirmTeamRegistration(registrationId).subscribe({
+      next: () => {
+        this.teamRegistrationActionId.set(null);
+        this.refreshTeamRegistrations();
+      },
+      error: err => {
+        this.teamRegistrationActionId.set(null);
+        this.teamRegistrationsError.set(toErrorMessage(err, ERROR.confirmTeamRegistration));
+      },
+    });
+  }
+
+  cancelTeamRegistration(registrationId: string): void {
+    if (this.teamRegistrationActionId()) return;
+    this.teamRegistrationActionId.set(registrationId);
+    this.regSvc.cancelTeamRegistration(registrationId).subscribe({
+      next: () => {
+        this.teamRegistrationActionId.set(null);
+        this.refreshTeamRegistrations();
+      },
+      error: err => {
+        this.teamRegistrationActionId.set(null);
+        this.teamRegistrationsError.set(toErrorMessage(err, ERROR.cancelTeamRegistration));
       },
     });
   }
@@ -500,7 +546,7 @@ export class EventDetailComponent implements OnInit {
   private reload(): void {
     const id = this.route.snapshot.paramMap.get('eventId')!;
     this.svc.getEvent(id).subscribe({
-      next: e => { this.event.set(e); this.populateEditForm(e); this.loadOrganiserTicketState(e); },
+      next: e => { this.event.set(e); this.populateEditForm(e); this.loadOrganiserTicketState(e); this.loadTeamRegistrations(e.id); },
     });
   }
 
@@ -563,6 +609,22 @@ export class EventDetailComponent implements OnInit {
       registrationMode: e.registrationMode ?? 'Individual',
       minTeamSize: e.minTeamSize,
       maxTeamSize: e.maxTeamSize,
+    });
+  }
+
+  private loadTeamRegistrations(eventId: string): void {
+    this.teamRegistrationsLoading.set(true);
+    this.teamRegistrationsError.set(null);
+    this.regSvc.listTeamRegistrations(eventId).subscribe({
+      next: registrations => {
+        this.teamRegistrations.set(registrations);
+        this.teamRegistrationsLoading.set(false);
+      },
+      error: err => {
+        this.teamRegistrations.set([]);
+        this.teamRegistrationsLoading.set(false);
+        this.teamRegistrationsError.set(toErrorMessage(err, ERROR.fetchTeamRegistrations));
+      },
     });
   }
 

@@ -14,7 +14,7 @@ Spårar vad som återstår inför produktionsstart.
 - [x] `R-TM02` `Team`-aggregat – Edition-scoped, captain (`PersonId`), lagnamn (max 200), `TeamCreated`-event; se UC-TM002
 - [x] `R-TM03` `TeamEventRegistration`-aggregat – livscykel `Pending → Confirmed | Cancelled`; domänmetoder `Confirm()` och `Cancel()`; denormaliserat `EditionId`; unikt sammansatt index `(team_id, event_id)`; se UC-TM002–UC-TM004
 - [x] `R-TM01b` Admin-UI: anmälningsläge-sektion i evenemangsdetalj (dropdown Individual/Team + lagstorlek)
-- [ ] `R-TM03b` Admin-UI: laganmälningslista per evenemang med bekräfta/avboka-knappar
+- [x] `R-TM03b` Admin-UI: laganmälningslista per evenemang med bekräfta/avboka-knappar
 
 **Fas 2 (separat ADR):**
 - [ ] `R-TM04` Admin-vy: arrangör tilldelar lag till session (`TeamSessionAssignment` på `Session`)
