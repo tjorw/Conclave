@@ -880,6 +880,38 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.ToTable("sessions", (string)null);
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.TeamSessionAssignment", b =>
+                {
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("session_id");
+
+                    b.Property<Guid>("TeamEventRegistrationId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("team_event_registration_id");
+
+                    b.Property<DateTimeOffset>("AssignedAt")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("assigned_at");
+
+                    b.Property<Guid>("AssignedByPersonId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("assigned_by_person_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("SessionId", "TeamEventRegistrationId");
+
+                    b.HasIndex("TeamEventRegistrationId")
+                        .HasDatabaseName("IX_team_session_assignments_registration_id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("team_session_assignments", (string)null);
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.PromotionCode", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1838,6 +1870,15 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.TeamSessionAssignment", b =>
+                {
+                    b.HasOne("ConventionSystem.Domain.Event.Entities.Session", null)
+                        .WithMany("TeamAssignments")
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.StaffApplication", b =>
                 {
                     b.OwnsMany("ConventionSystem.Domain.Registration.Entities.StaffAreaPreference", "StaffAreaPreferences", b1 =>
@@ -2006,6 +2047,11 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.Session", b =>
+                {
+                    b.Navigation("TeamAssignments");
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Registration.Aggregates.PromotionCode", b =>

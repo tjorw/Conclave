@@ -276,3 +276,13 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+
+.sidebar-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--c-border, #e0e0e0);
+}
+
+.team-register-btn {
+  width: 100%;
+}

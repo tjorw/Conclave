@@ -57,6 +57,9 @@ public sealed class GetEventFeedHandler(
             ev.ProgramTags,
             ev.RegistrationType,
             ev.DropInRules,
-            sessions);
+            sessions,
+            ev.RegistrationMode,
+            ev.MinTeamSize,
+            ev.MaxTeamSize);
     }
 }

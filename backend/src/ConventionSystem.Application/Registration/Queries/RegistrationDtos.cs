@@ -159,3 +159,18 @@ public record TeamRegistrationDetailDto(
     string Status,
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt);
+
+public record TeamSessionAssignmentDto(
+    Guid TeamEventRegistrationId,
+    string TeamName,
+    Guid CaptainPersonId,
+    string CaptainName,
+    DateTimeOffset AssignedAt);
+
+public record MyTeamAssignedSessionDto(
+    Guid SessionId,
+    string TeamName,
+    string EventTitle,
+    DateTime Start,
+    DateTime End,
+    string VenueName);

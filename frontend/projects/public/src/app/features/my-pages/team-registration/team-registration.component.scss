@@ -1,0 +1,41 @@
+.event-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.team-size-hint {
+  font-size: 0.875rem;
+  color: var(--c-text-subtle, #666);
+  margin-bottom: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.submit-btn {
+  margin-top: 8px;
+}
+
+.spinner-center {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.back-link {
+  margin-top: 16px;
+  display: inline-block;
+}
+
+.breadcrumb {
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+  color: var(--c-text-subtle, #666);
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}

@@ -20,6 +20,7 @@ import {
   PromotionDiscountType,
   RedeemPromotionCodeResultDto,
   TeamRegistrationSummaryDto,
+  TeamSessionAssignmentDto,
 } from '../models/registration.models';
 
 @Injectable({ providedIn: 'root' })
@@ -232,6 +233,19 @@ export class RegistrationService {
     );
   }
 
+  registerTeamForEvent(eventId: string, editionId: string, teamName: string) {
+    return this.http.post<{ id: string }>(
+      `${this.env.apiBaseUrl}/api/events/${eventId}/team-registrations`,
+      { editionId, teamName }
+    );
+  }
+
+  getMyTeamRegistrationForEvent(eventId: string) {
+    return this.http.get<TeamRegistrationSummaryDto[]>(
+      `${this.env.apiBaseUrl}/api/events/${eventId}/team-registrations`
+    );
+  }
+
   listTeamRegistrations(eventId: string) {
     return this.http.get<TeamRegistrationSummaryDto[]>(
       `${this.env.apiBaseUrl}/api/events/${eventId}/team-registrations`
@@ -249,6 +263,25 @@ export class RegistrationService {
     return this.http.post<void>(
       `${this.env.apiBaseUrl}/api/team-registrations/${registrationId}/cancel`,
       {}
+    );
+  }
+
+  listSessionTeamAssignments(eventId: string, sessionId: string) {
+    return this.http.get<TeamSessionAssignmentDto[]>(
+      `${this.env.apiBaseUrl}/api/events/${eventId}/sessions/${sessionId}/team-assignments`
+    );
+  }
+
+  assignTeamToSession(eventId: string, sessionId: string, teamEventRegistrationId: string) {
+    return this.http.post<void>(
+      `${this.env.apiBaseUrl}/api/events/${eventId}/sessions/${sessionId}/team-assignments`,
+      { teamEventRegistrationId }
+    );
+  }
+
+  removeTeamFromSession(eventId: string, sessionId: string, teamEventRegistrationId: string) {
+    return this.http.delete<void>(
+      `${this.env.apiBaseUrl}/api/events/${eventId}/sessions/${sessionId}/team-assignments/${teamEventRegistrationId}`
     );
   }
 

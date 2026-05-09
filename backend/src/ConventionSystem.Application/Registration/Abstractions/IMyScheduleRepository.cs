@@ -10,4 +10,7 @@ public interface IMyScheduleRepository
 
     Task<IReadOnlyList<MyAssignedShiftSummaryDto>> ListMyAssignedShiftsAsync(
         PersonId personId, EditionId editionId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<MyTeamAssignedSessionDto>> ListMyTeamAssignedSessionsAsync(
+        PersonId personId, EditionId editionId, CancellationToken ct = default);
 }

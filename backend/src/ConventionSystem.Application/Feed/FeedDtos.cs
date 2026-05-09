@@ -46,7 +46,10 @@ public record EventFeedDto(
     IReadOnlyList<string> ProgramTags,
     string RegistrationType,
     string? DropInRules,
-    IReadOnlyList<SessionFeedDto> Sessions);
+    IReadOnlyList<SessionFeedDto> Sessions,
+    string RegistrationMode,
+    int? MinTeamSize,
+    int? MaxTeamSize);
 
 public record SessionFeedDto(
     Guid Id,

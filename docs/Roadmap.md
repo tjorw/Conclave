@@ -16,10 +16,19 @@ Spårar vad som återstår inför produktionsstart.
 - [x] `R-TM01b` Admin-UI: anmälningsläge-sektion i evenemangsdetalj (dropdown Individual/Team + lagstorlek)
 - [x] `R-TM03b` Admin-UI: laganmälningslista per evenemang med bekräfta/avboka-knappar
 
-**Fas 2 (separat ADR):**
-- [ ] `R-TM04` Admin-vy: arrangör tilldelar lag till session (`TeamSessionAssignment` på `Session`)
-- [ ] `R-TM05` Tidschema: lagmedlemmars tilldelade sessioner via query-projektion (`MyScheduleRepository`)
-- [ ] `R-TM06` Publik vy: captain anmäler lag via publik app
+**Fas 2 (ADR 2026-05-09-team-registrations-fas2.md):**
+
+Implementationsordning: R-TM04 → R-TM05 → R-TM06
+
+- [x] `R-TM04a` Domän: `TeamSessionAssignment`-entitet + collection på `Session`; metoder `AssignTeam()`/`RemoveTeamAssignment()` med invarianter; publika metoder `AssignTeamToSession()`/`RemoveTeamFromSession()` på `Event`; domain events; enhetstest
+- [x] `R-TM04b` Applikation: `AssignTeamToSessionCommand`, `RemoveTeamFromSessionCommand`, `ListTeamAssignmentsForSessionQuery` + handlers; `ITeamSessionAssignmentRepository`
+- [x] `R-TM04c` Infrastruktur: EF-konfiguration `team_session_assignments`; migration `AddTeamSessionAssignments`; `TeamSessionAssignmentRepository`; utöka `EventRepository` med Include för `TeamAssignments`
+- [x] `R-TM04d` API: endpoints i `TeamRegistrationEndpoints.cs`; behörighetscheck admin/kategoriansvarig
+- [x] `R-TM04e` Admin-UI: "Tilldela session"-knapp per Confirmed-lag i laganmälningslistan
+- [x] `R-TM05a` Applikation: ny metod `ListMyTeamAssignedSessionsAsync` på `IMyScheduleRepository`; `MyTeamAssignedSessionDto`; `GetMyTeamAssignedSessionsQuery` + handler
+- [x] `R-TM05b` Infrastruktur: implementera `ListMyTeamAssignedSessionsAsync` i `MyScheduleRepository`
+- [x] `R-TM05c` API: `GET /api/schedule/team-sessions?editionId={id}` endpoint
+- [x] `R-TM06` Publik app: ny komponent `team-registration.component.ts`; route `/my-pages/team-registration/:eventId`; formulär med lagnamn; länk från eventdetalj när `registrationMode = Team`
 
 
 ### Bokning och tilldelning av plats

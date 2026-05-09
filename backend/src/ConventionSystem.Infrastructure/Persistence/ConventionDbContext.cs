@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using ConventionSystem.Domain.Content.Aggregates;
 using ConventionSystem.Domain.Convention.Aggregates;
 using ConventionSystem.Domain.Convention.Entities;
+using ConventionSystem.Domain.Event.Entities;
 using ConventionSystem.Domain.Registration.Aggregates;
 using ConventionSystem.Domain.Registration.Entities;
 using ConventionSystem.Domain.Staff.Aggregates;
@@ -39,6 +40,7 @@ public sealed class ConventionDbContext(
 
     // Event
     public DbSet<DomainEvent> Events => Set<DomainEvent>();
+    public DbSet<TeamSessionAssignment> TeamSessionAssignments => Set<TeamSessionAssignment>();
 
     // Registration
     public DbSet<VisitorRegistration> VisitorRegistrations => Set<VisitorRegistration>();

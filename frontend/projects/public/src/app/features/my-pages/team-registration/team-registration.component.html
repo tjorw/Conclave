@@ -1,0 +1,65 @@
+<div class="auth-page">
+  <div class="auth-card">
+
+    <nav class="breadcrumb">
+      @if (event()) {
+        <a [routerLink]="['/program', event()!.id]">{{ event()!.title }}</a>
+      } @else {
+        <a routerLink="/program">Program</a>
+      }
+      <span> › </span>
+      <span>Anmäl lag</span>
+    </nav>
+
+    <h1>Anmäl lag</h1>
+
+    @if (loading()) {
+      <div class="spinner-center"><mat-spinner diameter="36" /></div>
+    } @else if (success()) {
+      <div class="success-inline">
+        <mat-icon>check_circle</mat-icon>
+        <div>
+          <strong>Laganmälan mottagen!</strong>
+          <p>Din anmälan är registrerad och väntar på bekräftelse. Du får besked så snart en administratör har granskat den.</p>
+        </div>
+      </div>
+      <a mat-stroked-button routerLink="/program" class="back-link">Tillbaka till program</a>
+    } @else {
+      @if (error()) {
+        <div class="error-banner">{{ error() }}</div>
+      }
+
+      @if (event(); as ev) {
+        <p class="event-name">{{ ev.title }}</p>
+        @if (teamSizeHint()) {
+          <p class="team-size-hint">Lagstorlek: {{ teamSizeHint() }}</p>
+        }
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Lagnamn</mat-label>
+          <input matInput formControlName="teamName" placeholder="Ert lags namn" autocomplete="off" />
+          <mat-hint>Välj ett unikt och passande namn för ert lag.</mat-hint>
+          @if (form.controls.teamName.errors?.['required'] && form.controls.teamName.touched) {
+            <mat-error>Lagnamn är obligatoriskt.</mat-error>
+          }
+          @if (form.controls.teamName.errors?.['minlength'] && form.controls.teamName.touched) {
+            <mat-error>Lagnamnet måste vara minst 2 tecken.</mat-error>
+          }
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" type="submit"
+          class="full-width submit-btn"
+          [disabled]="form.invalid || saving()">
+          @if (saving()) {
+            <mat-spinner diameter="18" />
+          } @else {
+            Anmäl lag
+          }
+        </button>
+      </form>
+    }
+
+  </div>
+</div>

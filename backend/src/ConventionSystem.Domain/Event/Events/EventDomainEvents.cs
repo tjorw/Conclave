@@ -80,3 +80,17 @@ public record CoOrganiserInvitationRedeemed(
     EventId EventId,
     PersonId RedeemedById,
     DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record TeamAssignedToSession(
+    EventId EventId,
+    SessionId SessionId,
+    Guid TeamEventRegistrationId,
+    PersonId AssignedByPersonId,
+    DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record TeamRemovedFromSession(
+    EventId EventId,
+    SessionId SessionId,
+    Guid TeamEventRegistrationId,
+    PersonId RemovedByPersonId,
+    DateTimeOffset OccurredAt) : IDomainEvent;

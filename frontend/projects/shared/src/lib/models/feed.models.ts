@@ -57,6 +57,9 @@ export interface EventFeedDto {
   registrationType: string;
   dropInRules: string | null;
   sessions: SessionFeedDto[];
+  registrationMode: 'Individual' | 'Team';
+  minTeamSize: number | null;
+  maxTeamSize: number | null;
 }
 
 export interface SessionFeedDto {

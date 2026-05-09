@@ -133,6 +133,13 @@ export const routes: Routes = [
                 m => m.MyEventsComponent
               ),
           },
+          {
+            path: 'team-registration/:eventId',
+            loadComponent: () =>
+              import('./features/my-pages/team-registration/team-registration.component').then(
+                m => m.TeamRegistrationComponent
+              ),
+          },
         ],
       },
       { path: '**', redirectTo: '' },

@@ -63,8 +63,9 @@ export const ERROR = {
   createEvent:          'Kunde inte skapa evenemang',
   setFeaturedEvent:     'Kunde inte uppdatera utvalda evenemang',
   configureTeamRegistration: 'Kunde inte uppdatera anmälningsläget',
-  confirmTeamRegistration: 'Kunde inte bekräfta laganmälan',
-  cancelTeamRegistration:  'Kunde inte avboka laganmälan',
+  confirmTeamRegistration:  'Kunde inte bekräfta laganmälan',
+  cancelTeamRegistration:   'Kunde inte avboka laganmälan',
+  assignTeamToSession:      'Kunde inte tilldela laget till sessionen',
 
   // Stationer
   createStation:          'Kunde inte skapa stationen',

@@ -47,6 +47,12 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .Include(e => e.Sessions)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
+    public Task<Domain.Event.Aggregates.Event?> GetByIdWithSessionsAndTeamAssignmentsAsync(EventId id, CancellationToken ct = default)
+        => db.Events
+            .Include(e => e.Sessions)
+                .ThenInclude(s => s.TeamAssignments)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
     public Task<Domain.Event.Aggregates.Event?> GetByIdWithCommentsAsync(EventId id, CancellationToken ct = default)
         => db.Events
             .Include(e => e.Comments)

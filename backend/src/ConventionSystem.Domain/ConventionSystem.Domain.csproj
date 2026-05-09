@@ -6,5 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="ConventionSystem.Domain.Tests" />
+  </ItemGroup>
 
 </Project>

@@ -144,6 +144,20 @@
             <mat-icon>calendar_today</mat-icon>
             <span>{{ ev.sessions.length }} session{{ ev.sessions.length !== 1 ? 'er' : '' }}</span>
           </div>
+          @if (ev.registrationMode === 'Team') {
+            <div class="sidebar-section">
+              @if (!authSvc.isLoggedIn()) {
+                <a mat-stroked-button routerLink="/login" class="team-register-btn">Logga in för att anmäla lag</a>
+              } @else {
+                <a mat-flat-button color="primary"
+                  [routerLink]="['/my-pages/team-registration', ev.id]"
+                  class="team-register-btn">
+                  <mat-icon>groups</mat-icon>
+                  Anmäl lag
+                </a>
+              }
+            </div>
+          }
         </div>
       </aside>
 

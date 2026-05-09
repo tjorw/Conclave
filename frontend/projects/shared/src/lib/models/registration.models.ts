@@ -105,6 +105,14 @@ export interface TeamRegistrationSummaryDto {
   updatedAt: string | null;
 }
 
+export interface TeamSessionAssignmentDto {
+  teamEventRegistrationId: string;
+  teamName: string;
+  captainPersonId: string;
+  captainName: string;
+  assignedAt: string;
+}
+
 export interface VisitorRegistrationDto {
   id: string;
   personId: string;

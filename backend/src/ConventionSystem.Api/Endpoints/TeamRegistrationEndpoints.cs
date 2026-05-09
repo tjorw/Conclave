@@ -1,10 +1,14 @@
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Event.Commands.AssignTeamToSession;
+using ConventionSystem.Application.Event.Commands.ConfigureTeamRegistration;
+using ConventionSystem.Application.Event.Commands.RemoveTeamFromSession;
+using ConventionSystem.Application.Event.Queries.ListTeamAssignmentsForSession;
 using ConventionSystem.Application.Registration.Commands.CancelTeamRegistration;
 using ConventionSystem.Application.Registration.Commands.ConfirmTeamRegistration;
 using ConventionSystem.Application.Registration.Commands.RegisterTeamForEvent;
+using ConventionSystem.Application.Registration.Queries.GetMyTeamAssignedSessions;
 using ConventionSystem.Application.Registration.Queries.GetTeamRegistration;
 using ConventionSystem.Application.Registration.Queries.ListTeamRegistrations;
-using ConventionSystem.Application.Event.Commands.ConfigureTeamRegistration;
 
 namespace ConventionSystem.Api.Endpoints;
 
@@ -51,8 +55,36 @@ public static class TeamRegistrationEndpoints
                 await sender.Send(new CancelTeamRegistrationCommand(id), ct);
                 return Results.NoContent();
             });
+
+        groups.Authenticated.MapPost(
+            "/api/events/{eventId:guid}/sessions/{sessionId:guid}/team-assignments",
+            async (Guid eventId, Guid sessionId, AssignTeamRequest req, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new AssignTeamToSessionCommand(
+                    eventId, sessionId, req.TeamEventRegistrationId), ct);
+                return Results.NoContent();
+            });
+
+        groups.Authenticated.MapDelete(
+            "/api/events/{eventId:guid}/sessions/{sessionId:guid}/team-assignments/{registrationId:guid}",
+            async (Guid eventId, Guid sessionId, Guid registrationId, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new RemoveTeamFromSessionCommand(eventId, sessionId, registrationId), ct);
+                return Results.NoContent();
+            });
+
+        groups.Authenticated.MapGet(
+            "/api/events/{eventId:guid}/sessions/{sessionId:guid}/team-assignments",
+            async (Guid eventId, Guid sessionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListTeamAssignmentsForSessionQuery(eventId, sessionId), ct)));
+
+        groups.Authenticated.MapGet(
+            "/api/schedule/team-sessions",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetMyTeamAssignedSessionsQuery(editionId), ct)));
     }
 }
 
 public sealed record ConfigureTeamRegistrationRequest(string RegistrationMode, int? MinTeamSize, int? MaxTeamSize);
 public sealed record RegisterTeamRequest(Guid EditionId, string TeamName);
+public sealed record AssignTeamRequest(Guid TeamEventRegistrationId);

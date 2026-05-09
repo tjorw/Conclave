@@ -6,6 +6,7 @@ using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Event.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PersonId = ConventionSystem.Domain.Convention.Ids.PersonId;
 
 namespace ConventionSystem.Infrastructure.Persistence.Configurations.Event;
 
@@ -282,7 +283,41 @@ public sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
             .HasConversion<string>()
             .HasMaxLength(50);
 
+        builder.HasMany(s => s.TeamAssignments)
+            .WithOne()
+            .HasForeignKey(a => a.SessionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(s => s.TeamAssignments).HasField("_teamAssignments");
+
         builder.HasIndex(s => s.VenueId).HasDatabaseName("IX_sessions_venue_id");
         builder.HasIndex("EventId").HasDatabaseName("IX_sessions_event_id");
+    }
+}
+
+public sealed class TeamSessionAssignmentConfiguration : IEntityTypeConfiguration<TeamSessionAssignment>
+{
+    public void Configure(EntityTypeBuilder<TeamSessionAssignment> builder)
+    {
+        builder.ToTable("team_session_assignments");
+
+        builder.HasKey(a => new { a.SessionId, a.TeamEventRegistrationId });
+
+        builder.Property(a => a.SessionId)
+            .HasConversion(id => id.Value, value => new SessionId(value))
+            .HasColumnName("session_id");
+
+        builder.Property(a => a.TeamEventRegistrationId)
+            .HasColumnName("team_event_registration_id");
+
+        builder.Property(a => a.AssignedAt)
+            .HasColumnName("assigned_at");
+
+        builder.Property(a => a.AssignedByPersonId)
+            .HasConversion(id => id.Value, value => new PersonId(value))
+            .HasColumnName("assigned_by_person_id");
+
+        builder.HasIndex(a => a.TeamEventRegistrationId)
+            .HasDatabaseName("IX_team_session_assignments_registration_id");
     }
 }

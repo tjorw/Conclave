@@ -9,12 +9,16 @@ namespace ConventionSystem.Domain.Event.Entities;
 
 public sealed class Session : Entity<SessionId>
 {
+    private readonly List<TeamSessionAssignment> _teamAssignments = [];
+
     public EventId EventId { get; private set; }
     public VenueId VenueId { get; private set; }
     public TimeSlot TimeSlot { get; private set; } = null!;
     public int MaxSeats { get; private set; }
     public StartType StartType { get; private set; }
     public SessionStatus Status { get; private set; }
+
+    public IReadOnlyList<TeamSessionAssignment> TeamAssignments => _teamAssignments.AsReadOnly();
 
     private Session() { }
 
@@ -44,5 +48,24 @@ public sealed class Session : Entity<SessionId>
         if (Status == SessionStatus.Inactive)
             throw new SessionAlreadyInactiveException();
         Status = SessionStatus.Inactive;
+    }
+
+    internal TeamSessionAssignment AssignTeam(Guid registrationId, PersonId assignedById)
+    {
+        if (Status == SessionStatus.Inactive)
+            throw new SessionInactiveCannotEditException();
+        if (_teamAssignments.Any(a => a.TeamEventRegistrationId == registrationId))
+            throw new TeamAlreadyAssignedToSessionException();
+
+        var assignment = new TeamSessionAssignment(Id, registrationId, assignedById);
+        _teamAssignments.Add(assignment);
+        return assignment;
+    }
+
+    internal void RemoveTeamAssignment(Guid registrationId)
+    {
+        var assignment = _teamAssignments.FirstOrDefault(a => a.TeamEventRegistrationId == registrationId)
+            ?? throw new TeamAssignmentNotFoundException();
+        _teamAssignments.Remove(assignment);
     }
 }

@@ -2,7 +2,10 @@ using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Registration.Queries;
 using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Event.Entities;
 using ConventionSystem.Domain.Event.Enums;
+using ConventionSystem.Domain.Event.Ids;
+using ConventionSystem.Domain.Registration.Enums;
 using ConventionSystem.Domain.Staff.Enums;
 using ConventionSystem.Domain.Staff.Ids;
 using Microsoft.EntityFrameworkCore;
@@ -88,5 +91,78 @@ public sealed class MyScheduleRepository(ConventionDbContext db) : IMyScheduleRe
                 s.TimeSlot.End))
             .OrderBy(x => x.Start)
             .ToList();
+    }
+
+    public async Task<IReadOnlyList<MyTeamAssignedSessionDto>> ListMyTeamAssignedSessionsAsync(
+        PersonId personId, EditionId editionId, CancellationToken ct = default)
+    {
+        var teamIds = await db.Teams
+            .Where(t => t.CaptainPersonId == personId && t.EditionId == editionId)
+            .Select(t => t.Id)
+            .ToListAsync(ct);
+
+        if (teamIds.Count == 0) return [];
+
+        var confirmedRegs = await db.TeamEventRegistrations
+            .Where(r => teamIds.Contains(r.TeamId) && r.Status == TeamRegistrationStatus.Confirmed)
+            .Select(r => new { RegIdGuid = r.Id.Value, r.TeamId })
+            .ToListAsync(ct);
+
+        if (confirmedRegs.Count == 0) return [];
+
+        var regIdGuids = confirmedRegs.Select(r => r.RegIdGuid).ToList();
+
+        var sessionAssignments = await db.TeamSessionAssignments
+            .Where(a => regIdGuids.Contains(a.TeamEventRegistrationId))
+            .ToListAsync(ct);
+
+        if (sessionAssignments.Count == 0) return [];
+
+        var teamNameMap = await db.Teams
+            .Where(t => teamIds.Contains(t.Id))
+            .ToDictionaryAsync(t => t.Id, t => t.Name, ct);
+
+        var regToTeamMap = confirmedRegs.ToDictionary(r => r.RegIdGuid, r => r.TeamId);
+
+        var sessionIds = sessionAssignments.Select(a => a.SessionId).Distinct().ToList();
+
+        var sessions = await db.Set<Session>()
+            .Where(s => sessionIds.Contains(s.Id) && s.Status == SessionStatus.Active)
+            .ToListAsync(ct);
+
+        var eventIds = sessions.Select(s => s.EventId).Distinct().ToList();
+        var eventTitleMap = await db.Events
+            .Where(e => eventIds.Contains(e.Id))
+            .ToDictionaryAsync(e => e.Id, e => e.Title ?? "", ct);
+
+        var venueIds = sessions.Select(s => s.VenueId).Distinct().ToHashSet();
+        var venueNameMap = venueIds.Count > 0
+            ? await db.Set<Venue>()
+                .Where(v => venueIds.Contains(v.Id))
+                .ToDictionaryAsync(v => v.Id, v => v.Name, ct)
+            : new Dictionary<VenueId, string>();
+
+        var sessionMap = sessions.ToDictionary(s => s.Id);
+        var result = new List<MyTeamAssignedSessionDto>();
+
+        foreach (var assignment in sessionAssignments)
+        {
+            if (!sessionMap.TryGetValue(assignment.SessionId, out var session)) continue;
+            if (!regToTeamMap.TryGetValue(assignment.TeamEventRegistrationId, out var teamId)) continue;
+
+            var teamName = teamNameMap.GetValueOrDefault(teamId) ?? "";
+            var eventTitle = eventTitleMap.GetValueOrDefault(session.EventId) ?? "";
+            var venueName = venueNameMap.GetValueOrDefault(session.VenueId) ?? "";
+
+            result.Add(new MyTeamAssignedSessionDto(
+                assignment.SessionId.Value,
+                teamName,
+                eventTitle,
+                session.TimeSlot.Start,
+                session.TimeSlot.End,
+                venueName));
+        }
+
+        return result.OrderBy(r => r.Start).ToList();
     }
 }

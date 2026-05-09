@@ -28,6 +28,7 @@ import {
   TEAM_REGISTRATION_STATUS_LABEL,
   toErrorMessage,
 } from 'shared';
+import { AssignSessionDialogComponent } from './assign-session-dialog.component';
 import { ChangeCategoryDialogComponent } from './change-category-dialog.component';
 import { ConfirmDialogService } from '../../../shared/confirm-dialog/confirm-dialog.service';
 import { DraftBlock, SessionTimelineComponent } from '../../../shared/session-timeline/session-timeline.component';
@@ -114,6 +115,7 @@ export class EventDetailComponent implements OnInit {
   readonly teamRegistrationsLoading = signal(false);
   readonly teamRegistrationsError = signal<string | null>(null);
   readonly teamRegistrationActionId = signal<string | null>(null);
+  readonly sessionAssignActionId = signal<string | null>(null);
 
   readonly limitSaving         = signal(false);
   readonly limitError          = signal<string | null>(null);
@@ -357,6 +359,29 @@ export class EventDetailComponent implements OnInit {
         this.teamRegistrationActionId.set(null);
         this.teamRegistrationsError.set(toErrorMessage(err, ERROR.cancelTeamRegistration));
       },
+    });
+  }
+
+  openAssignSessionDialog(registrationId: string): void {
+    const ev = this.event();
+    if (!ev || this.sessionAssignActionId()) return;
+    const ref = this.dialog.open(AssignSessionDialogComponent, {
+      width: '420px',
+      data: { sessions: ev.sessions },
+    });
+    ref.afterClosed().subscribe((sessionId: string | undefined) => {
+      if (!sessionId) return;
+      this.sessionAssignActionId.set(registrationId);
+      this.regSvc.assignTeamToSession(ev.id, sessionId, registrationId).subscribe({
+        next: () => {
+          this.sessionAssignActionId.set(null);
+          this.teamRegistrationsError.set(null);
+        },
+        error: err => {
+          this.sessionAssignActionId.set(null);
+          this.teamRegistrationsError.set(toErrorMessage(err, ERROR.assignTeamToSession));
+        },
+      });
     });
   }
 

@@ -171,3 +171,13 @@ public sealed class EventFeaturedLimitExceededException()
     : DomainRuleViolationException(
         "Högst sex evenemang kan vara utvalda per upplaga.",
         "event_featured_limit_exceeded");
+
+public sealed class TeamAlreadyAssignedToSessionException()
+    : DomainRuleViolationException(
+        "Laget är redan tilldelat denna session.",
+        "team_already_assigned_to_session");
+
+public sealed class TeamAssignmentNotFoundException()
+    : DomainRuleViolationException(
+        "Lagtilldelningen hittades inte.",
+        "team_assignment_not_found");

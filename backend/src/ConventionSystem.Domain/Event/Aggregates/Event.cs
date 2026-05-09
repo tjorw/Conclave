@@ -402,6 +402,25 @@ public sealed class Event : AggregateRoot
             .TrimEnd('=');
     }
 
+    public TeamSessionAssignment AssignTeamToSession(SessionId sessionId, Guid registrationId, PersonId assignedById)
+    {
+        var session = _sessions.FirstOrDefault(s => s.Id == sessionId)
+            ?? throw new SessionNotFoundException();
+
+        var assignment = session.AssignTeam(registrationId, assignedById);
+        RaiseDomainEvent(new TeamAssignedToSession(Id, sessionId, registrationId, assignedById, DateTimeOffset.UtcNow));
+        return assignment;
+    }
+
+    public void RemoveTeamFromSession(SessionId sessionId, Guid registrationId, PersonId performedById)
+    {
+        var session = _sessions.FirstOrDefault(s => s.Id == sessionId)
+            ?? throw new SessionNotFoundException();
+
+        session.RemoveTeamAssignment(registrationId);
+        RaiseDomainEvent(new TeamRemovedFromSession(Id, sessionId, registrationId, performedById, DateTimeOffset.UtcNow));
+    }
+
     public bool IsOrganiser(PersonId personId)
         => LeadOrganiserId == personId || _coOrganisers.Any(c => c.PersonId == personId);
 }
