@@ -32,6 +32,8 @@ public sealed class ConventionDbContext(
     public DbSet<Edition> Editions => Set<Edition>();
     public DbSet<Person> Persons => Set<Person>();
     public DbSet<StaffArea> StaffAreas => Set<StaffArea>();
+    public DbSet<Station> Stations => Set<Station>();
+    public DbSet<Venue> Venues => Set<Venue>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<CategoryTranslation> CategoryTranslations => Set<CategoryTranslation>();
     public DbSet<ProgramTagTranslation> ProgramTagTranslations => Set<ProgramTagTranslation>();

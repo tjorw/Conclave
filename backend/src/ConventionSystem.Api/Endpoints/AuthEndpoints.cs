@@ -2,6 +2,7 @@ using ConventionSystem.Api.Auth;
 using ConventionSystem.Api.Helpers;
 using ConventionSystem.Api.Services;
 using ConventionSystem.Application.Common;
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Tenancy.Abstractions;
 using ConventionSystem.Domain.Convention.Aggregates;
@@ -81,9 +82,20 @@ public static class AuthEndpoints
                 else
                 {
                     // Skapa nytt personkonto – namn saknas i detta flöde, sätts via profilvyn
-                    var person = convention.RegisterPerson(string.Empty, request.Email);
-                    await personRepo.AddAndSaveAsync(person, ct);
-                    personId = person.Id.Value;
+                    try
+                    {
+                        var person = convention.RegisterPerson(string.Empty, request.Email);
+                        await personRepo.AddAndSaveAsync(person, ct);
+                        personId = person.Id.Value;
+                    }
+                    catch (DuplicateEmailException)
+                    {
+                        // Race condition: parallell inloggning skapade personen – hämta den
+                        var racePerson = await personRepo.FindByEmailInConventionAsync(conventionId, request.Email, ct);
+                        if (racePerson is null)
+                            return Results.Problem("Inloggningen misslyckades. Försök igen.", statusCode: 500);
+                        personId = racePerson.Id.Value;
+                    }
                 }
 
                 user.PersonId = personId;

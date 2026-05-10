@@ -266,7 +266,7 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
                 .ExecuteDeleteAsync(ct);
         }
 
-        var stationIds = await db.Set<Station>()
+        var stationIds = await db.Stations
             .Where(s => EF.Property<EditionId>(s, "EditionId") == id)
             .Select(s => s.Id)
             .ToListAsync(ct);
@@ -306,7 +306,7 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
             .Where(d => EF.Property<EditionId>(d, "EditionId") == id)
             .ExecuteDeleteAsync(ct);
 
-        await db.Set<Station>()
+        await db.Stations
             .Where(s => EF.Property<EditionId>(s, "EditionId") == id)
             .ExecuteDeleteAsync(ct);
 
@@ -314,7 +314,7 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
             .Where(a => EF.Property<EditionId>(a, "EditionId") == id)
             .ExecuteDeleteAsync(ct);
 
-        await db.Set<Venue>()
+        await db.Venues
             .Where(v => EF.Property<EditionId>(v, "EditionId") == id)
             .ExecuteDeleteAsync(ct);
 

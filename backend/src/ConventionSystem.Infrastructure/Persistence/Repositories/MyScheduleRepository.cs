@@ -38,7 +38,7 @@ public sealed class MyScheduleRepository(ConventionDbContext db) : IMyScheduleRe
 
         var venueIds = activeSessions.Select(x => x.Session.VenueId).Distinct().ToHashSet();
         var venueMap = venueIds.Count > 0
-            ? await db.Set<Venue>()
+            ? await db.Venues
                 .Where(v => venueIds.Contains(v.Id))
                 .ToDictionaryAsync(v => v.Id, v => v.Name, ct)
             : new Dictionary<VenueId, string>();
@@ -77,7 +77,7 @@ public sealed class MyScheduleRepository(ConventionDbContext db) : IMyScheduleRe
 
         var usedStationIds = shifts.Select(s => s.StationId).ToHashSet();
         var stationNameMap = usedStationIds.Count > 0
-            ? await db.Set<Station>()
+            ? await db.Stations
                 .Where(s => usedStationIds.Contains(s.Id))
                 .ToDictionaryAsync(s => s.Id, s => s.Name, ct)
             : new Dictionary<StationId, string>();
@@ -137,7 +137,7 @@ public sealed class MyScheduleRepository(ConventionDbContext db) : IMyScheduleRe
 
         var venueIds = sessions.Select(s => s.VenueId).Distinct().ToHashSet();
         var venueNameMap = venueIds.Count > 0
-            ? await db.Set<Venue>()
+            ? await db.Venues
                 .Where(v => venueIds.Contains(v.Id))
                 .ToDictionaryAsync(v => v.Id, v => v.Name, ct)
             : new Dictionary<VenueId, string>();

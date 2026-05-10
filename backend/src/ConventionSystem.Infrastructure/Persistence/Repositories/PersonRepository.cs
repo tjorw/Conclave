@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Common.Exceptions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Convention.Queries;
 using ConventionSystem.Domain.Convention.Entities;
@@ -129,7 +130,14 @@ public sealed class PersonRepository(ConventionDbContext db, ApplicationIdentity
     public async Task AddAndSaveAsync(Person person, CancellationToken ct = default)
     {
         await db.Persons.AddAsync(person, ct);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException)
+        {
+            throw new DuplicateEmailException(person.Email);
+        }
     }
 
     public Task SaveAsync(CancellationToken ct = default)

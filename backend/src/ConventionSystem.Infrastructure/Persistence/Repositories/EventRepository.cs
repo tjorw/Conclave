@@ -141,7 +141,7 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
         var sessionIds = ev.Sessions.Select(s => s.Id).ToList();
         var venueIds = ev.Sessions.Select(s => s.VenueId).Distinct().ToList();
 
-        var venueNames = await db.Set<Venue>()
+        var venueNames = await db.Venues
             .Where(v => venueIds.Contains(v.Id))
             .ToDictionaryAsync(v => v.Id.Value, v => v.Name, ct);
 

@@ -25,6 +25,8 @@ public sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(p => p.Phone).HasMaxLength(30);
         builder.Property(p => p.IsActive).HasColumnName("is_active").HasDefaultValue(true);
 
-        builder.HasIndex(p => new { p.ConventionId, p.Email }).HasDatabaseName("IX_persons_convention_id_email");
+        builder.HasIndex(p => new { p.ConventionId, p.Email })
+            .HasDatabaseName("UQ_persons_convention_id_email")
+            .IsUnique();
     }
 }

@@ -12,24 +12,30 @@ public static class FeedEndpoints
         var feed = groups.Anonymous.MapGroup("/feed/{conventionId:guid}");
 
         feed.MapGet("/editions/{editionId:guid}", async (
-            Guid editionId, string? locale, ISender sender, CancellationToken ct) =>
+            HttpContext httpContext, Guid editionId, string? locale, ISender sender, CancellationToken ct) =>
         {
             var result = await sender.Send(new GetEditionFeedQuery(editionId, locale), ct);
-            return result is null ? Results.NotFound() : Results.Ok(result);
+            if (result is null) return Results.NotFound();
+            httpContext.Response.Headers.CacheControl = "public, max-age=60";
+            return Results.Ok(result);
         });
 
         feed.MapGet("/events/{eventId:guid}", async (
-            Guid eventId, string? locale, ISender sender, CancellationToken ct) =>
+            HttpContext httpContext, Guid eventId, string? locale, ISender sender, CancellationToken ct) =>
         {
             var result = await sender.Send(new GetEventFeedQuery(eventId, locale), ct);
-            return result is null ? Results.NotFound() : Results.Ok(result);
+            if (result is null) return Results.NotFound();
+            httpContext.Response.Headers.CacheControl = "public, max-age=60";
+            return Results.Ok(result);
         });
 
         feed.MapGet("/active-edition", async (
-            ISender sender, CancellationToken ct) =>
+            HttpContext httpContext, ISender sender, CancellationToken ct) =>
         {
             var result = await sender.Send(new GetActiveEditionFeedQuery(), ct);
-            return result is null ? Results.NotFound() : Results.Ok(result);
+            if (result is null) return Results.NotFound();
+            httpContext.Response.Headers.CacheControl = "public, max-age=30";
+            return Results.Ok(result);
         });
 
     }

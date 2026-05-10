@@ -18,6 +18,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             ArgumentException => (StatusCodes.Status400BadRequest, "Ogiltiga parametrar", "invalid_argument"),
             ResourceNotFoundException => (StatusCodes.Status404NotFound, "Resursen hittades inte", "resource_not_found"),
             ForbiddenException => (StatusCodes.Status403Forbidden, "Saknar behörighet", "forbidden"),
+            DuplicateEmailException dup => (StatusCodes.Status409Conflict, "E-postadressen används redan", dup.ErrorCode),
             PageSlugAlreadyExistsException pageSlugAlreadyExists => (StatusCodes.Status422UnprocessableEntity, "Affärsregelbrott", pageSlugAlreadyExists.ErrorCode),
             DomainRuleViolationException domainRule => (StatusCodes.Status422UnprocessableEntity, "Affärsregelbrott", domainRule.ErrorCode),
             InvalidOperationException => (StatusCodes.Status422UnprocessableEntity, "Affärsregelbrott", "invalid_operation"),

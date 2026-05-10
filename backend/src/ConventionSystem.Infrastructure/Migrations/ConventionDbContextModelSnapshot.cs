@@ -549,7 +549,8 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.HasIndex("TenantId");
 
                     b.HasIndex("ConventionId", "Email")
-                        .HasDatabaseName("IX_persons_convention_id_email");
+                        .IsUnique()
+                        .HasDatabaseName("UQ_persons_convention_id_email");
 
                     b.ToTable("persons", (string)null);
                 });

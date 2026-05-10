@@ -40,7 +40,7 @@ public sealed class ReceptionScheduleRepository(ConventionDbContext db) : IRecep
             return [];
 
         var usedStationIds = shifts.Select(s => s.StationId).ToHashSet();
-        var stations = await db.Set<Station>()
+        var stations = await db.Stations
             .Where(s => usedStationIds.Contains(s.Id))
             .ToListAsync(ct);
 
@@ -99,7 +99,7 @@ public sealed class ReceptionScheduleRepository(ConventionDbContext db) : IRecep
             return [];
 
         var venueIds = activeSessions.Select(x => x.Session.VenueId).Distinct().ToHashSet();
-        var venueNames = await db.Set<Venue>()
+        var venueNames = await db.Venues
             .Where(v => venueIds.Contains(v.Id))
             .ToDictionaryAsync(v => v.Id, v => v.Name, ct);
 

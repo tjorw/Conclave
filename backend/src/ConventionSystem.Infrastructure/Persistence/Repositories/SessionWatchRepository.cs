@@ -50,7 +50,7 @@ public sealed class SessionWatchRepository(ConventionDbContext db) : ISessionWat
         if (sessionLookup.Count == 0) return [];
 
         var venueIds = sessionLookup.Values.Select(x => x.Session.VenueId).ToHashSet();
-        var venueMap = await db.Set<Venue>()
+        var venueMap = await db.Venues
             .Where(v => venueIds.Contains(v.Id))
             .ToDictionaryAsync(v => v.Id, v => v.Name, ct);
 
