@@ -15,10 +15,20 @@ public sealed class GetEditionFeedHandler(
 {
     public async Task<EditionFeedDto?> Handle(GetEditionFeedQuery query, CancellationToken ct)
     {
-        var edition = await editionRepository.GetProjectedByIdAsync(new EditionId(query.EditionId), ct);
+        var editionId = new EditionId(query.EditionId);
+        var edition = await editionRepository.GetProjectedByIdAsync(editionId, ct);
         if (edition is null) return null;
 
-        var allEvents = await eventRepository.ListByEditionIdAsync(new EditionId(query.EditionId), ct);
+        var allEvents = await eventRepository.ListByEditionIdAsync(editionId, ct);
+
+        Dictionary<Guid, string> categoryNameMap = [];
+        Dictionary<string, string> tagNameMap = [];
+
+        if (query.Locale is not null)
+        {
+            categoryNameMap = await editionRepository.GetCategoryTranslationLookupAsync(editionId, query.Locale, ct);
+            tagNameMap = await editionRepository.GetProgramTagTranslationLookupAsync(editionId, query.Locale, ct);
+        }
 
         var activeSessionIds = allEvents
             .SelectMany(e => e.Sessions)
@@ -37,10 +47,10 @@ public sealed class GetEditionFeedHandler(
             .Select(e => new EventSummaryFeedDto(
                 e.Id,
                 e.CategoryId,
-                e.CategoryName,
+                e.CategoryName is not null && categoryNameMap.TryGetValue(e.CategoryId, out var catName) ? catName : e.CategoryName,
                 e.Title!,
                 e.Description,
-                e.ProgramTags,
+                e.ProgramTags.Select(tag => tagNameMap.GetValueOrDefault(tag, tag)).ToList(),
                 e.LeadOrganiserName,
                 e.SessionCount,
                 e.Sessions
@@ -66,7 +76,10 @@ public sealed class GetEditionFeedHandler(
             edition.StaffRegistrationOpen,
             edition.VisitorRegistrationOpen,
             edition.Venues.Select(v => new VenueFeedDto(v.Id, v.Name, v.Building, v.Description)).ToList(),
-            edition.Categories.Select(c => new CategoryFeedDto(c.Id, c.Name, c.PublicDescription)).ToList(),
+            edition.Categories.Select(c => new CategoryFeedDto(
+                c.Id,
+                categoryNameMap.GetValueOrDefault(c.Id, c.Name),
+                c.PublicDescription)).ToList(),
             publishedEvents);
     }
 }

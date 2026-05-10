@@ -26,6 +26,8 @@ public sealed class EditionExportReadService(ConventionDbContext db) : IEditionE
             .Include(e => e.StaffAreas)
             .Include(e => e.Stations)
             .Include(e => e.Categories)
+                .ThenInclude(c => c.Translations)
+            .Include(e => e.ProgramTagTranslations)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
         if (edition is null)
@@ -67,6 +69,9 @@ public sealed class EditionExportReadService(ConventionDbContext db) : IEditionE
             .ToDictionaryAsync(p => p.Id, p => p.Email, ct);
 
         var categoriesById = edition.Categories.ToDictionary(c => c.Id.Value, c => c.Name);
+        var tagTranslationsByName = edition.ProgramTagTranslations
+            .GroupBy(t => t.TagName, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
         var venuesById = edition.Venues.ToDictionary(v => v.Id, v => v.Name);
         var startDate = edition.Period.StartDate;
 
@@ -154,7 +159,13 @@ public sealed class EditionExportReadService(ConventionDbContext db) : IEditionE
                     c.OrganizerInstructions,
                     c.PublicDescription,
                     c.PublicDescription,
-                    personEmails.GetValueOrDefault(c.ResponsibleId)))
+                    personEmails.GetValueOrDefault(c.ResponsibleId),
+                    c.Translations.Count == 0
+                        ? null
+                        : c.Translations
+                            .OrderBy(t => t.Locale)
+                            .Select(t => new ExportTranslationDto(t.Locale, t.Name))
+                            .ToList()))
                 .ToList(),
             includeEvents
                 ? events
@@ -192,7 +203,19 @@ public sealed class EditionExportReadService(ConventionDbContext db) : IEditionE
                 .ToList(),
             Pages: pageEntities?
                 .Select(p => new ExportPageDto(p.Slug, p.Title, p.Content, p.ShowInPublicMenu, p.MenuSortOrder))
-                .ToList());
+                .ToList(),
+            ProgramTagDetails: edition.ProgramTagDefinitions.Count == 0
+                ? null
+                : edition.ProgramTagDefinitions
+                    .OrderBy(t => t.Name)
+                    .Select(t =>
+                    {
+                        var translations = tagTranslationsByName.TryGetValue(t.Name, out var tagTrans)
+                            ? tagTrans.OrderBy(x => x.Locale).Select(x => new ExportTranslationDto(x.Locale, x.TranslatedName)).ToList()
+                            : null;
+                        return new ExportProgramTagDefinitionDto(t.Name, translations is { Count: > 0 } ? translations : null);
+                    })
+                    .ToList());
     }
 
     private static int ToRelativeDay(DateOnly startDate, DateOnly date)

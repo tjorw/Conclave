@@ -12,16 +12,16 @@ public static class FeedEndpoints
         var feed = groups.Anonymous.MapGroup("/feed/{conventionId:guid}");
 
         feed.MapGet("/editions/{editionId:guid}", async (
-            Guid editionId, ISender sender, CancellationToken ct) =>
+            Guid editionId, string? locale, ISender sender, CancellationToken ct) =>
         {
-            var result = await sender.Send(new GetEditionFeedQuery(editionId), ct);
+            var result = await sender.Send(new GetEditionFeedQuery(editionId, locale), ct);
             return result is null ? Results.NotFound() : Results.Ok(result);
         });
 
         feed.MapGet("/events/{eventId:guid}", async (
-            Guid eventId, ISender sender, CancellationToken ct) =>
+            Guid eventId, string? locale, ISender sender, CancellationToken ct) =>
         {
-            var result = await sender.Send(new GetEventFeedQuery(eventId), ct);
+            var result = await sender.Send(new GetEventFeedQuery(eventId, locale), ct);
             return result is null ? Results.NotFound() : Results.Ok(result);
         });
 

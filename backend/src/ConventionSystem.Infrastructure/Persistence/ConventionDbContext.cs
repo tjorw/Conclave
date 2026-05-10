@@ -33,6 +33,8 @@ public sealed class ConventionDbContext(
     public DbSet<Person> Persons => Set<Person>();
     public DbSet<StaffArea> StaffAreas => Set<StaffArea>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<CategoryTranslation> CategoryTranslations => Set<CategoryTranslation>();
+    public DbSet<ProgramTagTranslation> ProgramTagTranslations => Set<ProgramTagTranslation>();
 
     // Content
     public DbSet<Page> Pages => Set<Page>();

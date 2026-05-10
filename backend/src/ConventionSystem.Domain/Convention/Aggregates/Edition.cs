@@ -16,6 +16,7 @@ public sealed class Edition : AggregateRoot
     private readonly List<Station> _stations = [];
     private readonly List<Category> _categories = [];
     private readonly List<ProgramTagDefinition> _programTagDefinitions = [];
+    private readonly List<ProgramTagTranslation> _programTagTranslations = [];
     private readonly List<EditionScheduleDay> _scheduleDays = [];
     private readonly List<ReceptionStaff> _receptionStaff = [];
     private readonly List<EditionContent> _content = [];
@@ -37,6 +38,7 @@ public sealed class Edition : AggregateRoot
     public IReadOnlyList<Station> Stations => _stations.AsReadOnly();
     public IReadOnlyList<Category> Categories => _categories.AsReadOnly();
     public IReadOnlyList<ProgramTagDefinition> ProgramTagDefinitions => _programTagDefinitions.AsReadOnly();
+    public IReadOnlyList<ProgramTagTranslation> ProgramTagTranslations => _programTagTranslations.AsReadOnly();
     public IReadOnlyList<EditionScheduleDay> ScheduleDays => _scheduleDays.AsReadOnly();
     public IReadOnlyList<ReceptionStaff> ReceptionStaff => _receptionStaff.AsReadOnly();
     public IReadOnlyList<EditionContent> Content => _content.AsReadOnly();
@@ -363,6 +365,39 @@ public sealed class Edition : AggregateRoot
             _content.Add(new EditionContent(key, value));
         else
             existing.SetValue(value);
+    }
+
+    public void SetCategoryTranslation(CategoryId categoryId, string locale, string name)
+    {
+        if (!LocaleConstants.IsSupported(locale))
+            throw new ArgumentException($"Språket '{locale}' stöds inte.", nameof(locale));
+
+        var category = _categories.FirstOrDefault(c => c.Id == categoryId)
+            ?? throw new CategoryNotFoundInEditionException();
+
+        category.UpsertTranslation(locale, name);
+    }
+
+    public void SetProgramTagTranslation(string tagName, string locale, string translatedName)
+    {
+        if (!LocaleConstants.IsSupported(locale))
+            throw new ArgumentException($"Språket '{locale}' stöds inte.", nameof(locale));
+        if (string.IsNullOrWhiteSpace(translatedName))
+            throw new ArgumentException("Översatt namn får inte vara tomt.", nameof(translatedName));
+        if (translatedName.Trim().Length > 64)
+            throw new ArgumentException("Översatt namn får vara högst 64 tecken.", nameof(translatedName));
+
+        var tag = _programTagDefinitions.FirstOrDefault(t => t.EqualsName(tagName))
+            ?? throw new ProgramTagDefinitionNotFoundException();
+
+        var existing = _programTagTranslations.FirstOrDefault(t =>
+            t.TagName.Equals(tag.Name, StringComparison.OrdinalIgnoreCase) &&
+            t.Locale.Equals(locale, StringComparison.OrdinalIgnoreCase));
+
+        if (existing is not null)
+            existing.Update(translatedName.Trim());
+        else
+            _programTagTranslations.Add(new ProgramTagTranslation(Id, tag.Name, locale.ToLowerInvariant(), translatedName.Trim()));
     }
 
     public void ConfigureLocales(IReadOnlyList<string> locales, string primaryLocale, PersonId performedById)

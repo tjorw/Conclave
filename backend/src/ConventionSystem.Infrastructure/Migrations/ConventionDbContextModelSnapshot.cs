@@ -307,6 +307,37 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.ToTable("categories", (string)null);
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.CategoryTranslation", b =>
+                {
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("category_id");
+
+                    b.Property<string>("Locale")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("locale");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("CategoryId", "Locale");
+
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("IX_category_translations_category_id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("category_translations", (string)null);
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.ConventionAdministrator", b =>
                 {
                     b.Property<Guid>("ConventionId")
@@ -521,6 +552,42 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .HasDatabaseName("IX_persons_convention_id_email");
 
                     b.ToTable("persons", (string)null);
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.ProgramTagTranslation", b =>
+                {
+                    b.Property<Guid>("EditionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("edition_id");
+
+                    b.Property<string>("TagName")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)")
+                        .HasColumnName("tag_name");
+
+                    b.Property<string>("Locale")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("locale");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("TranslatedName")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)")
+                        .HasColumnName("translated_name");
+
+                    b.HasKey("EditionId", "TagName", "Locale");
+
+                    b.HasIndex("EditionId")
+                        .HasDatabaseName("IX_program_tag_translations_edition_id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("program_tag_translations", (string)null);
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.ReceptionStaff", b =>
@@ -1794,6 +1861,15 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.CategoryTranslation", b =>
+                {
+                    b.HasOne("ConventionSystem.Domain.Convention.Entities.Category", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.ConventionAdministrator", b =>
                 {
                     b.HasOne("ConventionSystem.Domain.Convention.Aggregates.Convention", null)
@@ -1834,6 +1910,15 @@ namespace ConventionSystem.Infrastructure.Migrations
                 {
                     b.HasOne("ConventionSystem.Domain.Convention.Aggregates.Edition", null)
                         .WithMany("ScheduleDays")
+                        .HasForeignKey("EditionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.ProgramTagTranslation", b =>
+                {
+                    b.HasOne("ConventionSystem.Domain.Convention.Aggregates.Edition", null)
+                        .WithMany("ProgramTagTranslations")
                         .HasForeignKey("EditionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2172,6 +2257,8 @@ namespace ConventionSystem.Infrastructure.Migrations
 
                     b.Navigation("Locales");
 
+                    b.Navigation("ProgramTagTranslations");
+
                     b.Navigation("ReceptionStaff");
 
                     b.Navigation("ScheduleDays");
@@ -2181,6 +2268,11 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.Navigation("Stations");
 
                     b.Navigation("Venues");
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.Category", b =>
+                {
+                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Event.Aggregates.Event", b =>

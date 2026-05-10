@@ -13,9 +13,10 @@ public sealed record EditionExportDocument(
     [property: JsonPropertyName("events")] IReadOnlyList<ExportEventDto>? Events,
     [property: JsonPropertyName("ticketTypes")] IReadOnlyList<ExportTicketTypeDto>? TicketTypes,
     [property: JsonPropertyName("programTagDefinitions")] IReadOnlyList<string>? ProgramTagDefinitions = null,
-    [property: JsonPropertyName("pages")] IReadOnlyList<ExportPageDto>? Pages = null)
+    [property: JsonPropertyName("pages")] IReadOnlyList<ExportPageDto>? Pages = null,
+    [property: JsonPropertyName("programTagDetails")] IReadOnlyList<ExportProgramTagDefinitionDto>? ProgramTagDetails = null)
 {
-    public const int CurrentSchemaVersion = 3;
+    public const int CurrentSchemaVersion = 4;
 }
 
 public sealed record ExportPageDto(
@@ -54,12 +55,21 @@ public sealed record ExportShiftDto(
     [property: JsonPropertyName("maxPersons")] int MaxPersons,
     [property: JsonPropertyName("responsibleEmail")] string? ResponsibleEmail);
 
+public sealed record ExportTranslationDto(
+    [property: JsonPropertyName("locale")] string Locale,
+    [property: JsonPropertyName("name")] string Name);
+
+public sealed record ExportProgramTagDefinitionDto(
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("translations")] IReadOnlyList<ExportTranslationDto>? Translations = null);
+
 public sealed record ExportCategoryDto(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("organizerInstructions")] string? OrganizerInstructions,
     [property: JsonPropertyName("publicDescription")] string? PublicDescription,
     [property: JsonPropertyName("description")] string? Description,
-    [property: JsonPropertyName("responsibleEmail")] string? ResponsibleEmail);
+    [property: JsonPropertyName("responsibleEmail")] string? ResponsibleEmail,
+    [property: JsonPropertyName("translations")] IReadOnlyList<ExportTranslationDto>? Translations = null);
 
 public sealed record ExportEventDto(
     [property: JsonPropertyName("title")] string Title,

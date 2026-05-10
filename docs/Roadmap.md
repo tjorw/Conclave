@@ -5,6 +5,15 @@ Spårar vad som återstår inför produktionsstart.
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
 
 
+### Flerspråksstöd – Fas 2 (kategori och tagg-översättningar)
+
+Se ADR: `docs/decisions/2026-05-10-category-tag-translations.md`
+
+- [x] `R-I18N06` Kategori-översättningar: `CategoryTranslation` entity, `Edition.SetCategoryTranslation()`, admin-endpoint, fallback i publika feed-queries, export/import v4
+- [x] `R-I18N07` Programtags-översättningar: `ProgramTagTranslation` entity, `Edition.SetProgramTagTranslation()`, admin-endpoint, fallback i publika feed-queries, export/import v4
+
+---
+
 ### Multitenancy
 
 **Fas 4 – Provisioning och self-service (R-MT013–R-MT017)**

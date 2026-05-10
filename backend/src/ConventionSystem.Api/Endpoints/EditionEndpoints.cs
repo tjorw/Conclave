@@ -37,6 +37,8 @@ using ConventionSystem.Application.Convention.Commands.UpdateVenue;
 using ConventionSystem.Application.Convention.Commands.CreateProgramTagDefinition;
 using ConventionSystem.Application.Convention.Commands.UpdateProgramTagDefinition;
 using ConventionSystem.Application.Convention.Commands.RemoveProgramTagDefinition;
+using ConventionSystem.Application.Convention.Commands.SetCategoryTranslation;
+using ConventionSystem.Application.Convention.Commands.SetProgramTagTranslation;
 using ConventionSystem.Application.Export.Commands.ExportEdition;
 using ConventionSystem.Application.Export.Commands.ImportEdition;
 using ConventionSystem.Application.Export.Contracts;
@@ -297,6 +299,20 @@ public static class EditionEndpoints
                 return Results.NoContent();
             });
 
+        editions.MapPut("/categories/{categoryId:guid}/translations/{locale}",
+            async (Guid editionId, Guid categoryId, string locale, SetCategoryTranslationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new SetCategoryTranslationCommand(editionId, categoryId, locale, request.Name), ct);
+                return Results.NoContent();
+            });
+
+        editions.MapPut("/tag-translations/{tagName}/{locale}",
+            async (Guid editionId, string tagName, string locale, SetProgramTagTranslationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new SetProgramTagTranslationCommand(editionId, tagName, locale, request.TranslatedName), ct);
+                return Results.NoContent();
+            });
+
         editions.MapGet("/reception-staff",
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new ListReceptionStaffQuery(editionId), ct)));
@@ -413,6 +429,8 @@ public record UpdateCategoryRequest(string Name, string? OrganizerInstructions, 
 public record ChangeCategoryResponsibleRequest(Guid NewResponsibleId);
 public record CreateProgramTagDefinitionRequest(string Name);
 public record UpdateProgramTagDefinitionRequest(string CurrentName, string NewName);
+public record SetCategoryTranslationRequest(string Name);
+public record SetProgramTagTranslationRequest(string TranslatedName);
 
 public record SetEditionContentRequest(IReadOnlyList<EditionContentItemRequest> Items);
 public record SetEditionLocalesRequest(IReadOnlyList<string> Locales, string PrimaryLocale);

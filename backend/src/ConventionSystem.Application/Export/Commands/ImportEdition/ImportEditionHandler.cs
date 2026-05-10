@@ -86,6 +86,7 @@ public sealed class ImportEditionHandler(
                 edition.CreateStation(station.Name, staffArea.Id, station.Description);
         }
 
+        var categoryTranslationsByName = new Dictionary<string, IReadOnlyList<ExportTranslationDto>>(StringComparer.OrdinalIgnoreCase);
         foreach (var category in command.Document.Categories)
         {
             var responsibleId = await ResolvePersonIdAsync(
@@ -105,9 +106,16 @@ public sealed class ImportEditionHandler(
                 responsibleId,
                 category.OrganizerInstructions,
                 publicDescription);
+
+            if (category.Translations is { Count: > 0 })
+                categoryTranslationsByName[category.Name] = category.Translations;
         }
 
-        foreach (var tagDefinition in command.Document.ProgramTagDefinitions ?? [])
+        var tagNamesToImport = command.Document.SchemaVersion >= 4 && command.Document.ProgramTagDetails is not null
+            ? command.Document.ProgramTagDetails.Select(t => t.Name).ToList()
+            : command.Document.ProgramTagDefinitions?.ToList() ?? [];
+
+        foreach (var tagDefinition in tagNamesToImport)
         {
             try
             {
@@ -120,6 +128,33 @@ public sealed class ImportEditionHandler(
         }
 
         await editionRepository.AddAndSaveAsync(edition, ct);
+
+        // Apply category translations (categories now have IDs assigned after save)
+        foreach (var category in edition.Categories)
+        {
+            if (!categoryTranslationsByName.TryGetValue(category.Name, out var translations)) continue;
+            foreach (var translation in translations)
+            {
+                try { edition.SetCategoryTranslation(category.Id, translation.Locale, translation.Name); }
+                catch (ArgumentException) { }
+            }
+        }
+
+        // Apply tag translations (v4)
+        if (command.Document.SchemaVersion >= 4)
+        {
+            foreach (var tagDto in command.Document.ProgramTagDetails ?? [])
+            {
+                foreach (var translation in tagDto.Translations ?? [])
+                {
+                    try { edition.SetProgramTagTranslation(tagDto.Name, translation.Locale, translation.Name); }
+                    catch (ArgumentException) { }
+                }
+            }
+        }
+
+        if (edition.Categories.Any(c => c.Translations.Count > 0) || edition.ProgramTagTranslations.Count > 0)
+            await editionRepository.SaveAsync(ct);
 
         var stationMap = BuildStationMap(edition);
         var categoryMap = edition.Categories.ToDictionary(c => c.Name, c => c.Id, StringComparer.OrdinalIgnoreCase);

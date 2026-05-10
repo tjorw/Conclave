@@ -18,11 +18,28 @@ public sealed class GetEventFeedHandler(
         var ev = await eventRepository.GetProjectedByIdAsync(new EventId(query.EventId), ct);
         if (ev is null || ev.Status != "Published") return null;
 
-        var edition = await editionRepository.GetProjectedByIdAsync(new EditionId(ev.EditionId), ct);
+        var editionId = new EditionId(ev.EditionId);
+        var edition = await editionRepository.GetProjectedByIdAsync(editionId, ct);
 
         var venueIndex = edition?.Venues.ToDictionary(v => v.Id, v => v.Name)
                          ?? new Dictionary<Guid, string>();
         var categoryName = edition?.Categories.FirstOrDefault(c => c.Id == ev.CategoryId)?.Name;
+
+        Dictionary<Guid, string> categoryNameMap = [];
+        Dictionary<string, string> tagNameMap = [];
+
+        if (query.Locale is not null)
+        {
+            categoryNameMap = await editionRepository.GetCategoryTranslationLookupAsync(editionId, query.Locale, ct);
+            tagNameMap = await editionRepository.GetProgramTagTranslationLookupAsync(editionId, query.Locale, ct);
+        }
+
+        if (categoryName is not null && categoryNameMap.TryGetValue(ev.CategoryId, out var translatedCatName))
+            categoryName = translatedCatName;
+
+        var translatedTags = ev.ProgramTags
+            .Select(tag => tagNameMap.GetValueOrDefault(tag, tag))
+            .ToList();
 
         var activeSessions = ev.Sessions
             .Where(s => s.Status == "Active")
@@ -54,7 +71,7 @@ public sealed class GetEventFeedHandler(
             categoryName,
             ev.Title,
             ev.Description,
-            ev.ProgramTags,
+            translatedTags,
             ev.RegistrationType,
             ev.DropInRules,
             sessions,

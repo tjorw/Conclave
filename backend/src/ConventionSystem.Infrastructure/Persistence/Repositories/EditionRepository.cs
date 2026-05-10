@@ -53,11 +53,49 @@ public sealed class EditionRepository(ConventionDbContext db) : IEditionReposito
             .Include(e => e.ProgramTagDefinitions)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
+    public Task<Edition?> GetByIdWithCategoriesAndTranslationsAsync(EditionId id, CancellationToken ct = default)
+        => db.Editions
+            .Include(e => e.Categories)
+                .ThenInclude(c => c.Translations)
+            .Include(e => e.ProgramTagDefinitions)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
     public Task<Edition?> GetByIdWithCategoriesAndVenuesAsync(EditionId id, CancellationToken ct = default)
         => db.Editions
             .Include(e => e.Categories)
             .Include(e => e.Venues)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
+
+    public Task<Edition?> GetByIdWithProgramTagTranslationsAsync(EditionId id, CancellationToken ct = default)
+        => db.Editions
+            .Include(e => e.ProgramTagDefinitions)
+            .Include(e => e.ProgramTagTranslations)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
+    public async Task<Dictionary<Guid, string>> GetCategoryTranslationLookupAsync(EditionId editionId, string locale, CancellationToken ct = default)
+    {
+        var categoryIds = await db.Categories
+            .AsNoTracking()
+            .Where(c => EF.Property<EditionId>(c, "EditionId") == editionId)
+            .Select(c => c.Id)
+            .ToListAsync(ct);
+
+        if (categoryIds.Count == 0)
+            return [];
+
+        return await db.CategoryTranslations
+            .AsNoTracking()
+            .Where(t => categoryIds.Contains(t.CategoryId) && t.Locale == locale)
+            .ToDictionaryAsync(t => t.CategoryId.Value, t => t.Name, ct);
+    }
+
+    public async Task<Dictionary<string, string>> GetProgramTagTranslationLookupAsync(EditionId editionId, string locale, CancellationToken ct = default)
+    {
+        return await db.ProgramTagTranslations
+            .AsNoTracking()
+            .Where(t => t.EditionId == editionId && t.Locale == locale)
+            .ToDictionaryAsync(t => t.TagName, t => t.TranslatedName, StringComparer.OrdinalIgnoreCase, ct);
+    }
 
     public Task<Edition?> GetByIdWithReceptionStaffAsync(EditionId id, CancellationToken ct = default)
         => db.Editions

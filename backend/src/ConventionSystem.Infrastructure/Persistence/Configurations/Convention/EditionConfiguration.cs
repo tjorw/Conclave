@@ -76,12 +76,14 @@ public sealed class EditionConfiguration : IEntityTypeConfiguration<Edition>
         builder.HasMany(e => e.ReceptionStaff).WithOne().HasForeignKey("EditionId").IsRequired();
         builder.HasMany(e => e.Content).WithOne().HasForeignKey("EditionId").IsRequired();
         builder.HasMany(e => e.Locales).WithOne().HasForeignKey("EditionId").IsRequired();
+        builder.HasMany(e => e.ProgramTagTranslations).WithOne().HasForeignKey("EditionId").IsRequired().OnDelete(DeleteBehavior.Cascade);
 
         builder.Navigation(e => e.Venues).HasField("_venues");
         builder.Navigation(e => e.StaffAreas).HasField("_staffAreas");
         builder.Navigation(e => e.Stations).HasField("_stations");
         builder.Navigation(e => e.Categories).HasField("_categories");
         builder.Navigation(e => e.ProgramTagDefinitions).HasField("_programTagDefinitions");
+        builder.Navigation(e => e.ProgramTagTranslations).HasField("_programTagTranslations");
         builder.Navigation(e => e.ScheduleDays).HasField("_scheduleDays");
         builder.Navigation(e => e.ReceptionStaff).HasField("_receptionStaff");
         builder.Navigation(e => e.Content).HasField("_content");
@@ -197,6 +199,9 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.Name).HasMaxLength(200).IsRequired();
         builder.Property(c => c.OrganizerInstructions).HasColumnName("organizer_instructions").HasMaxLength(4000);
         builder.Property(c => c.PublicDescription).HasColumnName("public_description").HasMaxLength(4000);
+
+        builder.HasMany(c => c.Translations).WithOne().HasForeignKey("CategoryId").IsRequired().OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation(c => c.Translations).HasField("_translations");
     }
 }
 

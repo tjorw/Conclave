@@ -13,10 +13,14 @@ public interface IEditionRepository
     Task<Edition?> GetByIdWithStaffAreasAsync(EditionId id, CancellationToken ct = default);
     Task<Edition?> GetByStationIdAsync(StationId stationId, CancellationToken ct = default);
     Task<Edition?> GetByIdWithCategoriesAsync(EditionId id, CancellationToken ct = default);
+    Task<Edition?> GetByIdWithCategoriesAndTranslationsAsync(EditionId id, CancellationToken ct = default);
     Task<Edition?> GetByIdWithCategoriesAndVenuesAsync(EditionId id, CancellationToken ct = default);
+    Task<Edition?> GetByIdWithProgramTagTranslationsAsync(EditionId id, CancellationToken ct = default);
     Task<Edition?> GetByIdWithReceptionStaffAsync(EditionId id, CancellationToken ct = default);
     Task<Edition?> GetByIdWithContentAsync(EditionId id, CancellationToken ct = default);
     Task<Edition?> GetByIdWithLocalesAsync(EditionId id, CancellationToken ct = default);
+    Task<Dictionary<Guid, string>> GetCategoryTranslationLookupAsync(EditionId editionId, string locale, CancellationToken ct = default);
+    Task<Dictionary<string, string>> GetProgramTagTranslationLookupAsync(EditionId editionId, string locale, CancellationToken ct = default);
     Task<IReadOnlyList<EditionSummaryDto>> ListByConventionIdAsync(ConventionId id, CancellationToken ct = default);
     Task<EditionDto?> GetProjectedByIdAsync(EditionId id, CancellationToken ct = default);
     Task<IReadOnlyList<EditionResponsibleDto>> GetResponsiblesByEditionIdAsync(EditionId id, CancellationToken ct = default);
