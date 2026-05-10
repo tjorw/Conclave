@@ -1,7 +1,7 @@
 <div class="login-page">
   <div class="login-card">
 
-    <h1 class="login-title">Logga in</h1>
+    <h1 class="login-title">{{ labels().loginTitle }}</h1>
 
     @if (error()) {
       <div class="error-banner">{{ error() }}</div>
@@ -9,12 +9,12 @@
 
     <form [formGroup]="form" (ngSubmit)="login()">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>E-postadress</mat-label>
+        <mat-label>{{ labels().loginEmail }}</mat-label>
         <input matInput type="email" formControlName="email" autocomplete="email" />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Lösenord</mat-label>
+        <mat-label>{{ labels().loginPassword }}</mat-label>
         <input matInput type="password" formControlName="password" autocomplete="current-password" />
       </mat-form-field>
 
@@ -23,15 +23,15 @@
         @if (loading()) {
           <mat-spinner diameter="20" />
         } @else {
-          Logga in
+          {{ labels().loginButton }}
         }
       </button>
     </form>
 
-    <a class="forgot-link" routerLink="/forgot-password">Glömt lösenordet?</a>
+    <a class="forgot-link" routerLink="/forgot-password">{{ labels().loginForgotPassword }}</a>
 
     <p class="register-link">
-      Inget konto? <a routerLink="/register">Skapa ett konto</a>
+      {{ labels().loginNoAccount }} <a routerLink="/register">{{ labels().loginCreateAccount }}</a>
     </p>
 
   </div>

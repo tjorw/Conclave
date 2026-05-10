@@ -93,3 +93,10 @@ public record StructureCopiedFromEdition(
     int StationCount,
     PersonId PerformedById,
     DateTimeOffset OccurredAt) : IDomainEvent;
+
+public record EditionLocalesConfigured(
+    EditionId EditionId,
+    IReadOnlyList<string> Locales,
+    string PrimaryLocale,
+    PersonId PerformedById,
+    DateTimeOffset OccurredAt) : IDomainEvent;

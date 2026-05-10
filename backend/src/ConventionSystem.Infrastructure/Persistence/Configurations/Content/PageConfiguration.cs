@@ -17,6 +17,14 @@ public sealed class PageConfiguration : IEntityTypeConfiguration<Page>
             .HasConversion(id => id.Value, value => new PageId(value))
             .ValueGeneratedNever();
 
+        builder.HasMany(p => p.Translations)
+            .WithOne()
+            .HasForeignKey("PageId")
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(p => p.Translations).HasField("_translations");
+
         builder.Property(p => p.ConventionId)
             .HasConversion(id => id.Value, value => new ConventionId(value))
             .HasColumnName("convention_id");

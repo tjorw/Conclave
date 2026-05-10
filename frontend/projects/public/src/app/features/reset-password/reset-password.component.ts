@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService, toErrorMessage } from 'shared';
+import { LabelsService } from '../../services/labels.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -26,6 +27,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   private readonly route  = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb     = inject(FormBuilder);
+  readonly labels = inject(LabelsService).labels;
 
   readonly loading = signal(false);
   readonly error   = signal<string | null>(null);

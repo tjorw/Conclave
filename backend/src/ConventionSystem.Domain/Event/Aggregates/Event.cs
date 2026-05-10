@@ -7,6 +7,7 @@ using ConventionSystem.Domain.Event.Exceptions;
 using ConventionSystem.Domain.Event.Events;
 using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Event.ValueObjects;
+using ConventionSystem.Domain.Shared;
 
 namespace ConventionSystem.Domain.Event.Aggregates;
 
@@ -17,6 +18,7 @@ public sealed class Event : AggregateRoot
     private readonly List<CoOrganiserInvitation> _coOrganiserInvitations = [];
     private readonly List<EventComment> _comments = [];
     private readonly List<EventProgramTag> _programTags = [];
+    private readonly List<EventTranslation> _translations = [];
 
     public EventId Id { get; private set; }
     public EditionId EditionId { get; private set; }
@@ -42,6 +44,7 @@ public sealed class Event : AggregateRoot
     public IReadOnlyList<CoOrganiserInvitation> CoOrganiserInvitations => _coOrganiserInvitations.AsReadOnly();
     public IReadOnlyList<EventComment> Comments => _comments.AsReadOnly();
     public IReadOnlyList<EventProgramTag> ProgramTags => _programTags.AsReadOnly();
+    public IReadOnlyList<EventTranslation> Translations => _translations.AsReadOnly();
 
     private Event() { }
 
@@ -132,6 +135,26 @@ public sealed class Event : AggregateRoot
         _programTags.Clear();
         foreach (var tag in programTags.Select(t => new EventProgramTag(t)).DistinctBy(t => t.Name, StringComparer.OrdinalIgnoreCase))
             _programTags.Add(tag);
+    }
+
+    public void SetTranslation(string locale, string title, string description)
+    {
+        EnsureNotCancelled();
+
+        if (!LocaleConstants.IsSupported(locale))
+            throw new ArgumentException($"Språket '{locale}' stöds inte.", nameof(locale));
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Titel får inte vara tom.", nameof(title));
+        if (description.Length > 10_000)
+            throw new ArgumentException("Beskrivning får inte vara längre än 10 000 tecken.", nameof(description));
+
+        var normalized = locale.ToLowerInvariant();
+        var existing = _translations.FirstOrDefault(t => t.Locale.Equals(normalized, StringComparison.OrdinalIgnoreCase));
+
+        if (existing is null)
+            _translations.Add(new EventTranslation(Id, normalized, title.Trim(), description.Trim()));
+        else
+            existing.Update(title.Trim(), description.Trim());
     }
 
     public void SubmitForReview()

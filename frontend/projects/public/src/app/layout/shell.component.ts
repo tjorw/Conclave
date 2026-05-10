@@ -7,6 +7,8 @@ import { AuthService, ContextDebugComponent, GlobalStatusBannerComponent, Sessio
 import { EditionService } from '../services/edition.service';
 import { HomeContentStateService } from '../services/home-content-state.service';
 import { BrandingService } from '../services/branding.service';
+import { LabelsService } from '../services/labels.service';
+import { LanguageSelectorComponent } from './language-selector.component';
 
 @Component({
   selector: 'app-shell',
@@ -19,6 +21,7 @@ import { BrandingService } from '../services/branding.service';
     MatIconModule,
     GlobalStatusBannerComponent,
     ContextDebugComponent,
+    LanguageSelectorComponent,
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
@@ -28,6 +31,7 @@ export class ShellComponent {
   readonly sessionState = inject(SessionStateService);
   readonly editionSvc = inject(EditionService);
   readonly branding = inject(BrandingService);
+  readonly labels = inject(LabelsService).labels;
   private readonly homeContentState = inject(HomeContentStateService);
   private readonly router = inject(Router);
 

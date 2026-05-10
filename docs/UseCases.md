@@ -3574,15 +3574,15 @@ Konventionsadministratör
 - `EditionLocalePrimaryChanged { editionId, locale, occurredAt }`
 
 ## Implementationssteg
-- [ ] `R-I18N02` `EditionLocale`-entitet (EditionId, Locale, IsPrimary); EF Core-konfiguration; migration
-- [ ] Kommando `SetEditionLocalesCommand` + handler; endpoint `PUT /api/editions/{id}/locales`
+- [x] `R-I18N02` `EditionLocale`-entitet (EditionId, Locale, IsPrimary); EF Core-konfiguration; migration
+- [x] Kommando `SetEditionLocalesCommand` + handler; endpoint `PUT /api/editions/{id}/locales`
 - [ ] Admin-UI: språkinställning i upplagens grundformulär
 
 ## Acceptanskriterier
-- [ ] Exakt ett primärspråk sparas per upplaga; försök att sätta fler ger valideringsfel
-- [ ] Okänd locale returnerar valideringsfel
-- [ ] Borttagning av primärspråk returnerar valideringsfel
-- [ ] Kommandohanteraren har tillhörande enhetstest
+- [x] Exakt ett primärspråk sparas per upplaga; försök att sätta fler ger valideringsfel
+- [x] Okänd locale returnerar valideringsfel
+- [x] Borttagning av primärspråk returnerar valideringsfel
+- [x] Kommandohanteraren har tillhörande enhetstest
 
 ---
 
@@ -3613,16 +3613,16 @@ Konventionsadministratör
 - Inga
 
 ## Implementationssteg
-- [ ] `R-I18N03` `PageTranslation`-entitet (PageId, Locale, Title, Content); EF Core-konfiguration; migration
-- [ ] Kommando `SetPageTranslationCommand` + handler; endpoint `PUT /api/pages/{id}/translations/{locale}`
-- [ ] Query `GetPageBySlugQuery` utökas med locale-parameter; returnerar rätt `PageTranslation` om tillgänglig
+- [x] `R-I18N03` `PageTranslation`-entitet (PageId, Locale, Title, Content); EF Core-konfiguration; migration
+- [x] Kommando `SetPageTranslationCommand` + handler; endpoint `PUT /api/pages/{id}/translations/{locale}`
+- [x] Query `GetPageBySlugQuery` utökas med locale-parameter; returnerar rätt `PageTranslation` om tillgänglig
 - [ ] Admin-UI: flikbaserat redigeringsformulär per locale
 
 ## Acceptanskriterier
-- [ ] Översättning sparas och kan hämtas per (slug, locale)
-- [ ] Primärspråket påverkas inte av översättningsoperationen
-- [ ] Otillåten locale returnerar valideringsfel
-- [ ] Kommandohanteraren har tillhörande enhetstest
+- [x] Översättning sparas och kan hämtas per (slug, locale)
+- [x] Primärspråket påverkas inte av översättningsoperationen
+- [x] Otillåten locale returnerar valideringsfel
+- [x] Kommandohanteraren har tillhörande enhetstest
 
 ---
 
@@ -3654,16 +3654,16 @@ Konventionsadministratör eller evenemangsarrangör (LeadOrganiser/CoOrganiser)
 - Inga
 
 ## Implementationssteg
-- [ ] `R-I18N04` `EventTranslation`-entitet (EventId, Locale, Title, Description); EF Core-konfiguration; migration
-- [ ] Kommando `SetEventTranslationCommand` + handler; endpoint `PUT /api/events/{id}/translations/{locale}`
+- [x] `R-I18N04` `EventTranslation`-entitet (EventId, Locale, Title, Description); EF Core-konfiguration; migration
+- [x] Kommando `SetEventTranslationCommand` + handler; endpoint `PUT /api/events/{id}/translations/{locale}`
 - [ ] Query `GetEventQuery` och `ListEventsQuery` utökas med locale-parameter
 - [ ] Admin- och arrangörsgränssnitt: flikbaserat redigeringsformulär per locale
 
 ## Acceptanskriterier
-- [ ] Översättning sparas och returneras per (eventId, locale)
-- [ ] Arrangör kan inte redigera ett evenemang de inte tillhör
-- [ ] Description över 10 000 tecken returnerar valideringsfel
-- [ ] Kommandohanteraren har tillhörande enhetstest
+- [x] Översättning sparas och returneras per (eventId, locale)
+- [x] Arrangör kan inte redigera ett evenemang de inte tillhör
+- [x] Description över 10 000 tecken returnerar valideringsfel
+- [x] Kommandohanteraren har tillhörande enhetstest
 
 ---
 
@@ -3694,8 +3694,8 @@ Besökare (anonym eller inloggad)
 - Inga
 
 ## Implementationssteg
-- [ ] `R-I18N05` Publik app: språkväljare-komponent + locale-state i signal-service; locale skickas som query-parameter
-- [ ] Samtliga publika queries som hämtar sidor och evenemang tar emot `locale`-parameter och tillämpar fallback-logik
+- [x] `R-I18N05` Publik app: språkväljare-komponent + locale-state i signal-service; locale skickas som query-parameter
+- [x] Samtliga publika queries som hämtar sidor och evenemang tar emot `locale`-parameter och tillämpar fallback-logik
 - [ ] `Accept-Language`-header läses som fallback om ingen explicit locale anges
 
 ## Acceptanskriterier

@@ -1,5 +1,6 @@
 using ConventionSystem.Application.Event.Queries;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Event.Entities;
 using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Event.Ids;
 
@@ -9,6 +10,8 @@ public interface IEventRepository
 {
     Task AddAndSaveAsync(Domain.Event.Aggregates.Event ev, CancellationToken ct = default);
     Task<Domain.Event.Aggregates.Event?> GetByIdAsync(EventId id, CancellationToken ct = default);
+    Task<Domain.Event.Aggregates.Event?> GetByIdWithTranslationsAsync(EventId id, CancellationToken ct = default);
+    Task<EventTranslation?> GetTranslationAsync(EventId id, string locale, CancellationToken ct = default);
     Task<Domain.Event.Aggregates.Event?> GetByIdWithCoOrganisersAsync(EventId id, CancellationToken ct = default);
     Task<Domain.Event.Aggregates.Event?> GetByIdWithInvitationsAsync(EventId id, CancellationToken ct = default);
     Task<Domain.Event.Aggregates.Event?> GetByIdWithCoOrganisersAndInvitationsAsync(EventId id, CancellationToken ct = default);

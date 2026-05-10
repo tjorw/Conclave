@@ -16,6 +16,7 @@ import {
   REGISTRATION_KIND_LABEL,
   SessionFeedDto,
 } from 'shared';
+import { LabelsService } from '../../../services/labels.service';
 
 @Component({
   selector: 'app-event-detail',
@@ -30,6 +31,7 @@ export class EventDetailComponent implements OnInit {
   private readonly router = inject(Router);
   readonly authSvc = inject(AuthService);
   private readonly regSvc = inject(RegistrationService);
+  readonly labels = inject(LabelsService).labels;
 
   readonly loading  = signal(true);
   readonly error    = signal<string | null>(null);
@@ -96,15 +98,10 @@ export class EventDetailComponent implements OnInit {
 
   capacityLabel(s: SessionFeedDto): string {
     const level = this.capacityLevel(s);
-    if (level === 'red') {
-      return 'Hög beläggning';
-    }
-
-    if (level === 'orange') {
-      return 'Börjar bli fullt';
-    }
-
-    return 'Gott om plats';
+    const l = this.labels();
+    if (level === 'red') return l.eventDetailCapacityHigh;
+    if (level === 'orange') return l.eventDetailCapacityAlmost;
+    return l.eventDetailCapacityGood;
   }
 
   isRegistered(sessionId: string): boolean {

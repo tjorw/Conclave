@@ -17,13 +17,14 @@
 
       <!-- Desktop: nav-links och nav-actions -->
       <div class="nav-links">
-        <a mat-button routerLink="/program" routerLinkActive="nav-active">Program</a>
+        <a mat-button routerLink="/program" routerLinkActive="nav-active">{{ labels().navProgram }}</a>
         @for (page of menuPages(); track page.slug) {
           <a mat-button [routerLink]="['/pages', page.slug]" routerLinkActive="nav-active">{{ page.title }}</a>
         }
       </div>
 
       <div class="nav-actions">
+        <app-language-selector />
         @if (auth.isLoggedIn()) {
           <div class="session-status" [class.session-status-warning]="sessionState.showExpiryWarning() || sessionState.sessionExpired()">
             <mat-icon>{{ sessionState.showExpiryWarning() ? 'schedule' : (sessionState.sessionExpired() ? 'lock_clock' : 'verified_user') }}</mat-icon>
@@ -34,19 +35,19 @@
           </div>
           <a mat-button routerLink="/my-pages" routerLinkActive="nav-active">
             <mat-icon>person</mat-icon>
-            Mina sidor
+            {{ labels().navMyPages }}
           </a>
           <button mat-stroked-button class="logout-btn" (click)="logout()">
-            Logga ut
+            {{ labels().navLogout }}
           </button>
         } @else {
-          <a mat-flat-button routerLink="/login" class="login-btn">Logga in</a>
+          <a mat-flat-button routerLink="/login" class="login-btn">{{ labels().navLogin }}</a>
         }
       </div>
 
       <!-- Mobil: hamburgersknapp -->
       <button class="hamburger" (click)="menuOpen.set(!menuOpen())"
-        [attr.aria-label]="menuOpen() ? 'Stäng meny' : 'Öppna meny'">
+        [attr.aria-label]="menuOpen() ? labels().navCloseMenu : labels().navOpenMenu">
         <mat-icon>{{ menuOpen() ? 'close' : 'menu' }}</mat-icon>
       </button>
 
@@ -56,19 +57,19 @@
     @if (menuOpen()) {
       <div class="mobile-menu">
         <a routerLink="/program" routerLinkActive="nav-active"
-          (click)="menuOpen.set(false)">Program</a>
+          (click)="menuOpen.set(false)">{{ labels().navProgram }}</a>
         @for (page of menuPages(); track page.slug) {
           <a [routerLink]="['/pages', page.slug]" routerLinkActive="nav-active"
             (click)="menuOpen.set(false)">{{ page.title }}</a>
         }
         @if (auth.isLoggedIn()) {
           <a routerLink="/my-pages" (click)="menuOpen.set(false)">
-            Mina sidor
+            {{ labels().navMyPages }}
           </a>
-          <button (click)="logout()">Logga ut</button>
+          <button (click)="logout()">{{ labels().navLogout }}</button>
         } @else {
           <a class="mobile-login-btn" routerLink="/login"
-            (click)="menuOpen.set(false)">Logga in</a>
+            (click)="menuOpen.set(false)">{{ labels().navLogin }}</a>
         }
       </div>
     }
@@ -85,7 +86,7 @@
   <!-- ── Sidfot ─────────────────────────────────────────────────────────── -->
   <footer class="footer">
     <div class="footer-inner">
-      <span>{{ editionSvc.conventionName() }} · Powered by Conclave</span>
+      <span>{{ editionSvc.conventionName() }} · {{ labels().navPoweredBy }}</span>
     </div>
   </footer>
 

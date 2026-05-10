@@ -9,6 +9,7 @@ import {
   PublicPageMenuItemDto,
 } from 'shared';
 import { EditionService } from './edition.service';
+import { LocaleService } from './locale.service';
 
 @Injectable({ providedIn: 'root' })
 export class HomeContentStateService {
@@ -16,8 +17,10 @@ export class HomeContentStateService {
   private readonly contentSvc = inject(EditionContentService);
   private readonly eventSvc = inject(EventService);
   private readonly pageSvc = inject(PageService);
+  private readonly localeSvc = inject(LocaleService);
 
   private lastLoadedEditionId: string | null = null;
+  private lastLoadedLocale: string | null = null;
 
   readonly contentMap = signal<Record<string, string>>({});
   readonly featuredEventsFromApi = signal<EventSummaryFeedDto[] | null>(null);
@@ -26,18 +29,24 @@ export class HomeContentStateService {
   constructor() {
     effect(() => {
       const editionId = this.editionSvc.editionId();
-      if (!editionId || this.lastLoadedEditionId === editionId) return;
+      const locale = this.localeSvc.locale();
+      if (!editionId) return;
+
+      const editionChanged = this.lastLoadedEditionId !== editionId;
+      const localeChanged = this.lastLoadedLocale !== locale;
+      if (!editionChanged && !localeChanged) return;
 
       this.lastLoadedEditionId = editionId;
-      this.load(editionId);
+      this.lastLoadedLocale = locale;
+      this.load(editionId, locale);
     });
   }
 
-  private load(editionId: string): void {
+  private load(editionId: string, locale: string): void {
     forkJoin({
       content: this.contentSvc.getContent(editionId).pipe(catchError(() => of([] as EditionContentDto[]))),
       featured: this.eventSvc.getFeaturedEvents().pipe(catchError(() => of(null))),
-      menu: this.pageSvc.listPublicMenuPages().pipe(catchError(() => of([] as PublicPageMenuItemDto[]))),
+      menu: this.pageSvc.listPublicMenuPages(locale).pipe(catchError(() => of([] as PublicPageMenuItemDto[]))),
     }).subscribe(({ content, featured, menu }) => {
       this.contentMap.set(this.toContentMap(content));
       this.featuredEventsFromApi.set(featured);

@@ -26,12 +26,14 @@ export class PageService {
     return this.http.get<PageDto>(`${this.env.apiBaseUrl}/api/pages/${pageId}`);
   }
 
-  getPublicPage(slug: string) {
-    return this.http.get<PublicPageDto>(`${this.env.apiBaseUrl}/api/pages/${slug}`);
+  getPublicPage(slug: string, locale?: string) {
+    const params = locale ? new HttpParams().set('locale', locale) : undefined;
+    return this.http.get<PublicPageDto>(`${this.env.apiBaseUrl}/api/pages/${slug}`, { params });
   }
 
-  listPublicMenuPages() {
-    return this.http.get<PublicPageMenuItemDto[]>(`${this.env.apiBaseUrl}/api/pages/menu`);
+  listPublicMenuPages(locale?: string) {
+    const params = locale ? new HttpParams().set('locale', locale) : undefined;
+    return this.http.get<PublicPageMenuItemDto[]>(`${this.env.apiBaseUrl}/api/pages/menu`, { params });
   }
 
   createPage(request: SavePageRequest) {

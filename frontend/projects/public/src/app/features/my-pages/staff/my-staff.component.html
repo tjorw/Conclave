@@ -1,10 +1,10 @@
 <div class="page-container staff-page">
   <div class="back-link">
-    <a routerLink="/my-pages">← Mina sidor</a>
+    <a routerLink="/my-pages">{{ labels().hubBack }}</a>
   </div>
 
   <header class="page-header">
-    <h1 class="page-title">Min funktionering</h1>
+    <h1 class="page-title">{{ labels().myStaffTitle }}</h1>
   </header>
 
   @if (loading()) {
@@ -18,17 +18,17 @@
 
     @if (application(); as app) {
       <section class="card status-card">
-        <h2>Ansökningsstatus</h2>
+        <h2>{{ labels().myStaffApplicationStatus }}</h2>
         <p class="status-row">
-          <span class="label">Status</span>
+          <span class="label">{{ labels().myStaffStatusField }}</span>
           <span [class]="statusChipClass(app.status)">{{ statusLabel(app.status) }}</span>
         </p>
       </section>
 
       <section class="card shift-card">
-        <h2>Mina pass</h2>
+        <h2>{{ labels().myStaffShiftsTitle }}</h2>
         @if (assignedShifts().length === 0) {
-          <p class="empty-text">Du har inga pass ännu.</p>
+          <p class="empty-text">{{ labels().myStaffNoShifts }}</p>
         } @else {
           <div class="shift-list">
             @for (shift of assignedShifts(); track shift.shiftId) {
@@ -44,29 +44,29 @@
       </section>
     } @else {
       <section class="card form-card">
-        <h2>Ansök som funktionär</h2>
+        <h2>{{ labels().myStaffApplyTitle }}</h2>
 
         @if (!staffRegistrationOpen()) {
           <p class="registration-closed">
-            Funktionärsregistrering är inte öppen för denna upplaga just nu.
+            {{ labels().myStaffRegistrationClosed }}
           </p>
         }
 
         <form [formGroup]="applicationForm" (ngSubmit)="submitApplication()">
           <div class="field-group">
-            <label for="interestDescription">Motivering</label>
+            <label for="interestDescription">{{ labels().myStaffMotivationLabel }}</label>
             <textarea
               id="interestDescription"
               formControlName="interestDescription"
               rows="5"
-              placeholder="Beskriv hur du vill bidra och vad du har erfarenhet av"
+              [placeholder]="labels().myStaffMotivationPlaceholder"
             ></textarea>
           </div>
 
           <div class="field-group">
-            <p class="group-label">Staffområden</p>
+            <p class="group-label">{{ labels().myStaffAreasTitle }}</p>
             @if (staffAreas().length === 0) {
-              <p class="empty-text">Inga staffområden är upplagda ännu.</p>
+              <p class="empty-text">{{ labels().myStaffNoAreas }}</p>
             } @else {
               <div class="checkbox-grid">
                 @for (area of staffAreas(); track area.id) {
@@ -84,9 +84,9 @@
           </div>
 
           <div class="field-group">
-            <p class="group-label">Tillgänglighet</p>
+            <p class="group-label">{{ labels().myStaffAvailabilityTitle }}</p>
             @if (availabilityDays().length === 0) {
-              <p class="empty-text">Inga datum finns upplagda för denna upplaga.</p>
+              <p class="empty-text">{{ labels().myStaffNoDates }}</p>
             } @else {
               <div class="checkbox-grid days">
                 @for (day of availabilityDays(); track day.date) {
@@ -110,9 +110,9 @@
             [disabled]="submitting() || !staffRegistrationOpen()"
           >
             @if (submitting()) {
-              Skickar ansökan...
+              {{ labels().myStaffSubmitting }}
             } @else {
-              Skicka ansökan
+              {{ labels().myStaffSubmitButton }}
             }
           </button>
         </form>

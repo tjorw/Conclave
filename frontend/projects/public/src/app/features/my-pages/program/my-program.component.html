@@ -1,10 +1,10 @@
 <div class="program-page page-container">
   <div class="back-link">
-    <a routerLink="/my-pages">← Mina sidor</a>
+    <a routerLink="/my-pages">{{ labels().hubBack }}</a>
   </div>
 
   <header class="page-header">
-    <h1 class="page-title">Mitt program</h1>
+    <h1 class="page-title">{{ labels().myProgramTitle }}</h1>
   </header>
 
   @if (loading()) {
@@ -18,14 +18,14 @@
 
     <section class="program-section timeline-section">
       <div class="section-header">
-        <h2 class="section-title">Tidslinje</h2>
+        <h2 class="section-title">{{ labels().myProgramTimeline }}</h2>
         <div class="timeline-toolbar">
           <label class="timeline-filter">
             <input
               type="checkbox"
               [checked]="showWatchedInTimeline()"
               (change)="toggleWatchedInTimeline()" />
-            Visa bevakade
+            {{ labels().myProgramShowWatched }}
           </label>
 
           @if (hiddenPastTimelineItemCount() > 0) {
@@ -34,7 +34,7 @@
                 type="checkbox"
                 [checked]="showPastTimelineItems()"
                 (change)="togglePastTimelineItems()" />
-              Visa passerade
+              {{ labels().myProgramShowPast }}
             </label>
           }
         </div>
@@ -42,12 +42,12 @@
 
       @if (timelineItems().length === 0) {
         <div class="empty-state section-empty-state">
-          <p>Inga engagemang att visa ännu.</p>
+          <p>{{ labels().myProgramNoItems }}</p>
         </div>
       } @else if (visibleTimelineItems().length === 0) {
         <div class="empty-state section-empty-state">
-          <p>Alla engagemang har passerat.</p>
-          <button mat-stroked-button type="button" (click)="togglePastTimelineItems()">Visa passerade</button>
+          <p>{{ labels().myProgramAllPast }}</p>
+          <button mat-stroked-button type="button" (click)="togglePastTimelineItems()">{{ labels().myProgramShowPastButton }}</button>
         </div>
       } @else {
         <div class="day-filter" aria-label="Filtrera tidslinjen per dag">
@@ -71,12 +71,12 @@
               [class.conflict]="hasConflict(item)"
               [class.past]="isPastTimelineItem(item)">
               <div class="timeline-header">
-                <h3 class="timeline-title">{{ item.title || '(Namnlös)' }}</h3>
+                <h3 class="timeline-title">{{ item.title || labels().myProgramUnnamed }}</h3>
                 <span class="type-chip type-{{ item.type.toLowerCase() }}">
                   {{ scheduleTypeLabel(item.type) }}
                 </span>
                 @if (isPastTimelineItem(item)) {
-                  <span class="type-chip type-past">Passerad</span>
+                  <span class="type-chip type-past">{{ labels().myProgramPastChip }}</span>
                 }
                 @if (hasConflict(item)) {
                   <mat-icon class="conflict-icon" title="Krockar med annat engagemang">warning</mat-icon>
@@ -98,21 +98,21 @@
     </section>
 
     <section class="program-section">
-      <h2 class="section-title">Bokade</h2>
+      <h2 class="section-title">{{ labels().myProgramBooked }}</h2>
 
       @if (bookedSessions().length === 0) {
-        <p class="section-empty">Du har inga bokade sessioner.</p>
+        <p class="section-empty">{{ labels().myProgramNoneBooked }}</p>
       } @else {
         <div class="session-list">
           @for (session of bookedSessions(); track session.id) {
             <article class="session-card">
               <div class="session-main">
-                <h3 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h3>
+                <h3 class="session-title">{{ session.eventTitle || labels().myProgramUnnamedSession }}</h3>
                 <p class="session-time">
                   {{ displayDate(session.start) }}
                   <span>– {{ displayTime(session.end) }}</span>
                 </p>
-                <p class="session-meta">Lokal: {{ session.venueName || 'Ej angiven' }}</p>
+                <p class="session-meta">{{ labels().myProgramVenuePrefix }} {{ session.venueName || labels().myProgramVenueNotSet }}</p>
                 <span class="status-chip">{{ sessionStatusLabel(session.status) }}</span>
               </div>
 
@@ -122,7 +122,7 @@
                 type="button"
                 [disabled]="cancellingId() === session.id"
                 (click)="cancelSession(session.id)">
-                {{ cancellingId() === session.id ? 'Avbokar...' : 'Avboka' }}
+                {{ cancellingId() === session.id ? labels().myProgramCancelling : labels().myProgramCancel }}
               </button>
             </article>
           }
@@ -131,24 +131,24 @@
     </section>
 
     <section class="program-section">
-      <h2 class="section-title">Bevakade</h2>
+      <h2 class="section-title">{{ labels().myProgramWatched }}</h2>
 
       @if (watchedSessions().length === 0) {
         <div class="empty-state section-empty-state compact">
-          <p>Du bevakar inga sessioner ännu.</p>
-          <a mat-flat-button class="browse-btn" routerLink="/program">Bläddra i programmet</a>
+          <p>{{ labels().myProgramNoneWatched }}</p>
+          <a mat-flat-button class="browse-btn" routerLink="/program">{{ labels().myProgramBrowse }}</a>
         </div>
       } @else {
         <div class="session-list">
           @for (session of watchedSessions(); track session.sessionId) {
             <article class="session-card watched">
               <div class="session-main">
-                <h3 class="session-title">{{ session.eventTitle || '(Namnlös programpunkt)' }}</h3>
+                <h3 class="session-title">{{ session.eventTitle || labels().myProgramUnnamedSession }}</h3>
                 <p class="session-time">
                   {{ displayDate(session.start) }}
                   <span>– {{ displayTime(session.end) }}</span>
                 </p>
-                <p class="session-meta">Lokal: {{ session.venueName || 'Ej angiven' }}</p>
+                <p class="session-meta">{{ labels().myProgramVenuePrefix }} {{ session.venueName || labels().myProgramVenueNotSet }}</p>
               </div>
 
               <button
@@ -156,7 +156,7 @@
                 type="button"
                 [disabled]="unwatchingSessionId() === session.sessionId"
                 (click)="removeWatch(session.sessionId)">
-                {{ unwatchingSessionId() === session.sessionId ? 'Tar bort...' : 'Ta bort' }}
+                {{ unwatchingSessionId() === session.sessionId ? labels().myProgramRemoving : labels().myProgramRemove }}
               </button>
             </article>
           }

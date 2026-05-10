@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EditionService } from '../../../services/edition.service';
 import { EventService, EventSummaryDto, EVENT_STATUS_LABEL, EVENT_STATUS_CHIP } from 'shared';
+import { LabelsService } from '../../../services/labels.service';
 
 @Component({
   selector: 'app-my-events',
@@ -17,6 +18,7 @@ export class MyEventsComponent implements OnInit {
   private readonly editionSvc = inject(EditionService);
   private readonly eventSvc   = inject(EventService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly labels = inject(LabelsService).labels;
 
   readonly loading = signal(true);
   readonly events  = signal<EventSummaryDto[]>([]);

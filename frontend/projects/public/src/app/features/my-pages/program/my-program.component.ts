@@ -17,6 +17,7 @@ import {
   SessionRegistrationStatus,
   SESSION_REGISTRATION_STATUS_LABEL,
 } from 'shared';
+import { LabelsService } from '../../../services/labels.service';
 
 const SCHEDULE_TYPE_LABEL: Record<string, string> = {
   Booked: 'Bokat',
@@ -45,6 +46,7 @@ export class MyProgramComponent implements OnInit {
   private readonly editionSvc = inject(EditionService);
   private readonly regSvc     = inject(RegistrationService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly labels = inject(LabelsService).labels;
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);

@@ -2,10 +2,12 @@ using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Content.Commands.CreatePage;
 using ConventionSystem.Application.Content.Commands.DeletePage;
 using ConventionSystem.Application.Content.Commands.PublishPage;
+using ConventionSystem.Application.Content.Commands.SetPageTranslation;
 using ConventionSystem.Application.Content.Commands.UnpublishPage;
 using ConventionSystem.Application.Content.Commands.UpdatePage;
 using ConventionSystem.Application.Content.Commands.UpdatePageMenuOrder;
 using ConventionSystem.Application.Content.Queries.GetPage;
+using ConventionSystem.Application.Content.Queries.GetPageTranslation;
 using ConventionSystem.Application.Content.Queries.GetPublicPage;
 using ConventionSystem.Application.Content.Queries.ListPublicMenuPages;
 using ConventionSystem.Application.Content.Queries.ListPages;
@@ -17,13 +19,13 @@ public static class PageEndpoints
     public static void MapPageEndpoints(this RouteGroups groups)
     {
         groups.Anonymous.MapGet("/api/pages/menu",
-            async (ISender sender, CancellationToken ct) =>
-                Results.Ok(await sender.Send(new ListPublicMenuPagesQuery(), ct)));
+            async (string? locale, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new ListPublicMenuPagesQuery(locale), ct)));
 
         groups.Anonymous.MapGet("/api/pages/{slug}",
-            async (string slug, ISender sender, CancellationToken ct) =>
+            async (string slug, string? locale, ISender sender, CancellationToken ct) =>
             {
-                var page = await sender.Send(new GetPublicPageQuery(slug), ct);
+                var page = await sender.Send(new GetPublicPageQuery(slug, locale), ct);
                 return page is null ? Results.NotFound() : Results.Ok(page);
             });
 
@@ -79,8 +81,23 @@ public static class PageEndpoints
                 await sender.Send(new DeletePageCommand(pageId), ct);
                 return Results.NoContent();
             });
+
+        groups.Admin.MapGet("/api/pages/{pageId:guid}/translations/{locale}",
+            async (Guid pageId, string locale, ISender sender, CancellationToken ct) =>
+            {
+                var translation = await sender.Send(new GetPageTranslationQuery(pageId, locale), ct);
+                return translation is null ? Results.NotFound() : Results.Ok(translation);
+            });
+
+        groups.Admin.MapPut("/api/pages/{pageId:guid}/translations/{locale}",
+            async (Guid pageId, string locale, SavePageTranslationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new SetPageTranslationCommand(pageId, locale, request.Title, request.Content), ct);
+                return Results.NoContent();
+            });
     }
 }
 
 public sealed record SavePageRequest(string Slug, string Title, string Content, Guid? EditionId, bool ShowInPublicMenu);
 public sealed record UpdatePageMenuOrderRequest(int MenuSortOrder);
+public sealed record SavePageTranslationRequest(string Title, string Content);

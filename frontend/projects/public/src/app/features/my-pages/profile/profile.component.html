@@ -1,14 +1,14 @@
 <div class="profil-page page-container">
 
   <div class="back-link">
-    <a routerLink="/my-pages">← Mina sidor</a>
+    <a routerLink="/my-pages">{{ labels().hubBack }}</a>
   </div>
 
-  <h1 class="page-title">Min profil</h1>
+  <h1 class="page-title">{{ labels().profileTitle }}</h1>
 
   @if (onboarding()) {
     <div class="onboarding-banner">
-      Välkommen! Fyll i ditt namn för att slutföra din profil.
+      {{ labels().profileWelcomeBanner }}
     </div>
   }
 
@@ -20,28 +20,28 @@
 
     <!-- ── Profiluppgifter ─────────────────────────────────────────────── -->
     <section class="card">
-      <h2>Kontaktuppgifter</h2>
+      <h2>{{ labels().profileContactSection }}</h2>
 
       @if (profileError()) {
         <div class="error-banner">{{ profileError() }}</div>
       }
       @if (profileSaved()) {
-        <div class="success-inline">Profilen sparad.</div>
+        <div class="success-inline">{{ labels().profileSavedMessage }}</div>
       }
 
       <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Namn</mat-label>
+          <mat-label>{{ labels().profileName }}</mat-label>
           <input matInput formControlName="name" autocomplete="name" />
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>E-postadress</mat-label>
+          <mat-label>{{ labels().profileEmail }}</mat-label>
           <input matInput type="email" formControlName="email" autocomplete="email" />
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Telefon (valfritt)</mat-label>
+          <mat-label>{{ labels().profilePhone }}</mat-label>
           <input matInput type="tel" formControlName="phone" autocomplete="tel" />
         </mat-form-field>
 
@@ -50,7 +50,7 @@
           @if (savingProfile()) {
             <mat-spinner diameter="18" />
           } @else {
-            Spara
+            {{ labels().profileSaveButton }}
           }
         </button>
       </form>
@@ -58,29 +58,29 @@
 
     <!-- ── Byt lösenord ───────────────────────────────────────────────── -->
     <section class="card">
-      <h2>Byt lösenord</h2>
+      <h2>{{ labels().profilePasswordSection }}</h2>
 
       @if (passwordError()) {
         <div class="error-banner">{{ passwordError() }}</div>
       }
       @if (passwordSaved()) {
-        <div class="success-inline">Lösenordet är bytt.</div>
+        <div class="success-inline">{{ labels().profilePasswordSaved }}</div>
       }
 
       <form [formGroup]="passwordForm" (ngSubmit)="savePassword()">
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Nuvarande lösenord</mat-label>
+          <mat-label>{{ labels().profileCurrentPassword }}</mat-label>
           <input matInput type="password" formControlName="currentPassword" autocomplete="current-password" />
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Nytt lösenord</mat-label>
+          <mat-label>{{ labels().profileNewPassword }}</mat-label>
           <input matInput type="password" formControlName="newPassword" autocomplete="new-password" />
-          <mat-hint>Minst 6 tecken</mat-hint>
+          <mat-hint>{{ labels().profilePasswordHint }}</mat-hint>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Bekräfta nytt lösenord</mat-label>
+          <mat-label>{{ labels().profileConfirmPassword }}</mat-label>
           <input matInput type="password" formControlName="confirmPassword" autocomplete="new-password" />
         </mat-form-field>
 
@@ -89,7 +89,7 @@
           @if (savingPassword()) {
             <mat-spinner diameter="18" />
           } @else {
-            Byt lösenord
+            {{ labels().profileChangePasswordButton }}
           }
         </button>
       </form>

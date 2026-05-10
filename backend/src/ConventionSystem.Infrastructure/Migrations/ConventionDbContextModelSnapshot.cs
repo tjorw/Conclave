@@ -144,6 +144,43 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.ToTable("pages", (string)null);
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Content.Entities.PageTranslation", b =>
+                {
+                    b.Property<Guid>("PageId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("page_id");
+
+                    b.Property<string>("Locale")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("locale");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(20000)
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("content");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("title");
+
+                    b.HasKey("PageId", "Locale");
+
+                    b.HasIndex("PageId")
+                        .HasDatabaseName("IX_page_translations_page_id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("page_translations", (string)null);
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Aggregates.Convention", b =>
                 {
                     b.Property<Guid>("Id")
@@ -377,6 +414,35 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.HasIndex("TenantId");
 
                     b.ToTable("edition_content", (string)null);
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.EditionLocale", b =>
+                {
+                    b.Property<Guid>("EditionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("edition_id");
+
+                    b.Property<string>("Locale")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("locale");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_primary");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("EditionId", "Locale");
+
+                    b.HasIndex("EditionId")
+                        .HasDatabaseName("IX_edition_locales_edition_id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("edition_locales", (string)null);
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.EditionScheduleDay", b =>
@@ -841,6 +907,43 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.HasIndex("TenantId");
 
                     b.ToTable("event_comments", (string)null);
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.EventTranslation", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("Locale")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("locale");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(10000)
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("description");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("title");
+
+                    b.HasKey("EventId", "Locale");
+
+                    b.HasIndex("EventId")
+                        .HasDatabaseName("IX_event_translations_event_id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("event_translations", (string)null);
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.Session", b =>
@@ -1608,6 +1711,15 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.ToTable("outbox_messages", (string)null);
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Content.Entities.PageTranslation", b =>
+                {
+                    b.HasOne("ConventionSystem.Domain.Content.Aggregates.Page", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("PageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Aggregates.Edition", b =>
                 {
                     b.OwnsOne("ConventionSystem.Domain.Convention.ValueObjects.DatePeriod", "Period", b1 =>
@@ -1704,6 +1816,15 @@ namespace ConventionSystem.Infrastructure.Migrations
                 {
                     b.HasOne("ConventionSystem.Domain.Convention.Aggregates.Edition", null)
                         .WithMany("Content")
+                        .HasForeignKey("EditionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Convention.Entities.EditionLocale", b =>
+                {
+                    b.HasOne("ConventionSystem.Domain.Convention.Aggregates.Edition", null)
+                        .WithMany("Locales")
                         .HasForeignKey("EditionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1840,6 +1961,15 @@ namespace ConventionSystem.Infrastructure.Migrations
                 {
                     b.HasOne("ConventionSystem.Domain.Event.Aggregates.Event", null)
                         .WithMany("Comments")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.EventTranslation", b =>
+                {
+                    b.HasOne("ConventionSystem.Domain.Event.Aggregates.Event", null)
+                        .WithMany("Translations")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2024,6 +2154,11 @@ namespace ConventionSystem.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ConventionSystem.Domain.Content.Aggregates.Page", b =>
+                {
+                    b.Navigation("Translations");
+                });
+
             modelBuilder.Entity("ConventionSystem.Domain.Convention.Aggregates.Convention", b =>
                 {
                     b.Navigation("Administrators");
@@ -2034,6 +2169,8 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.Navigation("Categories");
 
                     b.Navigation("Content");
+
+                    b.Navigation("Locales");
 
                     b.Navigation("ReceptionStaff");
 
@@ -2055,6 +2192,8 @@ namespace ConventionSystem.Infrastructure.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Sessions");
+
+                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("ConventionSystem.Domain.Event.Entities.Session", b =>

@@ -1,5 +1,7 @@
 using ConventionSystem.Application.Convention.Commands.SetEditionContent;
+using ConventionSystem.Application.Convention.Commands.SetEditionLocales;
 using ConventionSystem.Application.Convention.Queries.GetEditionContent;
+using ConventionSystem.Application.Convention.Queries.GetEditionLocales;
 using ConventionSystem.Application.Reception.Queries.GetPersonScheduleForReception;
 using ConventionSystem.Application.Convention.Commands.AddReceptionStaff;
 using ConventionSystem.Application.Convention.Commands.RemoveReceptionStaff;
@@ -360,6 +362,17 @@ public static class EditionEndpoints
             async (Guid editionId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new GetEditionSessionsQuery(editionId), ct)));
 
+        editions.MapGet("/locales",
+            async (Guid editionId, ISender sender, CancellationToken ct) =>
+                Results.Ok(await sender.Send(new GetEditionLocalesQuery(editionId), ct)));
+
+        editions.MapPut("/locales",
+            async (Guid editionId, SetEditionLocalesRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new SetEditionLocalesCommand(editionId, request.Locales, request.PrimaryLocale), ct);
+                return Results.NoContent();
+            });
+
         groups.Authenticated.MapGet("/editions/{editionId:guid}/staff-schedule",
             async (Guid editionId, Guid? staffAreaId, ISender sender, CancellationToken ct) =>
                 Results.Ok(await sender.Send(new GetStaffScheduleQuery(editionId, staffAreaId), ct)));
@@ -402,6 +415,7 @@ public record CreateProgramTagDefinitionRequest(string Name);
 public record UpdateProgramTagDefinitionRequest(string CurrentName, string NewName);
 
 public record SetEditionContentRequest(IReadOnlyList<EditionContentItemRequest> Items);
+public record SetEditionLocalesRequest(IReadOnlyList<string> Locales, string PrimaryLocale);
 public record EditionContentItemRequest(string Key, string Value);
 
 public record CreateEditionRequest(

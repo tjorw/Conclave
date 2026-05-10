@@ -2,6 +2,7 @@ using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Event.Queries;
 using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Event.Entities;
 using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Event.Ids;
 using ConventionSystem.Domain.Registration.Enums;
@@ -63,6 +64,16 @@ public sealed class EventRepository(ConventionDbContext db) : IEventRepository
             .Include(e => e.Comments)
             .Include(e => e.CoOrganisers)
             .FirstOrDefaultAsync(e => e.Id == id, ct);
+
+    public Task<Domain.Event.Aggregates.Event?> GetByIdWithTranslationsAsync(EventId id, CancellationToken ct = default)
+        => db.Events
+            .Include(e => e.Translations)
+            .Include(e => e.CoOrganisers)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
+    public Task<EventTranslation?> GetTranslationAsync(EventId id, string locale, CancellationToken ct = default)
+        => db.Set<EventTranslation>()
+            .FirstOrDefaultAsync(t => EF.Property<EventId>(t, "EventId") == id && t.Locale == locale.ToLowerInvariant(), ct);
 
     public async Task<IReadOnlyList<EventSummaryDto>> ListByEditionIdAsync(EditionId id, CancellationToken ct = default)
     {

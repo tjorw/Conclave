@@ -16,6 +16,7 @@ import {
   MyStaffApplicationDto,
   RegistrationService,
 } from 'shared';
+import { LabelsService } from '../../services/labels.service';
 
 @Component({
   selector: 'app-my-pages',
@@ -30,6 +31,7 @@ export class MyPagesComponent implements OnInit {
   private readonly regSvc      = inject(RegistrationService);
   private readonly authSvc     = inject(AuthService);
   private readonly destroyRef  = inject(DestroyRef);
+  readonly labels = inject(LabelsService).labels;
 
   readonly loading       = signal(true);
   readonly userName      = signal<string | null>(null);

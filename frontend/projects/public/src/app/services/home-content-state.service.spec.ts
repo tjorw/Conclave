@@ -9,9 +9,11 @@ import {
 } from 'shared';
 import { EditionService } from './edition.service';
 import { HomeContentStateService } from './home-content-state.service';
+import { LocaleService } from './locale.service';
 
 describe('HomeContentStateService', () => {
   const editionId = signal<string | null>(null);
+  const locale = signal<'sv' | 'en'>('sv');
 
   const contentSvc = {
     getContent: vi.fn(),
@@ -32,6 +34,7 @@ describe('HomeContentStateService', () => {
       providers: [
         HomeContentStateService,
         { provide: EditionService, useValue: { editionId } },
+        { provide: LocaleService, useValue: { locale } },
         { provide: EditionContentService, useValue: contentSvc },
         { provide: EventService, useValue: eventSvc },
         { provide: PageService, useValue: pageSvc },

@@ -1,15 +1,18 @@
 using System.Text.RegularExpressions;
 using ConventionSystem.Domain.Common;
+using ConventionSystem.Domain.Content.Entities;
 using ConventionSystem.Domain.Content.Exceptions;
 using ConventionSystem.Domain.Content.Events;
 using ConventionSystem.Domain.Content.Ids;
 using ConventionSystem.Domain.Convention.Ids;
+using ConventionSystem.Domain.Shared;
 
 namespace ConventionSystem.Domain.Content.Aggregates;
 
 public sealed class Page : AggregateRoot
 {
     private static readonly Regex SlugRegex = new("^[a-z0-9-]+$", RegexOptions.Compiled);
+    private readonly List<PageTranslation> _translations = [];
 
     public PageId Id { get; private set; }
     public ConventionId ConventionId { get; private set; }
@@ -22,6 +25,8 @@ public sealed class Page : AggregateRoot
     public int MenuSortOrder { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
+
+    public IReadOnlyList<PageTranslation> Translations => _translations.AsReadOnly();
 
     private Page() { }
 
@@ -68,6 +73,21 @@ public sealed class Page : AggregateRoot
         IsPublished = false;
         UpdatedAt = DateTimeOffset.UtcNow;
         RaiseDomainEvent(new PageUnpublished(Id, Slug, UpdatedAt));
+    }
+
+    public void SetTranslation(string locale, string title, string content)
+    {
+        if (!LocaleConstants.IsSupported(locale))
+            throw new ArgumentException($"Språket '{locale}' stöds inte.", nameof(locale));
+
+        var normalized = NormalizeTitle(title);
+        var normalizedContent = NormalizeContent(content);
+        var existing = _translations.FirstOrDefault(t => t.Locale.Equals(locale, StringComparison.OrdinalIgnoreCase));
+
+        if (existing is null)
+            _translations.Add(new PageTranslation(Id, locale.ToLowerInvariant(), normalized, normalizedContent));
+        else
+            existing.Update(normalized, normalizedContent);
     }
 
     private static string NormalizeSlug(string slug)

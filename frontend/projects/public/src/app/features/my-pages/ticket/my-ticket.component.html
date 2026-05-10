@@ -1,10 +1,10 @@
 <div class="ticket-page page-container">
   <div class="back-link">
-    <a routerLink="/my-pages">← Mina sidor</a>
+    <a routerLink="/my-pages">{{ labels().hubBack }}</a>
   </div>
 
   <header class="page-header">
-    <h1 class="page-title">Mina biljetter</h1>
+    <h1 class="page-title">{{ labels().myTicketTitle }}</h1>
   </header>
 
   @if (error()) {
@@ -17,13 +17,13 @@
 
   @if (registrations().length > 0 && !loadingRegistration()) {
     <section class="card status-card">
-      <h2>Dina registreringar</h2>
+      <h2>{{ labels().myTicketRegistrationsTitle }}</h2>
       <div class="ticket-card-grid">
         @for (ticket of registrations(); track ticket.ticketId; let i = $index) {
           <article class="ticket-card">
             <header class="ticket-card-header">
               <div class="ticket-card-title-block">
-                <h3>{{ ticket.ticketTypeName ?? ('Biljett ' + (i + 1)) }}</h3>
+                <h3>{{ ticket.ticketTypeName ?? labels().myTicketTicketLabel(i + 1) }}</h3>
                 <p class="ticket-price-inline">{{ registrationPriceLabel(ticket) }}</p>
               </div>
               <span [class]="statusChipClass(ticket.status)">
@@ -33,16 +33,16 @@
 
             <dl class="ticket-card-fields">
               <div>
-                <dt>Typ</dt>
+                <dt>{{ labels().myTicketTypeField }}</dt>
                 <dd>{{ ticketCategoryLabel(ticket) }}</dd>
               </div>
               <div>
-                <dt>Referensnummer</dt>
+                <dt>{{ labels().myTicketReferenceField }}</dt>
                 <dd>{{ referenceNumber(ticket.ticketId) }}</dd>
               </div>
               @if (validDaysLabel(ticket); as validDays) {
                 <div>
-                  <dt>Giltiga dagar</dt>
+                  <dt>{{ labels().myTicketValidDaysField }}</dt>
                   <dd>{{ validDays }}</dd>
                 </div>
               }
@@ -60,9 +60,9 @@
                   (click)="cancelRegistration(ticket)"
                   [disabled]="cancellingRegistrationId() !== null || submitting()">
                   @if (cancellingRegistrationId() === ticket.id) {
-                    Avbokar...
+                    {{ labels().myTicketCancelling }}
                   } @else {
-                    Avboka biljett
+                    {{ labels().myTicketCancelButton }}
                   }
                 </button>
               </div>
@@ -70,13 +70,13 @@
 
             @if (canRedeemPromotionCode(ticket)) {
               <div class="promo-redeem">
-                <label class="promo-label" [for]="'promo-code-' + ticket.ticketId">Kampanjkod</label>
+                <label class="promo-label" [for]="'promo-code-' + ticket.ticketId">{{ labels().myTicketPromoLabel }}</label>
                 <div class="promo-controls">
                   <input
                     class="promo-input"
                     [id]="'promo-code-' + ticket.ticketId"
                     type="text"
-                    placeholder="Ange kod"
+                    [placeholder]="labels().myTicketPromoPlaceholder"
                     [value]="promotionCodeValue(ticket.ticketId)"
                     (input)="updatePromotionCodeValue(ticket.ticketId, $any($event.target).value)"
                     [disabled]="redeemingTicketId() === ticket.ticketId" />
@@ -88,9 +88,9 @@
                     (click)="redeemPromotionCode(ticket)"
                     [disabled]="redeemingTicketId() === ticket.ticketId || cancellingRegistrationId() !== null || submitting()">
                     @if (redeemingTicketId() === ticket.ticketId) {
-                      Löser in...
+                      {{ labels().myTicketRedeeming }}
                     } @else {
-                      Lös in kod
+                      {{ labels().myTicketRedeemButton }}
                     }
                   </button>
                 </div>
@@ -101,11 +101,11 @@
       </div>
 
       <p class="payment-info">
-        Betalning hanteras separat. När vi har registrerat din betalning uppdateras statusen automatiskt.
+        {{ labels().myTicketPaymentInfo }}
       </p>
 
       @if (hasPaidRegistrations()) {
-        <p class="registration-closed">Betalda biljetter med pris över 0 kr kan inte avbokas. Kontakta arrangören om du behöver hjälp.</p>
+        <p class="registration-closed">{{ labels().myTicketPaidCancelInfo }}</p>
       }
     </section>
   }
@@ -113,17 +113,17 @@
   @if (!loadingRegistration()) {
     <section class="card form-card">
       @if (!visitorRegistrationOpen()) {
-        <h2>Biljettbokning stängd</h2>
-        <p class="registration-closed">Besöksregistrering är inte öppen för denna upplaga.</p>
+        <h2>{{ labels().myTicketBookingClosedTitle }}</h2>
+        <p class="registration-closed">{{ labels().myTicketBookingClosedText }}</p>
       } @else {
-        <h2>Välj biljett</h2>
+        <h2>{{ labels().myTicketSelectTitle }}</h2>
         <form [formGroup]="registrationForm" (ngSubmit)="submitRegistration()">
           @if (!loadingTicketTypes() && ticketTypes().length === 0) {
-            <p class="empty-ticket-types">Det finns inga valbara biljetter just nu.</p>
+            <p class="empty-ticket-types">{{ labels().myTicketNoneAvailable }}</p>
           } @else {
-            <div class="ticket-options" role="radiogroup" aria-label="Biljettalternativ">
+            <div class="ticket-options" role="radiogroup" [attr.aria-label]="labels().myTicketSelectTitle">
               @if (loadingTicketTypes()) {
-                <p class="ticket-loading">Laddar biljetter...</p>
+                <p class="ticket-loading">{{ labels().myTicketLoadingTickets }}</p>
               } @else {
                 @for (ticketType of ticketTypes(); track $index) {
                   <label
@@ -137,7 +137,7 @@
                       [value]="ticketType.id" />
                     <span class="ticket-option-content">
                       <span class="ticket-option-name">{{ ticketTypeLabel(ticketType) }}</span>
-                      <span class="ticket-option-meta">Besökarbiljett</span>
+                      <span class="ticket-option-meta">{{ labels().myTicketVisitorLabel }}</span>
                       @if (ticketType.description) {
                         <markdown class="ticket-option-description" [data]="ticketType.description" />
                       }
@@ -150,11 +150,11 @@
           }
 
           <mat-checkbox formControlName="termsAccepted" class="terms-checkbox">
-            Jag godkänner villkoren för deltagande.
+            {{ labels().myTicketTermsLabel }}
           </mat-checkbox>
 
           <p class="payment-info">
-            Betalning sker separat efter registrering. Du får betalningsinstruktioner via arrangören.
+            {{ labels().myTicketPaymentNote }}
           </p>
 
           <button
@@ -165,7 +165,7 @@
             @if (submitting()) {
               <mat-spinner diameter="18" />
             } @else {
-              Boka biljett
+              {{ labels().myTicketBookButton }}
             }
           </button>
         </form>

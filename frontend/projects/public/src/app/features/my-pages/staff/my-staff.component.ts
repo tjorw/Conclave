@@ -16,6 +16,7 @@ import {
   toErrorMessage,
 } from 'shared';
 import { EditionService } from '../../../services/edition.service';
+import { LabelsService } from '../../../services/labels.service';
 
 interface AvailabilityDay {
   date: string;
@@ -40,6 +41,7 @@ export class MyStaffComponent implements OnInit {
   private readonly regSvc        = inject(RegistrationService);
   private readonly fb            = inject(FormBuilder);
   private readonly destroyRef    = inject(DestroyRef);
+  readonly labels = inject(LabelsService).labels;
 
   readonly loading = signal(true);
   readonly submitting = signal(false);

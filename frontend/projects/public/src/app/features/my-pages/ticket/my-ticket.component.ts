@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { formatSekPrice, MyVisitorRegistrationDto, RegistrationService, TICKET_PAYMENT_STATUS_LABEL, VisitorTicketTypeDto, toErrorMessage } from 'shared';
 import { MarkdownComponent } from 'ngx-markdown';
 import { EditionService } from '../../../services/edition.service';
+import { LabelsService } from '../../../services/labels.service';
 
 @Component({
   selector: 'app-my-ticket',
@@ -28,6 +29,7 @@ export class MyTicketComponent implements OnInit {
   private readonly regSvc     = inject(RegistrationService);
   private readonly fb         = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  readonly labels = inject(LabelsService).labels;
 
   readonly loadingRegistration = signal(true);
   readonly loadingTicketTypes = signal(true);

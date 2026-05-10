@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { EditionService } from '../../services/edition.service';
 import { CategoryFeedDto, EventSummaryFeedDto } from 'shared';
 import { StripMarkdownPipe } from '../../pipes/strip-markdown.pipe';
+import { LabelsService } from '../../services/labels.service';
 
 @Component({
   selector: 'app-program',
@@ -15,6 +16,7 @@ import { StripMarkdownPipe } from '../../pipes/strip-markdown.pipe';
 })
 export class ProgramComponent {
   readonly editionSvc = inject(EditionService);
+  readonly labels = inject(LabelsService).labels;
 
   readonly selectedDay      = signal<string>('alla');
   readonly selectedCategory = signal<string | null>(null);

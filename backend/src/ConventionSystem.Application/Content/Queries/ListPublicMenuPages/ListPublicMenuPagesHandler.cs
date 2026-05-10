@@ -13,6 +13,6 @@ public sealed class ListPublicMenuPagesHandler(
         var convention = await conventionRepository.GetSingleAsync(ct);
         if (convention is null) return [];
 
-        return await pageRepository.ListPublicMenuPagesAsync(convention.Id, convention.ActiveEditionId, ct);
+        return await pageRepository.ListPublicMenuPagesAsync(convention.Id, convention.ActiveEditionId, query.Locale, ct);
     }
 }

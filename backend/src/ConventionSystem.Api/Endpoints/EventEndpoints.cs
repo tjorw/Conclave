@@ -1,3 +1,4 @@
+using ConventionSystem.Application.Event.Commands.SetEventTranslation;
 using ConventionSystem.Application.Event.Commands.RemoveCoOrganiser;
 using ConventionSystem.Application.Event.Commands.AddEventComment;
 using ConventionSystem.Application.Event.Commands.AcknowledgeEventComment;
@@ -19,6 +20,7 @@ using ConventionSystem.Application.Event.Commands.CreateCoOrganiserInvitation;
 using ConventionSystem.Application.Event.Commands.CancelCoOrganiserInvitation;
 using ConventionSystem.Application.Event.Commands.RedeemCoOrganiserInvitation;
 using ConventionSystem.Application.Event.Queries.GetEvent;
+using ConventionSystem.Application.Event.Queries.GetEventTranslation;
 using ConventionSystem.Application.Event.Queries.GetFeaturedEvents;
 using ConventionSystem.Application.Event.Queries.ListEvents;
 using ConventionSystem.Application.Event.Queries.ListMyEvents;
@@ -249,6 +251,20 @@ public static class EventEndpoints
                 await sender.Send(new RedeemCoOrganiserInvitationCommand(request.Code), ct);
                 return Results.NoContent();
             });
+
+        groups.Authenticated.MapGet("/events/{eventId:guid}/translations/{locale}",
+            async (Guid eventId, string locale, ISender sender, CancellationToken ct) =>
+            {
+                var translation = await sender.Send(new GetEventTranslationQuery(eventId, locale), ct);
+                return translation is null ? Results.NotFound() : Results.Ok(translation);
+            });
+
+        groups.Authenticated.MapPut("/events/{eventId:guid}/translations/{locale}",
+            async (Guid eventId, string locale, SaveEventTranslationRequest request, ISender sender, CancellationToken ct) =>
+            {
+                await sender.Send(new SetEventTranslationCommand(eventId, locale, request.Title, request.Description), ct);
+                return Results.NoContent();
+            });
     }
 }
 
@@ -267,3 +283,4 @@ public record CreateCoOrganiserInvitationRequest(string Email);
 public record RedeemCoOrganiserInvitationRequest(string Code);
 public record SetFeaturedRequest(bool IsFeatured, int? FeaturedSortOrder);
 public record ConfigureAllocationModeRequest(string AllocationMode);
+public record SaveEventTranslationRequest(string Title, string Description);

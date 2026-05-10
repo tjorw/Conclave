@@ -17,13 +17,17 @@ Spårar vad som återstår inför produktionsstart.
 
 Stöd för att redigera och visa innehåll på flera språk. Implementeras i fas efter CMS och Varumärke. Se UC-I18N001–UC-I18N004 i `docs/UseCases.md`.
 
+**ADR:** `docs/decisions/2026-05-10-i18n-multilingual-support.md`
+
 Implementationsordning: R-I18N01 → R-I18N02 → R-I18N03 → R-I18N04 → R-I18N05
 
-- [ ] `R-I18N01` Språkstyrning – samla kvarvarande hårdkodade UI-texter bakom labels/översättningslager och förbered engelsk version
-- [ ] `R-I18N02` `EditionLocale`-entitet (EditionId, Locale, IsPrimary) – admin aktiverar språk per upplaga; primärspråk alltid exakt ett (UC-I18N001)
-- [ ] `R-I18N03` `PageTranslation`-entitet (PageId, Locale, Title, Content) – admin redigerar översättningar via flikbaserat UI; `GetPageBySlugQuery` utökas med locale-parameter och fallback (UC-I18N002)
-- [ ] `R-I18N04` `EventTranslation`-entitet (EventId, Locale, Title, Description) – arrangör/admin redigerar översättningar; publika eventqueries tar emot locale-parameter (UC-I18N003)
-- [ ] `R-I18N05` Publik språkväljare-komponent + locale-signal-service; locale skickas som query-parameter; `localStorage`-persistens; `Accept-Language`-fallback (UC-I18N004)
+- [x] `R-I18N01` Språkstyrning – samla kvarvarande hårdkodade UI-texter bakom labels/översättningslager och förbered engelsk version
+- [x] `R-I18N02` `EditionLocale`-entitet (EditionId, Locale, IsPrimary) – admin aktiverar språk per upplaga; primärspråk alltid exakt ett (UC-I18N001)
+- [x] `R-I18N03` `PageTranslation`-entitet (PageId, Locale, Title, Content) – admin redigerar översättningar via flikbaserat UI; `GetPageBySlugQuery` utökas med locale-parameter och fallback (UC-I18N002)
+- [x] `R-I18N04` `EventTranslation`-entitet (EventId, Locale, Title, Description) – arrangör/admin redigerar översättningar; publika eventqueries tar emot locale-parameter (UC-I18N003)
+- [x] `R-I18N05` Publik språkväljare-komponent + locale-signal-service; locale skickas som query-parameter; `localStorage`-persistens; `Accept-Language`-fallback (UC-I18N004)
+
+> **OBS:** EF Core-migrationer för `edition_locales`, `page_translations` och `event_translations` saknas – behöver skapas och köras mot databas innan backend-funktionaliteten är aktiv.
 
 ---
 

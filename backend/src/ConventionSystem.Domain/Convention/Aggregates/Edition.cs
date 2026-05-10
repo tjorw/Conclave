@@ -5,6 +5,7 @@ using ConventionSystem.Domain.Convention.Events;
 using ConventionSystem.Domain.Convention.Exceptions;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
+using ConventionSystem.Domain.Shared;
 
 namespace ConventionSystem.Domain.Convention.Aggregates;
 
@@ -18,6 +19,7 @@ public sealed class Edition : AggregateRoot
     private readonly List<EditionScheduleDay> _scheduleDays = [];
     private readonly List<ReceptionStaff> _receptionStaff = [];
     private readonly List<EditionContent> _content = [];
+    private readonly List<EditionLocale> _locales = [];
 
     public EditionId Id { get; private set; }
     public ConventionId ConventionId { get; private set; }
@@ -38,6 +40,7 @@ public sealed class Edition : AggregateRoot
     public IReadOnlyList<EditionScheduleDay> ScheduleDays => _scheduleDays.AsReadOnly();
     public IReadOnlyList<ReceptionStaff> ReceptionStaff => _receptionStaff.AsReadOnly();
     public IReadOnlyList<EditionContent> Content => _content.AsReadOnly();
+    public IReadOnlyList<EditionLocale> Locales => _locales.AsReadOnly();
 
     private Edition() { }
 
@@ -360,6 +363,30 @@ public sealed class Edition : AggregateRoot
             _content.Add(new EditionContent(key, value));
         else
             existing.SetValue(value);
+    }
+
+    public void ConfigureLocales(IReadOnlyList<string> locales, string primaryLocale, PersonId performedById)
+    {
+        if (locales.Count == 0)
+            throw new ArgumentException("Minst ett språk måste anges.", nameof(locales));
+
+        foreach (var locale in locales)
+        {
+            if (!LocaleConstants.IsSupported(locale))
+                throw new ArgumentException($"Språket '{locale}' stöds inte. Stödda språk: {string.Join(", ", LocaleConstants.SupportedLocales)}.", nameof(locales));
+        }
+
+        if (!locales.Contains(primaryLocale, StringComparer.OrdinalIgnoreCase))
+            throw new ArgumentException("Primärspråket måste ingå i listan av aktiverade språk.", nameof(primaryLocale));
+
+        if (!LocaleConstants.IsSupported(primaryLocale))
+            throw new ArgumentException($"Språket '{primaryLocale}' stöds inte.", nameof(primaryLocale));
+
+        _locales.Clear();
+        foreach (var locale in locales)
+            _locales.Add(new EditionLocale(Id, locale.ToLowerInvariant(), locale.Equals(primaryLocale, StringComparison.OrdinalIgnoreCase)));
+
+        RaiseDomainEvent(new EditionLocalesConfigured(Id, locales, primaryLocale, performedById, DateTimeOffset.UtcNow));
     }
 
     private void EnsurePublished()

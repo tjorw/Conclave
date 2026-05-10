@@ -4,6 +4,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MarkdownComponent } from 'ngx-markdown';
 import { catchError, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
 import { PageService, PublicPageDto } from 'shared';
+import { LocaleService } from '../../services/locale.service';
 
 @Component({
   selector: 'app-public-page',
@@ -35,6 +36,7 @@ import { PageService, PublicPageDto } from 'shared';
 export class PublicPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly pageSvc = inject(PageService);
+  private readonly localeSvc = inject(LocaleService);
 
   readonly page = signal<PublicPageDto | null>(null);
   readonly loading = signal(true);
@@ -49,7 +51,7 @@ export class PublicPageComponent {
         this.error.set(null);
         this.page.set(null);
       }),
-      switchMap(slug => this.pageSvc.getPublicPage(slug).pipe(
+      switchMap(slug => this.pageSvc.getPublicPage(slug, this.localeSvc.locale()).pipe(
         map(page => ({ page, error: null as string | null })),
         catchError(() => of({ page: null, error: 'Sidan hittades inte.' })),
       )),

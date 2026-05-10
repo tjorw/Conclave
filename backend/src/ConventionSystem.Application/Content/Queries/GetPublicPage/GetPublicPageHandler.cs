@@ -17,6 +17,7 @@ public sealed class GetPublicPageHandler(
             convention.Id,
             convention.ActiveEditionId,
             query.Slug.Trim().ToLowerInvariant(),
+            query.Locale,
             ct);
     }
 }

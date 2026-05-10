@@ -2,7 +2,7 @@
 
   <!-- Brödsmulor -->
   <nav class="breadcrumb">
-    <a routerLink="/program">Program</a>
+    <a routerLink="/program">{{ labels().eventDetailBreadcrumb }}</a>
     <span> › </span>
     <span>{{ event()?.title ?? '…' }}</span>
   </nav>
@@ -51,14 +51,14 @@
           </div>
         }
 
-        <h2 class="section-heading">Sessioner</h2>
+        <h2 class="section-heading">{{ labels().eventDetailSessionsTitle }}</h2>
 
         @if (actionError()) {
           <div class="error-banner">{{ actionError() }}</div>
         }
 
         @if (ev.sessions.length === 0) {
-          <p class="empty-state">Inga sessioner schemalagda ännu.</p>
+          <p class="empty-state">{{ labels().eventDetailNoSessions }}</p>
         } @else {
           <div class="sessions-list">
             @for (s of ev.sessions; track s.id) {
@@ -71,7 +71,7 @@
                   </div>
                   <div class="session-seats">
                     <mat-icon>people</mat-icon>
-                    <span>{{ s.bookedSeats }}/{{ s.maxSeats }} platser</span>
+                    <span>{{ s.bookedSeats }}/{{ s.maxSeats }} {{ labels().eventDetailSeatsLabel }}</span>
                     <span class="capacity-chip"
                           [class.capacity-green]="capacityLevel(s) === 'green'"
                           [class.capacity-orange]="capacityLevel(s) === 'orange'"
@@ -85,7 +85,7 @@
                     mat-icon-button
                     type="button"
                     [disabled]="registrationLoading() || submittingWatchSessionId() === s.id"
-                    [attr.aria-label]="isWatched(s.id) ? 'Ta bort bevakning' : 'Bevaka session'"
+                    [attr.aria-label]="isWatched(s.id) ? labels().eventDetailUnwatchAriaLabel : labels().eventDetailWatchAriaLabel"
                     (click)="onWatchToggle(s, $event)">
                     <mat-icon>{{ isWatched(s.id) ? 'bookmark' : 'bookmark_border' }}</mat-icon>
                   </button>
@@ -95,22 +95,22 @@
                 </div>
                 @if (expandedSessions().has(s.id)) {
                   <div class="session-detail">
-                    <span>Starttyp: {{ s.startType === 'FixedTime' ? 'Fast tid' : s.startType }}</span>
+                    <span>Starttyp: {{ s.startType === 'FixedTime' ? labels().eventDetailFixedTime : s.startType }}</span>
                     <div class="session-actions" (click)="$event.stopPropagation()">
                       @if (!authSvc.isLoggedIn()) {
-                        <a mat-stroked-button routerLink="/login">Logga in för att anmäla</a>
+                        <a mat-stroked-button routerLink="/login">{{ labels().eventDetailLoginToRegister }}</a>
                       } @else if (!myTicketId()) {
-                        <a mat-stroked-button routerLink="/my-pages/ticket">Skaffa biljett</a>
+                        <a mat-stroked-button routerLink="/my-pages/ticket">{{ labels().eventDetailGetTicket }}</a>
                       } @else {
                         <button mat-flat-button
                                 color="primary"
                                 type="button"
                                 [disabled]="registrationLoading() || submittingSessionId() === s.id"
                                 (click)="onSessionAction(s)">
-                          {{ isRegistered(s.id) ? 'Avboka session' : 'Anmäl till session' }}
+                          {{ isRegistered(s.id) ? labels().eventDetailCancelSession : labels().eventDetailRegisterSession }}
                         </button>
                         @if (isRegistered(s.id)) {
-                          <a mat-button routerLink="/my-pages/program">Visa i Mitt program</a>
+                          <a mat-button routerLink="/my-pages/program">{{ labels().eventDetailViewInProgram }}</a>
                         }
                       }
                     </div>
@@ -125,10 +125,10 @@
       <!-- Högerkol: sidopanel -->
       <aside class="event-sidebar">
         <div class="sidebar-card">
-          <h3>Om evenemanget</h3>
+          <h3>{{ labels().eventDetailAboutTitle }}</h3>
           <div class="sidebar-row">
             <mat-icon>category</mat-icon>
-            <span>{{ ev.categoryName ?? 'Okänd kategori' }}</span>
+            <span>{{ ev.categoryName ?? labels().eventDetailUnknownCategory }}</span>
           </div>
           @if (ev.programTags.length > 0) {
             <div class="sidebar-row">
@@ -147,13 +147,13 @@
           @if (ev.registrationMode === 'Team') {
             <div class="sidebar-section">
               @if (!authSvc.isLoggedIn()) {
-                <a mat-stroked-button routerLink="/login" class="team-register-btn">Logga in för att anmäla lag</a>
+                <a mat-stroked-button routerLink="/login" class="team-register-btn">{{ labels().eventDetailLoginForTeam }}</a>
               } @else {
                 <a mat-flat-button color="primary"
                   [routerLink]="['/my-pages/team-registration', ev.id]"
                   class="team-register-btn">
                   <mat-icon>groups</mat-icon>
-                  Anmäl lag
+                  {{ labels().eventDetailRegisterTeam }}
                 </a>
               }
             </div>

@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService, toErrorMessage } from 'shared';
+import { LabelsService } from '../../../services/labels.service';
 
 @Component({
   selector: 'app-profile',
@@ -27,6 +28,7 @@ export class ProfileComponent implements OnInit {
   private readonly route      = inject(ActivatedRoute);
   private readonly fb         = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  readonly labels = inject(LabelsService).labels;
 
   readonly onboarding = signal(false);
 

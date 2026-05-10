@@ -9,6 +9,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { catchError, of, switchMap } from 'rxjs';
 import { AuthService, getLoginReasonMessage } from 'shared';
 import { AcceptInvitationComponent } from '../accept-invitation/accept-invitation.component';
+import { LabelsService } from '../../services/labels.service';
 
 @Component({
   selector: 'app-login',
@@ -29,6 +30,7 @@ export class LoginComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
+  readonly labels = inject(LabelsService).labels;
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);

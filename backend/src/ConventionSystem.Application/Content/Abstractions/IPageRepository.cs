@@ -1,4 +1,5 @@
 using ConventionSystem.Domain.Content.Aggregates;
+using ConventionSystem.Domain.Content.Entities;
 using ConventionSystem.Domain.Content.Ids;
 using ConventionSystem.Domain.Convention.Ids;
 
@@ -8,10 +9,12 @@ public interface IPageRepository
 {
     Task AddAsync(Page page, CancellationToken ct = default);
     Task<Page?> GetByIdAsync(PageId id, CancellationToken ct = default);
+    Task<Page?> GetByIdWithTranslationsAsync(PageId id, CancellationToken ct = default);
+    Task<PageTranslation?> GetTranslationAsync(PageId id, string locale, CancellationToken ct = default);
     Task<IReadOnlyList<PageSummaryDto>> ListAsync(ConventionId conventionId, EditionId? editionId, CancellationToken ct = default);
     Task<PageDto?> GetProjectedByIdAsync(PageId id, CancellationToken ct = default);
-    Task<PublicPageDto?> GetPublishedBySlugAsync(ConventionId conventionId, EditionId? activeEditionId, string slug, CancellationToken ct = default);
-    Task<IReadOnlyList<PublicPageMenuItemDto>> ListPublicMenuPagesAsync(ConventionId conventionId, EditionId? activeEditionId, CancellationToken ct = default);
+    Task<PublicPageDto?> GetPublishedBySlugAsync(ConventionId conventionId, EditionId? activeEditionId, string slug, string? locale, CancellationToken ct = default);
+    Task<IReadOnlyList<PublicPageMenuItemDto>> ListPublicMenuPagesAsync(ConventionId conventionId, EditionId? activeEditionId, string? locale, CancellationToken ct = default);
     Task<bool> SlugExistsAsync(ConventionId conventionId, EditionId? editionId, string slug, PageId? excludingPageId = null, CancellationToken ct = default);
     void Remove(Page page);
     Task SaveAsync(CancellationToken ct = default);

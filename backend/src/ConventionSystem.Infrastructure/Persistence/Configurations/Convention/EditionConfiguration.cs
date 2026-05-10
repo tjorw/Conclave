@@ -75,6 +75,7 @@ public sealed class EditionConfiguration : IEntityTypeConfiguration<Edition>
         builder.HasMany(e => e.ScheduleDays).WithOne().HasForeignKey("EditionId").IsRequired();
         builder.HasMany(e => e.ReceptionStaff).WithOne().HasForeignKey("EditionId").IsRequired();
         builder.HasMany(e => e.Content).WithOne().HasForeignKey("EditionId").IsRequired();
+        builder.HasMany(e => e.Locales).WithOne().HasForeignKey("EditionId").IsRequired();
 
         builder.Navigation(e => e.Venues).HasField("_venues");
         builder.Navigation(e => e.StaffAreas).HasField("_staffAreas");
@@ -84,6 +85,7 @@ public sealed class EditionConfiguration : IEntityTypeConfiguration<Edition>
         builder.Navigation(e => e.ScheduleDays).HasField("_scheduleDays");
         builder.Navigation(e => e.ReceptionStaff).HasField("_receptionStaff");
         builder.Navigation(e => e.Content).HasField("_content");
+        builder.Navigation(e => e.Locales).HasField("_locales");
 
         builder.HasIndex(e => e.ConventionId).HasDatabaseName("IX_editions_convention_id");
     }

@@ -8,7 +8,7 @@
 
     <header class="hub-header">
       <h1 class="hub-greeting">
-        @if (userName()) { Hej, {{ userName() }}! } @else { Mina sidor }
+        @if (userName()) { {{ labels().hubGreeting(userName()!) }} } @else { {{ labels().hubTitle }} }
       </h1>
     </header>
 
@@ -18,7 +18,7 @@
       <a routerLink="/my-pages/ticket" class="status-card">
         <div class="card-icon">🎟</div>
         <div class="card-body">
-          <h2 class="card-title">Mina biljetter</h2>
+          <h2 class="card-title">{{ labels().hubTicketsTitle }}</h2>
           @if (activeMyTickets().length > 0) {
             <p class="card-summary">
               {{ activeMyTickets().length }} biljett{{ activeMyTickets().length > 1 ? 'er' : '' }} ·
@@ -31,8 +31,8 @@
               <p class="card-next">Totalt: {{ totalTicketPriceLabel() }}</p>
             }
           } @else {
-            <p class="card-empty">Inga biljetter ännu</p>
-            <span class="card-cta">Skaffa biljetter →</span>
+            <p class="card-empty">{{ labels().hubTicketsEmpty }}</p>
+            <span class="card-cta">{{ labels().hubTicketsCta }}</span>
           }
         </div>
       </a>
@@ -42,15 +42,15 @@
         <a routerLink="/my-pages/events" class="status-card">
           <div class="card-icon">🎲</div>
           <div class="card-body">
-            <h2 class="card-title">Mina arrangemang</h2>
+            <h2 class="card-title">{{ labels().hubEventsTitle }}</h2>
             @if (activeMyEvents().length > 0) {
               <p class="card-summary">{{ activeMyEvents().length }} arrangemang</p>
               @if (pendingCommentCount > 0) {
                 <span class="tag-orange">{{ pendingCommentCount }} obehandlad{{ pendingCommentCount > 1 ? 'e' : '' }} kommentar</span>
               }
             } @else {
-              <p class="card-empty">Inga arrangemang ännu</p>
-              <span class="card-cta">Skapa arrangemang →</span>
+              <p class="card-empty">{{ labels().hubEventsEmpty }}</p>
+              <span class="card-cta">{{ labels().hubEventsCta }}</span>
             }
           </div>
         </a>
@@ -60,15 +60,15 @@
       <a routerLink="/my-pages/program" class="status-card">
         <div class="card-icon">📅</div>
         <div class="card-body">
-          <h2 class="card-title">Mitt program</h2>
+          <h2 class="card-title">{{ labels().hubProgramTitle }}</h2>
           @if (mySessions().length > 0) {
-            <p class="card-summary">{{ mySessions().length }} anmälda sessioner</p>
+            <p class="card-summary">{{ labels().hubProgramSessionCount(mySessions().length) }}</p>
             @if (mySessions()[0]; as next) {
-              <p class="card-next">Nästa: {{ next.eventTitle }} {{ next.start | date:'d/M HH:mm' }}</p>
+              <p class="card-next">{{ labels().hubProgramNext }} {{ next.eventTitle }} {{ next.start | date:'d/M HH:mm' }}</p>
             }
           } @else {
-            <p class="card-empty">Inga sessioner ännu</p>
-            <span class="card-cta">Bläddra i programmet →</span>
+            <p class="card-empty">{{ labels().hubProgramEmpty }}</p>
+            <span class="card-cta">{{ labels().hubProgramCta }}</span>
           }
         </div>
       </a>
@@ -78,18 +78,18 @@
         <a routerLink="/my-pages/staff" class="status-card">
           <div class="card-icon">🙋</div>
           <div class="card-body">
-            <h2 class="card-title">Min funktionering</h2>
+            <h2 class="card-title">{{ labels().hubStaffTitle }}</h2>
             @if (activeMyApplication(); as application) {
               <p class="card-summary">
-                Ansökan inskickad ·
+                {{ labels().hubStaffSubmitted }} ·
                 <span [class]="application.status === 'Confirmed' || application.status === 'Assigned' ? 'tag-green' : 'tag-orange'">
-                  {{ application.status === 'Confirmed' ? 'Godkänd' :
-                     application.status === 'Assigned' ? 'Tilldelad' : 'Under behandling' }}
+                  {{ application.status === 'Confirmed' ? labels().hubStaffConfirmed :
+                     application.status === 'Assigned' ? labels().hubStaffAssigned : labels().hubStaffPending }}
                 </span>
               </p>
             } @else {
-              <p class="card-empty">Ingen ansökan</p>
-              <span class="card-cta">Ansök som funktionär →</span>
+              <p class="card-empty">{{ labels().hubStaffEmpty }}</p>
+              <span class="card-cta">{{ labels().hubStaffCta }}</span>
             }
           </div>
         </a>
@@ -99,9 +99,9 @@
       <a routerLink="/my-pages/profile" class="status-card">
         <div class="card-icon">👤</div>
         <div class="card-body">
-          <h2 class="card-title">Min profil</h2>
-          <p class="card-summary">Uppdatera kontaktuppgifter och profilinformation</p>
-          <span class="card-cta">Öppna profil →</span>
+          <h2 class="card-title">{{ labels().hubProfileTitle }}</h2>
+          <p class="card-summary">{{ labels().hubProfileSummary }}</p>
+          <span class="card-cta">{{ labels().hubProfileCta }}</span>
         </div>
       </a>
 

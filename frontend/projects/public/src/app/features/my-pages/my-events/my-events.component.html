@@ -1,13 +1,13 @@
 <div class="arrangemang-page page-container">
 
   <div class="back-link">
-    <a routerLink="/my-pages">← Mina sidor</a>
+    <a routerLink="/my-pages">{{ labels().hubBack }}</a>
   </div>
 
   <div class="page-header">
-    <h1 class="page-title">Mina arrangemang</h1>
+    <h1 class="page-title">{{ labels().myEventsTitle }}</h1>
     <a mat-flat-button class="new-btn" routerLink="/my-pages/events/new">
-      + Nytt arrangemang
+      {{ labels().myEventsNewButton }}
     </a>
   </div>
 
@@ -17,9 +17,9 @@
     </div>
   } @else if (events().length === 0) {
     <div class="empty-state">
-      <p>Du har inga arrangemang ännu.</p>
+      <p>{{ labels().myEventsEmpty }}</p>
       <a mat-flat-button class="new-btn" routerLink="/my-pages/events/new">
-        Skapa ditt första arrangemang
+        {{ labels().myEventsCreateFirst }}
       </a>
     </div>
   } @else {
@@ -27,11 +27,11 @@
       @for (ev of events(); track ev.id) {
         <a class="event-card" [routerLink]="['/my-pages/events', ev.id]">
           <div class="event-main">
-            <span class="event-title">{{ ev.title || '(Namnlöst arrangemang)' }}</span>
+            <span class="event-title">{{ ev.title || labels().myEventsUnnamed }}</span>
             <span class="event-category">{{ ev.categoryName || '—' }}</span>
           </div>
           <div class="event-meta">
-            <span class="session-count">{{ ev.sessionCount }} session{{ ev.sessionCount !== 1 ? 'er' : '' }}</span>
+            <span class="session-count">{{ labels().myEventsSessions(ev.sessionCount) }}</span>
             <span class="status-chip" [class]="statusChip[ev.status] || 'chip-grey'">
               {{ statusLabel[ev.status] || ev.status }}
             </span>

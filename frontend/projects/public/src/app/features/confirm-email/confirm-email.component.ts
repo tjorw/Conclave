@@ -3,6 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from 'shared';
+import { LabelsService } from '../../services/labels.service';
 
 @Component({
   selector: 'app-confirm-email',
@@ -14,6 +15,7 @@ import { AuthService } from 'shared';
 export class ConfirmEmailComponent implements OnInit {
   private readonly auth  = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
+  readonly labels = inject(LabelsService).labels;
 
   readonly loading = signal(true);
   readonly success = signal(false);

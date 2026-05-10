@@ -132,11 +132,18 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Domain.Event.A
         builder.Property(e => e.CoOrganiserCount).HasColumnName("co_organiser_count");
         builder.Property(e => e.CoOrganiserLimit).HasColumnName("co_organiser_limit");
 
+        builder.HasMany(e => e.Translations)
+            .WithOne()
+            .HasForeignKey("EventId")
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.Navigation(e => e.Sessions).HasField("_sessions");
         builder.Navigation(e => e.CoOrganisers).HasField("_coOrganisers");
         builder.Navigation(e => e.CoOrganiserInvitations).HasField("_coOrganiserInvitations");
         builder.Navigation(e => e.Comments).HasField("_comments");
         builder.Navigation(e => e.ProgramTags).HasField("_programTags");
+        builder.Navigation(e => e.Translations).HasField("_translations");
 
         builder.HasIndex(e => e.EditionId).HasDatabaseName("IX_events_edition_id");
         builder.HasIndex(e => e.CategoryId).HasDatabaseName("IX_events_category_id");

@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService, toErrorMessage } from 'shared';
+import { LabelsService } from '../../services/labels.service';
 
 @Component({
   selector: 'app-register',
@@ -24,6 +25,7 @@ import { AuthService, toErrorMessage } from 'shared';
 export class RegisterComponent {
   private readonly auth = inject(AuthService);
   private readonly fb   = inject(FormBuilder);
+  readonly labels = inject(LabelsService).labels;
 
   readonly loading = signal(false);
   readonly error   = signal<string | null>(null);
