@@ -1,6 +1,7 @@
 using System.Globalization;
 using ConventionSystem.Application.Export.Abstractions;
 using ConventionSystem.Application.Export.Contracts;
+using ConventionSystem.Domain.Content.Aggregates;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Event.Enums;
 using ConventionSystem.Domain.Staff.Enums;
@@ -14,6 +15,7 @@ public sealed class EditionExportReadService(ConventionDbContext db) : IEditionE
         Guid editionId,
         bool includeEvents,
         bool includeTicketTypes,
+        bool includePages,
         CancellationToken ct = default)
     {
         var id = new EditionId(editionId);
@@ -67,6 +69,15 @@ public sealed class EditionExportReadService(ConventionDbContext db) : IEditionE
         var categoriesById = edition.Categories.ToDictionary(c => c.Id.Value, c => c.Name);
         var venuesById = edition.Venues.ToDictionary(v => v.Id, v => v.Name);
         var startDate = edition.Period.StartDate;
+
+        var pageEntities = includePages
+            ? await db.Pages
+                .AsNoTracking()
+                .Where(p => p.EditionId == id)
+                .OrderBy(p => p.MenuSortOrder)
+                .ThenBy(p => p.Title)
+                .ToListAsync(ct)
+            : null;
 
         var ticketTypeEntities = includeTicketTypes
             ? await db.TicketTypes
@@ -178,6 +189,9 @@ public sealed class EditionExportReadService(ConventionDbContext db) : IEditionE
             edition.ProgramTagDefinitions
                 .Select(t => t.Name)
                 .OrderBy(name => name)
+                .ToList(),
+            Pages: pageEntities?
+                .Select(p => new ExportPageDto(p.Slug, p.Title, p.Content, p.ShowInPublicMenu, p.MenuSortOrder))
                 .ToList());
     }
 

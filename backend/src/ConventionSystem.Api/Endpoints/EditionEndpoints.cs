@@ -327,12 +327,13 @@ public static class EditionEndpoints
 
 
         editions.MapGet("/export",
-            async (Guid editionId, bool? includeEvents, bool? includeTicketTypes, ISender sender, CancellationToken ct) =>
+            async (Guid editionId, bool? includeEvents, bool? includeTicketTypes, bool? includePages, ISender sender, CancellationToken ct) =>
             {
                 var export = await sender.Send(new ExportEditionCommand(
                     editionId,
                     includeEvents ?? false,
-                    includeTicketTypes ?? false), ct);
+                    includeTicketTypes ?? false,
+                    includePages ?? false), ct);
 
                 var bytes = JsonSerializer.SerializeToUtf8Bytes(export.Document, ExportJsonOptions);
                 return Results.File(bytes, "application/json", export.FileName);

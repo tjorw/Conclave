@@ -35,6 +35,13 @@
         <span>Hämtad {{ ticket().collectedAt | date:'d MMM HH:mm' }}</span>
       </div>
     }
+
+    @if (ticket().status === 'Revoked') {
+      <div class="info-row info-row--warning">
+        <mat-icon class="info-icon">cancel</mat-icon>
+        <span>Biljetten är återkallad och kan inte checkas in.</span>
+      </div>
+    }
   </mat-card-content>
 
   @if (canCollect) {

@@ -39,6 +39,7 @@ export class EditionExportComponent implements OnInit {
   readonly includeCategories = signal(true);
   readonly includeEvents = signal(true);
   readonly includeTicketTypes = signal(true);
+  readonly includePages = signal(true);
 
   readonly canUseJson = computed(() => this.json().length > 0 && !this.exporting());
 
@@ -91,6 +92,11 @@ export class EditionExportComponent implements OnInit {
     this.rebuildJson();
   }
 
+  onIncludePagesChange(change: MatCheckboxChange): void {
+    this.includePages.set(change.checked);
+    this.rebuildJson();
+  }
+
   copyJson(): void {
     const value = this.json();
     if (!value) return;
@@ -139,7 +145,7 @@ export class EditionExportComponent implements OnInit {
     this.exporting.set(true);
     this.error.set(null);
     this.copied.set(false);
-    this.svc.exportEdition(editionId, true, true).subscribe({
+    this.svc.exportEdition(editionId, true, true, true).subscribe({
       next: json => {
         const parsed = this.parseDocument(json);
         if (!parsed) {
@@ -206,6 +212,10 @@ export class EditionExportComponent implements OnInit {
 
     if (!this.includeTicketTypes()) {
       delete document['ticketTypes'];
+    }
+
+    if (!this.includePages()) {
+      delete document['pages'];
     }
 
     if (!this.includeStaffAreas()) {

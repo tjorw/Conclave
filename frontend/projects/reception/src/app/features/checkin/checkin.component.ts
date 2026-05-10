@@ -15,8 +15,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { createSearchStream } from '../../shared/search-stream';
 import { PersonScheduleDto, PersonSearchResultDto, PersonTicketDto } from '../../models/reception.models';
 import { EditionContextService } from '../../services/edition-context.service';
 import { ReceptionService } from '../../services/reception.service';
@@ -66,31 +66,25 @@ export class CheckinComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    this.searchControl.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(term => {
-        const t = term?.trim() ?? '';
+    createSearchStream(
+      this.searchControl,
+      term => {
         const editionId = this.editionContext.activeEdition()?.id;
         if (!editionId) return of([]);
-
-        const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(t);
-        if (!isGuid && t.length < 2) {
-          this.searchResults.set([]);
-          return of(null);
-        }
-
         this.searching.set(true);
         this.selectedPerson.set(null);
         this.personTickets.set(null);
         this.personSchedule.set(null);
-        return this.receptionService.searchPersons(editionId, t);
-      }),
+        return this.receptionService.searchPersons(editionId, term);
+      }
+    ).pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe({
       next: results => {
         this.searching.set(false);
-        if (results !== null) {
+        if (results === null) {
+          this.searchResults.set([]);
+        } else {
           this.searchResults.set(results ?? []);
         }
       },

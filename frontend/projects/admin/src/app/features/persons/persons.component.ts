@@ -1,4 +1,6 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -69,21 +71,16 @@ export class PersonsComponent implements OnInit {
 
   private loadEditionRoles(editionId: string): void {
     this.rolesLoading.set(true);
-    let pending = 3;
-    let visitors: EditionVisitorDto[] = [];
-    let organisers: EditionOrganiserDto[] = [];
-    let staff: EditionStaffMemberDto[] = [];
-
-    const tryBuild = () => {
-      if (--pending === 0) {
-        this.editionRolesMap.set(this.buildRoleMap(visitors, organisers, staff));
-        this.rolesLoading.set(false);
-      }
-    };
-
-    this.svc.listEditionVisitors(editionId).subscribe({ next: v => { visitors = v; tryBuild(); }, error: tryBuild });
-    this.svc.listEditionOrganisers(editionId).subscribe({ next: o => { organisers = o; tryBuild(); }, error: tryBuild });
-    this.svc.listEditionStaff(editionId).subscribe({ next: s => { staff = s; tryBuild(); }, error: tryBuild });
+    forkJoin({
+      visitors:  this.svc.listEditionVisitors(editionId),
+      organisers: this.svc.listEditionOrganisers(editionId),
+      staff:     this.svc.listEditionStaff(editionId),
+    }).pipe(
+      catchError(() => of({ visitors: [] as EditionVisitorDto[], organisers: [] as EditionOrganiserDto[], staff: [] as EditionStaffMemberDto[] }))
+    ).subscribe(({ visitors, organisers, staff }) => {
+      this.editionRolesMap.set(this.buildRoleMap(visitors, organisers, staff));
+      this.rolesLoading.set(false);
+    });
   }
 
   private buildRoleMap(

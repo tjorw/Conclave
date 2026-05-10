@@ -12,10 +12,18 @@ public sealed record EditionExportDocument(
     [property: JsonPropertyName("categories")] IReadOnlyList<ExportCategoryDto> Categories,
     [property: JsonPropertyName("events")] IReadOnlyList<ExportEventDto>? Events,
     [property: JsonPropertyName("ticketTypes")] IReadOnlyList<ExportTicketTypeDto>? TicketTypes,
-    [property: JsonPropertyName("programTagDefinitions")] IReadOnlyList<string>? ProgramTagDefinitions = null)
+    [property: JsonPropertyName("programTagDefinitions")] IReadOnlyList<string>? ProgramTagDefinitions = null,
+    [property: JsonPropertyName("pages")] IReadOnlyList<ExportPageDto>? Pages = null)
 {
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 }
+
+public sealed record ExportPageDto(
+    [property: JsonPropertyName("slug")] string Slug,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("content")] string Content,
+    [property: JsonPropertyName("showInPublicMenu")] bool ShowInPublicMenu,
+    [property: JsonPropertyName("menuSortOrder")] int MenuSortOrder);
 
 public sealed record ExportScheduleDayDto(
     [property: JsonPropertyName("day")] int Day,

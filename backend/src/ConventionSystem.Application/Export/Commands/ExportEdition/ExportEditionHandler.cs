@@ -13,6 +13,7 @@ public sealed class ExportEditionHandler(IEditionExportReadService exportReadSer
             command.EditionId,
             command.IncludeEvents,
             command.IncludeTicketTypes,
+            command.IncludePages,
             ct) ?? throw new ResourceNotFoundException("Upplaga", command.EditionId.ToString());
 
         return new ExportEditionResult(CreateFileName(document.Name), document);

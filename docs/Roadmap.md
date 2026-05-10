@@ -63,9 +63,13 @@ Implementationsordning: R-I18N01 → R-I18N02 → R-I18N03 → R-I18N04 → R-I1
 ---
 
 ## Övrig backlog
-- **Debounced sökning** – extrahera gemensam RxJS-pipeline till `createSearchStream()`-helper.
-- **Multi-request pending-räknare** – ersätt manuell `pending`-räknare i `persons.component.ts` med `forkJoin`.
-- **Reception: UI och statistik** – avgör om återkallade biljetter ska visas, utöka statistik med antal pass och uppdelning per dag.
-- **Reception: alternativ verifiering** – definiera flöde för verifiering när besökaren saknar QR-biljett.
-- **Taggar i grundflöde** – låt arrangör sätta taggar redan i grunduppgifter.
-- **Import/export** – lägg till stöd för sidor och taggar.
+
+**ADR:** `docs/decisions/2026-05-09-ovrig-backlog.md`
+
+Implementationsordning: R-OB01 → R-OB02 → R-OB03
+
+- [x] **Taggar i grundflöde** – arrangör sätter taggar redan vid skapande (redan implementerat i events.component.ts + CreateEventCommand)
+- [x] **Import/export taggar** – `programTagDefinitions` finns i EditionExportDocument v2 (redan implementerat)
+- [x] `R-OB01` Frontend-refaktorer: `createSearchStream()`-helper i `reception/shared/search-stream.ts`; `forkJoin` i `persons.component.ts` `loadEditionRoles()`
+- [x] `R-OB02` Reception: dagantal (shiftCount + sessionCount) i schedule-panel-template; "Återkallad"-varningstext i ticket-card; alternativ-verifierings-ledning i checkin-vyn
+- [x] `R-OB03` Import/export sidor: `ExportPageDto`, `pages`-fält i `EditionExportDocument` (schema v3); export hämtar publicerade edition-pages; import skapar som Draft med slug-varning i målupplagans scope

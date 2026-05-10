@@ -1,5 +1,6 @@
 using ConventionSystem.Application.Common;
 using ConventionSystem.Application.Common.Exceptions;
+using ConventionSystem.Application.Content.Abstractions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Export.Commands.ImportEdition;
@@ -19,6 +20,7 @@ public class ImportEditionHandlerTests
     private readonly ITicketTypeRepository _ticketTypeRepo = Substitute.For<ITicketTypeRepository>();
     private readonly IEventRepository _eventRepo = Substitute.For<IEventRepository>();
     private readonly IShiftRepository _shiftRepo = Substitute.For<IShiftRepository>();
+    private readonly IPageRepository _pageRepo = Substitute.For<IPageRepository>();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
 
     private readonly ImportEditionHandler _handler;
@@ -32,6 +34,7 @@ public class ImportEditionHandlerTests
             _ticketTypeRepo,
             _eventRepo,
             _shiftRepo,
+            _pageRepo,
             _currentUser);
     }
 

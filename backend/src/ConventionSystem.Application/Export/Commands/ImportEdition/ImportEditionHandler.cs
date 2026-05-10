@@ -1,10 +1,13 @@
 using System.Globalization;
 using ConventionSystem.Application.Common.Exceptions;
+using ConventionSystem.Application.Content.Abstractions;
 using ConventionSystem.Application.Convention.Abstractions;
 using ConventionSystem.Application.Event.Abstractions;
 using ConventionSystem.Application.Export.Contracts;
 using ConventionSystem.Application.Registration.Abstractions;
 using ConventionSystem.Application.Staff.Abstractions;
+using ConventionSystem.Domain.Content.Aggregates;
+using ConventionSystem.Domain.Content.Ids;
 using ConventionSystem.Domain.Convention.Entities;
 using ConventionSystem.Domain.Convention.Ids;
 using ConventionSystem.Domain.Convention.ValueObjects;
@@ -28,6 +31,7 @@ public sealed class ImportEditionHandler(
     ITicketTypeRepository ticketTypeRepository,
     IEventRepository eventRepository,
     IShiftRepository shiftRepository,
+    IPageRepository pageRepository,
     ICurrentUser currentUser)
     : ICommandHandler<ImportEditionCommand, ImportEditionResult>
 {
@@ -127,6 +131,7 @@ public sealed class ImportEditionHandler(
         await CreateShiftsAsync(command.Document, command.StartDate, conventionId, importerId, stationMap, warnings, ct);
         await CreateTicketTypesAsync(command.Document, edition.Id, command.StartDate, categoryMap, warnings, ct);
         await CreateEventsAsync(command.Document, edition.Id, command.StartDate, conventionId, importerId, categoryMap, venueMap, allowedProgramTags, warnings, ct);
+        await CreatePagesAsync(command.Document, edition.Id, conventionId, warnings, ct);
 
         return new ImportEditionResult(edition.Id.Value, warnings);
     }
@@ -394,8 +399,45 @@ public sealed class ImportEditionHandler(
             .ToList();
     }
 
+    private async Task CreatePagesAsync(
+        EditionExportDocument document,
+        EditionId editionId,
+        ConventionId conventionId,
+        List<ImportWarning> warnings,
+        CancellationToken ct)
+    {
+        foreach (var exportedPage in document.Pages ?? [])
+        {
+            var slugExists = await pageRepository.SlugExistsAsync(conventionId, editionId, exportedPage.Slug, null, ct);
+            if (slugExists)
+            {
+                warnings.Add(new ImportWarning("PageSlugAlreadyExists", $"Sidan '{exportedPage.Slug}' hoppades över eftersom sluggen redan finns i upplagan."));
+                continue;
+            }
+
+            try
+            {
+                var page = new Page(
+                    PageId.New(),
+                    conventionId,
+                    editionId,
+                    exportedPage.Slug,
+                    exportedPage.Title,
+                    exportedPage.Content,
+                    exportedPage.ShowInPublicMenu);
+                page.SetMenuSortOrder(exportedPage.MenuSortOrder);
+                await pageRepository.AddAsync(page, ct);
+                await pageRepository.SaveAsync(ct);
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                warnings.Add(new ImportWarning("PageSkipped", $"Sidan '{exportedPage.Slug}' kunde inte skapas: {ex.Message}"));
+            }
+        }
+    }
+
     private static bool IsSupportedSchemaVersion(int schemaVersion)
-        => schemaVersion is 1 or EditionExportDocument.CurrentSchemaVersion;
+        => schemaVersion is 1 or 2 or EditionExportDocument.CurrentSchemaVersion;
 
     private static bool TryParseOptionalTime(string? value, out TimeOnly? time)
     {

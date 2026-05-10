@@ -190,10 +190,11 @@ export class ConventionService {
     return this.http.get<EditionDto>(`${this.env.apiBaseUrl}/editions/${editionId}`);
   }
 
-  exportEdition(editionId: string, includeEvents: boolean, includeTicketTypes: boolean) {
+  exportEdition(editionId: string, includeEvents: boolean, includeTicketTypes: boolean, includePages: boolean = false) {
     const params = new HttpParams()
       .set('includeEvents', includeEvents)
-      .set('includeTicketTypes', includeTicketTypes);
+      .set('includeTicketTypes', includeTicketTypes)
+      .set('includePages', includePages);
 
     return this.http.get(`${this.env.apiBaseUrl}/editions/${editionId}/export`, {
       params,

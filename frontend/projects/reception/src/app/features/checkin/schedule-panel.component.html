@@ -20,6 +20,13 @@
         <span class="day-date">{{ day.date | date: 'EEEE d MMM' : undefined : 'sv' }}</span>
         <span class="day-total">{{ formatHours(day.totalHours) }}</span>
       </div>
+      @if (day.shiftCount > 0 || day.sessionCount > 0) {
+        <div class="day-counts">
+          @if (day.shiftCount > 0) {<span>{{ day.shiftCount }} pass</span>}
+          @if (day.shiftCount > 0 && day.sessionCount > 0) {<span class="day-counts-sep"> · </span>}
+          @if (day.sessionCount > 0) {<span>{{ day.sessionCount }} session{{ day.sessionCount !== 1 ? 'er' : '' }}</span>}
+        </div>
+      }
 
       @for (shift of schedule().shifts; track shift.shiftId) {
         @if (shift.date === day.date) {

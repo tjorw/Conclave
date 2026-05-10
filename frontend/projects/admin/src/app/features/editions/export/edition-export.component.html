@@ -39,6 +39,9 @@
       <mat-checkbox [checked]="includeTicketTypes()" (change)="onIncludeTicketTypesChange($event)">
         Biljettyper
       </mat-checkbox>
+      <mat-checkbox [checked]="includePages()" (change)="onIncludePagesChange($event)">
+        Informationssidor
+      </mat-checkbox>
     </div>
 
     <div class="export-actions">

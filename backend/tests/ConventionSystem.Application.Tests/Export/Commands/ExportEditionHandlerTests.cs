@@ -21,10 +21,10 @@ public class ExportEditionHandlerTests
     {
         var editionId = Guid.NewGuid();
         var document = CreateDocument("Konvent 2027");
-        _exportReadService.BuildDocumentAsync(editionId, true, true, Arg.Any<CancellationToken>())
+        _exportReadService.BuildDocumentAsync(editionId, true, true, false, Arg.Any<CancellationToken>())
             .Returns(document);
 
-        var result = await _handler.Handle(new ExportEditionCommand(editionId, true, true), default);
+        var result = await _handler.Handle(new ExportEditionCommand(editionId, true, true, false), default);
 
         Assert.Same(document, result.Document);
         Assert.Equal("konvent-2027-export.json", result.FileName);
@@ -34,23 +34,23 @@ public class ExportEditionHandlerTests
     public async Task Handle_ForwardsIncludeFlags()
     {
         var editionId = Guid.NewGuid();
-        _exportReadService.BuildDocumentAsync(editionId, false, true, Arg.Any<CancellationToken>())
+        _exportReadService.BuildDocumentAsync(editionId, false, true, false, Arg.Any<CancellationToken>())
             .Returns(CreateDocument("Konvent"));
 
-        await _handler.Handle(new ExportEditionCommand(editionId, false, true), default);
+        await _handler.Handle(new ExportEditionCommand(editionId, false, true, false), default);
 
         await _exportReadService.Received(1)
-            .BuildDocumentAsync(editionId, false, true, Arg.Any<CancellationToken>());
+            .BuildDocumentAsync(editionId, false, true, false, Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Handle_EditionNotFound_ThrowsResourceNotFoundException()
     {
-        _exportReadService.BuildDocumentAsync(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+        _exportReadService.BuildDocumentAsync(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns((EditionExportDocument?)null);
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(
-            () => _handler.Handle(new ExportEditionCommand(Guid.NewGuid(), false, false), default));
+            () => _handler.Handle(new ExportEditionCommand(Guid.NewGuid(), false, false, false), default));
     }
 
     private static EditionExportDocument CreateDocument(string name)

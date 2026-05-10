@@ -8,5 +8,6 @@ public interface IEditionExportReadService
         Guid editionId,
         bool includeEvents,
         bool includeTicketTypes,
+        bool includePages,
         CancellationToken ct = default);
 }
