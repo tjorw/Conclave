@@ -4,24 +4,6 @@ Spårar vad som återstår inför produktionsstart.
 
 **Regler:** `Rxx`-id är stabila och refereras i commits. Status: `[ ]` = ej startad, `[~]` = pågår, `[x]` = klar. Sortera efter prioritet (ej klara överst).
 
----
-
-
-### Bokning och tilldelning av plats
-Platser i arrangemang kan tilldelas på olika sätt. Kön hör till det konkreta objektet man anmäler sig till; i nuvarande modell är det en session. Arrangemanget äger reglerna för hur sessionernas bokningar hanteras, till exempel om första bokningsförsöket skall bekräftas direkt eller hamna i kö/väntlista, och om samma person får boka flera sessioner i samma arrangemang.
-
-**ADR:** `docs/decisions/2026-05-09-booking-allocation.md`
-
-Implementationsordning: R-BK01a → R-BK01b → R-BK01c → R-BK02a → R-BK02b → R-BK02c
-
-- [x] `R-BK01a` Domän: `AllocationMode`-enum + `Event.ConfigureAllocationMode()`; `SessionRegistrationStatus.Pending`; `SessionRegistration.Confirm()` + utökad `Cancel()`; domain events `SessionRegistrationQueued` och `SessionRegistrationConfirmed`; enhetstest
-- [x] `R-BK01b` Applikation: `RegisterForSessionHandler` grenar på `AllocationMode` — `DirectConfirmation` räknar kapacitet, `Queue` skapar `Pending`; `IRegistrationRuleService.ValidateSeatAvailability` tas bort; ny repo-metod `CountConfirmedBySessionIdAsync`; `ConfigureAllocationModeCommand` + handler
-- [x] `R-BK01c` Infrastruktur + API: EF-kolumn `allocation_mode` på `events`; migration `AddAllocationMode`; endpoint `PUT /api/events/{id}/allocation-mode`
-- [x] `R-BK02a` Domän + Applikation: `AllocationStrategy`-enum; `AllocateSessionRegistrationsCommand` + handler med FCFS, Lottery och Manual; `ISessionRegistrationRepository.GetPendingBySessionAsync` + `SaveAllAsync`; enhetstest för alla tre strategier
-- [x] `R-BK02b` Infrastruktur + API: repository-implementationer; endpoint `POST /api/events/{eventId}/sessions/{sessionId}/allocate`; behörighetscheck admin
-- [x] `R-BK01c-ui` Admin-UI: dropdown för `AllocationMode` i evenemangsdetalj
-- [x] `R-BK02c` Admin-UI: sektion i sessionslistan som visar antal `Pending` per session; knapp "Kör tilldelning" öppnar dialog med strategival och bekräftelse
-
 
 ### Multitenancy
 
@@ -60,16 +42,3 @@ Implementationsordning: R-I18N01 → R-I18N02 → R-I18N03 → R-I18N04 → R-I1
 | **Deduplikering i tidsschema** | Om samma session förekommer i flera kategorier (t.ex. bokad OCH arrangör) prioriteras Booked > Organiser > Watching i `MyScheduleRepository`. Prioriteringslogiken är inte testad på domännivå. Om affärsreglerna ändras (t.ex. "visa alltid arrangörsrollen oavsett bokning") behöver deduplikeringen ses över. | Låg – nuvarande beteende är rimligt |
 | **Inga `DbSet<Station>` i `ConventionDbContext`** | `Station` och `Venue` nås via `db.Set<T>()` i stället för namngivna `DbSet<T>`-properties. Inkonsekvens mot övriga entiteter. Lägg till `DbSet<Station>` och `DbSet<Venue>` i `ConventionDbContext` om fler queries börjar hämta dem direkt. | Låg |
 
----
-
-## Övrig backlog
-
-**ADR:** `docs/decisions/2026-05-09-ovrig-backlog.md`
-
-Implementationsordning: R-OB01 → R-OB02 → R-OB03
-
-- [x] **Taggar i grundflöde** – arrangör sätter taggar redan vid skapande (redan implementerat i events.component.ts + CreateEventCommand)
-- [x] **Import/export taggar** – `programTagDefinitions` finns i EditionExportDocument v2 (redan implementerat)
-- [x] `R-OB01` Frontend-refaktorer: `createSearchStream()`-helper i `reception/shared/search-stream.ts`; `forkJoin` i `persons.component.ts` `loadEditionRoles()`
-- [x] `R-OB02` Reception: dagantal (shiftCount + sessionCount) i schedule-panel-template; "Återkallad"-varningstext i ticket-card; alternativ-verifierings-ledning i checkin-vyn
-- [x] `R-OB03` Import/export sidor: `ExportPageDto`, `pages`-fält i `EditionExportDocument` (schema v3); export hämtar publicerade edition-pages; import skapar som Draft med slug-varning i målupplagans scope
