@@ -28,7 +28,20 @@ const LOCALE_DISPLAY: Record<SupportedLocale, string> = {
     </mat-menu>
   `,
   styles: [`
-    .lang-btn { min-width: 0; }
+    .lang-btn {
+      min-width: 0;
+      color: #fff !important;
+      background: rgba(255, 255, 255, .12);
+    }
+
+    .lang-btn:hover {
+      background: rgba(255, 255, 255, .2);
+    }
+
+    .lang-btn mat-icon {
+      color: #fff;
+    }
+
     .active-locale { font-weight: 600; }
   `],
 })

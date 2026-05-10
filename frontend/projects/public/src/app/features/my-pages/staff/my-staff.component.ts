@@ -17,6 +17,7 @@ import {
 } from 'shared';
 import { EditionService } from '../../../services/edition.service';
 import { LabelsService } from '../../../services/labels.service';
+import { LocaleService } from '../../../services/locale.service';
 
 interface AvailabilityDay {
   date: string;
@@ -41,6 +42,7 @@ export class MyStaffComponent implements OnInit {
   private readonly regSvc        = inject(RegistrationService);
   private readonly fb            = inject(FormBuilder);
   private readonly destroyRef    = inject(DestroyRef);
+  private readonly localeSvc = inject(LocaleService);
   readonly labels = inject(LabelsService).labels;
 
   readonly loading = signal(true);
@@ -160,10 +162,10 @@ export class MyStaffComponent implements OnInit {
 
   displayDate(value: string | null | undefined): string {
     if (!value || Number.isNaN(Date.parse(value))) {
-      return 'Okänd tid';
+      return this.labels().myStaffUnknownTime;
     }
 
-    return new Intl.DateTimeFormat('sv-SE', {
+    return new Intl.DateTimeFormat(this.localeSvc.localeTag(), {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
@@ -177,14 +179,16 @@ export class MyStaffComponent implements OnInit {
       return '--:--';
     }
 
-    return new Intl.DateTimeFormat('sv-SE', {
+    return new Intl.DateTimeFormat(this.localeSvc.localeTag(), {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(value));
   }
 
   shiftRoleLabel(role: string): string {
-    return role === 'Responsible' ? 'Ansvarig' : 'Tilldelad';
+    return role === 'Responsible'
+      ? this.labels().myStaffShiftRoleResponsible
+      : this.labels().myStaffShiftRoleAssigned;
   }
 
   private loadState(): void {
@@ -259,7 +263,7 @@ export class MyStaffComponent implements OnInit {
       const date = this.toDateOnly(current);
       days.push({
         date,
-        label: new Intl.DateTimeFormat('sv-SE', {
+        label: new Intl.DateTimeFormat(this.localeSvc.localeTag(), {
           weekday: 'long',
           day: 'numeric',
           month: 'long',

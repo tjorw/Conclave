@@ -28,12 +28,12 @@
         <a class="event-card" [routerLink]="['/my-pages/events', ev.id]">
           <div class="event-main">
             <span class="event-title">{{ ev.title || labels().myEventsUnnamed }}</span>
-            <span class="event-category">{{ ev.categoryName || '—' }}</span>
+            <span class="event-category">{{ ev.categoryName || labels().myEventsUnknownCategory }}</span>
           </div>
           <div class="event-meta">
             <span class="session-count">{{ labels().myEventsSessions(ev.sessionCount) }}</span>
             <span class="status-chip" [class]="statusChip[ev.status] || 'chip-grey'">
-              {{ statusLabel[ev.status] || ev.status }}
+              {{ eventStatusLabel(ev.status) }}
             </span>
           </div>
         </a>

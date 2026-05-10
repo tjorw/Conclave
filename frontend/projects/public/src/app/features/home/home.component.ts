@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { EDITION_CONTENT_KEYS, EventSummaryFeedDto } from 'shared';
 import { EditionService } from '../../services/edition.service';
 import { HomeContentStateService } from '../../services/home-content-state.service';
+import { LocaleService } from '../../services/locale.service';
 
 @Component({
   selector: 'app-home',
@@ -17,6 +18,7 @@ import { HomeContentStateService } from '../../services/home-content-state.servi
 export class HomeComponent {
   readonly editionSvc   = inject(EditionService);
   private readonly homeContentState = inject(HomeContentStateService);
+  private readonly localeSvc = inject(LocaleService);
 
   readonly featuredEvents = computed<EventSummaryFeedDto[]>(() =>
     this.homeContentState.featuredEventsFromApi() ?? (this.editionSvc.edition()?.events ?? []).slice(0, 3)
@@ -93,6 +95,6 @@ export class HomeComponent {
   readonly firstSession = (event: EventSummaryFeedDto): string => {
     const s = event.sessions[0];
     if (!s) return '';
-    return new Date(s.start).toLocaleDateString('sv-SE', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+    return new Date(s.start).toLocaleDateString(this.localeSvc.localeTag(), { weekday: 'short', hour: '2-digit', minute: '2-digit' });
   };
 }

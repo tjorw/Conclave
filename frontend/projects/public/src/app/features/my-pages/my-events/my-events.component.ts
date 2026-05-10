@@ -23,8 +23,19 @@ export class MyEventsComponent implements OnInit {
   readonly loading = signal(true);
   readonly events  = signal<EventSummaryDto[]>([]);
 
-  readonly statusLabel = EVENT_STATUS_LABEL;
   readonly statusChip  = EVENT_STATUS_CHIP;
+
+  eventStatusLabel(status: string): string {
+    const l = this.labels();
+    const eventStatusLabel: Record<string, string> = {
+      Draft: l.myEventsStatusDraft,
+      UnderReview: l.myEventsStatusUnderReview,
+      Published: l.myEventsStatusPublished,
+      Cancelled: l.myEventsStatusCancelled,
+    };
+
+    return eventStatusLabel[status] ?? EVENT_STATUS_LABEL[status] ?? status;
+  }
 
   ngOnInit(): void {
     const editionId = this.editionSvc.editionId();

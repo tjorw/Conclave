@@ -1,7 +1,7 @@
 <div class="detail-page page-container">
 
   <div class="back-link">
-    <a routerLink="/my-pages/events">← Mina arrangemang</a>
+    <a routerLink="/my-pages/events">{{ detailText().backToMyEvents }}</a>
   </div>
 
   @if (loading()) {
@@ -11,16 +11,16 @@
   } @else if (event(); as ev) {
 
     <div class="page-header">
-      <h1 class="page-title">{{ ev.title || '(Namnlöst arrangemang)' }}</h1>
+      <h1 class="page-title">{{ ev.title || detailText().unnamedEvent }}</h1>
       <span class="status-chip" [class]="statusChip[ev.status] || 'chip-grey'">
-        {{ statusLabel[ev.status] || ev.status }}
+        {{ eventStatusLabel(ev.status) }}
       </span>
     </div>
 
     <!-- Adminkommentar -->
     @if (adminComment(); as comment) {
       <div class="admin-comment-banner">
-        <strong>Kommentar från administratör:</strong> {{ comment }}
+        <strong>{{ detailText().adminCommentPrefix }}</strong> {{ comment }}
       </div>
     }
 
@@ -33,7 +33,7 @@
       <div class="actions">
         <button mat-stroked-button class="action-btn" (click)="returnToDraft()"
                 [disabled]="draftState().operation !== null">
-          @if (draftState().operation === 'returning') { <mat-spinner diameter="18" /> } @else { Dra tillbaka till utkast }
+          @if (draftState().operation === 'returning') { <mat-spinner diameter="18" /> } @else { {{ detailText().returnToDraft }} }
         </button>
       </div>
     }
@@ -41,7 +41,7 @@
     <!-- Redigera utkast -->
     @if (isDraft) {
       <section class="card">
-        <h2>Arrangemagsuppgifter</h2>
+        <h2>{{ detailText().eventDetails }}</h2>
 
         @if (ev.categoryOrganizerInstructions) {
           <div class="organizer-instructions">
@@ -53,31 +53,31 @@
           <div class="error-banner">{{ draftState().error }}</div>
         }
         @if (draftState().saved) {
-          <div class="success-inline">Sparat.</div>
+          <div class="success-inline">{{ detailText().saved }}</div>
         }
 
         <form [formGroup]="draftForm" (ngSubmit)="saveDraft()">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Titel</mat-label>
+            <mat-label>{{ detailText().title }}</mat-label>
             <input matInput formControlName="title" />
           </mat-form-field>
 
-          <lib-markdown-editor formControlName="description" label="Beskrivning" [rows]="8" />
+          <lib-markdown-editor formControlName="description" [label]="detailText().description" [rows]="8" />
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Schemaönskemål</mat-label>
+            <mat-label>{{ detailText().scheduleRequest }}</mat-label>
             <textarea matInput formControlName="scheduleRequestText" rows="4"></textarea>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Önskat antal medarrangörer</mat-label>
+            <mat-label>{{ detailText().requestedCoOrganisers }}</mat-label>
             <input matInput type="number" min="0" formControlName="coOrganiserCount" />
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Registreringstyp</mat-label>
+            <mat-label>{{ detailText().registrationType }}</mat-label>
             <mat-select formControlName="registrationType">
-              @for (t of registrationTypes; track t.value) {
+              @for (t of registrationTypes(); track t.value) {
                 <mat-option [value]="t.value">{{ t.label }}</mat-option>
               }
             </mat-select>
@@ -85,7 +85,7 @@
 
           @if (draftForm.value.registrationType === 'DropIn' || draftForm.value.registrationType === 'Combined') {
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Drop-in-regler (valfritt)</mat-label>
+              <mat-label>{{ detailText().dropInRulesOptional }}</mat-label>
               <textarea matInput formControlName="dropInRules" rows="2"></textarea>
             </mat-form-field>
           }
@@ -93,22 +93,22 @@
           <div class="form-actions">
             <button mat-flat-button class="save-btn" type="submit"
                     [disabled]="draftForm.invalid || draftState().operation !== null">
-              @if (draftState().operation === 'saving') { <mat-spinner diameter="18" /> } @else { Spara utkast }
+              @if (draftState().operation === 'saving') { <mat-spinner diameter="18" /> } @else { {{ detailText().saveDraft }} }
             </button>
 
             @if (eventSubmissionsOpen) {
               <button mat-flat-button class="action-btn primary" type="button" (click)="submitForReview()"
                       [disabled]="draftForm.invalid || draftState().operation !== null">
-                @if (draftState().operation === 'submitting') { <mat-spinner diameter="18" /> } @else { Skicka in för granskning }
+                @if (draftState().operation === 'submitting') { <mat-spinner diameter="18" /> } @else { {{ detailText().submitForReview }} }
               </button>
             } @else {
-              <p class="submissions-closed">Arrangemangsansökan är för tillfället stängd.</p>
+              <p class="submissions-closed">{{ detailText().submissionsClosed }}</p>
             }
 
             @if (canDelete) {
               <button mat-stroked-button color="warn" class="action-btn" type="button" (click)="deleteEvent()"
                       [disabled]="draftState().operation !== null">
-                @if (draftState().operation === 'deleting') { <mat-spinner diameter="18" /> } @else { Ta bort }
+                @if (draftState().operation === 'deleting') { <mat-spinner diameter="18" /> } @else { {{ detailText().delete }} }
               </button>
             }
           </div>
@@ -117,20 +117,20 @@
     } @else {
       <!-- Readonly-vy (UnderReview / Published / Cancelled) -->
       <section class="card readonly-card">
-        <h2>Arrangemagsuppgifter</h2>
+        <h2>{{ detailText().eventDetails }}</h2>
         @if (ev.categoryOrganizerInstructions) {
           <div class="organizer-instructions">
             <markdown [data]="ev.categoryOrganizerInstructions" />
           </div>
         }
         <dl>
-          <dt>Titel</dt>        <dd>{{ ev.title || '—' }}</dd>
-          <dt>Kategori</dt>     <dd>{{ ev.categoryName || '—' }}</dd>
-          <dt>Registrering</dt> <dd>{{ regKindLabel[ev.registrationType] || ev.registrationType }}</dd>
-          <dt>Schemaönskemål</dt><dd>{{ ev.scheduleRequestText || 'Inga schemaönskemål ännu.' }}</dd>
+          <dt>{{ detailText().title }}</dt>        <dd>{{ ev.title || '—' }}</dd>
+          <dt>{{ detailText().category }}</dt>     <dd>{{ ev.categoryName || '—' }}</dd>
+          <dt>{{ detailText().registration }}</dt> <dd>{{ registrationKindLabel(ev.registrationType) }}</dd>
+          <dt>{{ detailText().scheduleRequest }}</dt><dd>{{ ev.scheduleRequestText || detailText().noScheduleRequestsYet }}</dd>
           @if (ev.description) {
             <div class="description-row">
-              <dt>Beskrivning</dt>
+              <dt>{{ detailText().description }}</dt>
               <dd><markdown [data]="ev.description" /></dd>
             </div>
           }
@@ -140,7 +140,7 @@
 
     @if (canSeeCoOrganiserSection) {
       <section class="card">
-        <h2>Medarrangörer</h2>
+        <h2>{{ detailText().coOrganisers }}</h2>
 
         @if (ev.coOrganisers.length > 0) {
           @for (co of ev.coOrganisers; track co.personId) {
@@ -151,17 +151,16 @@
             </div>
           }
         } @else {
-          <p class="help-text">Inga medarrangörer ännu.</p>
+          <p class="help-text">{{ detailText().noCoOrganisersYet }}</p>
         }
 
         @if (canManageInvitations) {
           <p class="help-text">
-            Du har angett att du vill ha
-            <strong>{{ ev.coOrganiserCount }}</strong> medarrangör{{ ev.coOrganiserCount === 1 ? '' : 'er' }}.
+            {{ coOrganiserTargetText(ev.coOrganiserCount) }}
             @if (ev.coOrganiserLimit > 0) {
-              Godkänt antal: <strong>{{ ev.coOrganiserLimit }}</strong>.
+              {{ detailText().approvedCountPrefix }} <strong>{{ ev.coOrganiserLimit }}</strong>.
             } @else {
-              Gränsen har inte fastställts av admin ännu.
+              {{ detailText().approvedCountNotSet }}
             }
           </p>
 
@@ -169,38 +168,38 @@
             <div class="error-banner">{{ invitationState().error }}</div>
           }
           @if (invitationState().saved) {
-            <div class="success-inline">Inbjudan skickad.</div>
+            <div class="success-inline">{{ detailText().invitationSent }}</div>
           }
 
           @if (ev.coOrganiserLimit > 0 && ev.coOrganisers.length + activeInvitations().length < ev.coOrganiserLimit) {
             <form [formGroup]="invitationForm" (ngSubmit)="createInvitation()" class="invitation-form">
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>E-postadress till inbjuden medarrangör</mat-label>
+                <mat-label>{{ detailText().invitedCoOrganiserEmail }}</mat-label>
                 <input matInput formControlName="email" type="email" />
               </mat-form-field>
               <button mat-flat-button class="save-btn" type="submit"
                       [disabled]="invitationForm.invalid || invitationState().saving">
-                @if (invitationState().saving) { <mat-spinner diameter="18" /> } @else { Skicka inbjudan }
+                @if (invitationState().saving) { <mat-spinner diameter="18" /> } @else { {{ detailText().sendInvitation }} }
               </button>
             </form>
           } @else if (ev.coOrganiserLimit === 0) {
-            <p class="help-text">Du kan skicka inbjudningar när admin har fastställt godkänt antal.</p>
+            <p class="help-text">{{ detailText().inviteWhenLimitSet }}</p>
           } @else {
-            <p class="help-text">Alla godkända platser är utnyttjade.</p>
+            <p class="help-text">{{ detailText().allApprovedSlotsUsed }}</p>
           }
 
           @if (activeInvitations().length > 0) {
-            <h3>Väntande inbjudningar</h3>
+            <h3>{{ detailText().pendingInvitations }}</h3>
             @for (inv of activeInvitations(); track inv.id) {
               <div class="request-item">
                 <div class="request-info">
                   <span class="request-desc">{{ inv.email }}</span>
-                  <span class="request-meta">Skickad {{ inv.createdAt | date:'yyyy-MM-dd' }}</span>
+                  <span class="request-meta">{{ detailText().sentOn }} {{ inv.createdAt | date:'yyyy-MM-dd' }}</span>
                 </div>
                 <button mat-stroked-button color="warn" class="action-btn"
                         (click)="cancelInvitation(inv.id)"
                         [disabled]="invitationState().cancelling !== null">
-                  @if (invitationState().cancelling === inv.id) { <mat-spinner diameter="18" /> } @else { Avbryt }
+                  @if (invitationState().cancelling === inv.id) { <mat-spinner diameter="18" /> } @else { {{ detailText().cancel }} }
                 </button>
               </div>
             }
@@ -211,7 +210,7 @@
 
     @if (canSeeCoOrganiserSection && (event()?.sessions?.length ?? 0) > 0) {
       <section class="card">
-        <h2>Sessioner</h2>
+        <h2>{{ detailText().sessions }}</h2>
         @for (session of event()?.sessions ?? []; track session.id) {
           <div class="request-item">
             <div class="request-info">
@@ -220,8 +219,8 @@
                 @if (session.venueName) { · {{ session.venueName }} }
               </span>
               <span class="request-meta">
-                {{ session.registrationCount }} / {{ session.maxSeats }} anmälda ·
-                {{ sessionStatusLabel[session.status] || session.status }}
+                {{ session.registrationCount }} / {{ session.maxSeats }} {{ detailText().registered }} ·
+                {{ sessionStatusText(session.status) }}
               </span>
             </div>
           </div>
@@ -231,32 +230,32 @@
 
     @if (canCommentOnPublishedEvent) {
       <section class="card">
-        <h2>Föreslå ändring</h2>
-        <p class="help-text">Lämna en kommentar om du vill föreslå en justering av schema eller upplägg.</p>
+        <h2>{{ detailText().suggestChange }}</h2>
+        <p class="help-text">{{ detailText().suggestChangeHelp }}</p>
 
         @if (commentState().error) {
           <div class="error-banner">{{ commentState().error }}</div>
         }
         @if (commentState().saved) {
-          <div class="success-inline">Ändringsförslag skickat.</div>
+          <div class="success-inline">{{ detailText().suggestionSent }}</div>
         }
 
         <form [formGroup]="commentForm" (ngSubmit)="addChangeComment()">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Kommentar</mat-label>
+            <mat-label>{{ detailText().comment }}</mat-label>
             <textarea matInput formControlName="text" rows="3"></textarea>
           </mat-form-field>
 
           <button mat-flat-button class="save-btn" type="submit"
                   [disabled]="commentForm.invalid || commentState().adding">
-            @if (commentState().adding) { <mat-spinner diameter="18" /> } @else { Skicka ändringsförslag }
+            @if (commentState().adding) { <mat-spinner diameter="18" /> } @else { {{ detailText().sendSuggestion }} }
           </button>
         </form>
       </section>
 
       @if ((event()?.comments?.length ?? 0) > 0) {
         <section class="card">
-          <h2>Kommentarer</h2>
+          <h2>{{ detailText().comments }}</h2>
 
           @for (comment of event()?.comments ?? []; track comment.id) {
             <div class="request-item">
@@ -265,15 +264,15 @@
                 <span class="request-meta">
                   {{ comment.authorName || comment.authorId }} ·
                   {{ comment.createdAt | date:'yyyy-MM-dd HH:mm' }} ·
-                  {{ commentStatusLabel[comment.status] || comment.status }}
+                  {{ commentStatusText(comment.status) }}
                 </span>
                 @if (comment.handlingComment) {
-                  <div class="admin-comment-banner"><strong>Admins svar:</strong> {{ comment.handlingComment }}</div>
+                  <div class="admin-comment-banner"><strong>{{ detailText().adminReplyPrefix }}</strong> {{ comment.handlingComment }}</div>
                 }
               </div>
               @if (comment.requiresHandling && comment.authorId === currentPersonId && comment.status === 'Responded') {
                 <button mat-stroked-button class="action-btn" (click)="acknowledgeComment(comment.id)" [disabled]="commentState().acknowledging">
-                  Kvittera som hanterad
+                  {{ detailText().acknowledgeHandled }}
                 </button>
               }
             </div>

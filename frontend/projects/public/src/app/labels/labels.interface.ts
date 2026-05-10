@@ -45,6 +45,14 @@ export interface AppLabels {
   hubEventsTitle: string;
   hubEventsEmpty: string;
   hubEventsCta: string;
+  hubTicketCount: (n: number) => string;
+  hubLatestConfirmed: string;
+  hubLatestReserved: string;
+  hubLatestPricePrefix: string;
+  hubTotalPricePrefix: string;
+  hubPriceNotSpecified: string;
+  hubEventCount: (n: number) => string;
+  hubPendingCommentCount: (n: number) => string;
   hubProgramTitle: string;
   hubProgramEmpty: string;
   hubProgramCta: string;
@@ -86,6 +94,11 @@ export interface AppLabels {
   myEventsCreateFirst: string;
   myEventsUnnamed: string;
   myEventsSessions: (n: number) => string;
+  myEventsUnknownCategory: string;
+  myEventsStatusDraft: string;
+  myEventsStatusUnderReview: string;
+  myEventsStatusPublished: string;
+  myEventsStatusCancelled: string;
 
   // My program
   myProgramTitle: string;
@@ -109,6 +122,16 @@ export interface AppLabels {
   myProgramPastChip: string;
   myProgramUnnamedSession: string;
   myProgramVenueNotSet: string;
+  myProgramScheduleBooked: string;
+  myProgramScheduleWatching: string;
+  myProgramScheduleOrganiser: string;
+  myProgramScheduleShift: string;
+  myProgramShiftRoleResponsible: string;
+  myProgramShiftRoleAssigned: string;
+  myProgramCancelError: string;
+  myProgramRemoveWatchError: string;
+  myProgramUnknownTime: string;
+  myProgramUnknownDay: string;
 
   // Forgot password
   forgotTitle: string;
@@ -129,6 +152,8 @@ export interface AppLabels {
   resetPasswordHint: string;
   resetConfirmPassword: string;
   resetButton: string;
+  resetPasswordMismatchError: string;
+  resetInvalidLinkError: string;
 
   // My staff
   myStaffTitle: string;
@@ -146,6 +171,9 @@ export interface AppLabels {
   myStaffNoDates: string;
   myStaffSubmitting: string;
   myStaffSubmitButton: string;
+  myStaffUnknownTime: string;
+  myStaffShiftRoleResponsible: string;
+  myStaffShiftRoleAssigned: string;
 
   // My ticket
   myTicketTitle: string;
@@ -171,6 +199,16 @@ export interface AppLabels {
   myTicketTermsLabel: string;
   myTicketPaymentNote: string;
   myTicketBookButton: string;
+  myTicketStatusPendingPayment: string;
+  myTicketStatusConfirmed: string;
+  myTicketStatusCancelled: string;
+  myTicketStatusPaid: string;
+  myTicketStatusCollected: string;
+  myTicketCategoryOrganiser: string;
+  myTicketCategoryStaff: string;
+  myTicketCategoryVisitor: string;
+  myTicketDefaultTypeLabel: string;
+  myTicketPriceMissing: string;
 
   // Event detail
   eventDetailBreadcrumb: string;
@@ -192,6 +230,19 @@ export interface AppLabels {
   eventDetailCapacityHigh: string;
   eventDetailCapacityAlmost: string;
   eventDetailCapacityGood: string;
+  eventDetailNotFound: string;
+  eventDetailTicketRequired: string;
+  eventDetailRegisterError: string;
+  eventDetailCancelError: string;
+  eventDetailWatchError: string;
+  eventDetailUnwatchError: string;
+
+  // Public page
+  publicPageNotFound: string;
+  publicPageBackHome: string;
+
+  // Register errors
+  registerFailedError: string;
 
   // Confirm email
   confirmLoading: string;

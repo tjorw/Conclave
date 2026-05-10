@@ -18,13 +18,7 @@ import {
   SESSION_REGISTRATION_STATUS_LABEL,
 } from 'shared';
 import { LabelsService } from '../../../services/labels.service';
-
-const SCHEDULE_TYPE_LABEL: Record<string, string> = {
-  Booked: 'Bokat',
-  Watching: 'Vill se',
-  Organiser: 'Arrangör',
-  Shift: 'Pass',
-};
+import { LocaleService } from '../../../services/locale.service';
 
 const SESSION_REGISTRATION_STATUSES: readonly SessionRegistrationStatus[] = ['Confirmed', 'Cancelled'];
 
@@ -46,6 +40,7 @@ export class MyProgramComponent implements OnInit {
   private readonly editionSvc = inject(EditionService);
   private readonly regSvc     = inject(RegistrationService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly localeSvc = inject(LocaleService);
   readonly labels = inject(LabelsService).labels;
 
   readonly loading = signal(true);
@@ -231,7 +226,7 @@ export class MyProgramComponent implements OnInit {
         this.cancellingId.set(null);
       },
       error: () => {
-        this.error.set('Kunde inte avboka sessionen just nu. Försök igen.');
+        this.error.set(this.labels().myProgramCancelError);
         this.cancellingId.set(null);
       },
     });
@@ -247,7 +242,7 @@ export class MyProgramComponent implements OnInit {
         this.unwatchingSessionId.set(null);
       },
       error: () => {
-        this.error.set('Kunde inte ta bort bevakningen just nu. Försök igen.');
+        this.error.set(this.labels().myProgramRemoveWatchError);
         this.unwatchingSessionId.set(null);
       },
     });
@@ -258,11 +253,21 @@ export class MyProgramComponent implements OnInit {
   }
 
   scheduleTypeLabel(type: string): string {
-    return SCHEDULE_TYPE_LABEL[type] ?? type;
+    const l = this.labels();
+    const scheduleTypeLabel: Record<string, string> = {
+      Booked: l.myProgramScheduleBooked,
+      Watching: l.myProgramScheduleWatching,
+      Organiser: l.myProgramScheduleOrganiser,
+      Shift: l.myProgramScheduleShift,
+    };
+
+    return scheduleTypeLabel[type] ?? type;
   }
 
   shiftRoleLabel(role: string): string {
-    return role === 'Responsible' ? 'Ansvarig' : 'Tilldelad';
+    return role === 'Responsible'
+      ? this.labels().myProgramShiftRoleResponsible
+      : this.labels().myProgramShiftRoleAssigned;
   }
 
   hasConflict(item: MyScheduleItemDto): boolean {
@@ -296,10 +301,10 @@ export class MyProgramComponent implements OnInit {
 
   private formatDate(value: string | null | undefined): string {
     if (!value || Number.isNaN(Date.parse(value))) {
-      return 'Okänd tid';
+      return this.labels().myProgramUnknownTime;
     }
 
-    return new Intl.DateTimeFormat('sv-SE', {
+    return new Intl.DateTimeFormat(this.localeSvc.localeTag(), {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
@@ -313,7 +318,7 @@ export class MyProgramComponent implements OnInit {
       return '--:--';
     }
 
-    return new Intl.DateTimeFormat('sv-SE', {
+    return new Intl.DateTimeFormat(this.localeSvc.localeTag(), {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(value));
@@ -321,10 +326,10 @@ export class MyProgramComponent implements OnInit {
 
   private formatDay(value: string | null | undefined, length: 'long' | 'short'): string {
     if (!value || Number.isNaN(Date.parse(value))) {
-      return 'Okänd dag';
+      return this.labels().myProgramUnknownDay;
     }
 
-    return new Intl.DateTimeFormat('sv-SE', {
+    return new Intl.DateTimeFormat(this.localeSvc.localeTag(), {
       weekday: length,
       day: 'numeric',
       month: length,

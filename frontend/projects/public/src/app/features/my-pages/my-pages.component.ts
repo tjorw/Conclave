@@ -102,8 +102,8 @@ export class MyPagesComponent implements OnInit {
     if (!latest) return '';
 
     return latest.status === 'Confirmed' || latest.status === 'Paid' || latest.status === 'Collected'
-      ? 'Senaste bekräftad'
-      : 'Senaste reserverad';
+      ? this.labels().hubLatestConfirmed
+      : this.labels().hubLatestReserved;
   }
 
   latestTicketStatusClass(): string {
@@ -119,7 +119,7 @@ export class MyPagesComponent implements OnInit {
   }
 
   private priceLabel(priceInOre: number | null): string {
-    if (priceInOre === null) return 'Ej angivet';
+    if (priceInOre === null) return this.labels().hubPriceNotSpecified;
     return formatSekPrice(priceInOre);
   }
 }

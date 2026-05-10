@@ -17,6 +17,7 @@ import {
   SessionFeedDto,
 } from 'shared';
 import { LabelsService } from '../../../services/labels.service';
+import { LocaleService } from '../../../services/locale.service';
 
 @Component({
   selector: 'app-event-detail',
@@ -32,6 +33,7 @@ export class EventDetailComponent implements OnInit {
   readonly authSvc = inject(AuthService);
   private readonly regSvc = inject(RegistrationService);
   readonly labels = inject(LabelsService).labels;
+  private readonly localeSvc = inject(LocaleService);
 
   readonly loading  = signal(true);
   readonly error    = signal<string | null>(null);
@@ -55,7 +57,7 @@ export class EventDetailComponent implements OnInit {
         this.loading.set(false);
         this.loadRegistrationContext(ev.editionId);
       },
-      error: () => { this.error.set('Evenemanget hittades inte.'); this.loading.set(false); },
+      error: () => { this.error.set(this.labels().eventDetailNotFound); this.loading.set(false); },
     });
   }
 
@@ -70,9 +72,10 @@ export class EventDetailComponent implements OnInit {
   sessionTimeLabel(s: SessionFeedDto): string {
     const start = new Date(s.start);
     const end   = new Date(s.end);
-    return start.toLocaleDateString('sv-SE', { weekday: 'long', day: 'numeric', month: 'long' })
-      + ', ' + start.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
-      + '–' + end.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+    const locale = this.localeSvc.localeTag();
+    return start.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })
+      + ', ' + start.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
+      + '–' + end.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   }
 
   registrationLabel(type: string): string {
@@ -185,7 +188,7 @@ export class EventDetailComponent implements OnInit {
     const ticketId = this.myTicketId();
 
     if (!ticketId) {
-      this.actionError.set('Du behöver en betald biljett innan du kan anmäla dig till en session.');
+      this.actionError.set(this.labels().eventDetailTicketRequired);
       return;
     }
 
@@ -199,7 +202,7 @@ export class EventDetailComponent implements OnInit {
         this.submittingSessionId.set(null);
       },
       error: () => {
-        this.actionError.set('Kunde inte anmäla dig till sessionen just nu.');
+        this.actionError.set(this.labels().eventDetailRegisterError);
         this.submittingSessionId.set(null);
       },
     });
@@ -219,7 +222,7 @@ export class EventDetailComponent implements OnInit {
         this.submittingSessionId.set(null);
       },
       error: () => {
-        this.actionError.set('Kunde inte avboka sessionen just nu.');
+        this.actionError.set(this.labels().eventDetailCancelError);
         this.submittingSessionId.set(null);
       },
     });
@@ -235,7 +238,7 @@ export class EventDetailComponent implements OnInit {
         this.submittingWatchSessionId.set(null);
       },
       error: () => {
-        this.actionError.set('Kunde inte bevaka sessionen just nu.');
+        this.actionError.set(this.labels().eventDetailWatchError);
         this.submittingWatchSessionId.set(null);
       },
     });
@@ -254,7 +257,7 @@ export class EventDetailComponent implements OnInit {
         this.submittingWatchSessionId.set(null);
       },
       error: () => {
-        this.actionError.set('Kunde inte ta bort bevakningen just nu.');
+        this.actionError.set(this.labels().eventDetailUnwatchError);
         this.submittingWatchSessionId.set(null);
       },
     });

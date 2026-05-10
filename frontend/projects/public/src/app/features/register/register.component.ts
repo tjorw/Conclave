@@ -48,7 +48,7 @@ export class RegisterComponent {
         this.success.set(true);
       },
       error: err => {
-        this.error.set(toErrorMessage(err, 'Registreringen misslyckades. Försök igen.'));
+        this.error.set(toErrorMessage(err, this.labels().registerFailedError));
         this.loading.set(false);
       },
     });

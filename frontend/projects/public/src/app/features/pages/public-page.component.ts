@@ -5,6 +5,7 @@ import { MarkdownComponent } from 'ngx-markdown';
 import { catchError, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
 import { PageService, PublicPageDto } from 'shared';
 import { LocaleService } from '../../services/locale.service';
+import { LabelsService } from '../../services/labels.service';
 
 @Component({
   selector: 'app-public-page',
@@ -16,7 +17,7 @@ import { LocaleService } from '../../services/locale.service';
         <div class="spinner-center"><mat-spinner diameter="42" /></div>
       } @else if (error()) {
         <div class="error-banner">{{ error() }}</div>
-        <a routerLink="/">Till startsidan</a>
+        <a routerLink="/">{{ labels().publicPageBackHome }}</a>
       } @else if (page(); as p) {
         <article class="content-page">
           <h1>{{ p.title }}</h1>
@@ -37,6 +38,7 @@ export class PublicPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly pageSvc = inject(PageService);
   private readonly localeSvc = inject(LocaleService);
+  readonly labels = inject(LabelsService).labels;
 
   readonly page = signal<PublicPageDto | null>(null);
   readonly loading = signal(true);
@@ -53,7 +55,7 @@ export class PublicPageComponent {
       }),
       switchMap(slug => this.pageSvc.getPublicPage(slug, this.localeSvc.locale()).pipe(
         map(page => ({ page, error: null as string | null })),
-        catchError(() => of({ page: null, error: 'Sidan hittades inte.' })),
+        catchError(() => of({ page: null, error: this.labels().publicPageNotFound })),
       )),
     ).subscribe(result => {
       this.page.set(result.page);

@@ -6,6 +6,7 @@ import { EditionService } from '../../services/edition.service';
 import { CategoryFeedDto, EventSummaryFeedDto } from 'shared';
 import { StripMarkdownPipe } from '../../pipes/strip-markdown.pipe';
 import { LabelsService } from '../../services/labels.service';
+import { LocaleService } from '../../services/locale.service';
 
 @Component({
   selector: 'app-program',
@@ -17,6 +18,7 @@ import { LabelsService } from '../../services/labels.service';
 export class ProgramComponent {
   readonly editionSvc = inject(EditionService);
   readonly labels = inject(LabelsService).labels;
+  private readonly localeSvc = inject(LocaleService);
 
   readonly selectedDay      = signal<string>('alla');
   readonly selectedCategory = signal<string | null>(null);
@@ -45,7 +47,7 @@ export class ProgramComponent {
       }
     }
 
-    return Array.from(tags).sort((a, b) => a.localeCompare(b, 'sv-SE'));
+    return Array.from(tags).sort((a, b) => a.localeCompare(b, this.localeSvc.localeTag()));
   });
 
   readonly filteredEvents = computed<EventSummaryFeedDto[]>(() => {
@@ -68,7 +70,7 @@ export class ProgramComponent {
 
   dayLabel(iso: string): string {
     const [year, month, day] = iso.split('-').map(Number);
-    return new Date(year, month - 1, day).toLocaleDateString('sv-SE', { weekday: 'long' });
+    return new Date(year, month - 1, day).toLocaleDateString(this.localeSvc.localeTag(), { weekday: 'long' });
   }
 
   firstSessionLabel(event: EventSummaryFeedDto): string {
@@ -79,10 +81,11 @@ export class ProgramComponent {
     const s = sessions[0] ?? event.sessions[0];
     if (!s) return '';
     const d = new Date(s.start);
-    return d.toLocaleDateString('sv-SE', { weekday: 'short' }) + ' '
-      + d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
+    const locale = this.localeSvc.localeTag();
+    return d.toLocaleDateString(locale, { weekday: 'short' }) + ' '
+      + d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
       + '–'
-      + new Date(s.end).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+      + new Date(s.end).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   }
 
   toggleCategory(id: string): void {

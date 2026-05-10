@@ -171,7 +171,16 @@ export class MyTicketComponent implements OnInit {
   }
 
   paymentStatusLabel(status: string): string {
-    return TICKET_PAYMENT_STATUS_LABEL[status] ?? status;
+    const l = this.labels();
+    const ticketPaymentStatusLabel: Record<string, string> = {
+      PendingPayment: l.myTicketStatusPendingPayment,
+      Confirmed: l.myTicketStatusConfirmed,
+      Cancelled: l.myTicketStatusCancelled,
+      Paid: l.myTicketStatusPaid,
+      Collected: l.myTicketStatusCollected,
+    };
+
+    return ticketPaymentStatusLabel[status] ?? TICKET_PAYMENT_STATUS_LABEL[status] ?? status;
   }
 
   statusChipClass(status: string): string {
@@ -186,26 +195,26 @@ export class MyTicketComponent implements OnInit {
 
   ticketTypeLabel(ticketType: VisitorTicketTypeDto): string {
     const label = (ticketType.name ?? '').trim();
-    return label.length > 0 ? label : 'Biljett';
+    return label.length > 0 ? label : this.labels().myTicketDefaultTypeLabel;
   }
 
   ticketTypePriceLabel(ticketType: VisitorTicketTypeDto): string {
     const price = Number(ticketType.price);
-    if (!Number.isFinite(price) || price < 0) return 'Pris saknas';
+    if (!Number.isFinite(price) || price < 0) return this.labels().myTicketPriceMissing;
     return formatSekPrice(price);
   }
 
   registrationPriceLabel(registration: MyVisitorRegistrationDto): string {
     const price = Number(registration.ticketPrice);
-    if (!Number.isFinite(price) || price < 0) return 'Pris saknas';
+    if (!Number.isFinite(price) || price < 0) return this.labels().myTicketPriceMissing;
     return formatSekPrice(price);
   }
 
   ticketCategoryLabel(registration: MyVisitorRegistrationDto): string {
     switch (registration.ticketTypeCategory) {
-      case 'Organiser': return 'Arrangörsbiljett';
-      case 'Staff': return 'Funktionärsbiljett';
-      default: return 'Besökarbiljett';
+      case 'Organiser': return this.labels().myTicketCategoryOrganiser;
+      case 'Staff': return this.labels().myTicketCategoryStaff;
+      default: return this.labels().myTicketCategoryVisitor;
     }
   }
 

@@ -64,7 +64,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     const { password, confirmPassword } = this.form.getRawValue();
 
     if (password !== confirmPassword) {
-      this.error.set('Lösenorden matchar inte.');
+      this.error.set(this.labels().resetPasswordMismatchError);
       return;
     }
 
@@ -82,7 +82,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
         this.redirectTimeout = setTimeout(() => this.router.navigateByUrl('/login'), 2000);
       },
       error: err => {
-        this.error.set(toErrorMessage(err, 'Länken är ogiltig eller har gått ut.'));
+        this.error.set(toErrorMessage(err, this.labels().resetInvalidLinkError));
         this.loading.set(false);
       },
     });
