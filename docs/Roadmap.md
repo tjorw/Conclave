@@ -7,32 +7,12 @@ Spårar vad som återstår inför produktionsstart.
 
 ### Multitenancy
 
+**Lokal dev och demo (R-MT018–R-MT019)**
+- [ ] `R-MT018` SaaS-dev-workflow: `appsettings.SaaS.json`, SaaS-seeder med deterministiska tenant-IDs (Gammacon + Länsen), `Run-SaaSLocal.ps1`, `devTenantId` i Angular-environments, README-avsnitt
+- [ ] `R-MT019` Demo SaaS-miljö: utöka `Run-DemoLocal.ps1` med `-EnableMultitenancy`-switch, SaaS-demo-databas, dokumentation i DemoDeploy.md
+
 **Fas 4 – Provisioning och self-service (R-MT013–R-MT017)**
-- [ ] `R-MT014` `portal`-app: self-service signup (publik del)
-- [ ] `R-MT015` `portal`-app: tenant-dashboard för tenant-ägare
+- [x] `R-MT013` `portal`-app: provisioneringsvy (systemadmin skapar konvent och admin-konto åt tenant)
+- [ ] `R-MT014` `portal`-app: self-service signup – publik route `/signup`, `POST /system/public/signup`, subdomän-availability-query, välkomstmail via outbox
+- [ ] `R-MT015` `portal`-app: tenant-dashboard för tenant-ägare – ny `/tenant-login`-route, `isTenantOwner`-guard, dashboard med konventionsöversikt och kontoinställningar
 - [ ] `R-MT017` Faktureringsintegration *(utanför scope – dokumenterat för framtiden)*
-
-
----
-
-## Teknisk skuld
-
-Se ADR `docs/decisions/2026-05-10-tech-debt-triage.md` för fullständig triagering och motivering.
-
-### Att åtgärda
-
-- [x] `R-TD01` **E-postunikthet** — unikt DB-constraint på `persons(convention_id, email)` + felhantering i login och admin-skapande
-- [x] `R-TD02` **Feed Cache-Control** — `Cache-Control: public, max-age=60/30` på feed-endpoints
-- [x] `R-TD03` **DbSet-konsekvens** — lägg till `DbSet<Station>` och `DbSet<Venue>` i `ConventionDbContext`, ta bort `db.Set<T>()`-anrop
-
-### Deferat (dokumenterat skäl)
-
-| Post | Skäl |
-|------|------|
-| Cache stampede i `CachingTenantResolver` | Låg risk vid nuvarande skala; åtgärda vid mätbar DB-belastning |
-| `Shift` saknar `EditionId` | Fungerar korrekt; ger schemaändringar utan omedelbar nytta |
-| Deduplikering i tidsschema | Korrekt beteende; lägg till testtäckning om logiken ändras |
-| Hemligheter i `appsettings` | Deployment-concern, dokumenterat i DemoDeploy.md; inte en kodfråga |
-| Social inloggning (OAuth) | Feature request, inte skuld |
-| E2E-tester | Infrastrukturkostnad motiveras efter att kritiska flöden stabiliserats |
-
